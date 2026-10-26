@@ -1,0 +1,126 @@
+<article class="lesson" data-slug="spending-a-percentage" data-reviewed="2026-10-26"
+  data-title="Spending a percentage"
+  data-idea="Take a share of what's there: it can't run out, but income swings"
+  data-tool="vpw" data-try="Test variable percentage withdrawal, and the other percentage rules, against every past retirement, with your plan already filled in.">
+
+<p class="lede">The 4% rule fixes your spending and lets the portfolio take the hits. Percentage rules do the opposite: each year you spend a share of whatever the portfolio is worth, so the money can't run out, and your income rises and falls with the markets. There are several versions, from a flat 4% every year to rules whose share grows as you age, and they differ mostly in how much they swing and how much they leave.</p>
+
+<h2 id="idea">The basic idea</h2>
+<p>Pick a percentage and apply it to the balance once per year. With 4% and $1,000,000, the first year's withdrawal is $40,000. If the portfolio falls to $800,000, the next withdrawal is $32,000. If it climbs to $1,100,000, it's $44,000. You never take the whole balance, only a slice of it, so in theory it never reaches zero.</p>
+<p>So a percentage rule can't fail the way the 4% rule can. The same example shows the cost: a 20% fall in the portfolio is a 20% cut in your income, in the same year. The risk moves from the portfolio to your paycheck. <a href="/learn/fixed-or-flexible">Fixed or flexible spending</a> covers that trade in general. This lesson is about the percentage rules themselves.</p>
+
+<h2 id="fixed-pct">A fixed percentage, through history</h2>
+<p>The site's tests run each rule through every 30-year retirement that began in a January from 1927 to 1996, 70 in all, with $1,000,000 in 60% US stocks and 40% 10-year Treasuries, rebalanced yearly, no fees, in today's dollars.</p>
+<p>Taking 4% of the balance every year:</p>
+<ul>
+  <li>It never ran out, as designed.</li>
+  <li>In a typical start, spending drifted up over time, from $40,000 in year one to about $47,300 in year 10, $53,600 in year 20 and $59,400 in year 30, because a 60/40 portfolio usually earned more than 4% after inflation.</li>
+  <li>In the worst start, 1966, it fell to $16,718 in year 17, 42% of year one. 10 of the 70 starts fell below half their first year's spending at some point.</li>
+  <li>The biggest single-year changes were a 28% rise and a 27% fall.</li>
+</ul>
+<p>At 5%, the typical path stayed close to flat, between about $50,000 and $57,500 throughout, and the worst start fell to $17,674, 35% of year one. 19 of 70 starts fell below half at some point.</p>
+<p>Whether the rate is above or below what the portfolio earns decides the direction of drift. Spend less than the portfolio's real return and spending tends to rise over the years, and you leave a lot behind. Spend more and the typical path slowly declines. Neither changes the swings, which come from the markets.</p>
+<h3>The 95% rule</h3>
+<p>A softer version is known as the 95% rule: take your percentage of the balance, but never less than 95% of last year's withdrawal in dollars. It limits how much income can fall in one year. In the site's test at 4%, the biggest one-year fall after inflation was 20%, against 27% for a plain 4%, with almost the same worst year, $16,383. It slows the cuts down more than it shrinks them.</p>
+
+<h2 id="age">Percentages that rise with age</h2>
+<p>A flat percentage treats a 90-year-old's portfolio the same as a 65-year-old's, but the 90-year-old has far fewer years to fund. Several rules raise the share as the years left get shorter. They spend more of the portfolio over a lifetime, and some are designed to spend all of it.</p>
+
+<!-- data: VPW: pmtStart(0.038, 100 − age, 1, 0), lib/engine/math.js, the payment on an annuity due at a 3.8% real return (the Bogleheads VPW figure for 60/40) spending the balance down by 100. RMD method: 1 ÷ ddRmdDivisor(age), the IRS Uniform Lifetime Table from 72 (27.4 at 72, 20.2 at 80, 12.2 at 90), extended before 72 by 0.9 per year. -->
+<figure data-chart='{"type":"line","x":[65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90],"xLabel":"Age","y":"pct","series":[{"name":"VPW, 60/40, spending down by 100","tone":"accent","values":[0.0502,0.0509,0.0517,0.0525,0.0534,0.0544,0.0554,0.0565,0.0577,0.059,0.0604,0.0619,0.0636,0.0654,0.0674,0.0696,0.0721,0.0749,0.078,0.0815,0.0854,0.09,0.0953,0.1015,0.1088,0.1176]},{"name":"RMD method","tone":"neutral","values":[0.0297,0.0305,0.0313,0.0323,0.0332,0.0342,0.0353,0.0365,0.0377,0.0392,0.0407,0.0422,0.0437,0.0455,0.0474,0.0495,0.0515,0.0541,0.0565,0.0595,0.0625,0.0658,0.0694,0.073,0.0775,0.082]},{"name":"Fixed 4% of the balance","tone":"muted","dash":true,"values":[0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04]}]}'>
+  <figcaption>The share of the balance each rule takes at each age. VPW assumes a 60/40 mix and spends the portfolio down by 100; the RMD method divides by the IRS life-expectancy divisor. Both rise every year.</figcaption>
+</figure>
+
+<h3>Variable percentage withdrawal (VPW)</h3>
+<p>VPW was developed by members of the Bogleheads investing forum and published on the Bogleheads wiki. Each year's withdrawal is the level payment that would spend the current balance to zero by a chosen age, usually 100, if the portfolio earned its expected return after inflation. The Bogleheads table uses 5% for stocks and 1.9% for bonds, about 3.8% for a 60/40 mix. Because the payment is worked out fresh each year on what's there, a bad year lowers next year's payment and a good one raises it.</p>
+<p>The formula is the payment on an annuity paid at the start of each year. In spreadsheet terms it's =PMT(r, n, −balance, 0, 1), where r is the expected real return and n is the years left. At 65 with 35 years to go and r = 3.8%, it comes to 5.02% of the balance. At 75 it's 6.04%, at 85 it's 8.54%, and in the final year it's everything that's left.</p>
+<p>From 65 to 100 with $1,000,000 in a 60/40 mix, VPW started at $50,223, never ran out in any of the 65 historical starts, and spent the portfolio down by the end. Retiring in 1966, spending fell to $22,209 at age 81, 44% of year one, before recovering. In 28 of the 65 starts it fell more than a quarter below year one at some point.</p>
+<h3>The RMD method</h3>
+<p>The IRS requires minimum withdrawals from traditional IRAs and 401(k)s once you reach 73 or 75, depending on your birth year, figured by dividing the balance by a life-expectancy divisor from its Uniform Lifetime Table. Some retirees use the same divisors as a spending rule for the whole portfolio. At 72 the divisor is 27.4, so you'd take 3.65%; at 80 it's 20.2, or 4.95%; at 90 it's 12.2, or 8.20%. The table starts at 72, and the site extends it backward by 0.9 per year, which gives 2.97% at 65.</p>
+<p>In 2012, Wei Sun and Anthony Webb of the Center for Retirement Research at Boston College tested this rule against other simple strategies, including the 4% rule and spending only interest and dividends. The RMD rule did better than those alternatives in their model, although it tends to spend too little in the early years. The site's test shows the same shape. Retiring at 65 with $1,000,000, the RMD method started at just $29,674, then rose: the typical start was spending $49,306 in year 10, $78,848 in year 20 and $104,354 in year 30. It never ran out, left a typical $935,660, and its worst moment came early, retiring in 1973, at $18,881 in year 3.</p>
+<p>For the required distributions themselves, which apply only to traditional accounts, see <a href="/learn/rmds">Required minimum distributions</a>.</p>
+<h3>1/N</h3>
+<p>The simplest age-based rule divides the balance by the years left: a thirtieth in year one of a 30-year plan, a tenth with ten years to go, everything in the last. It starts very low, $33,333 on $1,000,000, and spends heavily at the end; the typical start was spending more than $160,000 in year 30. Few people want that shape, but it shows the logic the other rules refine.</p>
+
+<h2 id="smooth">Smoothing the swings</h2>
+<p>The big drawback of every percentage rule is how much income can move in a single year. Smoothed rules aim at a percentage but limit how far spending can move from last year's.</p>
+<p>Vanguard's dynamic spending rule, from the firm's retirement research, sets a target share of the balance and then caps the change: spending can rise at most 5% or fall at most 2.5% from last year's, after inflation. With a 5% target on $1,000,000 in a 60/40 mix over 30 years:</p>
+<ul>
+  <li>It lasted in all 70 starts.</li>
+  <li>No year rose more than 5% or fell more than 2.5%, against swings of 27% up and 28% down for a straight 5% of the balance.</li>
+  <li>The typical path went from $50,000 to $53,368 in year 10 and $55,455 in year 30.</li>
+  <li>Retiring in 1966, spending slid 2.5% every year, to $23,994 by year 30. A straight 5% fell further, to $17,674, but much sooner.</li>
+</ul>
+<p>The smoothing has a cost. Because cuts are capped at 2.5% per year, spending can lag a falling portfolio for years, and the rule can run out, which a pure percentage never does. Over 35 years at 60/40, it ran out in 4 of the 65 starts. The simulator's floor and ceiling strategy is the same rule with limits you choose, 10% each way by default.</p>
+<p>Other smoothed rules blend last year's spending, raised for inflation, with a share of today's balance, so spending moves only part of the way toward the percentage each year. <a href="/learn/choosing-a-strategy">Choosing a strategy</a> covers them along with the rest.</p>
+
+<h2 id="compare">The rules side by side</h2>
+
+<!-- data: historicalBacktest() for each strategy on ddOptsFromState({initial: 1000000, years: 30, stock: 60, ...}), 70 January starts 1927–1996, no fees, today's dollars. Worst year: lowest realSpend ÷ that start's year-one realSpend, across all starts. Lifetime: median of each start's 30-year realSpend total. Left: medianEnd. VPW here: vpwRate 3.8, 30 years, so it spends down by year 30. RMD method: retireAge 65. Vanguard: rate 5, 5% ceiling, 2.5% floor. -->
+<figure>
+  <table>
+    <thead><tr><th>Rule</th><th>Year one</th><th>Worst year, as a share of year one</th><th>Typical lifetime spending</th><th>Typically left at the end</th></tr></thead>
+    <tbody>
+      <tr><td>Fixed 4%, raised with inflation (for comparison)</td><td>$40,000</td><td class="neg">Ran out in 4 of 70</td><td>$1.20 million</td><td>$1.62 million</td></tr>
+      <tr><td>4% of the balance</td><td>$40,000</td><td>42%</td><td>$1.54 million</td><td>$1.50 million</td></tr>
+      <tr><td>5% of the balance</td><td>$50,000</td><td>35%</td><td>$1.65 million</td><td>$1.10 million</td></tr>
+      <tr><td>95% rule at 4%</td><td>$40,000</td><td>41%</td><td>$1.53 million</td><td>$1.48 million</td></tr>
+      <tr><td>VPW, spending down over 30 years</td><td>$54,368</td><td>44%</td><td>$2.19 million</td><td>$0</td></tr>
+      <tr><td>RMD method from 65</td><td>$29,674</td><td>64%</td><td>$1.96 million</td><td>$936,000</td></tr>
+      <tr><td>1/N</td><td>$33,333</td><td>64%</td><td>$2.49 million</td><td>$0</td></tr>
+      <tr><td>Vanguard dynamic spending, 5% target</td><td>$50,000</td><td>48%</td><td>$1.70 million</td><td>$858,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>$1,000,000 in a 60/40 mix over 30 years, every January start from 1927 to 1996, in today's dollars. The worst year is the lowest any start reached, compared with that start's own first year.</figcaption>
+</figure>
+
+<p>The rules that spend everything, VPW and 1/N, have the highest lifetime spending, because they leave nothing. The rules that start low, the RMD method and 1/N, have the mildest worst years compared with where they began, because they had less to lose. And a plain percentage leaves almost as much behind as the 4% rule while spending more over a lifetime, at the price of an income that moves every year.</p>
+<p data-yours></p>
+
+<h2 id="living">Living on a percentage</h2>
+<p>Several things make the swings easier to live with, and a few precautions help:</p>
+<ul>
+  <li>Social Security doesn't swing. The percentage applies to the portfolio only. If Social Security covers half your spending, a 20% fall in the portfolio withdrawal is a 10% fall in your income.</li>
+  <li>Set the amount once per year. Use the balance on one date, say January 1, and pay yourself monthly from that. Rechecking every month makes the swings feel worse and adds nothing.</li>
+  <li>Keep a year's spending in cash. It lets you pay the bills while you decide how to absorb a cut, instead of selling into a falling market.</li>
+  <li>Add a floor if there's a level you can't go below. The simulator's Minimum spending holds one under any percentage rule. Be aware that a floor brings back the risk of running out, since in a long decline you'd be taking more than the rule says.</li>
+  <li>Withdrawals are before tax. Money from a traditional IRA or 401(k) is taxed as income, so the percentage is what leaves the account, not what you spend.</li>
+</ul>
+<p>The age-based rules also suit how many retirees spend: more in their 60s and 70s, when they're most active. VPW in particular front-loads spending compared with the RMD method. If you expect to spend less later, that's a feature. If you expect large health costs in your 80s, a rule that leaves more, or a floor, may suit you better. <a href="/learn/spending-with-age">Spending changes with age</a> covers what the research says about spending later in life.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The VPW page opens the Drawdown Simulator with variable percentage withdrawal on your savings, Social Security and mix, run through every historical retirement since 1926. The success rate will read 100%, so look at the year-by-year spending instead: pick the worst starts, 1966 and 1973, and see how low your income went and for how long.</p>
+<p>Switch the strategy to Fixed % of portfolio, the RMD method, 1/N or Vanguard dynamic spending to compare them on your own numbers. Under VPW's settings you can change the expected real return and set an amount you want left at the end. Minimum spending adds a floor to any of them.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Can a percentage rule really never run out?</summary><p>A pure percentage can't reach zero, because it never takes everything. VPW and 1/N spend the last of it in the final year by design. What can happen is a long stretch of low income, which is the number to check. Rules that limit cuts, like Vanguard's, or that add a floor, can run out.</p></details>
+<details><summary>Why does VPW plan to 100?</summary><p>So the payments stay sustainable for anyone who lives that long. Planning to a younger age raises the early payments but spends the money sooner, and leaves nothing if you outlive the plan.</p></details>
+<details><summary>What return should I use for VPW?</summary><p>The Bogleheads figures, about 5% for stocks and 1.9% for bonds after inflation, are a common default. A higher figure spends more early and less later; a lower one does the opposite. It changes the shape of spending more than whether it lasts.</p></details>
+<details><summary>Is the RMD method the same as my required distributions?</summary><p>The math is the same, but required distributions apply only to traditional accounts and start at 73 or 75. The RMD method applies the divisors to your whole portfolio, from whenever you retire.</p></details>
+<details><summary>Which percentage should I use for a flat rule?</summary><p>Around 4% has tended to keep spending level or rising over 30 years with a 60/40 mix; 5% kept the typical path roughly flat, with deeper worst years. Higher rates spend more early and tend to drift down.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>Percentage rules spend a share of the current balance each year, so the money can't run out, but income moves with markets.</li>
+  <li>A flat 4% of the balance fell to 42% of its first year in the worst start, 1966, and drifted up in a typical one.</li>
+  <li>VPW and the RMD method raise the share with age; VPW spends everything by a chosen age, while the RMD method starts low and spends more later.</li>
+  <li>Vanguard's dynamic spending caps yearly changes at +5% and −2.5%, which smooths income but can run out over long retirements.</li>
+  <li>Social Security, a cash reserve and a floor all make the swings easier to live with.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How percentage rules trade steady income for lasting money</li><li>How VPW and the RMD method raise spending with age</li><li>How smoothed rules limit the swings, and their cost</li></ul>
+  <ul class="terms">
+    <li data-term="Variable percentage withdrawal (VPW)">A Bogleheads method that spends, each year, the level payment that would use up the current balance by a chosen age at the mix's expected real return.</li>
+    <li data-term="RMD method">Spending the portfolio divided by the IRS life-expectancy divisor for your age: about 3% at 65, 5% at 80 and 8% at 90.</li>
+    <li data-term="Dynamic spending">A percentage rule with limits on how far spending can move each year. Vanguard's version allows a 5% rise or a 2.5% fall at most, after inflation.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.bogleheads.org/wiki/Variable_percentage_withdrawal">Variable percentage withdrawal</a> <span>Bogleheads wiki</span></li>
+    <li><a href="https://crr.bc.edu/wp-content/uploads/2012/04/wp_2012-10-508.pdf">Should Households Base Asset Decumulation Strategies on Required Minimum Distribution Tables? (Sun and Webb, 2012)</a> <span>Center for Retirement Research at Boston College</span></li>
+    <li><a href="https://advisors.vanguard.com/insights/article/show-clients-that-yes-they-can-spend-more-in-retirement">Show clients that, yes, they can spend more in retirement</a> <span>Vanguard</span></li>
+    <li><a href="https://www.irs.gov/publications/p590b">Publication 590-B, Distributions from IRAs</a> <span>IRS</span></li>
+    <li><a href="https://www.kitces.com/blog/modified-required-minimum-distributions-rmd-swr-safe-withdrawal-rate-method-portfolio-retirement-income-paycheck-irs/">Reducing Retirement Income Volatility With the Modified RMD Safe Withdrawal Method (Woloch, 2026)</a> <span>Kitces.com</span></li>
+    <li><a href="https://ficalc.app/docs/withdrawal-strategies/95-percent">95% Rule</a> <span>FI Calc</span></li>
+  </ul>
+</footer>
+</article>

@@ -1,0 +1,155 @@
+<article class="lesson" data-slug="compound-growth" data-reviewed="2026-10-26"
+  data-title="Time does most of the work"
+  data-idea="Compounding, the rule of 72, and why the early years count most"
+  data-tool="calculator" data-try="See what your savings grow to by the age you retire, and how much of it is growth, with your plan already filled in.">
+
+<p class="lede">Money that's invested earns a return, and then the return earns a return too. Over one or two years the effect is small. Over thirty or forty years it does most of the work, so that most of a long-time saver's retirement balance is growth rather than money they put in. That's why when you start can matter more than how much you save.</p>
+
+<h2 id="how">How compounding works</h2>
+<p>Put $10,000 into an investment that earns 7% per year and leave the earnings in. In the first year it earns $700. In the second year it earns 7% on $10,700, which is $749. In the third, 7% on $11,449, or $801. Each year's growth is a little bigger than the last, because each year it's working on a bigger balance.</p>
+<p>That's compound growth: growth on the original amount plus growth on all the growth before it. The alternative, simple growth, would pay $700 every year on the original $10,000 and nothing on the earnings. After 40 years simple growth would leave you with $38,000. Compounding leaves you with almost four times as much.</p>
+
+<!-- data: plain arithmetic. Each year's growth = start of year × 7%; end = start + growth. Start $10,000; nothing added or taken out. 10,000 × 1.07^10 = 19,672; ^20 = 38,697; ^30 = 76,123; ^40 = 149,745. Simple growth: 10,000 + 40 × 700 = 38,000. -->
+<figure>
+  <table>
+    <thead><tr><th>Year</th><th>Balance at the start</th><th>Growth that year</th><th>Balance at the end</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>$10,000</td><td>$700</td><td>$10,700</td></tr>
+      <tr><td>2</td><td>$10,700</td><td>$749</td><td>$11,449</td></tr>
+      <tr><td>3</td><td>$11,449</td><td>$801</td><td>$12,250</td></tr>
+      <tr><td>10</td><td>$18,385</td><td>$1,287</td><td>$19,672</td></tr>
+      <tr><td>20</td><td>$36,165</td><td>$2,532</td><td>$38,697</td></tr>
+      <tr><td>30</td><td>$71,143</td><td>$4,980</td><td>$76,123</td></tr>
+      <tr><td>40</td><td>$139,948</td><td>$9,796</td><td>$149,745</td></tr>
+    </tbody>
+  </table>
+  <figcaption>$10,000 earning a steady 7% per year with nothing added. By year 40, a single year's growth is almost as large as the original deposit.</figcaption>
+</figure>
+
+<p>Look at the growth column. In year 1 it's $700. In year 40 it's $9,796, nearly the whole original deposit, earned in a single year without adding a dollar. The balance doubles roughly every ten years, so the last decade adds more than the first three decades combined: about $73,600 between years 30 and 40, against about $66,100 in years 1 to 30.</p>
+
+<h2 id="early">Why ten early years can beat twenty late ones</h2>
+<p>The clearest way to see what time is worth is to compare savers who put in the same amount per year but start at different ages. Here are four of them, each saving $6,000 per year ($500 per month) in today's dollars and retiring at 65.</p>
+
+<!-- data: plain arithmetic, $6,000 added at the end of each year, compounding once per year at a steady real return. Future value of the deposits = 6,000 × ((1 + r)^n − 1) ÷ r. The early saver's balance at 35 then grows untouched for 30 years: × (1 + r)^30. r = 4.5% (the Calculator's Balanced mix) and 7% (its Aggressive mix, close to US stocks' 7.3% per year after inflation since 1926). Monthly deposits, as the Calculator makes them, come out slightly higher. -->
+<figure>
+  <table>
+    <thead><tr><th>Saver</th><th>Puts in</th><th>At 65, earning 4.5%</th><th>At 65, earning 7%</th></tr></thead>
+    <tbody>
+      <tr><td>Saves from 25 to 35, then stops</td><td>$60,000</td><td>$276,140</td><td>$631,046</td></tr>
+      <tr><td>Saves from 45 to 65</td><td>$120,000</td><td>$188,229</td><td>$245,973</td></tr>
+      <tr><td>Saves from 35 to 65</td><td>$180,000</td><td>$366,042</td><td>$566,765</td></tr>
+      <tr><td>Saves from 25 to 65</td><td>$240,000</td><td>$642,182</td><td>$1,197,811</td></tr>
+    </tbody>
+  </table>
+  <figcaption>$6,000 per year in today's dollars, returns after inflation. Hypothetical savers; no fees or taxes.</figcaption>
+</figure>
+
+<p>The first saver puts in $60,000 over ten years and then never adds another dollar. The second puts in twice as much over twenty years, starting at 45. At either return, the early saver ends up well ahead, because her money compounds for 30 to 40 years and the late saver's for 20 at most.</p>
+<p>At 7% the early saver even beats someone who saves for thirty years from 35, despite putting in a third as much. At 4.5% she doesn't: lower returns give time less to work with, and the thirty-year saver's extra contributions win. The familiar version of this story is usually told with high returns, and the return does decide it. Against the saver who starts at 45, the early saver comes out ahead at any steady return above about 3% per year after inflation; below that, twice the contributions win.</p>
+<p>The best result in the table belongs to the saver who starts early and keeps going. She puts in four times what the early saver did and ends with about twice as much at 7%, and more than twice as much at 4.5%.</p>
+
+<!-- widget: compound. Shows balance at 65 (y, today's dollars) against the age saving starts (x, 20 to 60), for a steady monthly amount kept up until 65. Inputs: the monthly amount (a slider from $100 to $3,000 in $50 steps; default $500, or the reader's own monthly saving from their plan, rounded to $50 and capped at $3,000) and the investment mix, using the Calculator's five mixes and their returns after inflation (Very conservative 2%, Conservative 3%, Balanced 4.5%, Growth 5.75%, Aggressive 7%; always starts on Balanced). Two series: the balance at 65 and, beneath it as a dashed line, the total put in, so the gap between them is the growth. A marker at the reader's current age ("You, at 40") when they have a plan and are 20 to 60. Moving the amount scales both lines; moving the mix bends the balance line (steeper at higher returns) and leaves the total put in unchanged. A line under the chart reads out three points rounded to $1,000, e.g. "Start at 25: $645,000. Start at 35: $368,000. Start at 45: $189,000" at $500 and Balanced: the Calculator's monthly engine, projectBasic, gives 645,006, 367,652 and 189,056 (annual-deposit arithmetic, as in the table above, gives 642,182, 366,042 and 188,229). -->
+<figure data-widget="compound">
+  <figcaption>What a steady amount per month grows to by 65, depending on the age you start. The space between the two lines is growth. Pick an amount and a mix to see how the curve bends.</figcaption>
+</figure>
+
+<p data-yours></p>
+
+<h2 id="rule-72">The rule of 72</h2>
+<p>A quick way to feel compounding without a calculator: divide 72 by the yearly return, and you get roughly how many years it takes money to double. At 6%, about 12 years. At 9%, about 8. The rule is close enough for planning between about 3% and 12%, and you can check it against the exact answer below.</p>
+
+<!-- data: rule of 72 = 72 ÷ rate. Exact doubling time = ln 2 ÷ ln(1 + rate), rounded to one decimal. -->
+<figure>
+  <table>
+    <thead><tr><th>Return per year</th><th>Rule of 72</th><th>Exact doubling time</th></tr></thead>
+    <tbody>
+      <tr><td>2%</td><td>36 years</td><td>35.0 years</td></tr>
+      <tr><td>3%</td><td>24 years</td><td>23.4 years</td></tr>
+      <tr><td>4%</td><td>18 years</td><td>17.7 years</td></tr>
+      <tr><td>6%</td><td>12 years</td><td>11.9 years</td></tr>
+      <tr><td>7%</td><td>10.3 years</td><td>10.2 years</td></tr>
+      <tr><td>8%</td><td>9 years</td><td>9.0 years</td></tr>
+      <tr><td>10%</td><td>7.2 years</td><td>7.3 years</td></tr>
+      <tr><td>12%</td><td>6 years</td><td>6.1 years</td></tr>
+    </tbody>
+  </table>
+  <figcaption>How long money takes to double at a steady return, by the rule and exactly.</figcaption>
+</figure>
+
+<p>Doubling times also tell you how many doublings you have left. A 30-year-old earning 7% after inflation has about 35 years to 65, so roughly three and a half doublings: a dollar invested today becomes about $10.68. The same dollar invested at 45 gets two doublings, about $3.87. Every decade you wait costs a doubling at that return.</p>
+<p>The rule works on anything that compounds, including things working against you. Prices rising 3% per year double in about 24 years, so a retirement that starts at 65 and lasts to 90 can see prices double before it ends. A credit card balance at 24% interest doubles in about three years if it isn't paid down.</p>
+
+<h2 id="real">Real returns: growth after inflation</h2>
+<p>A return can be quoted two ways. The nominal return is the number on your statement. The real return is what's left after inflation, the growth in what your money can buy. For planning, the real return is the one that matters.</p>
+<p>US stocks, measured by the S&amp;P 500 and its predecessor index with dividends reinvested, returned 10.4% per year from 1926 through 2025. Inflation over the same century averaged about 2.9% per year, so the real return was 7.3% per year. At 10.4% money doubles about every 7 years; in buying power, at 7.3%, about every 10.</p>
+
+<!-- data: the Backtest article (content/articles/backtest.html), 1926–2025, rebalanced yearly, no fees: all stocks 10.4% per year, 7.3% after inflation; 60/40 8.7% and 5.6%; 10-year Treasuries 4.8% and 1.8%. Cash (one-month Treasury bills) 3.29% and 0.30%, 1927–2025. Inflation: CPI-U, geometric mean 2.94% per year 1926–2025, from lib/engine/data/history.js. -->
+<figure>
+  <table>
+    <thead><tr><th>Since 1926</th><th>Return per year</th><th>After inflation</th><th>$1 in buying power doubles in</th></tr></thead>
+    <tbody>
+      <tr><td>All stocks</td><td>10.4%</td><td>7.3%</td><td>About 10 years</td></tr>
+      <tr><td>60% stocks, 40% bonds</td><td>8.7%</td><td>5.6%</td><td>About 13 years</td></tr>
+      <tr><td>All bonds (10-year Treasuries)</td><td>4.8%</td><td>1.8%</td><td>About 39 years</td></tr>
+      <tr><td>Cash (Treasury bills, from 1927)</td><td>3.29%</td><td>0.30%</td><td>About 230 years</td></tr>
+    </tbody>
+  </table>
+  <figcaption>US returns 1926 through 2025, rebalanced yearly, before fees and taxes.</figcaption>
+</figure>
+
+<p>RetCalc's Calculator works entirely in real returns, so its figures read in today's dollars. Its five mixes assume 2% per year after inflation for mostly cash and bonds, 3% for a bond-heavy mix, 4.5% for a balanced one, 5.75% for mostly stocks and 7% for nearly all stocks. Those sit a little below the century's averages on purpose, to leave room for decades that come in under them.</p>
+
+<!-- data: $10,000 × (1 + r)^n for n = 0 to 40 in steps of 5, at 2%, 4.5% and 7% per year after inflation (three of the Calculator's mixes). -->
+<figure data-chart='{"type":"line","x":[0,5,10,15,20,25,30,35,40],"xLabel":"Years invested","y":"money","series":[{"name":"Nearly all stocks, 7%","tone":"accent","values":[10000,14026,19672,27590,38697,54274,76123,106766,149745]},{"name":"Balanced, 4.5%","tone":"good","values":[10000,12462,15530,19353,24117,30054,37453,46673,58164]},{"name":"Mostly cash and bonds, 2%","tone":"muted","values":[10000,11041,12190,13459,14859,16406,18114,19999,22080]}]}'>
+  <figcaption>$10,000 left to grow for 40 years at three of the Calculator's returns, after inflation. After 10 years the lines are close; after 40, the 7% line is almost seven times the 2% line.</figcaption>
+</figure>
+
+<p>A few points of return make little difference over five years and an enormous one over forty. That's the case for holding stocks for money you won't need for decades, and the reason the mix you choose matters most for young savers. <a href="/learn/how-much-in-stocks">How much in stocks</a> covers the other side of that choice: stocks get to their higher average by swinging much harder along the way.</p>
+
+<h2 id="bumpy">Compounding in real markets is bumpy</h2>
+<p>The tables above use a steady return every year. Real returns arrive unevenly, and that changes the arithmetic in a way that catches people out.</p>
+<p>A loss takes a bigger gain to undo. Fall 50% and you need a 100% gain to get back to where you started. So a portfolio that gains 50% one year and loses 50% the next has an average yearly return of 0%, but it ends 25% below where it began: $100 becomes $150, then $75. The return that actually compounds, the one that matches where your money ends up, is always a little lower than the simple average of the yearly returns when returns swing.</p>
+<p>For US stocks from 1926 through 2025, the simple average of the yearly real returns was 9.1%. The return that actually compounded was 7.3%. The 7.3% is the one to plan with. When you see a long-run average quoted, it's worth checking which kind it is.</p>
+<p>The swings also mean compounding comes in bursts. Stocks rose in 74 of the 100 calendar years since 1926, and the bad years can be very bad: −41.8% in the worst. Over longer stretches the record is steadier. The worst 20-year stretch for stocks still earned 0.8% per year after inflation, and the worst 30-year stretch 4.3%. So far, the good years have always outweighed the bad ones given a couple of decades, though the margin in the worst stretches was thin.</p>
+
+<h2 id="drags">What slows compounding down</h2>
+<p>Anything that takes a slice of the return every year compounds against you in the same way growth compounds for you.</p>
+<h3>Fees</h3>
+<p>A 1% yearly fee sounds small, but it takes 1% of the whole balance every year, not 1% of the gain. On the $10,000 example, 7% for 40 years gives $149,745. At 6%, after a 1% fee, it's $102,857, about 31% less. <a href="/learn/fees-and-index-funds">Fees and index funds</a> goes through where fees hide and what they cost over a career.</p>
+<h3>Taxes on the growth</h3>
+<p>In an ordinary brokerage account, dividends and realized gains can be taxed every year, which takes a slice of the growth before it can compound. A 401(k), IRA or HSA lets the whole return keep compounding until you withdraw it, and a Roth account never taxes it at all if you follow the rules. That shelter is a large part of why those accounts come first in most saving plans; <a href="/learn/where-each-dollar-goes">Where each dollar should go</a> covers the order.</p>
+<h3>Interruptions</h3>
+<p>Cashing out a 401(k) when you change jobs resets the clock on that money, and before 59½ it usually costs income tax plus a 10% additional tax as well. Rolling it into the new employer's plan or an IRA keeps it compounding. Selling after a market fall and waiting to buy back in does similar damage, because the recovery often comes in a few strong days that are hard to catch. <a href="/learn/when-markets-fall">When markets fall</a> has the history.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Calculator splits your result into what you put in and what growth added. Its starting example is Sam, 30, with $10,000 saved, adding $500 per month in a balanced mix until 65. At 65 Sam has $537,803 in today's dollars. Sam put in the $10,000 plus $206,672 of contributions, and growth supplied the other $321,131, about 60% of the total.</p>
+<p>Two changes show the clock at work. Move the retirement age from 65 to 60 and the balance falls to $405,105, about a quarter less, because the last five years are the ones with the largest balance to grow. Or move your current age back five years to see what an earlier start would have done. In the year-by-year table, look for the first year in which growth adds more than your own contributions; after that point, the investments are doing most of the work.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Is 7% per year a realistic return?</summary><p>For a portfolio of nearly all US stocks it's close to the long-run record after inflation, 7.3% per year since 1926. It isn't a promise: decades have come in far below it, and with stock prices high against company earnings today, the next ten years start from a less favorable point than most past decades did (<a href="/learn/cape-valuations">Starting valuations and CAPE</a> explains why). For a mixed portfolio, 4% to 5% after inflation is a more usual planning figure, and testing a lower return is a good habit.</p></details>
+<details><summary>Does compounding work in a savings account?</summary><p>Yes, the interest compounds, but the rate is usually close to inflation, so the real growth is small. Cash earned 0.30% per year after inflation from 1927 through 2025. It's the right place for an emergency fund and for money you'll need within a few years; it can't do the decades-long work stocks can.</p></details>
+<details><summary>I'm 50. Is it too late for compounding to help?</summary><p>No. A dollar invested at 50 still has 15 years to 65 and, since retirement money is spent gradually, another 20 or 30 years after that for part of it. At 5% after inflation, money roughly doubles every 14 years. The difference is that at 50, how much you save and when you retire move the answer more than the return does.</p></details>
+<details><summary>Do I need to understand the math to benefit from it?</summary><p>No. The practical rules are short: start as early as you can, keep going, keep fees low, use tax-sheltered accounts, and leave the money alone through bad years. The arithmetic just shows why each of those matters.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Compounding means growth on your growth. Over decades it supplies most of a retirement balance.</li>
+<li>The rule of 72 gives the doubling time: 72 divided by the yearly return.</li>
+<li>Ten years of saving from 25 can beat twenty years from 45, and starting early and continuing beats both.</li>
+<li>Plan with real returns, after inflation: 7.3% per year for US stocks since 1926, not the 10.4% nominal figure.</li>
+<li>Fees, yearly taxes and cashing out all compound against you, the same way growth compounds for you.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How growth on growth builds a retirement balance</li><li>Why starting ten years earlier can beat saving twice as much</li><li>The rule of 72, and planning with real returns</li></ul>
+  <ul class="terms">
+    <li data-term="Compound growth">Growth earned on earlier growth as well as on the original amount. $10,000 at 7% earns $700 in year one and $9,796 in year forty.</li>
+    <li data-term="Real return">A return after inflation. US stocks returned 10.4% per year from 1926 through 2025, or 7.3% after inflation.</li>
+    <li data-term="Rule of 72">A shortcut for doubling time: 72 divided by the yearly return. At 6%, money doubles in about 12 years.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.investor.gov/financial-tools-calculators/calculators/compound-interest-calculator">Compound interest calculator</a> <span>Investor.gov (SEC)</span></li>
+    <li><a href="https://shillerdata.com/">Stock market data since 1871</a> <span>Robert Shiller, Yale</span></li>
+  </ul>
+</footer>
+</article>

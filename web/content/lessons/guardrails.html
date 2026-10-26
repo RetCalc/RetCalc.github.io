@@ -1,0 +1,156 @@
+<article class="lesson" data-slug="guardrails" data-reviewed="2026-10-26"
+  data-title="Guardrails"
+  data-idea="Start higher than 4%, and cut or raise when the rate drifts"
+  data-tool="guardrails" data-try="Run guardrail rules through every past retirement and see how deep the cuts went, with your plan already filled in.">
+
+<p class="lede">Guardrails are a set of rules for spending from savings that let you start well above the 4% rule, in exchange for agreeing in advance to cut back when markets fall far enough, and to give yourself a raise when they do well. They're one of the best-known flexible strategies among financial planners. They work, but the cuts in a bad decade can go much deeper than the simple description suggests.</p>
+
+<h2 id="idea">How a guardrail works</h2>
+<p>You start like the 4% rule, only higher: say 5% of your savings in the first year, then the same amount raised with inflation each year. The difference is that each year you also check your current <b>withdrawal rate</b>, this year's planned withdrawal divided by what the portfolio is worth today. Two guardrails sit around your starting rate, usually 20% above and below it. Starting at 5%, the upper guardrail is 6% and the lower one is 4%.</p>
+<ul>
+  <li>If the current rate climbs above the upper guardrail, because markets have fallen, you cut spending by 10%.</li>
+  <li>If it drops below the lower guardrail, because markets have risen, you raise spending by 10%.</li>
+  <li>In between, you just keep raising with inflation.</li>
+</ul>
+<p>Here's year two for a retiree who started with $1,000,000 and took $50,000, in three different markets. Inflation was 3%, so the planned withdrawal is $51,500.</p>
+
+<!-- data: hypothetical. Planned = $50,000 × 1.03 = $51,500. Rate = $51,500 ÷ balance. Guardrails at 5% × 1.2 = 6% and 5% × 0.8 = 4%. Cut: $51,500 × 0.9 = $46,350 ($46,350 ÷ $800,000 = 5.79%). Raise: $51,500 × 1.1 = $56,650 ($56,650 ÷ $1,400,000 = 4.05%). -->
+<figure>
+  <table>
+    <thead><tr><th>Balance in year two</th><th>Planned withdrawal</th><th>Current rate</th><th>What the rule does</th><th>Year two's withdrawal</th></tr></thead>
+    <tbody>
+      <tr><td class="neg">$800,000</td><td>$51,500</td><td>6.44%</td><td>Above 6%: cut 10%</td><td>$46,350</td></tr>
+      <tr><td>$950,000</td><td>$51,500</td><td>5.42%</td><td>Between the guardrails: no change</td><td>$51,500</td></tr>
+      <tr><td>$1,400,000</td><td>$51,500</td><td>3.68%</td><td>Below 4%: raise 10%</td><td>$56,650</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A hypothetical retiree who started at 5%, $50,000 from $1,000,000, with guardrails at 6% and 4%. Each cut or raise becomes the new base that inflation raises are added to.</figcaption>
+</figure>
+
+<p>A cut is permanent until a raise undoes it. The new, lower amount becomes the base, and it's raised with inflation from there. If markets keep falling, the rate can cross the upper guardrail again and trigger another 10% cut on top of the first.</p>
+
+<h2 id="rules">The Guyton-Klinger rules in full</h2>
+<p>The rules come from two papers in the <i>Journal of Financial Planning</i>. In 2004 the financial planner Jonathan Guyton published decision rules for adjusting withdrawals, and in March 2006 he and William Klinger refined them in "Decision Rules and Maximum Initial Withdrawal Rates". The 2006 version has four rules.</p>
+
+<!-- data: Guyton and Klinger (2006), Journal of Financial Planning, the rules as the paper states them. -->
+<figure>
+  <table>
+    <thead><tr><th>Rule</th><th>When it applies</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>Withdrawal rule</td><td>Every year</td><td>Raise the withdrawal with inflation, except after a year in which the portfolio's total return was negative and the current rate is above the starting rate. A skipped raise is never made up.</td></tr>
+      <tr><td>Capital preservation rule (the upper guardrail)</td><td>The current rate is more than 20% above the starting rate</td><td>Cut this year's withdrawal by 10%. Stops applying 15 years before the end of the plan.</td></tr>
+      <tr><td>Prosperity rule (the lower guardrail)</td><td>The current rate is more than 20% below the starting rate</td><td>Raise this year's withdrawal by 10%.</td></tr>
+      <tr><td>Portfolio management rule</td><td>Every year</td><td>Take withdrawals first from whatever grew past its target share, then cash, then bonds; don't sell stocks after a losing year if cash and bonds can cover it.</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The four decision rules of Guyton and Klinger's 2006 paper. The 2004 version also capped yearly inflation raises; the 2006 paper dropped that cap once the guardrails were added.</figcaption>
+</figure>
+
+<p>The 15-year exception is there because late in life a cut buys little. A retiree planning to 100 stops applying the capital preservation rule at 85. The prosperity rule has no such limit.</p>
+<p>Guyton and Klinger tested the rules over 40-year retirements with Monte Carlo simulations, thousands of random market paths, using return assumptions from 1973 to 2004 and, as a check, from 1928 to 2004; the two gave nearly identical results. With at least 65% in stocks, starting rates of 5.2% to 5.6% lasted in 99% of their simulations, and the typical simulation kept 99% of its purchasing power. With half in stocks, the rate fell to as low as 4.6%. Against the 4% rule, that's a starting rate 30% to 40% higher, over a retirement 10 years longer.</p>
+<p>The paper is open about the price. Each time the capital preservation rule triggers, the retiree loses purchasing power, and the higher start is paid for with those cuts.</p>
+
+<h2 id="history">How deep the cuts went</h2>
+<p>The site's tests run guardrails through every 30-year retirement that began in a January from 1927 to 1996, 70 in all. The setup is the common one: $1,000,000 in 60% US stocks and 40% 10-year Treasuries, a 5% start ($50,000), guardrails 20% either side, 10% cuts and raises, and no fees. The optional rules, the skipped raise and the 15-year exception, are off.</p>
+<ul>
+  <li>The money lasted 30 years in all 70 starts.</li>
+  <li>Every start cut spending at least once, and the typical start cut 4 times.</li>
+  <li>51 of the 70 spent less than the first year's $50,000 at some point, and 37 spent less than $40,000, which the plain 4% rule would have paid every year.</li>
+  <li>Retiring in 1966, spending was cut 10 times, fell below $40,000 in year 9, and bottomed at $17,434 per year in year 17, about a third of where it began.</li>
+  <li>The typical retiree did well: the middle start spent about $1.67 million over 30 years, in today's dollars, against $1.2 million for a steady $40,000.</li>
+</ul>
+
+<!-- data: historicalBacktest(ddOptsFromState({initial: 1000000, years: 30, stock: 60, rate: 5, strategy: "guardrails"})): realSpend per year for the 1966, 1973 and 1982 starts; "Middle of all starts" is each year's median realSpend across the 70 starts (not one retiree's path). Guardrails 20% each side, 10% cuts and raises, no optional rules, no fees. -->
+<figure data-chart='{"type":"line","x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],"xLabel":"Year of retirement","y":"money","series":[{"name":"Retired 1982","tone":"good","values":[50000,50000,50000,50000,55000,60500,66550,73205,80526,80526,80526,88578,88578,88578,97436,107179,117897,129687,142656,142656,142656,142656,142656,142656,142656,142656,142656,128390,128390,128390]},{"name":"Middle of all starts","tone":"neutral","dash":true,"values":[50000,50000,50000,50000,50000,50000,50000,50000,50000,50000,50000,50000,53906,54450,54450,54450,53905,53366,53366,53366,53366,53366,53366,53366,53366,53366,53366,56390,56960,56390]},{"name":"Retired 1973","tone":"muted","values":[50000,45000,40500,36450,36450,32805,29525,26572,26572,23915,23915,23915,23915,26306,28937,28937,28937,31831,31831,31831,35014,35014,35014,38515,42367,46603,51264,56390,56390,56390]},{"name":"Retired 1966","tone":"bad","values":[50000,50000,50000,50000,45000,40500,40500,40500,36450,32805,29525,29524,26572,23915,21523,19371,17434,17434,17434,17434,17434,19177,19177,21095,23205,23205,23205,25525,25525,25525]}]}'>
+  <figcaption>Guardrails starting at 5% of $1,000,000, 60/40, in today's dollars. The dotted line is the middle spending across all 70 starts in each year. A good start brings raises every few years; a bad one brings a long run of cuts.</figcaption>
+</figure>
+
+<p>Retiring in 1973, cuts came in seven of the first ten years, and spending didn't get back above $50,000 until year 27. Retiring in 1966, it never did. Meanwhile the 1982 retiree got raise after raise, to $142,656 by year 19.</p>
+<p data-yours></p>
+
+<h3>A higher start doesn't change the bottom much</h3>
+<p>You might expect that starting lower would protect you in a bad decade. With guardrails it barely does, because each cut is a share of whatever you're spending. Start higher and the rate crosses the guardrail sooner, so you get more cuts; start lower and you get fewer. Either way, the bottom is set mostly by how far the market falls.</p>
+
+<!-- data: historicalBacktest() for guardrails at each starting rate, $1,000,000, 60/40, 30 years, 70 starts 1927–1996. Lowest year: minimum realSpend across all starts. Lifetime: median of each start's 30-year realSpend total. Left: medianEnd. -->
+<figure>
+  <table>
+    <thead><tr><th>Starting rate</th><th>Lowest year, any start</th><th>Starts that ever spent under $40,000</th><th>Typical lifetime spending</th><th>Typically left at the end</th></tr></thead>
+    <tbody>
+      <tr><td>4% ($40,000)</td><td>$17,219</td><td>40 of 70</td><td>$1.50 million</td><td>$1.61 million</td></tr>
+      <tr><td>4.5% ($45,000)</td><td>$17,434</td><td>37 of 70</td><td>$1.60 million</td><td>$1.35 million</td></tr>
+      <tr><td>5% ($50,000)</td><td>$17,434</td><td>37 of 70</td><td>$1.67 million</td><td>$1.14 million</td></tr>
+      <tr><td>5.5% ($55,000)</td><td>$17,260</td><td>34 of 70</td><td>$1.67 million</td><td>$930,000</td></tr>
+      <tr><td>6% ($60,000)</td><td>$16,946</td><td>38 of 70</td><td>$1.72 million</td><td>$739,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Guardrails with 20% bands and 10% steps on $1,000,000 in a 60/40 mix over 30 years. Every starting rate lasted in all 70 historical starts; what changes is how much is spent and how much is left.</figcaption>
+</figure>
+
+<p>Every starting rate from 4% to 6% lasted in all 70 starts, and in every case the worst year was about $17,000. What a higher start changes is how much you spend in the typical retirement and how much you leave. So whether the money lasted tells you little about guardrails. What matters is how low spending could go and whether you could live there.</p>
+
+<h3>The optional rules</h3>
+<p>Turning on Guyton and Klinger's two optional rules changes the picture a little. Skipping the inflation raise after a losing year makes spending slightly more cautious, and the lowest year rises to $18,317. Stopping cuts in the last 15 years, which on a 30-year plan means no cuts after year 15, cuts less often: only 43 of the 70 starts ever cut, and the lowest year was $19,371. With both on, the lowest year was $20,623. All of these lasted in every start.</p>
+
+<h2 id="critics">What critics point out</h2>
+<p>Guardrails have drawn careful criticism, mostly about the cuts.</p>
+<p>In 2017, Karsten Jeske of the Early Retirement Now blog ran the rules through the US record and showed that the cuts could be far larger than the "occasional 10% trim" people imagine. A retiree starting at 4% in 1966 saw withdrawals bottom at about $16,400, a 59% fall. His point was that a rule that never runs out of money can still leave you living on much less for a long time.</p>
+<p>The rules can also cut when it wasn't needed. In the site's test, the 1966 retiree cut spending to a third of its starting level and still finished 30 years with about $690,000 left, after inflation. The guardrail reacts to the withdrawal rate and ignores how many years are left to fund, so it can overcorrect.</p>
+<p>In 2024 Derek Tharp and Justin Fitzpatrick, writing on Kitces.com, added two more. Guyton-Klinger assumes steady spending, so it misreads plans where withdrawals are high for a few years and then drop, such as drawing more from savings while waiting to claim Social Security. And in their historical tests the cuts were deep: retiring in October 1965, spending ended up 54% below plan.</p>
+
+<h2 id="risk-based">Risk-based guardrails</h2>
+<p>Their alternative, which many planners now use, puts the guardrails on a different number: the chance that the plan lasts, from Monte Carlo or historical tests, rather than the withdrawal rate. You spend at a level with a chosen chance of success, leave it alone while that chance stays inside a band, and reset when it leaves the band.</p>
+<p>The site's version reads the chance from history, counting Social Security and other income still to come. It starts at the spending with a 90% chance of lasting the years ahead, holds it (raised with inflation) while the chance stays between 70% and 99%, and resets to 90% when it leaves. On $1,000,000 in a 60/40 mix over 30 years:</p>
+<ul>
+  <li>Year one is $42,781, a 4.28% rate.</li>
+  <li>The typical start changed spending 10 times in 30 years, mostly raises, and cut twice. 7 of the 70 starts never had a cut.</li>
+  <li>When cuts came, they were bigger. The largest single cut was 40%. Retiring in 1969, spending fell from $42,781 to $23,777 by year 7.</li>
+  <li>Like <a href="/learn/spending-a-percentage">VPW</a>, it spends the portfolio down by the last year, since with a year left any balance has every chance of lasting it.</li>
+</ul>
+<p>Tharp and Fitzpatrick's own settings were different: start where the chance of success is 80%, raise spending back to 80% if the chance reaches 100%, and cut to the level with a 45% chance if it falls to 25%. In their tests those rules called for much smaller cuts than Guyton-Klinger in the same bad periods: 3% instead of 28% for a retiree starting just before the 2008 crash, and 32% instead of 54% in the 1965 case. Settings matter a great deal, so it's worth testing whichever you'd follow.</p>
+<p>The choice between the two styles is mostly about temperament. Classic guardrails move spending 10% at a time and fairly often. Risk-based ones leave it alone through ordinary swings and adjust less often, sometimes by more.</p>
+
+<h2 id="setting">Setting your own guardrails</h2>
+<p>Each part of the rule is a setting, and each changes the result.</p>
+<ul>
+  <li>The starting rate decides how much you spend in good and average markets, and how much you leave. As the table showed, it matters less to the bottom than you'd expect.</li>
+  <li>The band, 20% either side by default, sets how far the rate can drift before anything happens. A narrower band means more frequent, smaller adjustments.</li>
+  <li>The step, 10% by default, sets the size of each cut and raise. You can make cuts smaller than raises, or the other way round.</li>
+  <li>A minimum spending level stops the cuts at a floor you choose. It's the single most useful addition, because it caps the worst year. The cost is a lower safe start, since holding the floor in a long bad stretch means selling more. <a href="/learn/fixed-or-flexible">Fixed or flexible spending</a> shows how much a floor costs.</li>
+  <li>A maximum keeps raises from compounding into a lifestyle a later decade can't support.</li>
+</ul>
+<p>Guardrails also work best when you know in advance where the cuts would come from. A 10% cut on a $60,000 withdrawal is $6,000 per year: a trip, or a car kept two more years. If the cut would have to come from essentials, set a floor.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Guardrails page opens the Drawdown Simulator set up with Guyton-Klinger rules on your savings, Social Security and mix, run through every historical retirement since 1926. Ignore the success rate, which will be close to 100%. Look instead at the scorecard: how many cuts the typical start made, the lowest year and which start caused it, and how often spending fell below your comfort line.</p>
+<p>The band, step, skipped raise and 15-year rule are under Advanced. Set a Minimum spending to see what a floor does. Reproduce a classic study, under the strategy picker, sets up Guyton and Klinger's own test: 5.4% with 65% in stocks for 40 years. In the site's record it lasted in all 60 starts since 1926, as would any start up to 6.25%, but retiring in 1966, spending fell to about a third of year one's. To try the risk-based version, pick Risk-based guardrails as the strategy.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>How often do I check the guardrails?</summary><p>Once per year, at the same time, when you set the coming year's withdrawal. Checking more often doesn't help and tempts you to react to every swing.</p></details>
+<details><summary>Can guardrails run out of money?</summary><p>Rarely, because spending keeps falling as the portfolio does. They can run out if you add a high floor, or with the 15-year rule if a bad stretch comes late. In the site's tests at sensible starting rates, they lasted in every historical start.</p></details>
+<details><summary>How much more can I spend than with the 4% rule?</summary><p>With a 60/40 mix over 30 years, guardrails starting at 5% lasted in every start since 1926, against 3.79% for a fixed amount that never cuts. Whether that's worth it depends on whether you could live through spending falling to around a third of where it started, which happened in the worst starts.</p></details>
+<details><summary>How are guardrails different from the Kitces ratchet?</summary><p>Guardrails start high and cut when markets fall. The ratchet starts at 4%, never cuts, and adds a 10% raise when the portfolio has grown 50% above where it began. It's for people who want the 4% rule's steadiness with some upside.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>Guardrails start above 4%, then cut 10% when the withdrawal rate drifts 20% above where it began and raise 10% when it drifts 20% below.</li>
+  <li>Guyton and Klinger's 2006 paper found starts of 5.2% to 5.6% held over 40 years with at least 65% in stocks.</li>
+  <li>In the site's tests, a 5% start lasted in all 70 starts since 1926, but every start cut at least once and the worst fell to about a third.</li>
+  <li>The bottom in a bad decade is set mostly by the market, not the starting rate; a minimum spending level is what caps it.</li>
+  <li>Risk-based guardrails adjust on the odds of lasting instead, with fewer changes; their settings decide how big the cuts are.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How guardrails decide when to cut and when to raise</li><li>How deep the cuts went in the worst historical starts</li><li>How risk-based guardrails differ, and how to set your own</li></ul>
+  <ul class="terms">
+    <li data-term="Guardrails">Spending rules that cut withdrawals by a set step when the withdrawal rate rises too far above where it started, and raise them when it falls too far below.</li>
+    <li data-term="Current withdrawal rate">This year's planned withdrawal divided by the portfolio's value today. $51,500 from $800,000 is 6.44%.</li>
+    <li data-term="Risk-based guardrails">Guardrails set on the chance that the plan lasts rather than the withdrawal rate. Spending holds while the chance stays in a band and resets when it leaves.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.financialplanningassociation.org/article/journal/MAR06-decision-rules-and-maximum-initial-withdrawal-rates">Decision Rules and Maximum Initial Withdrawal Rates (Guyton and Klinger, 2006)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://www.financialplanningassociation.org/article/journal/OCT04-decision-rules-and-portfolio-management-retirees-safe-initial-withdrawal-rate-too-safe">Decision Rules and Portfolio Management for Retirees (Guyton, 2004)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://earlyretirementnow.com/2017/02/08/the-ultimate-guide-to-safe-withdrawal-rates-part-9-guyton-klinger/">Are Guyton-Klinger Rules Overrated? (Jeske, 2017)</a> <span>Early Retirement Now</span></li>
+    <li><a href="https://www.kitces.com/blog/guyton-klinger-guardrails-retirement-income-rules-risk-based/">Why Guyton-Klinger Guardrails Are Too Risky for Most Retirees (Tharp and Fitzpatrick, 2024)</a> <span>Kitces.com</span></li>
+    <li><a href="https://www.kitces.com/blog/the-ratcheting-safe-withdrawal-rate-a-more-dominant-version-of-the-4-rule/">The Ratcheting Safe Withdrawal Rate (Kitces, 2015)</a> <span>Kitces.com</span></li>
+  </ul>
+</footer>
+</article>

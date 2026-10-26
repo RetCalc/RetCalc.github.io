@@ -1,0 +1,107 @@
+<article class="lesson" data-slug="chance-of-success" data-reviewed="2026-10-26"
+  data-title='What "chance of success" means'
+  data-idea="How the historical test works, and what 85% promises"
+  data-tool="drawdown" data-try="See how often your plan lasted through every retirement since 1926, and how the ones that fell short went, with your plan already filled in.">
+
+<p class="lede">Most retirement tools boil their answer down to one number: an 85% or 94% chance of success. It's a useful number, but it's easy to read it as more precise than it is, or as a promise it isn't. This lesson shows how the number is made, what it can and can't tell you, and why a higher number isn't always the better plan.</p>
+
+<h2 id="historical">How a historical test works</h2>
+<p>The idea is simple. Take your plan, with its starting savings, yearly spending and mix of stocks and bonds, and pretend you retired at the start of 1927. Run it forward through the actual returns and inflation of 1927, 1928 and so on, taking out your spending each year, until the thirty years are up or the money runs out. Then do it again starting in 1928, then 1929, and so on until the last year that still has thirty years of history after it. Each start year is one test. The chance of success is the share of tests in which the money lasted.</p>
+<p>In the classic example, someone retires with $1,000,000 in 60% stocks and 40% bonds, takes out $40,000 in the first year (4%), and raises that amount with inflation every year after, whatever markets do. RetCalc's record of US stocks, bonds and inflation runs from 1926 through 2025, so there are 70 thirty-year retirements that start in January, from 1927 to 1996.</p>
+<p>The money lasted thirty years in 66 of them, a success rate of 94.3%. The four that ran out started in 1965, 1966, 1968 and 1969, and ran out in years 27 to 30. Starting a retirement every month instead of every January gives 835 tests and 94.0%, nearly the same answer.</p>
+
+<!-- data: historicalBacktest() in lib/engine/drawdown.js, options ddOptsFromState({initial: 1000000, years: 30, stock: 60, rate: 4, strategy: "fixed"}).
+     January starts 1927–1996: 70 retirements, 66 lasted (94.3%); failures 1965 (year 29), 1966 (year 27), 1968 (year 30), 1969 (year 28).
+     Value left after 30 years in today's dollars (endReal), rounded to the nearest $1,000; median $1,616,000; 48 of 70 above $1,000,000. Matches the 4% rule article. -->
+<figure data-chart='{"type":"bar","x":[1927,1928,1929,1930,1931,1932,1933,1934,1935,1936,1937,1938,1939,1940,1941,1942,1943,1944,1945,1946,1947,1948,1949,1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996],"xLabel":"Year retired","y":"money","series":[{"name":"Left after 30 years","tone":"accent","values":[2590000,1464000,843000,1068000,1616000,3339000,2972000,1749000,2178000,1190000,448000,1677000,1075000,942000,1292000,2399000,2738000,1864000,1194000,856000,1861000,2015000,1956000,1604000,1447000,1174000,1203000,1362000,750000,497000,689000,909000,524000,536000,509000,146000,413000,148000,0,0,184000,0,0,975000,1005000,668000,294000,1438000,3751000,2913000,2400000,3433000,3399000,4227000,4589000,5648000,4802000,4820000,5311000,3875000,2894000,3899000,3383000,2967000,3945000,3417000,2412000,2379000,3256000,2227000]}]}'>
+  <figcaption>What was left after thirty years, in today's dollars, for each January retirement from 1927 to 1996: $1,000,000 in 60% stocks and 40% bonds, spending $40,000 per year raised with inflation. The four gaps ran out of money.</figcaption>
+</figure>
+
+<p>Each bar is a sequence of returns that someone lived through, which is the test's great strength. Nobody had to assume how often crashes happen, how long inflation lasts or how stocks and bonds move together. The 1929 crash, the inflation of the 1970s and the two falls of the 2000s are all in there, in the order they came.</p>
+<p>The chart also shows how wide the outcomes are. The middle retirement finished with about $1.6 million after inflation, and 48 of the 70 finished with more than the $1,000,000 they started with. The retiree of 1982 finished with $5.6 million. Same plan, same spending; the only difference was the year.</p>
+
+<h2 id="overlap">Why 70 tests aren't 70 separate chances</h2>
+<p>Seventy tests sound like a lot of evidence, but they overlap. A retirement that starts in 1966 and one that starts in 1967 share 29 of their 30 years. They aren't two separate looks at what markets can do; they're nearly the same look twice. That's why the failures arrive in a cluster: 1965, 1966, 1968 and 1969 are really one bad episode, the high inflation and flat stock prices that began in the late 1960s, seen from four starting points.</p>
+<p>If you split the hundred years from 1926 to 2025 into thirty-year stretches that don't overlap at all, you get three. Shiller's longer record, back to 1871, gives five. So the history behind any success rate is a handful of truly different episodes, measured many times over. In the example, a 94% success rate means one stretch of history beat the plan, seen from four nearby starting years.</p>
+<h3>One country's century</h3>
+<p>The record has a second limit: it's the United States from 1926, a century that went well for US markets. In 2010, the researcher Wade Pfau ran the same kind of test on seventeen developed countries' markets from 1900. Even with each country's best stock and bond mix chosen in hindsight, a 4% withdrawal lasted thirty years from every start in only four of them. The US record may be the right guide for US investors, but it's one of the kinder histories on offer.</p>
+
+<h2 id="montecarlo">Monte Carlo: sequences that never happened</h2>
+<p>Monte Carlo simulation is the other common way to test a plan. Instead of replaying history in order, it builds thousands of possible futures at random and counts how many your plan survives. The name comes from the casino, because each future is a roll of the dice.</p>
+<p>Many planning tools draw each year's returns from a statistical model, set up with an average return and a measure of how much returns swing. RetCalc's Drawdown Simulator does something closer to history: it builds each future by drawing whole years at random from the actual record since 1927, so each year brings its own stock return, bond return and inflation together. It can draw several years in a row together, to keep the streaks history had, and it can shift every year's figures so they average your own, lower, assumptions instead of history's.</p>
+<p>Monte Carlo isn't limited to the few episodes that happened. It can produce a 1970s-style decade followed by a 1930s-style crash, which history never served up, and with 5,000 futures it gives a smoother estimate. Its weakness is the reverse: the futures are only as realistic as the model behind them. Drawing years independently loses the way real bad years tend to bunch together, and an average-and-swing model can understate how bad the worst years get.</p>
+
+<!-- data: lib/engine/drawdown.js, ddOptsFromState({initial: 1000000, years: 30, stock: 60, strategy: "fixed"}) with rate 3–5.5.
+     Historical: historicalBacktest(), 70 January starts 1927–1996. Monte Carlo: monteCarloDrawdown(o, 5000, 1), single years drawn at random from 1927–2025 (mcBlock 1).
+     Middle balance left: the historical test's median endReal, rounded to the nearest $1,000. -->
+<figure>
+  <table>
+    <thead><tr><th>First-year withdrawal</th><th>Historical test</th><th>Monte Carlo</th><th>Middle amount left</th></tr></thead>
+    <tbody>
+      <tr><td>3.0% ($30,000)</td><td>100%</td><td>98.7%</td><td>$2,422,000</td></tr>
+      <tr><td>3.5% ($35,000)</td><td>100%</td><td>96.8%</td><td>$2,054,000</td></tr>
+      <tr><td>4.0% ($40,000)</td><td>94.3%</td><td>93.3%</td><td>$1,616,000</td></tr>
+      <tr><td>4.5% ($45,000)</td><td>88.6%</td><td>87.1%</td><td>$1,251,000</td></tr>
+      <tr><td>5.0% ($50,000)</td><td>74.3%</td><td>78.7%</td><td>$934,000</td></tr>
+      <tr><td>5.5% ($55,000)</td><td>65.7%</td><td>69.8%</td><td>$719,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>$1,000,000 in 60% stocks and 40% bonds, spending a fixed amount after inflation for thirty years. The middle amount left is the historical test's median, in today's dollars. Monte Carlo: 5,000 retirements built from years drawn at random from 1927–2025.</figcaption>
+</figure>
+
+<p>The two methods agree fairly well here. Monte Carlo is a little less generous at low withdrawal rates, partly because it can produce runs of bad years worse than any in the record, and a little more generous at high ones, because it mixes the 1960s and 1970s with better decades instead of serving them up in a row. Neither is the truth, and when they disagree on your plan, the gap is a rough measure of how much the answer depends on how you model the future.</p>
+
+<h2 id="promise">What 85% does and doesn't promise</h2>
+<p>Raise the withdrawal in the example to 4.6%, or $46,000 per year, and the historical success rate drops to 84.3%: 59 of the 70 retirements lasted thirty years. That's about where many plans land, so it's worth looking at what the number does and doesn't say.</p>
+<h3>It's a share of the past, not a forecast</h3>
+<p>84% is how many past starting years the plan survived. It isn't a measured probability of your future, because the future isn't drawn from the same hat. As the overlap section showed, the eleven failures at 4.6% came from very few episodes: the start of 1937, and the starts of 1962 to 1969, 1972 and 1973, which all ran into the high inflation and weak markets of the late 1960s and 1970s. Whether something like that happens in your first decade is the real question, and no success rate can answer it.</p>
+<h3>What a failure looks like</h3>
+<p>"Failure" in these tests means the savings ran out before the last year, with spending never cut. The earliest of the eleven ran out in year 21, most ran out between years 21 and 26, and three lasted to year 29 or 30. In a real retirement, Social Security or a pension would keep paying after the savings were gone, and long before the end, a retiree watching the balance fall would almost certainly have spent less. Michael Kitces has suggested calling a Monte Carlo shortfall a "probability of adjustment" for this reason: in practice it measures how often you'd need to make a mid-course change, not how often you'd end up broke.</p>
+<p>That cuts both ways, though, because the adjustment can be large. At 4%, the 1966 retiree was still spending $40,000 per year after inflation fifteen years in, with about $300,000 left, so the withdrawal had grown to more than 13% of the balance. Making the money last from there would have taken a deep cut, at around 80 for someone who retired at 65.</p>
+<h3>Success can be a close call</h3>
+<p>A plan "succeeds" if the last dollar lasts the last year. One that finished with $1,000 counts the same as one that finished with $5 million. A success rate can't tell you how close the survivors came, so look at the worst ending balances as well as the rate.</p>
+
+<p data-yours></p>
+
+<h2 id="more">Success versus spending more</h2>
+<p>It's natural to want the highest chance of success you can get. But a 100% historical success rate only says your spending is at or below what the single worst start allowed. In the example, that's 3.79%, set by 1966. Spend that little and most retirees end up far richer than they began: at 3.5% the middle retirement finished with about $2.05 million, more than twice what it started with.</p>
+<p>The choice is really between two mistakes. Spend too much and you might run short late in life. Spend too little and you live more frugally than you needed to, for decades, and leave a large sum unspent. Every step up the success scale buys a bit less of the first risk with a bit more of the second. Going from 94% to 100% in the example means spending $37,900 instead of $40,000, about $2,100 less every year, in every one of the 66 retirements that were going to be fine anyway.</p>
+<h3>Flexible spending changes the question</h3>
+<p>The tests above assume spending never changes, which is the hardest version of the problem. Plans that adjust can start higher and still last, because they spend less after bad years. On RetCalc's numbers, guardrails starting at 5% ($50,000) lasted thirty years from every start since 1926, but the 1966 retiree's spending was cut as low as $17,434 per year along the way. For a plan like that, the success rate is nearly always high, and the more useful question becomes how low spending would have gone and for how long. The <a href="/learn/guardrails">guardrails lesson</a> covers how those rules work.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The <a href="/drawdown">Drawdown Simulator</a> runs your plan, with Social Security and any other income, through every retirement since 1926 and reports the success rate. Look past the headline: the chart shows each start year's path as its own line, the worst starting years show which past markets your plan wouldn't have survived and when they ran out, and for flexible strategies the lowest spending shows how deep the cuts would have gone. Run the same plan in Monte Carlo mode, then shift its returns to something lower than history's, and see how much the number moves. A plan whose success rate holds up across all three is more robust than one that only looks good in one.</p>
+<p>When you change something, compare the worst cases before and after, not just the headline rate. A change that lifts the success rate from 85% to 90% by making the worst start run out two years later is very different from one that keeps the worst start from running out at all.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>What success rate should I aim for?</summary><p>There's no right number. It depends on how much of your spending is covered by Social Security or a pension, how easily you could cut back, and how you'd weigh running short against leaving money unspent. A plan that can't adjust needs a higher rate than one that can. What matters more than the exact number is knowing what the failures look like and what you'd do if one started to happen.</p></details>
+<details><summary>Why does my success rate change when I change the start years?</summary><p>Because each start year is one test. Testing only from 1950, say, drops the 1920s and 1930s entirely, and with so few truly separate episodes in the record, that can move the rate noticeably.</p></details>
+<details><summary>Why are my historical and Monte Carlo rates different?</summary><p>They're testing different things: the history that happened, and random mixes of it. Monte Carlo can build worse runs than history did and can also break up the bad streaks history had. A large gap is a sign your plan is sensitive to exactly the kind of sequence you get.</p></details>
+<details><summary>Does a 95% success rate mean a 5% chance I'll go broke?</summary><p>No. It means the plan ran short in 5% of the past retirements it was tested on, if spending never changed. Real retirees adjust, and Social Security keeps paying. The 5% is better read as the chance that you'd need to make a significant change partway through.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>A historical success rate is the share of past starting years in which a plan lasted, with spending never cut.</li>
+  <li>The tests overlap heavily: a century of data holds only three separate thirty-year stretches, so the failures come from a few episodes.</li>
+  <li>Monte Carlo builds futures that never happened; it's a useful second opinion, not a more accurate one.</li>
+  <li>A shortfall usually means a late change of course, not ending up with nothing, and a higher success rate always costs spending you could have had.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>How historical and Monte Carlo tests are built</li>
+    <li>Why a few episodes decide most success rates</li>
+    <li>What a shortfall means, and what more safety costs</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Success rate">The share of tested retirements, historical or simulated, in which the money lasted the full period.</li>
+    <li data-term="Historical test">Running a plan through each actual stretch of market history in turn, one starting year at a time.</li>
+    <li data-term="Monte Carlo simulation">Testing a plan against thousands of randomly built futures and counting how many it survives.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.financialplanningassociation.org/article/journal/DEC10-international-perspective-safe-withdrawal-rates-demise-4-percent-rule">An international perspective on safe withdrawal rates (Pfau, 2010)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://www.kitces.com/blog/renaming-the-outcomes-of-a-monte-carlo-retirement-projection/">Renaming the outcomes of a Monte Carlo retirement projection</a> <span>Kitces</span></li>
+    <li><a href="https://www.kitces.com/blog/the-wrong-side-of-maybe-fallacy-and-the-interpretation-of-monte-carlo-analysis/">Interpreting Monte Carlo analyses and the wrong side of maybe fallacy</a> <span>Kitces</span></li>
+    <li><a href="https://earlyretirementnow.com/2017/05/17/the-ultimate-guide-to-safe-withdrawal-rates-part-14-sequence-of-return-risk/">Safe withdrawal rates, part 14: sequence of return risk</a> <span>Early Retirement Now</span></li>
+  </ul>
+</footer>
+</article>

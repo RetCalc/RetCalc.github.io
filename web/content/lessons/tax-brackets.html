@@ -1,0 +1,142 @@
+<article class="lesson" data-slug="tax-brackets" data-reviewed="2026-10-26"
+  data-title="Brackets: marginal and effective"
+  data-idea="Your bracket taxes your last dollars, not all of them"
+  data-tool="incometax" data-try="See your federal, state and FICA tax, with your marginal and effective rates, with your plan already filled in.">
+
+<p class="lede">Federal income tax is charged in layers. Each layer of income has its own rate, and moving into a higher bracket only raises the rate on the dollars inside it. Two numbers come out of that: the rate on your next dollar, which is the one to use for decisions, and the share of your income that actually goes in tax, which is always lower.</p>
+
+<h2 id="layers">How the layers work</h2>
+<p>Start with taxable income, which is what's left after deductions. Most people take the standard deduction, which for 2026 is $16,100 for a single filer and $32,200 for a married couple filing jointly. (<a href="/learn/deductions">Deductions and credits</a> covers the alternatives and the extra amounts at 65.) Then the brackets apply one layer at a time, like filling a stack of buckets: the first bucket fills at 10%, the next at 12%, and so on up.</p>
+<p>Take a single person earning a salary of $75,000 in 2026, with no other income and the standard deduction.</p>
+
+<!-- data: computeTax({status:"s", gross:75000, dedType:"std", state:"TX"}) with 2026 figures (lib/engine/data/2026.js).
+     Taxable 75,000 − 16,100 = 58,900. 10% × 12,400 = 1,240; 12% × (50,400 − 12,400 = 38,000) = 4,560; 22% × (58,900 − 50,400 = 8,500) = 1,870. Total 7,670.
+     7,670 / 75,000 = 10.2%; 7,670 / 58,900 = 13.0%. FICA 7.65% × 75,000 = 5,737.50. -->
+<figure>
+  <table>
+    <thead><tr><th>Layer of taxable income</th><th>Rate</th><th>Dollars in it</th><th>Tax</th></tr></thead>
+    <tbody>
+      <tr><td>$0 to $12,400</td><td>10%</td><td>$12,400</td><td>$1,240</td></tr>
+      <tr><td>$12,400 to $50,400</td><td>12%</td><td>$38,000</td><td>$4,560</td></tr>
+      <tr><td>$50,400 to $58,900</td><td>22%</td><td>$8,500</td><td>$1,870</td></tr>
+      <tr><td><b>Federal income tax</b></td><td></td><td>$58,900</td><td><b>$7,670</b></td></tr>
+    </tbody>
+  </table>
+  <figcaption>A single filer with a $75,000 salary in 2026. The standard deduction of $16,100 leaves $58,900 taxable. Only the top $8,500 is taxed at 22%.</figcaption>
+</figure>
+
+<p>This person is "in the 22% bracket", but only $8,500 of their income pays 22%. The first $16,100 pays nothing, because the standard deduction takes it out, and the next $50,400 pays 10% or 12%. The federal income tax comes to $7,670.</p>
+<p>That gives two different rates:</p>
+<ul>
+<li>The <b>marginal rate</b> is the rate on the next dollar. Here it's 22%: another $1,000 of salary adds $220 of income tax.</li>
+<li>The <b>effective rate</b> is the total tax divided by income. $7,670 is 10.2% of the $75,000 salary, or 13.0% of the $58,900 taxable income. Either way, it's a long way below 22%.</li>
+</ul>
+<p>Use the marginal rate to judge a change at the edges: a raise, a bonus, a 401(k) contribution, a Roth conversion, an extra IRA withdrawal. Use the effective rate to see what share of your income goes in tax overall, or to compare one year with another.</p>
+
+<h2 id="brackets">The 2026 brackets</h2>
+<p>There are seven rates, from 10% to 37%. The thresholds rise with inflation every year, and the IRS publishes the new ones each autumn for the following year. These are the 2026 figures, from Revenue Procedure 2025-32.</p>
+
+<!-- data: lib/engine/data/2026.js fed.s and fed.m (IRS Rev. Proc. 2025-32), checked against the IRS 2026 inflation-adjustment release. Thresholds are taxable income. -->
+<figure>
+  <table>
+    <thead><tr><th>Rate</th><th>Single</th><th>Married filing jointly</th></tr></thead>
+    <tbody>
+      <tr><td>10%</td><td>$0–$12,400</td><td>$0–$24,800</td></tr>
+      <tr><td>12%</td><td>$12,400–$50,400</td><td>$24,800–$100,800</td></tr>
+      <tr><td>22%</td><td>$50,400–$105,700</td><td>$100,800–$211,400</td></tr>
+      <tr><td>24%</td><td>$105,700–$201,775</td><td>$211,400–$403,550</td></tr>
+      <tr><td>32%</td><td>$201,775–$256,225</td><td>$403,550–$512,450</td></tr>
+      <tr><td>35%</td><td>$256,225–$640,600</td><td>$512,450–$768,700</td></tr>
+      <tr><td>37%</td><td>Over $640,600</td><td>Over $768,700</td></tr>
+    </tbody>
+  </table>
+  <figcaption>2026 federal income tax brackets, by taxable income (income after deductions). Add the standard deduction, $16,100 single or $32,200 joint, to see the gross income where each bracket starts.</figcaption>
+</figure>
+
+<p>Two things in this table are easy to miss. First, the thresholds are taxable income, not salary. A single person doesn't reach the 22% bracket until gross income passes $66,500 ($50,400 plus the $16,100 deduction), and a couple doesn't reach it until $133,000.</p>
+<p>Second, the joint brackets are exactly double the single ones all the way up to the start of the 37% bracket. Two people earning $100,000 each pay the same federal income tax married as they would single. Only at the very top, where the joint 37% line ($768,700) is well short of twice the single one ($1,281,200), does marriage raise the bill. It cuts the other way when one spouse dies: the survivor usually files single from the year after, on brackets half as wide, often with much the same income. <a href="/learn/roth-conversions">Roth conversions</a> looks at what couples can do about that.</p>
+
+<h2 id="chart">Marginal and effective rates by income</h2>
+<p>The chart runs the same calculation at every salary from $0 to $300,000 for a single filer. The rate on the next dollar climbs in steps; the average rate rises smoothly underneath it and never catches up.</p>
+
+<!-- data: computeTax({status:"s", gross:g, dedType:"std", state:"TX"}) for g = 0 to 300,000 in steps of 5,000, 2026 figures.
+     Rate on the next dollar = tax at (g + 1) minus tax at g. Average rate = federal income tax / g.
+     "With FICA" adds Social Security (6.2% to the $184,500 wage base) and Medicare (1.45%, plus 0.9% over $200,000). -->
+<figure data-chart='{"type":"line","x":[0,5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,55000,60000,65000,70000,75000,80000,85000,90000,95000,100000,105000,110000,115000,120000,125000,130000,135000,140000,145000,150000,155000,160000,165000,170000,175000,180000,185000,190000,195000,200000,205000,210000,215000,220000,225000,230000,235000,240000,245000,250000,255000,260000,265000,270000,275000,280000,285000,290000,295000,300000],"xLabel":"Salary","xFormat":"money","y":"pct","series":[{"name":"Rate on the next dollar","tone":"accent","values":[0,0,0,0,0.1,0.1,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.24,0.32,0.32,0.32,0.32,0.32,0.32,0.32,0.32,0.32,0.32,0.32,0.35,0.35,0.35,0.35,0.35,0.35],"step":true},{"name":"Next dollar, with FICA","tone":"muted","dash":true,"values":[0.0765,0.0765,0.0765,0.0765,0.1765,0.1765,0.1965,0.1965,0.1965,0.1965,0.1965,0.1965,0.1965,0.1965,0.2965,0.2965,0.2965,0.2965,0.2965,0.2965,0.2965,0.2965,0.2965,0.2965,0.2965,0.3165,0.3165,0.3165,0.3165,0.3165,0.3165,0.3165,0.3165,0.3165,0.3165,0.3165,0.3165,0.2545,0.2545,0.2545,0.2635,0.2635,0.2635,0.2635,0.3435,0.3435,0.3435,0.3435,0.3435,0.3435,0.3435,0.3435,0.3435,0.3435,0.3435,0.3735,0.3735,0.3735,0.3735,0.3735,0.3735],"step":true},{"name":"Average rate","tone":"neutral","values":[0,0,0,0,0.0195,0.0356,0.0473,0.0577,0.0655,0.0716,0.0764,0.0804,0.0837,0.0865,0.0939,0.1023,0.1096,0.1161,0.1219,0.1271,0.1317,0.1359,0.1397,0.1432,0.1464,0.1499,0.1533,0.1565,0.1595,0.1623,0.1649,0.1673,0.1696,0.1717,0.1737,0.1756,0.1774,0.1791,0.1807,0.1822,0.1837,0.185,0.1864,0.1876,0.1896,0.1925,0.1952,0.1979,0.2004,0.2029,0.2052,0.2075,0.2096,0.2117,0.2137,0.2159,0.2183,0.2206,0.2229,0.225,0.2271]}]}'>
+  <figcaption>Federal income tax for a single filer on a salary, 2026, standard deduction, no other income. The average rate is income tax as a share of salary. The dotted line adds Social Security and Medicare tax on wages.</figcaption>
+</figure>
+
+<p>At $150,000 of salary the next dollar is taxed at 24%, but the whole income tax bill is 16.5% of pay. At $300,000 the next dollar pays 35% and the average is 22.7%. The average rate only approaches the top rate at incomes far above where the top rate starts, because the lower layers are always taxed at their own lower rates.</p>
+
+<h2 id="raise">Why a raise never lowers your take-home pay</h2>
+<p>A common worry is that a raise will push you into a higher bracket and leave you worse off. Under the brackets alone that can't happen, because the higher rate applies only to the dollars above the line.</p>
+<p>Take a single person whose salary goes from $120,000 to $125,000. The 24% bracket starts at $121,800 of salary, so the raise straddles the line. The first $1,800 of it is taxed at 22% ($396) and the other $3,200 at 24% ($768): $1,164 more income tax. Social Security and Medicare take another $382.50. Take-home pay rises by $3,453.50, about 69% of the raise. Nothing earned before the raise is taxed any differently.</p>
+<p>Where more income really can leave you worse off is at a cliff, where crossing a line costs a fixed amount all at once. The brackets have no cliffs, but a few rules nearby do:</p>
+<ul>
+<li>Medicare's income surcharges, which charge the whole of a higher premium tier for being one dollar over a line. <a href="/learn/irmaa">IRMAA</a> covers them.</li>
+<li>The ACA premium credit for health insurance before 65, which for 2026 stops entirely above 400% of the poverty line: $62,600 for one person, $84,600 for a couple. <a href="/learn/health-cover-before-65">Health cover before 65</a> covers it.</li>
+<li>A few state rules, such as Illinois's personal exemption, which disappears in full once federal AGI passes $250,000 single or $500,000 joint.</li>
+</ul>
+<p>Other rules phase out gradually, like the senior deduction, which shrinks by 6 cents for each dollar of income over a threshold. A phase-out can't make you worse off either, but while it lasts it adds to your marginal rate, so the rate on your next dollar can be higher than your bracket suggests.</p>
+
+<h2 id="fica">FICA: the tax on wages</h2>
+<p>Income tax is only part of what comes out of a paycheck. Wages also pay FICA, the payroll tax that funds Social Security and Medicare. For 2026:</p>
+<ul>
+<li>Social Security tax is 6.2% of wages up to $184,500, the wage base. Nothing above it is taxed, so the most a worker pays is $11,439.</li>
+<li>Medicare tax is 1.45% of all wages, with no cap.</li>
+<li>The additional Medicare tax adds 0.9% on wages over $200,000 for a single filer or $250,000 for a couple. Those thresholds were set in law and have never been raised for inflation.</li>
+</ul>
+<p>Your employer pays a matching 6.2% and 1.45% on top. If you work for yourself you pay both halves, 15.3% in all up to the wage base, and deduct half of it from your income.</p>
+<p>FICA is why the dotted line in the chart sits 7.65 points above the income tax line for most of its length, and why it drops back near $185,000. Once salary passes the wage base, the next dollar no longer pays Social Security tax, so a single earner at $190,000 has a lower rate on the next dollar (25.45%) than one at $150,000 (31.65%). The 0.9% surtax nudges it back up past $200,000.</p>
+<p>Two practical points follow. FICA comes off gross wages, and most pre-tax 401(k) contributions don't reduce it; HSA contributions and health premiums taken through payroll do. And FICA stops when wages stop: withdrawals from retirement accounts, pensions, Social Security benefits and investment income don't pay it. That's one reason the tax on a retiree's income is often a smaller share than it was while working. <a href="/learn/retirement-income-taxes">How retirement income is taxed</a> covers what replaces it.</p>
+
+<h2 id="history">How the brackets got here</h2>
+<p>The federal income tax began in 1913, with a top rate of 7%. It rose sharply in two world wars. In 1944 the top rate reached 94%, and it stayed above 90% until 1963. It was 70% from 1965 to 1981, 50% from 1982 to 1986, and the Tax Reform Act of 1986 cut it to 28% by 1988. Since 1991 it has moved between 31% and 39.6%. Those top rates applied only to very high incomes, and the tax code of those years was full of deductions that pulled effective rates well below them.</p>
+<p>Until the 1980s the brackets weren't adjusted for inflation. As prices rose in the 1970s, pay rose with them and pushed people into higher brackets even though they could buy no more than before. The Economic Recovery Tax Act of 1981 ended that "bracket creep" by indexing the brackets to inflation from 1985 on.</p>
+<p>The seven rates in use now, 10% to 37%, come from the Tax Cuts and Jobs Act of 2017, which set them for 2018 through 2025 and switched the inflation measure to a slower-growing one, the chained consumer price index. The 2025 tax law, the One Big Beautiful Bill Act, made those rates permanent, so they didn't revert to the older, higher schedule in 2026 as originally planned.</p>
+
+<h2 id="use">Using your marginal rate</h2>
+<p>Most tax choices come down to comparing the marginal rate on a dollar now with the marginal rate on the same dollar later, or on a different kind of income.</p>
+<h3>A pre-tax contribution saves at your top rate</h3>
+<p>A dollar put into a traditional 401(k) comes off the top of your taxable income, so it saves tax at your marginal rate. For the $75,000 earner above, $5,000 into a traditional 401(k) cuts federal income tax by $1,100, all of it at 22%. Taking that same $5,000 out in retirement will be taxed at whatever your marginal rate is then. <a href="/learn/traditional-or-roth">Traditional or Roth</a> is built on that comparison.</p>
+<h3>Add up every tax on the next dollar</h3>
+<p>The rate that matters is the total on your next dollar: federal income tax, state income tax, FICA on wages, and anything that phases out as income rises. A worker in the 22% bracket in a state with a 5% tax pays about 34.65 cents of every extra dollar of salary in tax (22 + 5 + 7.65), not 22.</p>
+<h3>Watch which income stacks where</h3>
+<p>Long-term capital gains and qualified dividends have their own rates, 0%, 15% and 20%, but they're stacked on top of your ordinary income, so the same gain can be taxed at 0% in one year and 15% in another. A retiree's next IRA dollar can also make part of their Social Security taxable, which pushes the true marginal rate well above the bracket. Both are covered in <a href="/learn/retirement-income-taxes">How retirement income is taxed</a>.</p>
+<h3>Use the low years and the high years</h3>
+<p>Brackets reset every January. A year with unusually low income, between jobs, after retiring or before Social Security starts, has cheap space in the low brackets that's gone if you don't use it. A year with unusually high income, a large bonus or a home sale, is a year to push deductible contributions into and income out of if you can.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>Income Tax runs this calculation on your own figures: federal, state and FICA, with bars showing how much of your income falls in each bracket, and both your marginal and effective rates. Try adding $1,000 to your salary to see what you'd actually keep, or split your pre-tax deductions by kind to see which ones also come off FICA. In retirement mode it does the same for withdrawals, pensions and Social Security, and reports the rate on the next $1,000 you'd take out, which is often higher than your bracket.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Can a raise push me into a higher bracket and cost me money?</summary><p>Not through the brackets. Only the dollars above the bracket line pay the higher rate, so you always keep most of a raise. Where extra income can cost more than it brings in is at a cliff, such as Medicare's income surcharges or the ACA premium credit before 65, and those are worth checking if your income is close to one.</p></details>
+<details><summary>Why was my bonus taxed so heavily?</summary><p>Employers usually withhold federal income tax on a bonus at a flat 22%, plus FICA and any state tax, whatever your bracket. That's withholding, not the final tax. A bonus is taxed as ordinary wages on your return, and if too much was withheld, you get it back as a refund.</p></details>
+<details><summary>Is the effective rate figured on gross or taxable income?</summary><p>People use both, and they give different numbers: in the example above, 10.2% of gross pay or 13.0% of taxable income. Income Tax divides by gross income, which answers the more useful question of how much of what you earn goes in tax.</p></details>
+<details><summary>Do the brackets change every year?</summary><p>The rates don't, but the thresholds rise with inflation each year, and so do the standard deduction and most other limits. A raise that only matches inflation won't move you into a higher bracket.</p></details>
+<details><summary>Does my state use the same brackets?</summary><p>No. Each state sets its own. Some have no income tax at all, about fifteen charge one flat rate, and the rest have their own graduated brackets. Many also treat retirement income differently from wages. <a href="/learn/state-taxes">State taxes</a> covers them.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Each bracket's rate applies only to the income inside it, so moving up a bracket never taxes your earlier dollars more.</li>
+<li>Your marginal rate, the tax on your next dollar, is the one to use for decisions. Your effective rate is always lower.</li>
+<li>For 2026 the brackets run from 10% to 37%, after a standard deduction of $16,100 single or $32,200 joint.</li>
+<li>Wages also pay FICA, 7.65% up to the $184,500 wage base and 1.45% above it, which retirement income doesn't.</li>
+<li>Count every tax on the next dollar, and watch for cliffs, where one dollar over a line can cost thousands.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How each bracket taxes only its own layer of income</li><li>Why your marginal and effective rates differ</li><li>How FICA adds to the tax on wages, and where it stops</li></ul>
+  <ul class="terms">
+    <li data-term="Marginal rate">The tax on your next dollar of income. It's the rate to use when judging a raise, a contribution or a withdrawal.</li>
+    <li data-term="Effective rate">Your total tax divided by your income. Because the first layers are taxed at low rates or not at all, it's always below your marginal rate.</li>
+    <li data-term="Taxable income">Income left after deductions, such as the standard deduction. The brackets apply to this figure, not to gross pay.</li>
+    <li data-term="FICA">The payroll tax on wages: 6.2% for Social Security up to the wage base and 1.45% for Medicare, matched by the employer.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill">IRS releases tax inflation adjustments for tax year 2026</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/taxtopics/tc751">Topic 751, Social Security and Medicare withholding rates</a> <span>IRS</span></li>
+    <li><a href="https://www.ssa.gov/oact/cola/cbb.html">Contribution and benefit base</a> <span>Social Security Administration</span></li>
+    <li><a href="https://taxfoundation.org/data/all/federal/historical-income-tax-rates-brackets/">Historical US federal income tax rates and brackets</a> <span>Tax Foundation</span></li>
+  </ul>
+</footer>
+</article>

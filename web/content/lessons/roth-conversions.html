@@ -1,0 +1,163 @@
+<article class="lesson" data-slug="roth-conversions" data-reviewed="2026-10-26"
+  data-title="Roth conversions"
+  data-idea="Pay the tax now, at a rate you choose, so the money is tax-free later"
+  data-tool="roth" data-try="Compare converting each year with doing nothing, year by year to the end of your plan, with your plan already filled in.">
+
+<p class="lede">A Roth conversion moves money from a traditional IRA or 401(k) into a Roth account. You pay income tax on the amount this year, and from then on it grows and comes out tax-free. Whether that's a good trade depends almost entirely on one comparison: your tax rate on the converted dollars now against the rate they'd face later, whether that's yours or your heirs'.</p>
+
+<h2 id="what">What a conversion does</h2>
+<p>Money in a traditional account has never been taxed. Every dollar will be taxed as ordinary income when it comes out, whether that's you taking it, a required minimum distribution forcing it out, or an heir inheriting it. A conversion chooses when that happens. The amount converted is added to your income for the year and taxed at your ordinary rates. There's no 10% early-withdrawal penalty on a conversion, whatever your age, as long as the whole amount reaches the Roth.</p>
+<p>After that, the money is in a Roth account. Qualified withdrawals are tax-free, Roth IRAs have no required minimum distributions during your lifetime (and since 2024 nor do Roth 401(k)s), and Roth withdrawals don't count toward the income tests for Social Security taxation, Medicare premiums or ACA premium credits.</p>
+<p>Anyone can convert, at any income; the income limit on conversions ended in 2010. But a conversion can't be undone. Until 2017 you could reverse one by the following October, which made converting a free option; the Tax Cuts and Jobs Act ended that for conversions from 2018 on.</p>
+<h3>Why the rates are all that matter</h3>
+<p>Tax-free growth sounds like the reason to convert, but if your tax rate is the same now and later, converting changes nothing. Multiplication doesn't care about order: a balance taxed at 22% and then doubled ends at the same figure as one doubled and then taxed at 22%.</p>
+
+<!-- data: hypothetical $10,000 that doubles before it's spent; tax on the conversion withheld from it, for a like-for-like comparison.
+     Convert at 12%: 10,000 × 0.88 = 8,800; doubled 17,600, tax-free.
+     Don't convert: 20,000; less 22% = 15,600; less 12% = 17,600; less 10% = 18,000. -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>Now</th><th>After the money doubles</th><th>To spend</th></tr></thead>
+    <tbody>
+      <tr><td>Convert, paying 12%</td><td>$8,800 in a Roth</td><td>$17,600</td><td>$17,600</td></tr>
+      <tr><td>Don't convert, then pay 22%</td><td>$10,000 in an IRA</td><td>$20,000</td><td>$15,600</td></tr>
+      <tr><td>Don't convert, then pay 12%</td><td>$10,000 in an IRA</td><td>$20,000</td><td>$17,600</td></tr>
+      <tr><td>Don't convert, then pay 10%</td><td>$10,000 in an IRA</td><td>$20,000</td><td>$18,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>$10,000 of traditional IRA money that doubles before it's spent. With the tax on the conversion paid out of the conversion, converting wins only if the later rate is higher than today's.</figcaption>
+</figure>
+
+<p>There's one extra advantage if you can pay the tax from money outside the IRA, such as a taxable brokerage account. Then the full $10,000 lands in the Roth, and the tax you paid has in effect moved more money into an account that's never taxed again. That's worth something even at equal rates, but the core of the decision is still the rate comparison.</p>
+
+<h2 id="brackets">Filling a bracket</h2>
+<p>Because the brackets are layers, the usual approach is to convert just enough each year to fill a low bracket and stop before the next one. The first layers are cheap, and each one above costs more.</p>
+
+<!-- data: 2026 brackets and standard deduction, lib/engine/data/2026.js. Conversion = top of the bracket + standard deduction (no other income, under 65). Tax = bracketTax(top of bracket).
+     Joint: 24,800 + 32,200 = 57,000, tax 2,480; 100,800 + 32,200 = 133,000, tax 11,600; 211,400 + 32,200 = 243,600, tax 35,932; 403,550 + 32,200 = 435,750, tax 82,048.
+     Single: 12,400 + 16,100 = 28,500, tax 1,240; 50,400 + 16,100 = 66,500, tax 5,800; 105,700 + 16,100 = 121,800, tax 17,966; 201,775 + 16,100 = 217,875, tax 41,024. -->
+<figure>
+  <table>
+    <thead><tr><th>Fill to the top of</th><th>Married, convert</th><th>Federal tax</th><th>Single, convert</th><th>Federal tax</th></tr></thead>
+    <tbody>
+      <tr><td>10%</td><td>$57,000</td><td>$2,480</td><td>$28,500</td><td>$1,240</td></tr>
+      <tr><td>12%</td><td>$133,000</td><td>$11,600</td><td>$66,500</td><td>$5,800</td></tr>
+      <tr><td>22%</td><td>$243,600</td><td>$35,932</td><td>$121,800</td><td>$17,966</td></tr>
+      <tr><td>24%</td><td>$435,750</td><td>$82,048</td><td>$217,875</td><td>$41,024</td></tr>
+    </tbody>
+  </table>
+  <figcaption>2026, for someone under 65 with no other income, taking the standard deduction. Any other taxable income uses up the same room. At 65 and over, the extra deductions add more.</figcaption>
+</figure>
+
+<p>A married couple under 65 with no other income can convert $133,000 in 2026 and pay $11,600 of federal tax, an average of 8.7%. Converting $243,600 costs $35,932, an average of 14.8%, but every dollar above $133,000 pays 22%. The marginal rate is what to compare with the rate you expect later, since it's the rate on the last dollars you convert.</p>
+<p>For a couple both 65 or older in 2026 the room is larger, by the $3,300 of extra standard deduction and up to $12,000 of senior deduction, so filling the 12% bracket takes $148,300. Past $150,000 of income the senior deduction starts to shrink, so each converted dollar in the 22% bracket there costs 24.64 cents rather than 22.</p>
+
+<h2 id="when">When converting tends to pay</h2>
+<p>The question is always whether the rate later will be higher than the rate now. Several things push it higher later:</p>
+<ul>
+<li>The years between leaving work and starting Social Security and required minimum distributions are often the lowest-income years of an adult life. Converting then uses brackets that would otherwise go empty.</li>
+<li>Required minimum distributions, from 73 (or 75 if you were born in 1960 or later), take a growing share of the balance each year. A large IRA can force out more than you need to spend, at higher rates, on top of Social Security. <a href="/learn/rmds">Required minimum distributions</a> covers how they're figured.</li>
+<li>The widow's penalty: when one spouse dies, the survivor usually files single from the year after, with brackets half as wide, while required distributions and the larger Social Security benefit continue. The same income can then be taxed at a higher rate.</li>
+<li>Heirs: most non-spouse heirs must empty an inherited IRA within ten years, often in their own peak earning years. An inherited Roth also has to be emptied, but the withdrawals are tax-free.</li>
+</ul>
+<p>Other things point the other way: a modest IRA that RMDs won't push into higher brackets, a planned move from a high-tax state to one with no income tax, heirs in low brackets, or a plan to leave the IRA to charity, which pays no tax on it at all. And a conversion paid for by withholding tax from the IRA itself gives up most of the advantage.</p>
+
+<h2 id="example">A worked example over a lifetime</h2>
+<p>Take a hypothetical couple, both 62 and retired in Illinois, with $1.5 million in traditional IRAs, $150,000 in Roth IRAs and $400,000 in a brokerage account. They spend $100,000 per year and will claim Social Security at 67, $36,000 and $22,000 per year. Their investments earn 5% per year after inflation, and one of them dies at 76, so the survivor files single from 77.</p>
+<p>The plan: each year from 62, convert enough to fill the 22% bracket, paying the tax from the brokerage account. The chart compares their federal and state income tax each year with doing nothing.</p>
+
+<!-- data: runRoth() (lib/engine/math.js) with the Roth Conversions tool's starting inputs (tools/roth/model.ts ROTH_DEFAULTS): married, both 62, IL, plan through 92;
+     trad 1,500,000, Roth 150,000, brokerage 400,000 with 60% basis, 5% real return, spend 100,000; Social Security 36,000 and 22,000 from 67; survivor transition in year 15 (files single from age 77, so the death is at 76);
+     strategy "fill to the top of the 22% bracket", ages 62 to 75, tax paid from the brokerage; heir rate 32%, discount rate 3% real, IRMAA on. Today's dollars.
+     Series: each row's tax (federal + state income tax, excluding IRMAA), with and without conversions.
+     Totals: lifetime tax 305,186 vs 503,928; IRMAA 13,836 vs 51,360; tax + IRMAA discounted at 3%: 288,349 vs 295,188 (6,839 less);
+     converted 1,288,352 by age 70; peak RMD without conversions 169,099; after-tax wealth at 92 (traditional at 68%) 3,057,099 vs 2,833,794 (223,304 more). -->
+<figure data-chart='{"type":"line","x":[62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92],"xLabel":"Age","y":"money","series":[{"name":"Converting to the top of 22%","tone":"accent","values":[49612,50743,44687,21260,21260,27842,27842,27842,34096,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"name":"Not converting","tone":"neutral","values":[1725,1872,2012,2045,3456,2978,2978,2978,2978,2978,2978,2978,2978,10724,11225,18894,20042,21237,22479,23614,24949,26148,27576,28832,30110,31341,32306,33545,34463,35342,36170]}],"marks":[{"x":75,"label":"RMDs start"},{"x":77,"label":"Survivor files single"}]}'>
+  <figcaption>Income tax each year for the couple, in today's dollars. Converting pays a lot of tax early, at a known rate; not converting pays very little until required distributions start at 75, and more again once the survivor files single.</figcaption>
+</figure>
+
+<p>Converting empties their traditional IRAs by 70, $1,288,352 in all, so the required distributions that would have peaked at $169,099 per year never happen. Over their lifetimes they pay $305,186 of income tax instead of $503,928, and $13,836 of Medicare surcharges instead of $51,360. The conversions do push up Medicare premiums at 65 and 66, two years after the large conversions at 63 and 64, and again at 72, after the last one at 70.</p>
+<p>But most of the tax saved would have been paid decades later, and a dollar of tax at 85 costs less in today's terms than a dollar at 63. Discounted at 3% per year after inflation, converting saves just $6,839 of tax and surcharges. Measured by what's left at 92, the gap is much larger: $223,304 more after-tax wealth with conversions, counting each traditional dollar as worth 68 cents because tax is still owed on it. Both measures favor converting here, by very different margins, and that's typical. The lifetime tax saving looks modest once it's discounted, while Roth money compounding with no tax on it leaves a lot more behind.</p>
+
+<h2 id="side-effects">What a conversion touches besides the tax bracket</h2>
+<p>Converted dollars are income, so they count everywhere else income counts too.</p>
+
+<!-- data: rules as in the linked lessons; 2026 figures from lib/engine/data/2026.js (IRMAA tiers, ACA cliff 4.0 × fplBase, ltcg, seniorBonus) and lib/engine/math.js (NIIT, SS_PROV). 27% = 12% bracket + 15% gain rate. -->
+<figure>
+  <table>
+    <thead><tr><th>What it affects</th><th>How</th><th>Watch for</th></tr></thead>
+    <tbody>
+      <tr><td>Social Security taxation</td><td>Raises provisional income, so more of your benefit can become taxable</td><td>Converting after you claim, in the range where benefits are being phased in</td></tr>
+      <tr><td>Medicare premiums (IRMAA)</td><td>Raises the income Medicare looks at two years later</td><td>Conversions from the year you turn 63, near a tier line ($218,000 joint in 2026)</td></tr>
+      <tr><td>ACA premium credit</td><td>Raises the income the credit is based on, before 65</td><td>The 2026 cliff at 400% of the poverty line: $84,600 for a couple</td></tr>
+      <tr><td>The 0% capital gains band</td><td>Ordinary income stacks first, pushing gains up into the 15% band</td><td>A conversion dollar can cost 27% in the 12% bracket</td></tr>
+      <tr><td>The senior deduction</td><td>Phases out above $150,000 joint or $75,000 single, through 2028</td><td>An extra 6 cents per dollar per person 65 or older</td></tr>
+      <tr><td>The 3.8% surtax</td><td>Raises modified AGI above $250,000 joint or $200,000 single</td><td>Dividends and gains then pay the 3.8%</td></tr>
+      <tr><td>State income tax</td><td>Most states with an income tax count conversions as income</td><td>Converting before a move to a lower-tax state</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The ways a conversion can cost more than its bracket rate. Each is covered in its own lesson.</figcaption>
+</figure>
+
+<p>Medicare is the one people most often miss. Surcharges for Medicare Part B and Part D are set by your income two years earlier, and they're cliffs: a dollar over a line costs the whole tier. So a conversion at 63 or later can raise your premiums at 65. <a href="/learn/irmaa">IRMAA</a> has the 2026 tiers. Before 65, the ACA cliff is sharper still. For a couple on marketplace insurance in 2026, $1 of income over $84,600 can cost the whole premium credit, often thousands of dollars. <a href="/learn/health-cover-before-65">Health cover before 65</a> explains it.</p>
+
+<h2 id="five-years">The five-year rules</h2>
+<p>Two separate five-year clocks apply to Roth IRAs, and they're easy to confuse.</p>
+<p>The first is for earnings. To withdraw a Roth IRA's earnings tax-free, you need to be 59½ and it must be at least five years since January 1 of the year of your first contribution or conversion to any Roth IRA. One clock covers all your Roth IRAs, and once it's run, it's run.</p>
+<p>The second is for converted money before 59½. Each conversion has its own five-year clock, again starting on January 1 of the year you convert. Take the converted amount out before its clock has run and before you're 59½, and it's charged the 10% penalty (though not income tax, which you've already paid). After 59½ this clock no longer matters.</p>
+<p>Withdrawals come out in a fixed order: your contributions first, then conversions, oldest first, then earnings. Most retirees over 59½ only need the first clock. Early retirees who convert in order to spend the money five years later rely on the second; that's the subject of <a href="/learn/roth-conversion-ladder">The Roth conversion ladder</a>.</p>
+
+<h2 id="paying">Paying the tax</h2>
+<p>How you pay the tax changes how much a conversion is worth.</p>
+<ul>
+<li>Paying from a taxable account or cash is best. The whole conversion reaches the Roth, and you've moved extra money out of a taxed account into a tax-free one.</li>
+<li>Having the tax withheld from the conversion leaves less in the Roth. Converting $50,000 at 22% with the tax withheld puts only $39,000 in the Roth. Before 59½ it's worse: the $11,000 withheld counts as an early withdrawal, so it's charged the 10% penalty too.</li>
+</ul>
+<p>An IRA custodian withholds 10% of a conversion unless you choose a different rate, and you can choose none. Most people do, and pay with quarterly estimated payments, or by raising the withholding on a pension, Social Security or an IRA withdrawal. Withholding counts as paid evenly through the year, so a large December conversion can be covered by extra withholding without a penalty for paying late.</p>
+
+<h2 id="mechanics">Practical details</h2>
+<ul>
+<li>Many people convert late in the year, once they know the rest of their income, so they can fill a bracket or stop below an IRMAA line accurately.</li>
+<li>You can convert investments without selling them; the taxable amount is their value on the day of the conversion. After a market fall, the same tax bill moves more shares into the Roth, where the recovery is tax-free.</li>
+<li>In a year you owe a required minimum distribution, you must take it before converting, and the distribution itself can't be converted.</li>
+<li>If any of your traditional IRAs holds after-tax contributions, every conversion is part taxable and part not, in proportion across all your IRAs. <a href="/learn/iras">IRAs</a> covers this pro-rata rule.</li>
+</ul>
+
+<h2 id="history">Where the Roth came from</h2>
+<p>The Roth IRA was created by the Taxpayer Relief Act of 1997 and named for its sponsor, Senator William Roth of Delaware; the first accounts opened in 1998. At first only people with modified AGI under $100,000 could convert. A 2006 law removed that limit from 2010, and conversions have been open to everyone since. The Tax Cuts and Jobs Act of 2017 ended recharacterization, the right to reverse a conversion. The SECURE Act of 2019 replaced lifetime stretching of inherited IRAs with the ten-year rule for most heirs, which made the heirs' tax rate a bigger part of the decision, and SECURE 2.0 in 2022 removed lifetime required distributions from Roth 401(k)s from 2024.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>Roth Conversions runs the comparison in the worked example on your own figures. It projects your household year by year to the end of your plan, with and without conversions, using the 2026 federal and state rules, Social Security taxation, required minimum distributions and Medicare surcharges. You can fill to the top of a bracket, stop at an IRMAA line, convert a fixed amount or a share of the balance, over any span of ages, and pay the tax from a taxable account or by withholding.</p>
+<p>Look at both results it reports: the lifetime tax and surcharges, discounted to today, and the after-tax wealth left at the end. When they disagree, the answer depends on which you care about more. Then check the year-by-year table for years that cross an IRMAA line or the ACA cliff, and try setting the year of the first death to see the widow's penalty. Income Tax shows the effect of a single year's conversion, including the rate on the next $1,000.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Do I have to convert the whole IRA?</summary><p>No. You can convert any amount, any year, and most people convert in pieces over several years so each piece is taxed in a lower bracket. Converting everything in one year would usually push much of it into the 32% or 35% bracket.</p></details>
+<details><summary>Do I need earned income to convert?</summary><p>No. That rule applies to contributions. A conversion only needs money in a traditional account, which is why retirees with no wages can do it.</p></details>
+<details><summary>Is it too late once required distributions have started?</summary><p>No, but each year's required distribution has to come out first and can't be converted. Converting after 73 or 75 still shrinks later distributions and the tax your heirs pay, at the cost of more income in the year you convert.</p></details>
+<details><summary>Should I convert after the market falls?</summary><p>A fall doesn't change the rate comparison, but it does mean the same tax moves more shares, and any recovery happens inside the Roth. If you were going to convert anyway, a lower price is a better moment. Converting more than you'd planned because prices fell means more income at higher rates.</p></details>
+<details><summary>What if tax rates go up in the future?</summary><p>Then converting at today's rates looks better. Nobody knows future rates, which is one reason people split their savings between traditional and Roth money: it gives them a choice of which to draw from whatever the rates turn out to be.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>A conversion moves traditional money to a Roth; the amount is taxed as income this year and is tax-free after.</li>
+<li>It pays when your marginal rate now is lower than the rate the money would face later, yours or your heirs'.</li>
+<li>Filling a low bracket in the years between retiring and Social Security or RMDs is the classic use; for 2026 a couple under 65 can convert $133,000 within the 12% bracket.</li>
+<li>Conversions count as income for Social Security tax, Medicare surcharges two years later and ACA credits before 65.</li>
+<li>Pay the tax from outside the IRA if you can, and remember a conversion can't be undone.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>What a Roth conversion does and when it pays</li><li>How to size a conversion to fill a tax bracket</li><li>What a conversion does to Medicare, ACA and Social Security</li></ul>
+  <ul class="terms">
+    <li data-term="Roth conversion">Moving money from a traditional IRA or 401(k) to a Roth account. The amount is taxed as ordinary income in the year of the conversion.</li>
+    <li data-term="Filling a bracket">Converting just enough to reach the top of a chosen tax bracket, so no converted dollar is taxed at a higher rate.</li>
+    <li data-term="Widow's penalty">The higher tax a surviving spouse often pays filing single, on brackets half as wide, with much the same income.</li>
+    <li data-term="Five-year rule">The waiting periods before Roth earnings, or a conversion made before 59½, can come out without tax or penalty.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/retirement-plans/roth-iras">Roth IRAs</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p590a">Publication 590-A, Contributions to individual retirement arrangements</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p590b">Publication 590-B, Distributions from individual retirement arrangements</a> <span>IRS</span></li>
+    <li><a href="https://www.bogleheads.org/wiki/Roth_conversion">Roth conversion</a> <span>Bogleheads wiki</span></li>
+  </ul>
+</footer>
+</article>

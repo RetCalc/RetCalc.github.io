@@ -1,0 +1,160 @@
+<article class="lesson" data-slug="medicare" data-reviewed="2026-10-26"
+  data-title="Medicare"
+  data-idea="The parts, the choices, the deadlines and what it costs"
+  data-tool="healthcare" data-try="Price Medicare premiums and any income surcharge for the income you expect, with your plan already filled in.">
+
+<p class="lede">Medicare covers almost everyone from 65. It comes in parts, each with its own premium, and you choose between two very different ways of putting them together. Sign up late and the penalties last for life; earn more and the premiums rise. Some of the choices you make at 65 are also hard to undo later, which makes it worth knowing the pieces before you get there.</p>
+
+<h2 id="parts">The four parts</h2>
+<p>Medicare is run by the federal government, with Social Security handling enrollment. You become eligible at 65, or earlier with certain disabilities. Part A costs nothing if you or your spouse paid Medicare tax for at least ten years; people without that work record can buy it.</p>
+<ul>
+<li><b>Part A</b> covers hospital stays, a limited amount of skilled nursing care after a hospital stay, hospice and some home health care.</li>
+<li><b>Part B</b> covers doctors, outpatient care, tests, durable medical equipment and preventive care. Everyone pays a monthly premium.</li>
+<li><b>Part D</b> covers prescription drugs, through private plans.</li>
+<li><b>Part C</b>, better known as <b>Medicare Advantage</b>, is a private plan that replaces A and B, and usually D, in one package.</li>
+</ul>
+<p>Parts A and B together are called Original Medicare. It pays a share of each bill, and you pay the rest, with no yearly cap on what that rest can add up to. That gap is why most people add other coverage to it.</p>
+
+<!-- data: CMS, 2026 Medicare Parts A and B premiums and deductibles fact sheet (November 14, 2025): Part A premiums $311 (30–39 quarters) and $565 (under 30); deductible $1,736; days 61–90 $434 per day; lifetime reserve $868 per day; skilled nursing days 21–100 $217 per day; Part B $202.90 and deductible $283 (also lib/engine/data/2026.js medicare.irmaa.partB). Part D 2026: base beneficiary premium $38.99, maximum deductible $615, out-of-pocket cap $2,100 (CMS Part D redesign). -->
+<figure>
+  <table>
+    <thead><tr><th>Part</th><th>Premium for 2026</th><th>What you pay when you use it</th></tr></thead>
+    <tbody>
+      <tr><td>A, hospital</td><td>$0 with 40 quarters of work; $311 or $565 per month with fewer</td><td>$1,736 per hospital stay (benefit period); $434 per day for days 61–90; $217 per day for skilled nursing days 21–100</td></tr>
+      <tr><td>B, doctors and outpatient</td><td>$202.90 per month, more at higher incomes</td><td>$283 deductible per year, then 20% of approved costs, with no cap</td></tr>
+      <tr><td>D, drugs</td><td>Varies by plan; national base $38.99 per month</td><td>Deductible up to $615; total out of pocket capped at $2,100 per year</td></tr>
+      <tr><td>C, Medicare Advantage</td><td>Varies; often $0 beyond the Part B premium</td><td>Copays set by the plan, capped at up to $9,250 per year in network</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Medicare's 2026 costs per person. A benefit period starts when you're admitted and ends after 60 days out of the hospital or a skilled nursing facility, so one person can pay the Part A deductible more than once a year.</figcaption>
+</figure>
+
+<p>The Part D cap is new. Since 2025, the Inflation Reduction Act has limited what anyone pays for covered drugs in a year, $2,100 in 2026, which matters most to people on expensive medicines.</p>
+
+<h2 id="choice">Original Medicare with Medigap, or Medicare Advantage</h2>
+<p>The biggest choice at 65 is how to fill Original Medicare's gaps. There are two routes.</p>
+<h3>Original Medicare plus Medigap and Part D</h3>
+<p>You keep Parts A and B and add two private policies. A <b>Medigap</b> (Medicare Supplement) policy pays most or all of what Original Medicare leaves to you: the 20% coinsurance, the hospital deductible, the skilled nursing copays. Plans are standardized by letter, so a Plan G from one insurer covers exactly what a Plan G from another does; only the price and service differ. Plan G, a common choice for new enrollees, covers everything except the Part B deductible. Plan N costs less, with small copays for office and emergency visits. Plan F, which also covered the Part B deductible, can't be bought by anyone who became eligible for Medicare in 2020 or later. Then you add a separate Part D drug plan.</p>
+<p>With this route you can see any doctor or hospital in the country that takes Medicare, with no network and almost never a need for prior approval. Your costs are mostly premiums, predictable from year to year, and a Plan G at 65 runs roughly $120 to $200 per month depending on where you live.</p>
+<h3>Medicare Advantage</h3>
+<p>A Medicare Advantage plan is run by a private insurer that Medicare pays to cover you. It usually includes drug coverage, and often extras Original Medicare doesn't have, such as some dental, vision and hearing benefits or a gym membership. Many have no premium beyond Part B. In return you use the plan's network of doctors and hospitals, the plan can require prior approval for some care, and you pay copays as you go, up to a yearly limit of no more than $9,250 in network for 2026. Many plans set lower limits (the average, weighted by enrollment, is $5,421), and about 55% of people eligible for Medicare Advantage were in one in 2026, both according to KFF.</p>
+
+<!-- data: Medigap and Medicare Advantage rules from Medicare.gov. Medicare Advantage in-network out-of-pocket limit for 2026, $9,250 (KFF, Medicare Advantage out-of-pocket limits). Enrollment-weighted average limit $5,421 (same KFF page, May 28, 2026). Enrollment share 55% of eligible beneficiaries in 2026 (KFF, Medicare Advantage in 2026: enrollment update and key trends, June 5, 2026). Medigap Plan G range: lib/engine/data/2026.js medicare.medigap {low: 120, high: 200}. -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>Original Medicare, Medigap and Part D</th><th>Medicare Advantage</th></tr></thead>
+    <tbody>
+      <tr><td>Doctors and hospitals</td><td>Any that accept Medicare, nationwide</td><td>The plan's network; out of network costs more or isn't covered</td></tr>
+      <tr><td>Premiums</td><td>Part B, plus Medigap and Part D</td><td>Part B, plus the plan's premium, often $0</td></tr>
+      <tr><td>Costs when you use care</td><td>Little or nothing with Plan G after the $283 deductible</td><td>Copays and coinsurance up to the plan's yearly limit</td></tr>
+      <tr><td>Prior approval</td><td>Rarely needed</td><td>Often needed for hospital stays, scans and some drugs</td></tr>
+      <tr><td>Extras</td><td>None</td><td>Often some dental, vision and hearing</td></tr>
+      <tr><td>Changing later</td><td>Can move to Advantage any fall</td><td>Moving back to Medigap can mean health questions</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The two routes in outline. Plans differ a lot within each, by county and by insurer.</figcaption>
+</figure>
+
+<h3>The choice that's hard to reverse</h3>
+<p>The last row of that table is the one to think hardest about. When you first get Part B at 65 or later, you have a six-month <b>Medigap open enrollment period</b>. During it, any Medigap insurer in your state has to sell you any plan it offers, at its standard price, whatever your health. After it ends, in most states, insurers can ask health questions, charge more or turn you down.</p>
+<p>So the choice works in one direction. Someone who starts on Medigap can usually move to an Advantage plan in any fall enrollment period. Someone who starts on Advantage and later wants Medigap, perhaps after a diagnosis that makes a network limiting, may not be able to get it. There's one safety valve: if you join an Advantage plan when you first get Medicare at 65, you have a 12-month trial right to switch back to Original Medicare and buy a Medigap policy without health questions. A few states also guarantee Medigap access at other times.</p>
+<p>Neither route is better for everyone. Advantage plans cost less up front and suit people who are healthy now and comfortable with a local network. Medigap costs more in premiums and less when you're sick, and keeps every option open.</p>
+
+<h2 id="enroll">When to sign up</h2>
+<p>Your <b>initial enrollment period</b> is seven months: the three months before the month you turn 65, that month, and the three after. If you're already collecting Social Security, you're enrolled in Parts A and B automatically and your card arrives in the mail. Otherwise you sign up through Social Security, online at ssa.gov. Sign up in the three months before your birthday month and coverage starts on the first of that month; sign up later in the window and it starts the month after you apply.</p>
+<p>Medicare's age is 65 whatever your full retirement age for Social Security. Waiting to claim Social Security doesn't mean waiting for Medicare.</p>
+
+<p data-yours></p>
+
+<h3>If you're still working at 65</h3>
+<p>If you, or your spouse, are still working and covered by a group health plan from that job, you may be able to delay Part B without penalty. It depends on the employer's size:</p>
+<ul>
+<li>With 20 or more employees, the employer plan pays first. Many people take premium-free Part A and delay Part B until the job or the coverage ends.</li>
+<li>With fewer than 20, Medicare pays first, and the employer plan may pay little or nothing for what Medicare would have covered. In that case you generally need Part B at 65.</li>
+</ul>
+<p>When the job or the coverage ends, whichever comes first, you have an eight-month <b>special enrollment period</b> to sign up for Part B without penalty. COBRA and retiree coverage don't count as coverage from current work. Someone who leaves a job at 66, takes COBRA and waits for it to run out before signing up for Part B can miss the eight-month window and owe a penalty. Sign up for Part B when the job ends, not when COBRA does.</p>
+<h3>Every year after</h3>
+<p>The fall open enrollment period, October 15 to December 7, is when you can switch Part D plans, join or leave a Medicare Advantage plan, or change Advantage plans, for coverage from January 1. Plans change their drug lists and prices every year, so it's worth checking even if you're happy. From January 1 to March 31, anyone in an Advantage plan can switch to another Advantage plan or back to Original Medicare once.</p>
+
+<h2 id="penalties">Late penalties last for life</h2>
+<p>Miss your window without other qualifying coverage and the penalties are permanent.</p>
+<ul>
+<li>For Part B, the penalty is 10% of the standard premium for each full 12 months you could have had Part B and didn't, added for as long as you have Part B. Three years late means 30%, $60.87 per month at 2026 prices, rising as the premium rises.</li>
+<li>For Part D, it's 1% of the national base premium ($38.99 for 2026) for each full month you went without Part D or other drug coverage at least as good (creditable coverage), after a gap of more than 63 days. Two years without it adds about $9.40 per month, for life.</li>
+<li>Outside the windows, you can only sign up for Part B in the general enrollment period, January 1 to March 31, with coverage starting the month after you sign up, so a late start can also mean months without coverage.</li>
+</ul>
+
+<!-- data: Part B penalty 10% per full 12 months: 3 years × 10% × $202.90 = $60.87 per month. Part D penalty 1% × $38.99 × 24 months = $9.36, rounded to the nearest $0.10 = $9.40 (Medicare.gov, Part D late enrollment penalty). -->
+
+<h2 id="hsa">Medicare and your HSA</h2>
+<p>Once you're enrolled in any part of Medicare, including just Part A, you can't put more money into a health savings account. You can still spend what's there, tax free, on medical costs, including Part B, Part D and Medicare Advantage premiums, though not Medigap premiums.</p>
+<p>The timing has a trap. If you sign up for Part A after 65, coverage is backdated up to six months, but not before the month you turned 65. HSA contributions made in those backdated months are excess contributions. So if you're working past 65 and contributing to an HSA, stop contributions six months before you apply for Medicare or Social Security. Claiming Social Security after 65 enrolls you in Part A automatically, with the same backdating. The lesson on <a href="/learn/hsa">the HSA</a> covers the rest.</p>
+
+<h2 id="irmaa">Higher incomes pay more</h2>
+<p>If your income is above $109,000 single or $218,000 for a married couple, you pay an <b>income-related monthly adjustment amount</b> (IRMAA) on top of the Part B and Part D premiums. Medicare uses your modified adjusted gross income from two years earlier, so 2026 premiums are set by your 2024 tax return.</p>
+
+<!-- data: lib/engine/data/2026.js medicare.irmaa.tiers (CMS 2026 fact sheet) and medicare.partD (average standalone Part D premium, $35 per month, CMS estimate). Per person per year = (Part B + $35 + Part D surcharge) × 12: up to $109,000, ($202.90 + $35) × 12 = $2,855; to $137,000, ($284.10 + $35 + $14.50) × 12 = $4,003; to $171,000, ($405.80 + $35 + $37.50) × 12 = $5,740; to $205,000, ($527.50 + $35 + $60.40) × 12 = $7,475; under $500,000, ($649.20 + $35 + $83.30) × 12 = $9,210; $500,000 and over, ($689.90 + $35 + $91.00) × 12 = $9,791. Married thresholds are double, except the top: $218,000, $274,000, $342,000, $410,000, $750,000. -->
+<figure data-chart='{"type":"bar","x":["Up to $109K","To $137K","To $171K","To $205K","To $500K","$500K and up"],"xLabel":"Modified adjusted gross income two years earlier, single","y":"money","series":[{"name":"Part B and Part D premiums per person per year","tone":"accent","values":[2855,4003,5740,7475,9210,9791]}]}'>
+  <figcaption>What one person pays per year in 2026 for Part B and an average Part D plan, by income tier. For a married couple filing jointly the lines are twice as high, except the top one, $750,000, and each spouse pays the surcharge.</figcaption>
+</figure>
+
+<p>The tiers are cliffs: one dollar over a line puts you in the higher tier for the whole year. Because of the two-year lookback, a large Roth conversion or capital gain at 63 can raise your premiums at 65. If your income has dropped because of a life-changing event, such as retiring, you can ask Social Security to use the more recent year with Form SSA-44. The lesson on <a href="/learn/irmaa">IRMAA</a> goes through the tiers and how to plan around them.</p>
+
+<h2 id="cost">What a year of Medicare costs</h2>
+<p>For one person on Original Medicare with a Plan G and a Part D plan, below the IRMAA line, a typical year of premiums and the Part B deductible in 2026 looks like this.</p>
+
+<!-- data: Part B $202.90 × 12 = $2,434.80; Part D $35 × 12 = $420 (lib/engine/data/2026.js medicare.partD); Medigap Plan G $120–$200 × 12 = $1,440–$2,400 (medicare.medigap); Part B deductible $283. Total $4,577.80–$5,537.80. -->
+<figure>
+  <table>
+    <thead><tr><th>Item</th><th>Per year</th></tr></thead>
+    <tbody>
+      <tr><td>Part B premium</td><td>$2,435</td></tr>
+      <tr><td>Part D plan, average premium</td><td>$420</td></tr>
+      <tr><td>Medigap Plan G</td><td>$1,440 to $2,400</td></tr>
+      <tr><td>Part B deductible</td><td>$283</td></tr>
+      <tr><td>Total</td><td>About $4,600 to $5,500</td></tr>
+    </tbody>
+  </table>
+  <figcaption>2026, one person, below the IRMAA thresholds. Add drug copays, dental, vision and hearing, which Original Medicare doesn't cover. A couple pays twice as much: Medicare has no family coverage.</figcaption>
+</figure>
+
+<p>That's far less than most marketplace plans cost in the years just before 65, which is why 65 is a milestone in many early-retirement budgets (see <a href="/learn/health-cover-before-65">health cover before 65</a>). Medicare premiums tend to rise faster than general inflation; Part B went from $185.00 in 2025 to $202.90 in 2026, almost 10%.</p>
+<h3>What Medicare doesn't cover</h3>
+<p>The largest gap is long-term care. Medicare pays for skilled care after a hospital stay, up to 100 days with copays from day 21, but not for help with daily living in a nursing home, assisted living or at home, which is what most long-term care is. That's the subject of <a href="/learn/long-term-care">long-term care</a>. Routine dental work, dentures, eye exams for glasses and hearing aids aren't covered by Original Medicare either, and coverage outside the US is very limited, though some Medigap plans pay for emergencies abroad.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The <a href="/healthcare">Healthcare</a> tool works out Medicare premiums from 65 for the income you expect, including any IRMAA surcharge, and shows how close you are to the next tier. The <a href="/roth">Roth Conversions</a> tool shows IRMAA year by year, with the two-year lookback, so you can see what a conversion in your sixties does to your premiums later. In a plan, count Medicare as a spending line for each person from 65, and budget for premiums that grow faster than prices in general.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Do I have to sign up for Medicare at 65 if I'm still working?</summary><p>Not always. With coverage from current work at an employer with 20 or more employees, you can usually delay Part B, and drugs if the plan's coverage is creditable, without penalty. Check with the employer's benefits office, and sign up within eight months of the job or coverage ending.</p></details>
+<details><summary>Is Medicare Advantage or Medigap better?</summary><p>It depends on your health, your doctors and how much you value choice against lower premiums. The catch is that Medigap is guaranteed only in your first six months with Part B in most states, so going with Advantage first can close the door to Medigap later.</p></details>
+<details><summary>Can my younger spouse get Medicare when I do?</summary><p>No. Each person qualifies at their own 65. A younger spouse needs other coverage until then, such as a marketplace plan or your employer's plan if you're still working.</p></details>
+<details><summary>Is Medicare taken out of my Social Security check?</summary><p>Yes, if you're collecting Social Security, the Part B premium, and any IRMAA surcharge, is usually deducted from it. If you aren't collecting yet, Medicare bills you.</p></details>
+<details><summary>Can I keep contributing to my HSA after 65?</summary><p>Only if you aren't enrolled in any part of Medicare. Once you are, contributions stop; stop them six months before you sign up, because Part A coverage is backdated up to six months.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Part A is hospital care and usually free; Part B is doctors at $202.90 per month for 2026; Part D is drugs, with a $2,100 out-of-pocket cap in 2026.</li>
+<li>You can fill the gaps with Medigap and Part D, or take a Medicare Advantage plan; Medigap is guaranteed only in your first six months with Part B in most states.</li>
+<li>Sign up in the seven months around your 65th birthday unless you have coverage from current work; late penalties last for life.</li>
+<li>Higher incomes pay IRMAA surcharges, based on income two years earlier.</li>
+<li>Budget about $4,600 to $5,500 per person per year in premiums, and plan separately for long-term care, dental, vision and hearing.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>What Parts A, B, C and D cover and cost for 2026</li><li>Medigap or Medicare Advantage, and why order matters</li><li>The sign-up windows and the lifetime penalties</li></ul>
+  <ul class="terms">
+    <li data-term="Original Medicare">Parts A and B, run by the federal government. It pays a share of each bill, with no yearly cap on what you pay.</li>
+    <li data-term="Medigap">A standardized private policy that pays most of what Original Medicare doesn't, such as the 20% coinsurance.</li>
+    <li data-term="Medicare Advantage">A private plan that replaces Original Medicare and usually includes drug coverage, with a network and a yearly out-of-pocket limit.</li>
+    <li data-term="IRMAA">Income-related monthly adjustment amount: a surcharge on Part B and Part D premiums for people with higher incomes, based on their tax return from two years earlier.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.cms.gov/newsroom/fact-sheets/2026-medicare-parts-b-premiums-deductibles">2026 Medicare Parts A and B premiums and deductibles</a> <span>CMS</span></li>
+    <li><a href="https://www.medicare.gov/basics/get-started-with-medicare/sign-up/when-does-medicare-coverage-start">When does Medicare coverage start?</a> <span>Medicare.gov</span></li>
+    <li><a href="https://www.medicare.gov/health-drug-plans/medigap/basics/compare-plan-benefits">Compare Medigap plan benefits</a> <span>Medicare.gov</span></li>
+    <li><a href="https://www.kff.org/medicare/medicare-advantage-out-of-pocket-limits-variation-and-trends/">Medicare Advantage out-of-pocket limits: variation and trends</a> <span>KFF</span></li>
+    <li><a href="https://www.kff.org/medicare/medicare-advantage-in-2026-enrollment-update-and-key-trends/">Medicare Advantage in 2026: enrollment update and key trends</a> <span>KFF</span></li>
+    <li><a href="https://www.ssa.gov/benefits/medicare/medicare-premiums.html">Premiums: rules for higher-income beneficiaries</a> <span>Social Security Administration</span></li>
+  </ul>
+</footer>
+</article>

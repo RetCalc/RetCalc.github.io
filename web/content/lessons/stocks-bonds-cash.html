@@ -1,0 +1,136 @@
+<article class="lesson" data-slug="stocks-bonds-cash" data-reviewed="2026-10-26"
+  data-title="Stocks, bonds and cash"
+  data-idea="What each one is, and what a century of each has done"
+  data-tool="backtest" data-try="See what any mix of stocks, bonds and cash returned in every year since 1926.">
+
+<p class="lede">Nearly every retirement portfolio is built from three things: stocks, bonds and cash. Each grows at a different speed and fails in a different way. Stocks fall hard and often, but they've outrun inflation over every 20-year stretch on record. Bonds and cash rarely fall far in a single year, yet inflation has worn them down for decades at a time. Most decisions about how to invest come down to which of those risks you take with each dollar.</p>
+
+<h2 id="what">What you own with each</h2>
+<p>A stock is a small share of a company. You get a cut of its profits, some paid out as dividends, the rest kept to grow the business, and the price of your share moves with what other investors think those future profits are worth. Most people hold stocks through a fund that owns hundreds or thousands of companies at once, such as an S&amp;P 500 index fund, which holds the 500 or so largest US companies.</p>
+<p>A bond is a loan. You lend a government or company money for a set number of years; it pays you interest, called the coupon, and hands back the amount you lent at the end. US Treasury bonds are loans to the federal government, so the chance of not being paid back is about as low as it gets. The risk in a high-quality bond is that its price moves when interest rates do.</p>
+<p>Say you hold a 10-year bond that pays 4% per year on $1,000, and the next day new 10-year bonds pay 5%. Nobody will pay you $1,000 for your 4% bond when $1,000 buys a 5% one, so its price drops until the two pay the same, to about $923. That's a 7.7% fall from a rate rise of one point. Hold the bond to the end and you still get every coupon and your $1,000 back, but if you sell early, or own a bond fund that marks its bonds to the market every day, you see the loss. It works in your favor too: when rates fall, bond prices rise.</p>
+<p>Cash here means money that keeps its dollar value from day to day and earns a short-term interest rate: a savings account, a money market fund, or Treasury bills, which are loans to the government for a year or less. A dollar in cash is still a dollar next month, though it may buy a little less.</p>
+
+<h2 id="century">What a century of each has returned</h2>
+<p>The record below covers 1926 through 2025. Stocks are the S&amp;P 500 and the index before it, with dividends reinvested; bonds are 10-year US Treasuries; cash is one-month Treasury bills, which starts in 1927; inflation is the Consumer Price Index. These are the series the <a href="/backtest">Backtest</a> uses.</p>
+
+<!-- data: engine backtest() (lib/engine/math.js) on lib/engine/data/history.js, one asset at 100%, no fee.
+     Stocks and bonds 1926–2025 (100 years); cash 1927–2025 (99 years), as backtest() starts any mix holding cash in 1927.
+     Stocks: cagr 10.45%, real 7.29%, best 1933 +54.42%, worst 1931 −41.78%, up 74 of 100.
+     Bonds: cagr 4.78%, real 1.79%, best 1982 +35.93%, worst 2022 −14.94%, up 82 of 100.
+     Cash: cagr 3.29%, real 0.30%, best 1981 +14.72%, worst 1938 −0.04%, up 95 of 99.
+     $1 after inflation: product of (1 + return) / (1 + inflation) over the years: stocks 1,140.11, bonds 5.92, cash 1.34. -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>Stocks</th><th>Bonds</th><th>Cash</th></tr></thead>
+    <tbody>
+      <tr><td>Per year, before inflation</td><td>10.4%</td><td>4.8%</td><td>3.3%</td></tr>
+      <tr><td>Per year, after inflation</td><td>7.3%</td><td>1.8%</td><td>0.3%</td></tr>
+      <tr><td>$1 grew to, in today's dollars</td><td>$1,140</td><td>$5.92</td><td>$1.34</td></tr>
+      <tr><td>Best year</td><td>+54.4% (1933)</td><td>+35.9% (1982)</td><td>+14.7% (1981)</td></tr>
+      <tr><td>Worst year</td><td class="neg">−41.8% (1931)</td><td class="neg">−14.9% (2022)</td><td class="neg">−0.04% (1938)</td></tr>
+      <tr><td>Years that lost money</td><td>26 of 100</td><td>18 of 100</td><td>4 of 99</td></tr>
+    </tbody>
+  </table>
+  <figcaption>US stocks, 10-year Treasuries and Treasury bills, 1926–2025 (cash from 1927). Returns are compound averages with income reinvested and no fees. Best and worst years are before inflation.</figcaption>
+</figure>
+
+<p>Look at the second and third rows together. A gap of 5.5 points per year between stocks and bonds after inflation doesn't sound dramatic, but compounded over a century it's the difference between a dollar becoming $1,140 and becoming $5.92. Cash barely kept pace with prices at all: a dollar in Treasury bills in 1927 bought only about a third more in 2025.</p>
+<p>The bottom rows tell the other half. Stocks lost money in about one year in four, and in their worst year lost more than two-fifths of their value. Cash almost never showed a loss on a statement, and grew the least.</p>
+<p>The average also hides how uneven the ride was. The chart shows each asset's return after inflation decade by decade.</p>
+
+<!-- data: compound real return per decade, product of (1 + asset return) / (1 + inflation) over the decade's calendar years,
+     then to the power 1/years, minus 1; HIST_STOCK, HIST_BOND, HIST_CASH, HIST_INFL (lib/engine/math.js, drawdown.js).
+     2020s covers 2020–2025 (six years). -->
+<figure data-chart='{"type":"bar","x":["1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020–25"],"xLabel":"Decade","y":"pct","series":[{"name":"Stocks","tone":"accent","values":[0.021,0.034,0.167,0.051,-0.014,0.116,0.146,-0.032,0.114,0.11]},{"name":"Bonds","tone":"neutral","values":[0.061,-0.03,-0.012,0,-0.014,0.073,0.049,0.04,0.021,-0.042]},{"name":"Cash","tone":"muted","values":[0.026,-0.047,-0.003,0.013,-0.01,0.036,0.019,0.002,-0.012,-0.012]}]}'>
+  <figcaption>Return per year after inflation, by decade. US stocks, 10-year Treasuries and Treasury bills; the last bar covers 2020–2025.</figcaption>
+</figure>
+
+<p>Stocks lost ground after inflation in two of the ten decades, the 1970s and the 2000s. In the 2000s bonds made up for them; in the 1970s all three lost. Bonds and cash both went backwards in the 1940s and 1950s, cash fell behind prices again in the 2010s, and bonds have had their worst run so far in the 2020s. No single asset came out ahead in every decade, which is the plainest argument for holding more than one.</p>
+
+<h2 id="risks">Two different kinds of risk</h2>
+<p>"Risk" in investing usually means how far something can fall. For a retirement plan, which has to pay for decades of living, there are two risks worth keeping apart: the risk of a sharp fall, and the risk of losing ground to rising prices slowly. Stocks carry most of the first. Bonds and cash carry most of the second.</p>
+
+<!-- data: real (after-inflation) compound returns over every rolling window of calendar years, worst window shown with its years.
+     Stocks and bonds 1926–2025, cash 1927–2025. Worst year real: stocks 2008 −39.29%, bonds 2022 −20.10%, cash 1946 −15.04%.
+     Worst 10 years: stocks 1965–74 −3.97%, bonds 1972–81 −4.49%, cash 1941–50 −5.06%.
+     Worst 20 years: stocks 1962–81 +0.78%, bonds 1940–59 −2.06%, cash 1933–52 −3.04%.
+     Worst 30 years: stocks 1965–94 +4.26%, bonds 1940–69 −1.39%, cash 1933–62 −1.75%.
+     Stocks' 20- and 30-year figures match the backtest article (0.8% and 4.3%). -->
+<figure>
+  <table>
+    <thead><tr><th>After inflation</th><th>Stocks</th><th>Bonds</th><th>Cash</th></tr></thead>
+    <tbody>
+      <tr><td>Worst single year</td><td class="neg">−39.3% (2008)</td><td class="neg">−20.1% (2022)</td><td class="neg">−15.0% (1946)</td></tr>
+      <tr><td>Worst 10 years, per year</td><td class="neg">−4.0% (1965–74)</td><td class="neg">−4.5% (1972–81)</td><td class="neg">−5.1% (1941–50)</td></tr>
+      <tr><td>Worst 20 years, per year</td><td>+0.8% (1962–81)</td><td class="neg">−2.1% (1940–59)</td><td class="neg">−3.0% (1933–52)</td></tr>
+      <tr><td>Worst 30 years, per year</td><td>+4.3% (1965–94)</td><td class="neg">−1.4% (1940–69)</td><td class="neg">−1.8% (1933–62)</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The worst stretch of each length since 1926 (cash since 1927), measured in what the money would buy. Every rolling run of calendar years is counted.</figcaption>
+</figure>
+
+<h3>Stocks: deep falls, and time</h3>
+<p>Measured at year ends, US stocks lost 62% of their value from the end of 1928 to the end of 1932, and month by month the fall from the 1929 high to the 1932 low was more than 80%. With dividends reinvested they didn't get back above the end-1928 level until the end of 1936. In 2008 they fell 39% in a single calendar year in this data, which uses monthly average prices (the S&amp;P 500's published total return for 2008 was −37%). Falls of 20% or more have come many times since, usually with no warning anyone could act on.</p>
+<p>Over long stretches the picture flips. The worst 20 years for stocks still came out slightly ahead of inflation, and the worst 30 years earned 4.3% per year after it. Stocks beat bonds after inflation in 77 of the 91 ten-year stretches since 1926, and in 80 of the 81 twenty-year ones. That's why money you won't need for decades can usually afford to sit in stocks, and why money you'll spend next year usually shouldn't.</p>
+
+<h3>Bonds and cash: inflation, slowly</h3>
+<p>The bond and cash columns run the other way. Their worst single years are milder than stocks', but their worst long stretches are worse. An investor holding 10-year Treasuries from 1940 to 1980 lost about half their spending power along the way, with every coupon reinvested, and didn't get back to the 1940 level until 1986. For much of the 1940s the Federal Reserve held Treasury rates down while prices rose; then came the inflation of the 1970s, when prices nearly tripled between 1966 and 1981. Cash did worse still in the 1940s: 1946 alone, with prices up 18%, took 15% off its value after inflation.</p>
+<p>A bond's coupon is fixed in dollars when you buy it, and cash pays whatever short-term rate is on offer. Neither has a built-in link to prices. When inflation runs ahead of the rate you locked in, you lose ground every year without ever seeing a red number on a statement.</p>
+
+<h3>When bonds fall with stocks</h3>
+<p>Most of the time, high-quality bonds have held up when stocks fell. In 2008, when stocks lost 39%, 10-year Treasuries gained 19%; in 1931 they edged up while stocks lost 42%; in 2000–02 they rose each year while stocks fell three years running. But it isn't a rule. In 2022, with inflation above 6% and interest rates rising fast, stocks fell 15% and 10-year Treasuries fell 15% too in this data, the bonds' worst year in the record. Bonds protect best against falls that come from a slump in the economy, and worst against falls that come from inflation.</p>
+
+<h2 id="tips">Bonds that rise with prices</h2>
+<p>Two kinds of US government bond are built to answer the inflation problem. Neither is in the history above, which starts decades before either existed, but both are worth knowing.</p>
+<p>TIPS, Treasury Inflation-Protected Securities, have been sold since 1997. The Treasury raises the bond's principal with the Consumer Price Index, and the fixed interest rate is paid on that adjusted amount every six months, so both the interest and the final payout keep pace with prices. They come in 5, 10 and 30-year terms, and at maturity you get the inflation-adjusted principal or the original amount, whichever is higher. TIPS prices still move with interest rates in the meantime, so a TIPS fund can fall in a year when rates jump. Held to maturity, a TIPS bond pays a known amount of spending power, which is why some retirees build a ladder of them, one maturing each year, to cover a stretch of spending.</p>
+<p>I bonds are savings bonds whose rate has two parts, a fixed rate set when you buy and an inflation rate reset every six months. You can buy up to $10,000 per person per calendar year electronically through TreasuryDirect. You can't cash them for the first 12 months, and cashing before five years costs the last three months of interest. They never lose value, which makes them a reasonable home for part of an emergency fund, but the purchase limit keeps them small next to most retirement savings.</p>
+
+<h2 id="spread">Spreading out within stocks</h2>
+<p>Owning more than one asset is the first layer of diversification. The second is owning many different stocks, so that no one company's collapse matters much. An S&amp;P 500 fund does that across the largest US companies. Two further steps come up often enough to know about.</p>
+<h3>Stocks outside the US</h3>
+<p>The US is the world's largest stock market, and its century has been one of the best of any country's. That's worth keeping in mind when reading any US history, including this one. Japan is the standard counterexample: its main index, the Nikkei 225, peaked in December 1989 and didn't close above that level again until February 2024, 34 years later (dividends would shorten that wait, but the index itself doesn't count them). The US has had its own lost decade: US stocks lost ground after inflation from 2000 to 2009, a stretch when stocks in other developed countries did better, before the US led by a wide margin through the 2010s. Holding both means never having all your money in the one market that turns out to have the bad decade. RetCalc's market history is US only, so its tools can't show what an international share would have done.</p>
+<h3>Small-cap value</h3>
+<p>In 1992, the economists Eugene Fama and Kenneth French showed that small companies, and companies priced low against their book value ("value" stocks), had earned more on average than large companies and highly priced ones. A fund holding small value companies swings far more than the S&amp;P 500 and, over the full record, has earned more. In the record the Backtest uses, small-cap value earned 14.2% per year from 1927 through 2025 against 10.4% for the S&amp;P 500. It also fell 83% from the end of 1928 to the end of 1931, and it went through long dry spells: it trailed the S&amp;P 500 in 21 of the 90 ten-year stretches in the record, including every one starting from 2009 through 2016. From 2007 through 2025 it earned 7.6% per year against 10.7% for the S&amp;P 500.</p>
+<p>Moving a third of a 60/40 mix's stocks into small-cap value (40% US stocks, 20% small value, 40% bonds) earned 9.69% per year from 1927 through 2025, against 8.65% for 60/40, but its deepest fall was 44% instead of 37%. Whether that trade appeals depends on whether you'd hold through a decade of trailing the market.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The <a href="/backtest">Backtest</a> shows any mix of stocks, small-cap value, bonds and cash over the whole record or any slice of it. Pick 100, 60 or 0 under Asset mix to see the three quick mixes, then look past the average to the rows that matter for a plan: the return after inflation, the deepest fall, and the worst 10, 20 and 30-year stretches. Set the start year to 1966 or 2000 to see what a bad start looked like.</p>
+<p>How these returns play out once withdrawals begin is a different question, because a fall early in retirement does more damage than the same fall later. The <a href="/drawdown">Drawdown Simulator</a> runs a stock and bond mix through every retirement since 1926 with your spending coming out. And how much of each to hold, before and after you retire, is the subject of <a href="/learn/how-much-in-stocks">the next lesson</a>.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Are bonds safe?</summary><p>Safer than stocks over a year or two, but not risk-free. Bonds lose value when interest rates rise, as in 2022, and inflation can erode them for decades, as it did from 1940 to 1980. Their main job in a portfolio is to fall less than stocks when stocks fall, and to be there to spend from when stocks are down.</p></details>
+<details><summary>Why hold cash at all if it barely beats inflation?</summary><p>For money you'll need soon. Cash is the one place where next month's balance is known in dollars, which makes it right for an emergency fund or the next year or so of retirement spending. Its cost is lost growth, which matters more the longer the money sits there. <a href="/learn/emergency-fund">The emergency fund lesson</a> covers how much and where.</p></details>
+<details><summary>Why do the figures use 10-year Treasuries for bonds?</summary><p>Monthly figures for them go back to 1926, so they can be tested over the whole record. A bond fund you can buy today usually holds a mix of maturities, often shorter than ten years on average, so it swings somewhat less with interest rates. Funds that add corporate bonds pay a little more interest and tend to fall a little more when stocks crash.</p></details>
+<details><summary>Do these returns include fees?</summary><p>No. Every figure here is before fund fees and taxes. A broad index fund might cost 0.05% per year, but an expensive fund or an adviser can cost a full point or more, which comes straight off every return in the table. <a href="/learn/fees-and-index-funds">Fees and index funds</a> shows what that adds up to.</p></details>
+<details><summary>Will stocks keep returning 7% after inflation?</summary><p>Nobody knows. The US had an unusually good century, and prices today are high against company earnings, which has tended to come before weaker decades. History is useful for seeing the range of what has happened. It's a weaker guide to the average of what will. <a href="/learn/cape-valuations">Starting valuations and CAPE</a> looks at what today's prices might mean.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>Stocks are part-ownership of companies, bonds are loans, and cash is short-term savings that holds its dollar value.</li>
+  <li>From 1926 through 2025, US stocks earned 7.3% per year after inflation, 10-year Treasuries 1.8% and Treasury bills 0.3%.</li>
+  <li>Stocks carry the risk of deep, sudden falls; bonds and cash carry the risk of losing ground to inflation, sometimes for decades.</li>
+  <li>Bonds usually cushion a stock fall, but not when inflation is the cause, as in 2022.</li>
+  <li>TIPS and I bonds protect against inflation, and spreading across countries and kinds of stock protects against one market's bad decade.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>What stocks, bonds and cash are, and how each pays you</li>
+    <li>What each returned from 1926 to 2025, and its worst years</li>
+    <li>Why inflation is the bigger risk for bonds and cash</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Real return">A return after inflation. 7% growth with 3% inflation is about a 4% real return.</li>
+    <li data-term="Interest-rate risk">The fall in a bond's price when interest rates rise, since new bonds then pay more. Longer bonds fall more.</li>
+    <li data-term="TIPS">Treasury Inflation-Protected Securities: US government bonds whose principal and interest rise with the Consumer Price Index.</li>
+    <li data-term="Diversification">Spreading money across different investments so that no single one going badly sinks the whole portfolio.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://shillerdata.com/">Online data: US stock prices, dividends, interest rates and CAPE</a> <span>Robert Shiller, Yale</span></li>
+    <li><a href="https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html">Data library: small-cap value and Treasury bill returns</a> <span>Kenneth French, Dartmouth</span></li>
+    <li><a href="https://doi.org/10.1111/j.1540-6261.1992.tb04398.x">The cross-section of expected stock returns (Fama and French, 1992)</a> <span>Journal of Finance</span></li>
+    <li><a href="https://www.treasurydirect.gov/marketable-securities/tips/">Treasury Inflation-Protected Securities (TIPS)</a> <span>TreasuryDirect</span></li>
+    <li><a href="https://www.treasurydirect.gov/savings-bonds/i-bonds/">I bonds</a> <span>TreasuryDirect</span></li>
+  </ul>
+</footer>
+</article>

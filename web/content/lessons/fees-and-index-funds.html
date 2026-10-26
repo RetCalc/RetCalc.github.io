@@ -1,0 +1,136 @@
+<article class="lesson" data-slug="fees-and-index-funds" data-reviewed="2026-10-26"
+  data-title="Fees and index funds"
+  data-idea="Small yearly percentages that add up to large sums"
+  data-tool="advanced" data-try="Add a fee to your savings and see what it costs by retirement, in dollars, with your plan already filled in.">
+
+<p class="lede">Investment fees are quoted as small percentages, and they're charged on your whole balance every year for as long as you're invested. Over a career and a retirement, the gap between a fund that costs 0.05% and one that costs 1% can come to a quarter of everything you'd otherwise have. Fees are also the one part of investing return you control in advance, which is a large part of why index funds have taken over so much of the market.</p>
+
+<h2 id="how">How fees are charged</h2>
+<p>Most of what you pay comes in one of two forms.</p>
+<p>A fund's expense ratio is its yearly cost as a share of what you hold in it. A fund with a 0.50% expense ratio costs $5 per year for every $1,000 you have in it. You never get a bill. The fund takes a sliver from its assets every day, so the cost is already inside the returns you see, which is exactly why it's easy to ignore.</p>
+<p>An advisory fee is what an adviser or managed-account service charges to run your portfolio, usually as a percentage of the money it manages, billed every quarter. Around 1% per year is a common rate on smaller accounts, often stepping down on larger ones. It comes on top of the expense ratios of the funds the adviser buys for you.</p>
+<p>Because both are charged on the balance, not on your gains, a fee takes a bigger share of your return than its size suggests. If your investments earn 6% in a year and you pay 1%, the fee took a sixth of that year's growth. If they earn 4% after inflation, the same 1% takes a quarter of your real growth. In a year when they earn nothing, you still pay.</p>
+
+<h2 id="thirty">What a fee costs over 30 years</h2>
+<p>Take $100,000 invested for 30 years, earning 6% per year before fees, with nothing added or withdrawn. With no fee it grows to $574,349: $100,000 times 1.06, thirty times over. A 1% fee turns the 6% into 5%, and the same sum gives $432,194.</p>
+
+<!-- data: $100,000 lump sum, 30 years, 6% per year before fees, fee subtracted from the return (net = 6% − fee), compounded yearly:
+     balance = 100,000 × (1.06 − fee)^30. As Advanced does it (return net of fees = gross − fees).
+     0%: 574,349. 0.05%: 566,277 (−8,072, 1.4%). 0.25%: 535,071 (−39,278, 6.8%). 0.50%: 498,395 (−75,954, 13.2%).
+     1.00%: 432,194 (−142,155, 24.8%). 1.50%: 374,532 (−199,817, 34.8%). 2.00%: 324,340 (−250,009, 43.5%). -->
+<figure>
+  <table>
+    <thead><tr><th>Yearly fee</th><th>After 30 years</th><th>Cost of the fee</th><th>Share of the no-fee balance</th></tr></thead>
+    <tbody>
+      <tr><td>None</td><td>$574,349</td><td></td><td></td></tr>
+      <tr><td>0.05%</td><td>$566,277</td><td class="neg">−$8,072</td><td class="neg">−1.4%</td></tr>
+      <tr><td>0.25%</td><td>$535,071</td><td class="neg">−$39,278</td><td class="neg">−6.8%</td></tr>
+      <tr><td>0.50%</td><td>$498,395</td><td class="neg">−$75,954</td><td class="neg">−13.2%</td></tr>
+      <tr><td>1.00%</td><td>$432,194</td><td class="neg">−$142,155</td><td class="neg">−24.8%</td></tr>
+      <tr><td>1.50%</td><td>$374,532</td><td class="neg">−$199,817</td><td class="neg">−34.8%</td></tr>
+      <tr><td>2.00%</td><td>$324,340</td><td class="neg">−$250,009</td><td class="neg">−43.5%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>$100,000 left to grow for 30 years at 6% per year before fees, with the fee taken off the return each year. Before inflation and taxes.</figcaption>
+</figure>
+
+<p>A 1% fee cost a quarter of the final balance. A 2% fee, which isn't unusual once an adviser's fee is stacked on expensive funds, cost more than two-fifths. A broad index fund at 0.05% cost about 1.4%.</p>
+<p>Most of that cost is growth the fee money would have earned had it stayed invested. Charge the same 1% on the balance at the end of each year instead and the fees you pay add up to about $70,000 over the 30 years, yet the balance ends about $150,000 lower than with no fee. Every dollar taken in year one would have grown more than fivefold by year 30.</p>
+
+<!-- data: the same $100,000 at 6%, with 1% of the balance taken at the end of each year: balance × 1.06 × 0.99 per year,
+     100,000 × 1.0494^30 = 424,846. Fees taken summed over the 30 years: 69,704. Gap to 574,349: 149,503.
+     $1 at 6% for 29 years: 1.06^29 = 5.42. -->
+
+<h2 id="saver">For someone still saving</h2>
+<p>Most people don't invest a lump sum and walk away; they add money every month. The cost of a fee is smaller as a share for a saver, because the newest contributions haven't been paying it for long, but it's still large in dollars. Move the fee below and watch the gap.</p>
+
+<!-- data: the fees widget. Built to match this text.
+     Inputs (fixed): $10,000 to start, $500 per month added at the end of each month, 30 years, 5% per year after inflation before fees.
+     Fee slider: 0% to 2.00% in steps of 0.05%, default 1.00%.
+     Shows two lines over 30 years in today's dollars (no fee, and with the chosen fee), and at year 30: the balance with the fee,
+     the dollar gap to no fee and the gap as a share of the no-fee balance. Total put in: $190,000.
+     Arithmetic: net = 5% − fee per year; monthly rate m = (1 + net)^(1/12) − 1; each month balance = balance × (1 + m) + 500.
+     Year 30: 0%: $450,907. 0.05%: $446,722 (−$4,185, 0.9%). 0.10%: $442,581. 0.25%: $430,418 (−$20,490, 4.5%).
+     0.50%: $410,985 (−$39,922, 8.9%). 0.75%: $392,554. 1.00%: $375,069 (−$75,838, 16.8%). 1.50%: $342,742 (−$108,166, 24.0%).
+     2.00%: $313,629 (−$137,278, 30.4%). -->
+<figure data-widget="fees">
+  <figcaption>$10,000 to start plus $500 per month for 30 years, growing 5% per year after inflation before fees. At the default 1% fee, the balance ends at $375,069 instead of $450,907, $75,838 less, in today's dollars.</figcaption>
+</figure>
+
+<p>At the default 1%, the saver puts in $190,000 over the 30 years and ends with $75,838 less than at no fee, 16.8% of the no-fee balance. At 0.05%, the gap is $4,185.</p>
+
+<h2 id="retired">Once you retire</h2>
+<p>A fee keeps costing after you stop saving, and in retirement it comes straight out of what you can spend. Using the same history and rules as <a href="/learn/how-much-in-stocks">How much in stocks</a> (a 60/40 portfolio, 30-year retirements starting each January from 1927 to 1996, spending raised with inflation), the chart shows the highest first-year withdrawal rate that lasted in every one of those retirements, at different fee levels.</p>
+
+<!-- data: engine ddQuick() / historicalBacktest() (lib/engine/drawdown.js) via ddOptsFromState({initial:1000000, years:30, stock:60, strategy:"fixed", fee}),
+     January starts 1927–1996 (70 retirements). Highest rate: bisection on the first-year rate for 100% success.
+     Fee 0: 3.79%. 0.05: 3.77. 0.25: 3.68. 0.5: 3.57. 1: 3.36. 1.5: 3.16. 2: 2.97.
+     Success at 4%: 0 → 94.3% (66 of 70); 1% → 88.6% (62 of 70). -->
+<figure data-chart='{"type":"bar","x":["None","0.05%","0.25%","0.5%","1%","1.5%","2%"],"xLabel":"Yearly fee","y":"pct","series":[{"name":"Highest rate that lasted every start","tone":"accent","values":[0.0379,0.0377,0.0368,0.0357,0.0336,0.0316,0.0297]}]}'>
+  <figcaption>Highest first-year withdrawal, raised with inflation after, that lasted 30 years in all 70 January starts from 1927 to 1996. 60% US stocks, 40% 10-year Treasuries.</figcaption>
+</figure>
+
+<p>With no fee, 3.79% lasted in every start: $37,900 per year from $1 million. At 1%, the highest rate that always lasted fell to 3.36%, or $33,600. That's $4,300 less to spend every year for 30 years, for the same savings. Put the other way, a retiree paying 1% who takes 4% anyway saw the money last in 62 of the 70 retirements instead of 66.</p>
+
+<h2 id="index">Index funds and active funds</h2>
+<p>An index fund buys every stock or bond in a market index, such as the S&amp;P 500, in proportion to its size, and holds them. Nobody picks stocks, so it's cheap to run. An actively managed fund pays managers and analysts to choose which stocks to own and when, trying to beat the index. Vanguard launched the first index mutual fund for individual investors in 1976, to a good deal of scorn from the rest of the industry; today index funds and ETFs hold a large share of all US fund money.</p>
+<h3>The arithmetic</h3>
+<p>In 1991 the Stanford economist William Sharpe set out why indexing works in a short article, "The Arithmetic of Active Management." Every share in the market is owned by someone. Index investors as a group hold the market, so before costs they earn the market's return. That means active investors as a group must also earn the market's return before costs, since together they own everything else. After costs, the average actively managed dollar must do worse than the average index dollar, by the difference in what each pays. Some active managers will beat the index in any given year, but the group as a whole can't.</p>
+<h3>The scorecard</h3>
+<p>S&amp;P Dow Jones Indices has measured this since 2002 in its SPIVA reports, now published twice per year, which compare active funds with their benchmark index and count funds that closed along the way as well as those that survived. The latest, the SPIVA U.S. Mid-Year 2026 scorecard, covering results to June 30, 2026, found that 67% of actively managed large-company US stock funds trailed the S&amp;P 500 in the first half of 2026, after 79% trailed it over calendar 2025. Over longer stretches the share climbs: about 90% trailed over 15 years and about 93% over 20 years.</p>
+<p>The short-term figure moves around; the long-term one barely does. Some managers beat the index for a few years, but the winners of one stretch have rarely stayed winners in the next, so there's no reliable way to find the minority ahead of time. And a fund that trails badly tends to close or merge into another, which is why counting only the survivors makes active funds look better than they were.</p>
+<h3>What funds cost now</h3>
+<p>Fees have fallen a long way. The Investment Company Institute puts the average expense ratio for stock mutual funds at 0.40% in 2025, weighted by how much money is in each fund, down from 1.04% in 1996; for index stock ETFs the average was 0.14%. Morningstar's 2026 fee study found investors paid 0.32% on average across all US mutual funds and ETFs in 2025, and 0.10% for index funds, with many of the largest index funds charging under 0.05%. Those averages are pulled down by where the money is: plenty of funds, active and index alike, still charge 0.75% or more.</p>
+
+<h2 id="hidden">Where fees hide</h2>
+<p>The expense ratio is the fee you can see on a fund's page. Others take more looking for.</p>
+<ul>
+  <li>An adviser's 1% sits on top of the funds' own expense ratios. A managed account at 1% holding funds at 0.60% costs 1.60% per year in all.</li>
+  <li>Running a workplace plan costs money for record-keeping and administration, and some plans pass it to you as a yearly or quarterly charge, or build it into the funds on the menu. Plans must send you a fee disclosure each year that lists the expense ratio of every option and any plan-level charges.</li>
+  <li>Some mutual funds charge a load, a percentage of what you invest, when you buy or sell, and some charge a yearly 12b-1 fee of up to 1% for marketing and distribution, included in the expense ratio.</li>
+  <li>A fund pays commissions and price spreads when it trades. These aren't in the expense ratio, and they're larger in funds that trade a lot, which index funds rarely do.</li>
+  <li>Variable annuities typically charge a mortality and expense fee, often around 1% to 1.5% per year, plus the costs of the funds inside and of any optional guarantees. <a href="/learn/annuities-and-pensions">Annuities and pensions</a> covers what they buy.</li>
+  <li>In a taxable account, a fund that trades a lot passes realized gains to its holders each year, and you owe tax on them even if you didn't sell anything. Broad index funds and ETFs tend to pass on few.</li>
+</ul>
+
+<h2 id="advice">When paying more can be worth it</h2>
+<p>A fee is only a cost if you'd have done as well without whatever it buys. Good advice can be worth more than it costs: talking you out of selling in a crash, setting up Roth conversions or a withdrawal order that saves thousands in tax, or simply getting a plan made at all. The useful question is what you're getting, in dollars, for what you're paying, in dollars. A 1% fee on $1,000,000 is $10,000 per year, every year, rising as the balance grows. Many advisers also work for a flat yearly fee or by the hour, which can cost much less for someone who mostly needs a plan and a check-in.</p>
+<p>For the funds themselves, the case for paying more is weaker. A higher expense ratio buys a manager's attempt to beat the market, and the long-run record above says most attempts don't succeed after costs.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p><a href="/advanced">Advanced</a> has a Fees field: enter your all-in cost, the funds' expense ratios plus any advisory fee, and it shows the return net of fees and what your savings come to with and without them. Add up what you actually pay first: the expense ratio of each fund you hold, weighted by how much is in it, plus any adviser or plan fee. The <a href="/drawdown">Drawdown Simulator</a> and the <a href="/backtest">Backtest</a> each take a fee too, so you can see its effect on retirement spending and on past returns.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Is an ETF cheaper than a mutual fund?</summary><p>Not by being an ETF. An exchange-traded fund is bought and sold on a stock exchange like a share, while a mutual fund is bought from the fund company at the day's closing price. Index ETFs and index mutual funds that track the same market often charge about the same, and some fund companies offer the same fund both ways. In a taxable account, ETFs have tended to pass on fewer capital gains.</p></details>
+<details><summary>Are all index funds cheap?</summary><p>Most broad ones are, but not all. Some index funds charge 0.50% or more for the same market a competitor tracks for 0.03%, and some 401(k) plans only offer higher-cost share classes. Two funds tracking the S&amp;P 500 hold the same stocks, so the cheaper one will almost always come out ahead.</p></details>
+<details><summary>Is 0.12% for a target-date fund expensive?</summary><p>Not by today's standards. Target-date funds built from index funds often cost somewhere around 0.08% to 0.20%. Ones built from actively managed funds can cost 0.50% or more, for the same job of holding a mix and shifting it over time.</p></details>
+<details><summary>Do fees matter in a Roth IRA or 401(k)?</summary><p>Just as much. The tax treatment changes what you owe on withdrawals, but the fee still comes out of the balance every year and the lost growth compounds the same way.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>Fees are charged on your whole balance every year, so a 1% fee can take a sixth or more of each year's growth.</li>
+  <li>Over 30 years, 1% cost a quarter of a $100,000 investment growing at 6%; 0.05% cost about 1.4%.</li>
+  <li>In retirement, a 1% fee cut the historically safe starting withdrawal from 3.79% to 3.36% for a 60/40 mix.</li>
+  <li>Most active stock funds trail their index over long periods, about nine in ten over 15 and 20 years in the latest SPIVA scorecard.</li>
+  <li>Count every layer: fund expense ratios, adviser and plan fees, sales charges and taxes on fund trading.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>How expense ratios and advisory fees are charged</li>
+    <li>What 1% per year costs over 30 years and in retirement</li>
+    <li>Why most active funds trail an index fund over time</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Expense ratio">A fund's yearly cost as a share of your money in it, taken from the fund's assets. 0.50% is $5 per year per $1,000.</li>
+    <li data-term="Index fund">A fund that holds every security in a market index in proportion to its size, rather than picking among them.</li>
+    <li data-term="Advisory fee">What an adviser charges to manage your money, usually a percentage of the balance per year, on top of fund costs.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://web.stanford.edu/~wfsharpe/art/active/active.htm">The arithmetic of active management (Sharpe, 1991)</a> <span>Financial Analysts Journal</span></li>
+    <li><a href="https://www.spglobal.com/spdji/en/spiva/article/spiva-us">SPIVA U.S. scorecard</a> <span>S&amp;P Dow Jones Indices</span></li>
+    <li><a href="https://www.ici.org/news-release/mutual-fund-and-etf-fees-remained-near-historic-lows-in-2025">Mutual fund and ETF fees remained near historic lows in 2025</a> <span>Investment Company Institute</span></li>
+    <li><a href="https://www.morningstar.com/business/insights/blog/us-fund-fee-study">US fund fee study</a> <span>Morningstar</span></li>
+    <li><a href="https://www.investor.gov/additional-resources/news-alerts/alerts-bulletins/updated-investor-bulletin-how-fees-expenses-affect">How fees and expenses affect your investment portfolio</a> <span>Investor.gov</span></li>
+  </ul>
+</footer>
+</article>

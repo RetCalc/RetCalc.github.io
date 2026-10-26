@@ -1,0 +1,143 @@
+<article class="lesson" data-slug="health-cover-before-65" data-reviewed="2026-10-26"
+  data-title="Health cover before 65"
+  data-idea="COBRA, the ACA marketplace, and the income line that sets the price"
+  data-tool="healthcare" data-try="Price marketplace cover for your age, state and income, with and without the subsidy, with your plan already filled in.">
+
+<p class="lede">Medicare starts at 65. Retire before that and you need another way to pay for health care, and for many early retirees it becomes one of the largest bills in the budget. What you pay for a marketplace plan depends mostly on your income, and in retirement you have some control over what counts as income. For 2026, though, the rules have a sharp line where one extra dollar of income can cost thousands.</p>
+
+<h2 id="options">The ways to stay covered</h2>
+<p>Leaving a job with health benefits before 65 usually means choosing among a handful of options. Many people end up on a marketplace plan for at least part of the gap, but the others can be cheaper in the right circumstances.</p>
+
+<!-- data: COBRA terms from the Department of Labor (up to 18 months for job loss; premium up to 102% of plan cost; employers with 20 or more employees). Marketplace and Medicaid rules from HealthCare.gov. Retiree plans and spouse plans vary by employer. -->
+<figure>
+  <table>
+    <thead><tr><th>Option</th><th>How long</th><th>What it costs</th><th>Worth knowing</th></tr></thead>
+    <tbody>
+      <tr><td>Retiree coverage from your employer</td><td>Often to 65</td><td>Set by the employer</td><td>Fewer employers offer it each year, and they can change or end it</td></tr>
+      <tr><td>A spouse's employer plan</td><td>While the spouse works there</td><td>The employee share of the premium</td><td>Losing your own cover lets you join within 30 days</td></tr>
+      <tr><td>COBRA</td><td>Usually 18 months</td><td>Up to 102% of the full premium</td><td>The same plan and doctors; no subsidy</td></tr>
+      <tr><td>ACA marketplace plan</td><td>Year to year, until Medicare</td><td>List price minus a tax credit set by income</td><td>Can't be refused or charged more for health</td></tr>
+      <tr><td>Medicaid</td><td>While income stays low</td><td>Little or nothing</td><td>Up to 138% of the poverty line in most states</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The main ways people under 65 get cover after leaving work. Health care sharing ministries are sometimes sold as an alternative, but they aren't insurance and don't have to pay claims.</figcaption>
+</figure>
+
+<p data-yours></p>
+
+<h2 id="cobra">COBRA: the same plan, at full price</h2>
+<p>COBRA is a federal law that lets you keep your employer's group health plan after you leave, if the employer has 20 or more employees. Many states have similar "mini-COBRA" laws for smaller employers. You usually get 18 months after leaving a job, longer in some cases, and you have 60 days from the later of losing coverage or getting the notice to sign up. Coverage is retroactive, so you can wait to see whether you need it.</p>
+<p>The cost is the whole premium, the part your employer used to pay as well as yours, plus up to 2% for administration. For family coverage that can be $2,000 per month or more. There's no subsidy.</p>
+<p>COBRA makes sense in a few situations: you've already met a large deductible for the year and switching plans would reset it, you're in the middle of treatment with doctors who aren't in marketplace networks, or you only need to cover a few months until a new job or Medicare starts. Otherwise, a marketplace plan with a tax credit is usually much cheaper. One trap: dropping COBRA midyear by choice doesn't let you join a marketplace plan outside open enrollment. Losing a job's coverage does, and so does using up your COBRA months, so decide at the start.</p>
+
+<h2 id="marketplace">Marketplace plans</h2>
+<p>The Affordable Care Act (ACA) marketplaces, HealthCare.gov or your state's own site, sell individual plans that can't turn you down or charge more for a health condition. You can join during open enrollment each fall, which starts on November 1, or within 60 days of losing other coverage, such as leaving a job.</p>
+<p>Plans come in tiers, bronze, silver, gold and platinum, from lower premiums with higher deductibles to the reverse. The price depends on where you live, whether you smoke, and your age: in most states, insurers can charge a 64-year-old up to three times what they charge a 21-year-old. That's what makes the years just before Medicare expensive.</p>
+<p>For 2026, the average benchmark plan, the second-cheapest silver plan in an area, lists at $625 per month for a 40-year-old, according to KFF. At the federal age scale that's about $1,327 per month at 60 and $1,405 at 62 for one person, around $16,000 to $17,000 per year, before any tax credit. Prices vary a lot by state and county.</p>
+
+<!-- data: KFF 2026 average benchmark premium for a 40-year-old, $625 per month (lib/engine/data/2026.js aca.premium40, US average in its comment). Scaled by the federal default age curve (HC_AGE_MULT in lib/engine/math.js): age 60, 2.714 ÷ 1.278 × $625 = $1,327; age 62, 2.873 ÷ 1.278 × $625 = $1,405; age 64, 3.0 ÷ 1.278 × $625 = $1,467. × 12: $15,924 to $16,860. -->
+
+<h2 id="credits">How the premium tax credit works</h2>
+<p>The <b>premium tax credit</b> limits what you pay for the benchmark silver plan to a share of your income. You can take it in advance, paid straight to the insurer each month, or claim it on your tax return. The credit is the benchmark plan's price minus your expected contribution; you can use it for any metal-tier plan, so a cheaper plan costs you less and a richer one more.</p>
+<p>Your expected contribution depends on your income as a multiple of the federal poverty line. For 2026 coverage the line is $15,650 for one person and $21,150 for two, from the 2025 guidelines, since the credit runs a year behind.</p>
+
+<!-- data: lib/engine/data/2026.js aca.contrib (Rev. Proc. 2025-25) and aca.fplBase (2025 HHS poverty guidelines, 48 states and DC). Dollar figures: 133% of $15,650 = $20,815, of $21,150 = $28,130; 150%: $23,475, $31,725; 200%: $31,300, $42,300; 250%: $39,125, $52,875; 300%: $46,950, $63,450; 400%: $62,600, $84,600. -->
+<figure>
+  <table>
+    <thead><tr><th>Income, share of poverty line</th><th>One person</th><th>Two people</th><th>You pay for the benchmark plan</th></tr></thead>
+    <tbody>
+      <tr><td>Up to 133%</td><td>Up to $20,815</td><td>Up to $28,130</td><td>2.10% of income</td></tr>
+      <tr><td>133% to 150%</td><td>To $23,475</td><td>To $31,725</td><td>3.14% to 4.19%</td></tr>
+      <tr><td>150% to 200%</td><td>To $31,300</td><td>To $42,300</td><td>4.19% to 6.60%</td></tr>
+      <tr><td>200% to 250%</td><td>To $39,125</td><td>To $52,875</td><td>6.60% to 8.44%</td></tr>
+      <tr><td>250% to 300%</td><td>To $46,950</td><td>To $63,450</td><td>8.44% to 9.96%</td></tr>
+      <tr><td>300% to 400%</td><td>To $62,600</td><td>To $84,600</td><td>9.96%</td></tr>
+      <tr><td>Over 400%</td><td>Over $62,600</td><td>Over $84,600</td><td>The full price; no credit</td></tr>
+    </tbody>
+  </table>
+  <figcaption>2026 coverage, 48 states and DC (Alaska and Hawaii have higher poverty lines). Within each band the share rises in a straight line. In states that expanded Medicaid, most adults under 138% qualify for Medicaid instead.</figcaption>
+</figure>
+
+<p>Take a single 62-year-old where the benchmark plan lists at $1,405 per month. With $40,000 of income, 256% of the poverty line, the expected contribution is 8.61% of income, $287 per month, and the credit pays the other $1,118. At $50,000 it's 9.96%, $415 per month. At $62,600, the top of the 400% band, it's $520 per month, $6,235 per year.</p>
+<p>At $63,000 the credit is gone, and the same plan costs $1,405 per month, $16,860 per year. That $400 of extra income costs $10,625.</p>
+
+<!-- data: hcCalcACA(income, $1,405, income ÷ $15,650, false) in lib/engine/math.js. $40,000: 255.6% FPL, 8.61%, $287 per month. $50,000: 319%, 9.96%, $415. $62,600: 400%, 9.96%, $519.58 per month, $6,235 per year. $63,000: over 400%, $1,405 per month, $16,860 per year. $16,860 − $6,235 = $10,625. -->
+
+<h2 id="cliff">The subsidy cliff in 2026</h2>
+<p>From 2021 through 2025, Congress made the credit more generous. Nobody paid more than 8.5% of income for the benchmark plan, however high their income, and people at lower incomes paid less, some nothing. Those enhanced credits were scheduled to end after 2025, and they did. The House passed a three-year extension in January 2026, 230 to 196, but the Senate hasn't passed one, and as of late October 2026 no extension has become law.</p>
+<p>So the original rules apply to 2026 coverage: higher expected contributions, and a <b>subsidy cliff</b> at 400% of the poverty line, $62,600 for one person and $84,600 for a couple. The chart shows what a couple of 62-year-olds in Illinois, where their benchmark plan lists at $2,904 per month, would pay for it at each income under each set of rules.</p>
+
+<!-- data: hcGrossPremium("IL", 62) × 2 = $2,904.47 per month ($34,854 per year), lib/engine/math.js with KFF 2026 premium40 IL $646 and the federal age curve. Annual net premium = hcCalcACA(income, $2,904.47, income ÷ $21,150, enhanced) × 12. 2026 rules (enhanced false): 30k $1,106; 35k $1,728; 40k $2,430; 45k $3,181; 50k $3,970; 55k $4,810; 60k $5,678; 65k $6,474; 70k $6,972; 75k $7,470; 80k $7,968; 85k and above $34,854. 2021–2025 rules (enhanced true, 8.5% cap, no cliff): 30k $0; 35k $217; 40k $626; 45k $1,130; 50k $1,728; 55k $2,421; 60k $3,209; 65k $4,019; 70k $4,742; 75k $5,524; 80k $6,365; 85k $7,225; 90k $7,650; 95k $8,075; 100k $8,500; 105k $8,925; 110k $9,350; 115k $9,775; 120k $10,200. -->
+<figure data-chart='{"type":"line","x":["$30K","$35K","$40K","$45K","$50K","$55K","$60K","$65K","$70K","$75K","$80K","$85K","$90K","$95K","$100K","$105K","$110K","$115K","$120K"],"xLabel":"Household income (MAGI)","y":"money","series":[{"name":"2026 rules","tone":"bad","values":[1106,1728,2430,3181,3970,4810,5678,6474,6972,7470,7968,34854,34854,34854,34854,34854,34854,34854,34854]},{"name":"2021–2025 enhanced credits","tone":"muted","dash":true,"values":[0,217,626,1130,1728,2421,3209,4019,4742,5524,6365,7225,7650,8075,8500,8925,9350,9775,10200]}],"marks":[{"x":"$85K","label":"400% line, $84,600"}]}'>
+  <figcaption>What a couple, both 62, in Illinois pays per year for the benchmark silver plan, by household income. Under the 2026 rules the credit stops at $84,600; one dollar over, they pay the full $34,854.</figcaption>
+</figure>
+
+<p>At $84,000 this couple pays $8,366 per year for the benchmark plan. At $85,000 they pay $34,854. That's $26,487 more for $1,000 more income, a cliff no tax bracket comes close to. Below the line, the 2026 rules cost this couple about $1,100 to $2,500 more per year than the enhanced ones did. Above it, the enhanced rules capped the cost at 8.5% of income and the 2026 rules give no help at all.</p>
+<p>For 2027 coverage, the IRS has set the top contribution at 10.22% of income, up from 9.96%, with the cliff still in place. Open enrollment for 2027 starts on November 1, 2026. If Congress changes the rules again, HealthCare.gov will show the new prices. The <a href="/healthcare">Healthcare</a> tool shows both the current rules and what you'd pay if the enhanced credits came back.</p>
+
+<h3>Other 2026 changes worth knowing</h3>
+<ul>
+<li>If you take the credit in advance and your income ends up higher than you estimated, you now repay the whole excess when you file. Before 2026, repayment was capped for people under 400% of the poverty line. A tax law passed in 2025 removed the caps from the 2026 tax year.</li>
+<li>Bronze and catastrophic marketplace plans now count as high-deductible plans for an HSA, so you can contribute to a health savings account alongside one. See <a href="/learn/hsa">the HSA</a>.</li>
+<li>People who lose the credit because their income is over 400% (or under 100%) of the poverty line can now buy a catastrophic plan, normally limited to people under 30, under a hardship exemption. Those plans have lower premiums and very high deductibles.</li>
+</ul>
+
+<h2 id="income">What counts as income, and how to manage it</h2>
+<p>The credit uses <b>modified adjusted gross income</b> (MAGI): your adjusted gross income from your tax return, plus all of your Social Security benefits (including the part that isn't taxed), tax-exempt interest and some foreign income. In retirement that includes:</p>
+<ul>
+<li>withdrawals from a traditional 401(k) or IRA, and any Roth conversions,</li>
+<li>pensions and annuity income,</li>
+<li>interest, dividends and capital gains you realize when you sell,</li>
+<li>all of your Social Security, if you've claimed it,</li>
+<li>pay from any work, minus pre-tax contributions such as a 401(k) or HSA.</li>
+</ul>
+<p>It doesn't include money you spend from savings or a checking account, the part of a brokerage sale that's your original cost, withdrawals of Roth IRA contributions, or qualified Roth withdrawals. That gives early retirees a lot of control. A couple can spend $100,000 in a year while reporting $60,000 of income, if part of the spending comes from cash, Roth contributions or the cost basis of investments they sell.</p>
+<p>The usual approach is to fill income up to a chosen level and no further: draw from a traditional IRA or convert to Roth up to just under the line, and take the rest from cash or taxable accounts. A Roth conversion is income in the year you make it, so a large one during the ACA years can wipe out the credit. The lesson on <a href="/learn/roth-conversion-ladder">the Roth conversion ladder</a> covers the trade-off between converting and keeping income low.</p>
+<p>Because the credit is reconciled on your tax return, it's based on the whole year's income, not what you earned when you applied. Update your estimate on the marketplace site if your income changes during the year. Ending the year a few hundred dollars over the line means repaying the whole credit.</p>
+<h3>At the low end: Medicaid and the coverage gap</h3>
+<p>In the 40 states and DC that expanded Medicaid, adults with income up to 138% of the poverty line generally qualify for Medicaid rather than the marketplace credit. Medicaid looks at current monthly income rather than the year's, and some retirees with large savings but little income find themselves eligible. In the ten states that haven't expanded it, Alabama, Florida, Georgia, Kansas, Mississippi, South Carolina, Tennessee, Texas, Wisconsin and Wyoming, there's no credit below 100% of the poverty line, and in most of them adults without young children rarely qualify for Medicaid either (Wisconsin is an exception, covering adults up to the poverty line). There, income that's too low is a problem too.</p>
+
+<h2 id="spouse">If you're married</h2>
+<p>When one spouse keeps working, their employer's plan is often the cheapest way to cover the other. Leaving your own job's coverage counts as a reason to join a spouse's plan midyear, usually within 30 days.</p>
+<p>Medicare has no family coverage. When the older spouse turns 65 and moves to Medicare, a younger spouse needs their own plan until they reach 65 too. In a couple with a five-year age gap, that can mean several years of marketplace cover for one person, priced on the household's income. With one person on the plan, the line is 400% of the two-person poverty line, $84,600, because the credit counts everyone in the tax household.</p>
+
+<h2 id="budget">Budgeting the years before Medicare</h2>
+<p>Premiums are only part of it. A marketplace plan's out-of-pocket maximum for 2026 can be more than $10,000 for one person, and a silver plan's deductible is often several thousand dollars. Silver plans have smaller deductibles and copays for people with incomes up to 250% of the poverty line, through cost-sharing reductions, which is one reason silver can be the better buy at modest incomes.</p>
+<p>A reasonable budget for each year before 65 is the premium after the credit, plus a realistic share of the deductible, plus a cushion toward the out-of-pocket maximum in a bad year. Then check how that changes if your income lands just above the cliff, or if the rules change.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The <a href="/healthcare">Healthcare</a> tool prices the benchmark plan for your state and age, then applies the credit at the income you enter, under the 2026 rules and the enhanced ones. Set your income just under and just over the 400% line to see your own cliff. The <a href="/bridge">Bridge</a> tool plans the years before 59½ with these premiums priced in, and shows how drawing from different accounts changes both your taxes and your health costs.</p>
+<p>Your plan's retirement age sets how many years you need to cover. If retiring a year or two later would mean a year or two less of full-price coverage, that's worth weighing as part of the decision.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Does Social Security count as income for the marketplace?</summary><p>Yes, all of it, including the part that isn't taxed. That's one reason some early retirees wait to claim Social Security until after 65: it keeps income lower during the marketplace years.</p></details>
+<details><summary>Can I sign up for a marketplace plan right after I retire?</summary><p>Yes. Losing job-based coverage opens a 60-day special enrollment period, and you can usually apply up to 60 days before your coverage ends so there's no gap.</p></details>
+<details><summary>What if my income turns out higher than I estimated?</summary><p>You repay the extra credit when you file your taxes. From the 2026 tax year there's no cap on that repayment, so a surprise capital gain or a larger conversion can mean a large bill.</p></details>
+<details><summary>Will the enhanced subsidies come back?</summary><p>No one can say. As of late October 2026, the House has passed an extension and the Senate hasn't. If Congress acts, the marketplace will reprice plans, and the enhanced figures in the Healthcare tool show roughly what you'd pay.</p></details>
+<details><summary>Is COBRA ever cheaper than the marketplace?</summary><p>Sometimes, if your income is above the cliff and your employer's plan is a good one, or if you've already paid most of a large deductible this year. Compare the full COBRA premium with the marketplace price at your expected income.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Before 65, the main options are COBRA, a spouse's plan and marketplace plans, with Medicaid at low incomes.</li>
+<li>The premium tax credit caps what you pay for a benchmark silver plan at 2.10% to 9.96% of income for 2026.</li>
+<li>The enhanced credits expired after 2025, so for 2026 the credit stops at 400% of the poverty line: $62,600 single, $84,600 for a couple.</li>
+<li>Income for the credit includes all Social Security, IRA withdrawals and Roth conversions, but not spending from cash, Roth contributions or investment cost basis.</li>
+<li>Planning which account you draw from can keep income under the line, which can be worth thousands per year.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>Your options for health cover before Medicare</li><li>How income sets the marketplace tax credit</li><li>The 2026 subsidy cliff and how to stay under it</li></ul>
+  <ul class="terms">
+    <li data-term="Premium tax credit">A tax credit that caps what you pay for a marketplace plan at a share of your income. It can be paid to your insurer in advance each month.</li>
+    <li data-term="Benchmark plan">The second-cheapest silver plan where you live. The credit is figured from its price.</li>
+    <li data-term="Subsidy cliff">For 2026, the income at 400% of the poverty line above which the premium tax credit stops completely.</li>
+    <li data-term="MAGI">Modified adjusted gross income: for the marketplace, your adjusted gross income plus untaxed Social Security, tax-exempt interest and some foreign income.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.healthcare.gov/glossary/premium-tax-credit/">Premium tax credit</a> <span>HealthCare.gov</span></li>
+    <li><a href="https://www.healthcare.gov/income-and-household-information/income/">What to include as income</a> <span>HealthCare.gov</span></li>
+    <li><a href="https://www.dol.gov/general/topic/health-plans/cobra">Continuation of health coverage (COBRA)</a> <span>US Department of Labor</span></li>
+    <li><a href="https://www.irs.gov/affordable-care-act/individuals-and-families/questions-and-answers-on-the-premium-tax-credit">Questions and answers on the premium tax credit</a> <span>IRS</span></li>
+    <li><a href="https://www.cms.gov/newsroom/fact-sheets/expanding-access-health-insurance-consumers-gain-access-catastrophic-health-insurance-plans-2026">Consumers gain access to catastrophic health insurance plans for 2026</a> <span>CMS</span></li>
+  </ul>
+</footer>
+</article>

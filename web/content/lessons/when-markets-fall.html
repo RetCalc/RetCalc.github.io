@@ -1,0 +1,123 @@
+<article class="lesson" data-slug="when-markets-fall" data-reviewed="2026-10-26"
+  data-title="When markets fall"
+  data-idea="Past crashes, how long recoveries took, and what helps"
+  data-tool="backtest" data-try="See how any mix of stocks, bonds and cash did since 1926, including its deepest fall and its worst year.">
+
+<p class="lede">Anyone who invests for a few decades will live through several large market falls. They come with owning stocks, and the risk of them is part of why stocks have paid more than safer investments over time. How much a fall costs you depends mostly on what you do while it's happening.</p>
+
+<h2 id="falls">How often markets fall, and how far</h2>
+<p>A fall of 20% or more from a recent high is usually called a bear market. Smaller dips of 10% or so are more common and are forgotten quickly. The large falls are the ones that test people.</p>
+<p>The table lists every time US stocks, with dividends reinvested, lost 20% or more of their value after inflation since 1926. There were nine, roughly one every eleven years. Measured after inflation, some of them look different from the way they're usually remembered.</p>
+
+<!-- data: lib/engine/data/history.js, HIST_M_STOCK (S&P 500 with dividends, monthly) deflated by HIST_M_INFL (CPI-U), January 1926 to December 2025.
+     Every peak-to-low fall of 20% or more in that real value, and the first month it was back at its old peak; time counted from the peak.
+     The figures use monthly average prices (Shiller's convention), so falls are a little smaller than the daily-close figures often quoted (2007–09: −57% for the S&P 500's price on daily closes).
+     The 2020 fall does not reach 20% in monthly averages after inflation. 2000–09 is one fall after inflation: stocks never regained their 2000 peak before falling again. -->
+<figure>
+  <table>
+    <thead><tr><th>Fall</th><th>Peak to low</th><th>Fall after inflation</th><th>Back to the old peak</th><th>Time from the peak</th></tr></thead>
+    <tbody>
+      <tr><td>Great Depression</td><td>Sep 1929 to Jun 1932</td><td class="neg">−77%</td><td>Nov 1936</td><td>7.2 years</td></tr>
+      <tr><td>1937 relapse and war</td><td>Feb 1937 to Apr 1942</td><td class="neg">−48%</td><td>Apr 1945</td><td>8.2 years</td></tr>
+      <tr><td>Postwar inflation</td><td>Apr 1946 to Feb 1948</td><td class="neg">−35%</td><td>Oct 1950</td><td>4.5 years</td></tr>
+      <tr><td>1962</td><td>Dec 1961 to Jun 1962</td><td class="neg">−22%</td><td>May 1963</td><td>1.4 years</td></tr>
+      <tr><td>1968–70</td><td>Dec 1968 to Jun 1970</td><td class="neg">−32%</td><td>Nov 1972</td><td>3.9 years</td></tr>
+      <tr><td>Oil shock and inflation</td><td>Jan 1973 to Dec 1974</td><td class="neg">−50%</td><td>Jan 1985</td><td>12.0 years</td></tr>
+      <tr><td>1987 crash</td><td>Aug 1987 to Dec 1987</td><td class="neg">−27%</td><td>Aug 1989</td><td>2.0 years</td></tr>
+      <tr><td>Dot-com and financial crisis</td><td>Aug 2000 to Mar 2009</td><td class="neg">−52%</td><td>May 2013</td><td>12.8 years</td></tr>
+      <tr><td>2022</td><td>Nov 2021 to Oct 2022</td><td class="neg">−25%</td><td>Mar 2024</td><td>2.3 years</td></tr>
+    </tbody>
+  </table>
+  <figcaption>US stocks with dividends reinvested, after inflation, using monthly average prices, 1926–2025. Daily figures show somewhat deeper falls.</figcaption>
+</figure>
+
+<p>The falls came in very different shapes. The 1987 crash included a one-day fall of about 20% on October 19, while the fall that began in 1937 dragged on for five years. Some of the worst stretches were about inflation as much as prices. In 1973 and 1974 stock prices fell by less than half, but inflation of 9% and then 12% took a large extra bite.</p>
+<h3>What the monthly figures miss</h3>
+<p>Monthly averages smooth out the sharpest moves. The fastest bear market on record doesn't appear in the table at all: in 2020 the S&amp;P 500 fell about 34% between February 19 and March 23 as the pandemic spread, then closed at a new high on August 18, six months after it started. In monthly averages after inflation, that fall comes to less than 20%.</p>
+
+<h2 id="recovery">How long recoveries took</h2>
+<p>How long a recovery takes depends a great deal on how you measure it. The usual headline uses prices alone, before inflation and without dividends, and that version can be misleading in both directions.</p>
+<p>The Great Depression is the classic example. The Dow Jones Industrial Average, which tracks prices only, didn't get back to its 1929 high until November 1954, a figure that's often quoted as "25 years to recover." But dividends were large at the time, and prices across the economy fell by about a quarter in the early 1930s, so each dollar bought more. Counting dividends and that deflation, a stock investor's buying power was back at its 1929 peak by late 1936, about seven years later. That's still a long time, and it came after a loss of three quarters of the money's value, but it isn't 25 years.</p>
+<p>The 1970s went the other way. Counting dividends but not inflation, stocks were back above their January 1973 value by mid-1976, but inflation kept eating the gains, and after inflation stocks didn't regain their January 1973 value until January 1985. The 2000s were similar: the S&amp;P 500's price was back above its 2007 high in 2013, but after inflation and counting from the 2000 peak, it took almost thirteen years, through two separate crashes.</p>
+<p>Across the nine falls, recovery after inflation took anywhere from 17 months to nearly thirteen years. The median was about four and a half years. That's the range a plan has to live with: most falls are made up in a few years, and once or twice in a lifetime one takes more than a decade.</p>
+
+<h3>A mix of stocks and bonds falls less</h3>
+<p>Most people don't hold only stocks. A portfolio of 60% stocks and 40% bonds, rebalanced back to that mix each month, fell about 28% after inflation in 2007–09, against about 50% for stocks alone over the same months, and was back to its old value by mid-2011. In 1973–74 it fell 37%, and in 2022, when stocks and bonds fell together as interest rates rose, it fell 24%. Bonds rarely stop a fall, but they usually shrink it, and they give you something to spend or rebalance from while stocks recover. The <a href="/learn/how-much-in-stocks">lesson on how much to hold in stocks</a> covers choosing the mix.</p>
+
+<h2 id="selling">The cost of selling at the bottom</h2>
+<p>Every recovery in the table happened for people who stayed invested. The investor who sold during the fall usually got the fall without the recovery, because the biggest gains tend to come early and suddenly, when the news still looks terrible.</p>
+<p>The chart follows $100,000 in US stocks from the October 2007 peak. By March 2009, the low point, it was worth about $50,000 after inflation. The four lines are four different decisions made at that low.</p>
+
+<!-- data: HIST_M_STOCK, HIST_M_CASH (one-month Treasury bills) and HIST_M_INFL in lib/engine/data/history.js. $100,000 in stocks at the end of October 2007, monthly from November 2007.
+     Selling: from April 2009 the money earns T-bill returns instead, until the stated buy-back month (April 2010 or April 2012), then stocks again. Values after inflation, at each year end, rounded to the dollar.
+     April 2009 to March 2010: stocks +55.8%, T-bills +0.07% (before inflation). -->
+<figure data-chart='{"type":"line","x":["Oct 2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020","2021","2022","2023","2024","2025"],"xLabel":"Year end","y":"money","series":[{"name":"Stayed invested","tone":"good","values":[100000,58205,73679,82768,82080,94229,120421,138475,140275,153544,181821,175166,216038,252562,302641,241688,284578,359642,404373]},{"name":"Sold at the low, back a year later","tone":"accent","values":[100000,58205,49336,53161,52719,60522,77345,88941,90097,98620,116782,112508,138759,162218,194383,155234,182782,230995,259724]},{"name":"Sold at the low, back three years later","tone":"neutral","values":[100000,58205,49336,48658,47277,48331,61765,71025,71949,78754,93258,89845,110808,129542,155228,123965,145963,184465,207407]},{"name":"Sold at the low, stayed in cash","tone":"bad","values":[100000,58205,49336,48658,47277,46496,45808,45464,45140,44315,43744,43699,43637,43245,40406,38490,39080,39978,40592]}]}'>
+  <figcaption>$100,000 in US stocks from the October 2007 peak, after inflation. Selling at the March 2009 low and moving to Treasury bills, then buying back after one year, after three years, or never.</figcaption>
+</figure>
+
+<p>The investor who stayed put was back to even, after inflation, during 2013, and by the end of 2025 had about $404,000. In the twelve months after the low, stocks gained 56%; Treasury bills earned less than 0.1%. Someone who sold at the low and waited a year for things to calm down missed that whole rebound and ended 2025 with about $260,000. Waiting three years left about $207,000, roughly half of what staying would have. The investor who sold and never came back had about $41,000, less than half of what they put in, after inflation.</p>
+<p>Nobody sells at exactly the low, of course, and people who sell earlier in a fall can avoid part of it. The trouble is the second decision. To come out ahead, you need to buy back in before most of the recovery, at a time when the news is usually still bad. People who get the first call right very often get the second one wrong, or never make it at all.</p>
+
+<h2 id="gap">The behavior gap</h2>
+<p>The same pattern shows up outside crashes. Investors as a whole tend to put money in after prices have risen and take it out after they've fallen, and it shows in their results. Morningstar measures it each year in its Mind the Gap study by comparing what funds returned with what the dollars invested in them actually earned, given when they came and went. Across nearly 23,000 US mutual funds and ETFs over the ten years from 2016 through 2025, the funds returned 9.9% per year, but the average invested dollar earned 8.7%. That gap, 1.2 percentage points per year, came entirely from the timing of buying and selling.</p>
+<p>The gap was smallest for investors in broad US stock funds, 0.4 points per year, and in allocation funds, which hold a set mix of stocks and bonds and rebalance on their own, at 0.7 points. It was largest in narrower funds, such as single-sector stock funds and alternative strategies. Simple holdings that people leave alone seem to be easier to stick with.</p>
+
+<h2 id="rebalance">Rebalancing: buying what fell</h2>
+<p>Rebalancing means moving money back to the mix you chose after markets have pushed it off course. After a crash, that means selling some bonds and buying stocks while they're down, which is exactly what fear argues against. That's why having the rule set in advance helps.</p>
+<p>Take a 60/40 portfolio of $100,000 started at the October 2007 peak and rebalanced each January. By the end of 2008 stocks had fallen so far that they were only 43% of it. Rebalancing in January 2009 moved about $14,000 from bonds into stocks, near the low. By the end of 2012, the rebalanced portfolio was worth about $128,400 before inflation, against $121,100 for the same portfolio left alone.</p>
+<p>Over the longer run, rebalancing is mainly about risk. The portfolio that was never rebalanced pulled ahead in the long rise that followed, finishing 2025 at about $442,900 against $414,800, but by then it was 85% stocks, a much riskier mix than its owner had chosen. Rebalancing keeps the risk you signed up for, and in a crash it has you buying at low prices on a schedule instead of on nerve.</p>
+
+<h2 id="retired">If you're retired when it happens</h2>
+<p>A fall hits differently once you're withdrawing, because the money you take out during a fall is sold at low prices and isn't there for the recovery. That's <a href="/learn/sequence-risk">sequence-of-returns risk</a>, and it's why the defenses for retirees look different from the advice to savers. A few things help most:</p>
+<ul>
+  <li>Spend from bonds or cash while stocks are down, so you aren't selling stocks at their lows to pay the bills. A few years of spending outside stocks gives stocks time to recover.</li>
+  <li>Trim spending for a year or two after a large fall, if you can. <a href="/learn/guardrails">Guardrail rules</a> do this by formula: a modest cut when withdrawals grow too large a share of what's left.</li>
+  <li>Skip the inflation raise in a bad year, a small change that adds up.</li>
+  <li>Keep the stock share you planned. Selling stocks to feel safer after a fall locks in the loss for good.</li>
+</ul>
+<p>If you're still saving, a fall works in your favor, even if it doesn't feel that way. Every contribution during a fall buys shares at lower prices, and someone with decades to go has plenty of time for those shares to recover. Keeping contributions going through a fall is what lets that happen.</p>
+
+<h2 id="prepare">Getting ready before the next one</h2>
+<p>Decisions made during a crash are made under the worst conditions. It helps to settle them in advance:</p>
+<ul>
+  <li>Hold a mix you could live with at its worst. If a 50% fall in your stocks would make you sell, hold fewer stocks, and accept the lower expected return that goes with it.</li>
+  <li>Keep an <a href="/learn/emergency-fund">emergency fund</a>, so a job loss in a recession doesn't force you to sell investments at a low.</li>
+  <li>Write down your rebalancing rule and your spending plan for a bad year, while you're calm.</li>
+  <li>Look at your plan's worst cases now. If your plan survives the starts of 1929, 1937 and 1966, the next fall is less likely to be the one that breaks it.</li>
+</ul>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The <a href="/backtest">Backtest</a> shows how any mix of stocks, bonds and cash behaved since 1926: its deepest fall, its worst year and the best and worst of every stretch of years. It measures falls from one year end to the next and before inflation, so its deepest falls look smaller than the ones in the table above. Try the mix you hold, then a few with more or fewer stocks, and ask honestly whether you'd have held on through each deepest fall. To see what those falls do to a retirement with withdrawals coming out, the <a href="/drawdown">Drawdown Simulator</a> runs your plan through every start year and shows which past markets it would and wouldn't have survived.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Should I sell before a crash and buy back after?</summary><p>If you could tell when crashes were coming, yes, but nobody has managed it reliably. Markets often fall without warning and recover while the news is still bad. Missing the early part of a recovery usually costs more than avoiding part of a fall saves.</p></details>
+<details><summary>How long does a bear market usually last?</summary><p>The falls themselves have lasted from a few weeks, in 2020, to about five years, from 1937 to 1942. Getting back to the old peak after inflation has taken from about a year and a half to nearly thirteen years, with four or five years typical. Plan for the long ones, since you can't tell in advance which kind you're in.</p></details>
+<details><summary>Do bonds always rise when stocks fall?</summary><p>No. They often hold steady or rise, as in 2008, but in 2022 both fell as interest rates rose sharply, and in the 1970s inflation eroded both. Bonds usually make a fall smaller, not impossible.</p></details>
+<details><summary>Is it different if I'm close to retiring?</summary><p>Yes. A large fall in the few years before or after you retire does the most damage, because your balance is at its largest and withdrawals are about to start. That's when a buffer outside stocks and some flexibility in spending or timing matter most; the sequence-of-returns lesson covers them.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>US stocks lost 20% or more after inflation nine times between 1926 and 2025, roughly once every eleven years.</li>
+  <li>Recoveries after inflation took from under two years to almost thirteen; the longest came with high inflation or back-to-back crashes.</li>
+  <li>Selling after a fall usually means missing the sharp early part of the recovery, and the behavior gap shows how often that happens.</li>
+  <li>A mix you can live with, a rebalancing rule, money outside stocks to spend from, and a plan for a bad year make it easier to hold on.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>How deep past crashes went and how long they lasted</li>
+    <li>What selling at the bottom has cost investors</li>
+    <li>How rebalancing and a spending plan help you hold on</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Bear market">A fall of 20% or more in a broad market index from its recent high.</li>
+    <li data-term="Rebalancing">Selling some of what has grown and buying what has shrunk, to bring a portfolio back to its chosen mix.</li>
+    <li data-term="Behavior gap">The difference between what an investment returned and what its investors earned, because of when they bought and sold.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.morningstar.com/en-us/business/insights/research/mind-the-gap">Mind the Gap: investor returns vs. fund returns</a> <span>Morningstar</span></li>
+    <li><a href="https://www.investor.gov/introduction-investing/investing-basics/glossary/bear-market">Bear market</a> <span>Investor.gov</span></li>
+    <li><a href="https://www.investor.gov/introduction-investing/getting-started/asset-allocation">Asset allocation and diversification</a> <span>Investor.gov</span></li>
+    <li><a href="https://www.investor.gov/introduction-investing/investing-basics/glossary/rebalancing">Rebalancing</a> <span>Investor.gov</span></li>
+  </ul>
+</footer>
+</article>

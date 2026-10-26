@@ -1,0 +1,138 @@
+<article class="lesson" data-slug="when-to-claim" data-reviewed="2026-10-26"
+  data-title="When to claim Social Security"
+  data-idea="A smaller check sooner, or a larger one for life"
+  data-tool="social-security" data-try="Compare every claiming age from 62 to 70, by how long you live, with your plan already filled in.">
+
+<p class="lede">You can start Social Security at any age from 62 to 70, and the age you pick sets the size of your check for the rest of your life. Starting at 62 instead of 70 can mean a check 44% smaller, every month, for decades. This is one of the few retirement decisions that can't be changed later, so it's worth understanding what you're trading.</p>
+
+<h2 id="trade">What each year of waiting adds</h2>
+<p>Your benefit at full retirement age, the <b>primary insurance amount</b> (PIA), is set by your earnings record (see <a href="/learn/social-security-benefit">how your benefit is figured</a>). Claim before full retirement age and Social Security pays a permanently reduced share of it. Claim after and you earn delayed retirement credits, which raise it permanently. The rules:</p>
+<ul>
+<li>Before full retirement age, the check is cut by 5/9 of 1% for each of the first 36 months early, and 5/12 of 1% for each month beyond that.</li>
+<li>After full retirement age, it rises by 2/3 of 1% for each month you wait, 8% per year, until 70. Nothing is added after 70.</li>
+</ul>
+<p>For anyone born in 1960 or later, full retirement age is 67. The table shows what that means for someone whose PIA is $2,000 per month.</p>
+
+<!-- data: ssClaimFactor(age, 67) in lib/engine/math.js, PIA $2,000. 62: 1 − 36×5/9% − 24×5/12% = 0.70; 63: 0.75; 64: 0.80; 65: 1 − 24×5/9% = 0.8667; 66: 0.9333; 67: 1.00; 68: 1.08; 69: 1.16; 70: 1.24. Raise over the year before = factor ÷ previous factor − 1: 63 7.1%, 64 6.7%, 65 8.3%, 66 7.7%, 67 7.1%, 68 8.0%, 69 7.4%, 70 6.9%. -->
+<figure>
+  <table>
+    <thead><tr><th>Claim at</th><th>Share of PIA</th><th>Check per month</th><th>Raise over claiming a year earlier</th></tr></thead>
+    <tbody>
+      <tr><td>62</td><td>70%</td><td>$1,400</td><td></td></tr>
+      <tr><td>63</td><td>75%</td><td>$1,500</td><td>7.1%</td></tr>
+      <tr><td>64</td><td>80%</td><td>$1,600</td><td>6.7%</td></tr>
+      <tr><td>65</td><td>86.7%</td><td>$1,733</td><td>8.3%</td></tr>
+      <tr><td>66</td><td>93.3%</td><td>$1,867</td><td>7.7%</td></tr>
+      <tr><td>67</td><td>100%</td><td>$2,000</td><td>7.1%</td></tr>
+      <tr><td>68</td><td>108%</td><td>$2,160</td><td>8.0%</td></tr>
+      <tr><td>69</td><td>116%</td><td>$2,320</td><td>7.4%</td></tr>
+      <tr><td>70</td><td>124%</td><td>$2,480</td><td>6.9%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Full retirement age 67, a PIA of $2,000 per month, in today's dollars. Each year of waiting raises the check by roughly 7% to 8% over the year before. The check at 70 is 77% larger than the one at 62.</figcaption>
+</figure>
+
+<p>All of these figures are in today's dollars. Every check, whenever it starts, gets the yearly cost-of-living raise, and your PIA gets those raises from 62 even if you haven't claimed. So waiting doesn't mean missing raises, and the 8% credits come on top of inflation.</p>
+<p>The ages here are whole years, but you can start in any month. Most people can't actually get a check for the month they turn 62, because Social Security requires you to be 62 for the whole month; your first month is usually the one after your birthday. And waiting past 70 adds nothing, so there's no reason to.</p>
+
+<p data-yours></p>
+
+<h2 id="lifetime">What each choice adds up to</h2>
+<p>The trade is easy to state: a smaller check starting sooner, or a larger one starting later. Which collects more in total depends entirely on how long you live. Move the slider to pick a claiming age and compare it with claiming at 62 and at 70.</p>
+
+<!-- widget claim-age: a slider for the claiming age, 62 to 70 in whole years, starting at 67. Full benefit (PIA) $2,000 per month at a full retirement age of 67, in today's dollars. The check at each age is PIA × the share in the table above (claimShare in components/learn/widgets/ClaimAge.tsx, the same rules as ssClaimFactor). The chart's x axis is age at death, 62 to 100; y is the total of all checks collected by that age, (age at death − claiming age) × 12 × monthly check, in today's dollars, never below zero. Three lines: the chosen claiming age (accent), claiming at 62 (muted, dotted) and claiming at 70 (neutral, dotted); the 62 and 70 lines drop out when the slider is on them. Under it, a line reads: the monthly check at the chosen age and its share of the full benefit, and the age at death after which it has collected more in all than claiming at 62. Values: claim at 62, $1,400 per month, overtaken by 67 at 78.7 and by 70 at 80.4; claim at 67, $2,000; claim at 70, $2,480, overtakes 67 at 82.5. -->
+<figure data-widget="claim-age"><figcaption>Total Social Security collected by each age at death, in today's dollars, for a full benefit of $2,000 per month at 67. Later claims start behind and catch up; where the lines cross is the break-even age.</figcaption></figure>
+
+<p>With these figures, someone who claims at 62 and dies at 75 collects $218,400; claiming at 70 they'd have collected $148,800. At 90 it's the other way round: $470,400 from claiming at 62 against $595,200 from waiting until 70. The lines cross in between.</p>
+
+<!-- data: total to age d = (d − claim age) × 12 × monthly. Claim 62 ($1,400): to 75 $218,400; to 90 $470,400; to 95 $554,400. Claim 70 ($2,480): to 75 $148,800; to 90 $595,200; to 95 $744,000. Break-even ages from ssBreakEven in lib/engine/math.js: (b × B − a × A) ÷ (B − A) with annual benefits: 62 v 67 = 78.7; 67 v 70 = 82.5; 62 v 70 = 80.4; 62 v 65 = 77.6; 69 v 70 = 84.5. These are the same as the Social Security Calculator article's example (78.7, 82.5, 80.4), since break-even doesn't depend on the PIA. -->
+
+<h2 id="breakeven">Break-even ages, and why they mislead</h2>
+<p>The age where a later claim catches up is the <b>break-even age</b>. With a full retirement age of 67 they come out the same for everyone, whatever the size of the benefit:</p>
+<ul>
+<li>62 against 67: 78.7</li>
+<li>67 against 70: 82.5</li>
+<li>62 against 70: 80.4</li>
+</ul>
+<p>Live past the break-even age and waiting collected more; die before it and claiming early did. Since a 65-year-old in the US today lives to about 84 on average, and many live well past that, waiting comes out ahead in total more often than not. That's useful to know, but break-even analysis frames the choice as a bet on your own death date, and it leaves out three things.</p>
+<h3>It weighs every dollar the same</h3>
+<p>Dying at 75 having claimed late is a disappointment for your heirs, but it isn't a financial problem for you. Living to 97 on a check that's 44% smaller, after your savings have run low, is. The cases where waiting pays off are the long-lived ones, which are exactly the cases where you'd need the money most.</p>
+<h3>It ignores a spouse</h3>
+<p>For a married couple, the higher earner's check becomes the survivor's check after the first death. If you're the higher earner, the bigger check from waiting keeps paying as long as either of you is alive, so the right life expectancy is the longer of two lives, not your own. The lesson on <a href="/learn/spouses-and-survivors">spouses and survivors</a> works through it.</p>
+<h3>It ignores what else the money could do</h3>
+<p>The usual counter-argument is that if you claim early and invest the checks, the investments could make up the difference. Market history can test that. Take the $2,000 PIA: claim at 62 and invest every $1,400 check in a mix of 60% stocks and 40% bonds until 70, then draw $1,080 per month from the pot to match what the age-70 check would have paid. Across every starting year since 1926, after inflation, the pot lasted to 85 in 60 of 78 starting years, to 90 in 35 of 73, and to 95 in only 28 of 68. Investing the early checks beat waiting when markets were kind and the person died fairly young. It usually lost over a long life.</p>
+
+<!-- data: ssInvestEarly({early: 62, late: 70, benEarly: 16800, benLate: 29760, through, mix: 0.6}) in lib/engine/math.js, history from lib/engine/data/history.js (start years from 1926, 10-year Treasuries for bonds, real returns using each window's own inflation). through 85: windows 78, won 60; through 90: 73, 35; through 95: 68, 28. benLate − benEarly = $12,960 per year = $1,080 per month. -->
+
+<p>Researchers have looked at the same question in present-value terms. In two 2012 studies, the economists John Shoven and Sita Slavov found that delaying is worth more when real interest rates are low, and that at low rates it pays off for most people, even some whose life expectancy is well below average. The gains were larger for married couples than for singles, for single women than for single men, and for a couple's primary earner than for the spouse who earned less. At higher interest rates the advantage shrinks, and singles in poor health gain little or nothing from waiting.</p>
+
+<h2 id="insurance">Waiting as longevity insurance</h2>
+<p>Another way to see the choice: delaying is buying more lifetime income. With the $2,000 PIA, waiting from 62 to 70 means giving up 96 checks of $1,400, $134,400 in all. In return you get an extra $1,080 per month, $12,960 per year, from 70 for the rest of your life, rising with inflation and backed by the federal government.</p>
+<p>Few insurers sell a lifetime annuity that rises with inflation, and those that exist are priced to cover the insurer's costs and profit. Social Security's delayed credits are set by law for an average person, so for anyone likely to live longer than average, or married to someone who is, they're hard to beat as a source of guaranteed income. For many people, waiting is the least expensive way to add inflation-protected lifetime income. It also changes the rest of your plan: a larger guaranteed income lets you take more risk with savings, or spend more of them in your sixties. The lesson on <a href="/learn/annuities-and-pensions">annuities and pensions</a> covers the alternatives.</p>
+
+<h2 id="tips">What tips the decision</h2>
+<p>There's no single right age, but some situations clearly lean one way.</p>
+<h3>Reasons to claim earlier</h3>
+<ul>
+<li>Poor health or a short-lived family, with no spouse depending on your record. If you don't expect to reach your late seventies, the larger later check is unlikely to catch up.</li>
+<li>No other way to pay for the years before. If waiting would mean running up debt or draining a small emergency fund, an earlier check can be the safer choice.</li>
+<li>Being the lower earner in a couple where the higher earner is waiting. Your own check stops at the first death, when the survivor keeps the larger one, so taking it earlier costs less.</li>
+</ul>
+<h3>Reasons to wait</h3>
+<ul>
+<li>Good health and long-lived parents. The longer you're likely to live, the more the larger check pays.</li>
+<li>Being the higher earner in a couple, since your check becomes the survivor benefit.</li>
+<li>Savings to live on until then. Drawing from a 401(k) or IRA in your sixties also fills low tax brackets, which can lower taxes for the rest of your life (see <a href="/learn/withdrawal-order">which account to draw from first</a>).</li>
+<li>Still working. Before full retirement age, the earnings test holds back much of an early check anyway.</li>
+</ul>
+<p>Waiting has a cost besides the checks you skip. Living on savings from 62 to 70 means larger withdrawals in the first years of retirement, which are the years when a market fall does the most damage (see <a href="/learn/sequence-risk">sequence-of-returns risk</a>). In return you lean on savings less for every year after 70. Whether that trade is worth it depends on how much you've saved compared with what you spend.</p>
+
+<h2 id="working">Claiming while you're still working</h2>
+<p>If you claim before full retirement age and keep working, the <b>retirement earnings test</b> applies. For 2026, Social Security holds back $1 of benefit for every $2 you earn over $24,480; in the year you reach full retirement age the limit is $65,160 and it holds back $1 for every $3, counting only earnings before the month you reach it. From that month on there's no limit.</p>
+<p>The held-back checks aren't forfeited. At full retirement age your benefit is refigured as if you had claimed later by the number of months withheld. Still, for someone earning well over the limit, an early claim mostly produces paperwork: with a $2,000 PIA, claiming at 62 and earning $40,000 per year means about $7,760 per year held back, and only a partial check in hand. The lesson on <a href="/learn/social-security-benefit">how your benefit is figured</a> goes through that example in full.</p>
+
+<h2 id="changing">If you change your mind</h2>
+<p>The choice is close to final, but there are three ways to adjust it:</p>
+<ul>
+<li>You can withdraw your application within 12 months of starting benefits. You have to pay back everything you and your family received on your record, including any Medicare premiums withheld, and then it's as if you never claimed. You can do this once in your life.</li>
+<li>You can suspend your benefit once you reach full retirement age. Checks stop and you earn delayed credits until you restart them, at 70 at the latest. While yours is suspended, anyone collecting on your record, such as a spouse, stops too.</li>
+<li>You can ask for back payments if you apply after full retirement age. Social Security can pay up to six months retroactively as a lump sum, but your check is then figured as if you'd started six months earlier, which gives up some delayed credits.</li>
+</ul>
+<p>You can apply up to four months before you want benefits to start, online at ssa.gov, and you choose the month. Medicare is separate: you can sign up at 65 whether or not you've claimed Social Security (see <a href="/learn/medicare">Medicare</a>).</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The <a href="/social-security">Social Security Calculator</a> shows your check at every age from 62 to 70. <b>Best age, by how long you live</b> marks which claiming age collects the most for each lifespan from 70 to 100, and <b>When waiting pays off</b> draws your own version of the chart above, with your break-even ages marked. If you'll still be working, enter what you'll earn and it applies the earnings test. For a couple, <b>Best ages for the two of you</b> tries all 81 pairs of claiming ages.</p>
+<p>Lifetime totals leave out how the claim fits with the rest of your money. The <a href="/optimizer">Withdrawal Order</a> tool tries every claiming age inside the whole plan, with withdrawals, taxes and Roth conversions, and the <a href="/drawdown">Drawdown Simulator</a> shows whether your savings last through every market since 1926 with the claiming age you pick. Try two ages, say 64 and 70, and compare the worst markets as well as the typical ones.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Isn't it better to take the money while I can enjoy it?</summary><p>It can be, if spending more in your sixties matters more to you than spending in your eighties. But claiming later doesn't stop you spending in your sixties if you have savings: you can draw more from them early and less later, when the larger check arrives. The question is which source pays for which years.</p></details>
+<details><summary>What if Social Security cuts benefits in the 2030s?</summary><p>If Congress did nothing, the trustees' projections assume a shortfall would cut every check by the same percentage, whatever age it started at. So a cut wouldn't change which claiming age is best; it would scale all of them down. The lesson <a href="/learn/social-security-future">Will Social Security be there?</a> has the latest projections.</p></details>
+<details><summary>Should I claim at 62 and invest the checks?</summary><p>History suggests it usually doesn't pay over a long life. In the test against market history above, investing the age-62 checks in 60% stocks and 40% bonds kept up with the age-70 check to age 90 in fewer than half of the starting years since 1926. It works best for someone who dies fairly young, which is when the money matters least.</p></details>
+<details><summary>Does the earnings test still matter after full retirement age?</summary><p>No. From the month you reach full retirement age you can earn any amount with no benefits held back, and your check is raised for any months that were withheld earlier.</p></details>
+<details><summary>My spouse and I are different ages. Does that change things?</summary><p>Yes. For the survivor benefit, what matters is how long the longer-lived of you might live. A higher earner with a much younger spouse has an even stronger reason to wait, because the larger check may need to last for the younger spouse's whole life.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Each year of waiting from 62 to 70 raises the check by about 7% to 8%; 70 pays 77% more than 62, for life, with inflation raises.</li>
+<li>Break-even ages are about 79 to 83, but they frame the choice as a bet and leave out the protection a larger check gives if you live long.</li>
+<li>For a couple, the higher earner's claiming age sets the survivor's check, which usually makes waiting worth more.</li>
+<li>Claiming early makes most sense with poor health, no dependent spouse, or no other way to pay for the years before.</li>
+<li>Working while claiming before full retirement age triggers the earnings test, which can hold back much of the check.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>What each year of waiting adds to your check</li><li>Why break-even ages can mislead</li><li>When claiming early or late makes sense</li></ul>
+  <ul class="terms">
+    <li data-term="Delayed retirement credits">The raise for claiming after full retirement age: 2/3 of 1% per month, 8% per year, up to 70.</li>
+    <li data-term="Break-even age">The age at death at which a later claim has collected as much in total as an earlier one. Live past it and waiting paid more.</li>
+    <li data-term="Retirement earnings test">The rule that holds back part of a benefit claimed before full retirement age when work pay goes over a yearly limit, $24,480 for 2026.</li>
+    <li data-term="Longevity insurance">Income that lasts as long as you do, so living a long time doesn't mean running out. A delayed Social Security benefit is one form.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.ssa.gov/benefits/retirement/planner/agereduction.html">Starting your retirement benefits early</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/benefits/retirement/planner/delayret.html">Delayed retirement credits</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.nber.org/papers/w18210">When does it pay to delay Social Security? The impact of mortality, interest rates, and program rules</a> <span>Shoven and Slavov, NBER</span></li>
+    <li><a href="https://www.nber.org/papers/w17866">The decision to delay Social Security benefits: theory and evidence</a> <span>Shoven and Slavov, NBER</span></li>
+    <li><a href="https://www.ssa.gov/benefits/retirement/planner/whileworking.html">Receiving benefits while working</a> <span>Social Security Administration</span></li>
+  </ul>
+</footer>
+</article>

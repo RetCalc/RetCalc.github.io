@@ -102,11 +102,12 @@ export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
           return x == null ? null : <g key={i} className="lrn-mark"><line x1={x} x2={x} y1={T + 16 + i * 15} y2={H - B} /><text x={x + 5} y={T + 12 + i * 15}>{m.label}</text></g>;
         })}
       </svg>
-      <table className="sr-only">
+      {/* A table ignores the hidden box's size, so the box is a div around it. */}
+      <div className="sr-only"><table>
         <caption>{label}</caption>
         <thead><tr><th>{spec.xLabel ?? ""}</th>{spec.series.map((s) => <th key={s.name}>{s.name}</th>)}</tr></thead>
         <tbody>{spec.x.map((x, i) => <tr key={i}><th>{xText(x)}</th>{spec.series.map((s) => <td key={s.name}>{s.values[i] == null ? "" : fmt(s.values[i] as number, spec.y, false)}</td>)}</tr>)}</tbody>
-      </table>
+      </table></div>
     </div>
   );
 }

@@ -1,0 +1,123 @@
+<article class="lesson" data-slug="irmaa" data-reviewed="2026-10-26"
+  data-title="IRMAA: Medicare's income surcharge"
+  data-idea="Higher income now means higher Medicare premiums two years later"
+  data-tool="healthcare" data-try="See your Medicare premiums and any income surcharge at your retirement income, with your plan already filled in.">
+
+<p class="lede">Most people on Medicare pay the same standard premium for Part B, $202.90 per month in 2026. People with higher incomes pay more, for Part B and for drug coverage, through a surcharge called IRMAA. It's set by your income from two years earlier, and it works in steps: one dollar over a line costs the whole step. That makes it one of the few places in retirement where a little extra income can cost a lot.</p>
+
+<h2 id="what">What IRMAA is</h2>
+<p>IRMAA stands for income-related monthly adjustment amount. It's an extra charge on top of the standard premiums for Medicare Part B, which covers doctors and outpatient care, and Part D, which covers prescription drugs. (<a href="/learn/medicare">Medicare</a> explains the parts.) The Social Security Administration decides who owes it, using income figures it gets from the IRS, and Medicare collects it, usually by deducting it from your Social Security payment.</p>
+<p>The standard Part B premium is set to cover about a quarter of Part B's costs; taxpayers cover the rest. IRMAA raises the share you pay in five steps: to 35%, 50%, 65%, 80% and finally 85% of the cost. The Part D surcharge is added to whatever your drug plan charges. Both apply if you're in a Medicare Advantage plan too, since you still pay the Part B premium and your drug coverage counts as Part D.</p>
+<p>CMS expects about 8% of people with Part B to pay it in 2026. It's charged per person: on a married couple's joint return, each spouse enrolled in Medicare pays it, based on their joint income.</p>
+
+<h2 id="tiers">The 2026 tiers</h2>
+
+<!-- data: lib/engine/data/2026.js medicare.irmaa (CMS, 2026 Medicare Parts A and B premiums and deductibles fact sheet, which also gives the Part D amounts).
+     Extra per person per year = (Part B premium − 202.90 + Part D add-on) × 12: (81.20 + 14.50) × 12 = 1,148.40; (202.90 + 37.50) × 12 = 2,884.80; (324.60 + 60.40) × 12 = 4,620.00;
+     (446.30 + 83.30) × 12 = 6,355.20; (487.00 + 91.00) × 12 = 6,936.00. Matches irmaaAnnual() in lib/engine/math.js. -->
+<figure>
+  <table>
+    <thead><tr><th>Single MAGI</th><th>Joint MAGI</th><th>Part B per month</th><th>Part D add-on per month</th><th>Extra per person per year</th></tr></thead>
+    <tbody>
+      <tr><td>$109,000 or less</td><td>$218,000 or less</td><td>$202.90</td><td>$0</td><td>$0</td></tr>
+      <tr><td>$109,001–$137,000</td><td>$218,001–$274,000</td><td>$284.10</td><td>$14.50</td><td>$1,148.40</td></tr>
+      <tr><td>$137,001–$171,000</td><td>$274,001–$342,000</td><td>$405.80</td><td>$37.50</td><td>$2,884.80</td></tr>
+      <tr><td>$171,001–$205,000</td><td>$342,001–$410,000</td><td>$527.50</td><td>$60.40</td><td>$4,620.00</td></tr>
+      <tr><td>$205,001–$499,999</td><td>$410,001–$749,999</td><td>$649.20</td><td>$83.30</td><td>$6,355.20</td></tr>
+      <tr><td>$500,000 or more</td><td>$750,000 or more</td><td>$689.90</td><td>$91.00</td><td>$6,936.00</td></tr>
+    </tbody>
+  </table>
+  <figcaption>2026 Medicare premiums by modified AGI from your 2024 tax return. The Part D add-on is paid on top of your drug plan's own premium. Married people who lived together but filed separately face just two lines, $109,000 and $391,000, and pay the two highest rates above them.</figcaption>
+</figure>
+
+<p>The tiers are cliffs. A married couple with $218,000 of modified AGI pays the standard premium; at $218,001, both pay $81.20 more per month for Part B and $14.50 per month for Part D, $2,296.80 more for the year between them. Each higher line works the same way.</p>
+
+<!-- data: irmaaAnnual(magi, "m", 2) in lib/engine/math.js at a dollar into each 2026 tier: 0; 2,296.80; 5,769.60; 9,240.00; 12,710.40; 13,872.00 (twice the per-person figures above). -->
+<figure data-chart='{"type":"bar","x":["Up to $218K","$218K–274K","$274K–342K","$342K–410K","$410K–750K","$750K and up"],"xLabel":"Joint MAGI two years earlier","y":"money","series":[{"name":"Extra per year, couple both on Medicare","tone":"bad","values":[0,2296.8,5769.6,9240,12710.4,13872]}]}'>
+  <figcaption>What IRMAA adds to a married couple's Medicare premiums in 2026, both enrolled, by tier. A single person in the matching single tier pays half these amounts.</figcaption>
+</figure>
+
+<h2 id="lookback">The two-year lookback</h2>
+<p>SSA uses the most recent tax return the IRS has, which for a premium year is usually the return from two years before. So 2026 premiums are based on 2024 income. If the 2024 return isn't available, SSA uses 2023 instead, and you can supply the newer one once it is.</p>
+<p>The income measure is modified adjusted gross income: the adjusted gross income on your Form 1040, plus any tax-exempt interest. That means it includes:</p>
+<ul>
+<li>Wages, pensions and traditional IRA or 401(k) withdrawals, including required distributions.</li>
+<li>Roth conversions, in full.</li>
+<li>The taxable part of your Social Security.</li>
+<li>Capital gains and dividends, including gain on a home sale above the $250,000 or $500,000 exclusion.</li>
+<li>Municipal bond interest, even though it's tax-free.</li>
+</ul>
+<p>It doesn't include qualified Roth withdrawals, the untaxed part of Social Security, the cost basis returned when you sell investments, HSA withdrawals for medical costs, or qualified charitable distributions sent straight from an IRA to charity.</p>
+<p>The lookback means the income that counts for your first Medicare premium, at 65, is from the year you turn 63. Big conversions, gains or a final year of salary at 63 or 64 show up on your Medicare bill at 65 and 66. Each year stands alone, though. SSA looks at a new year's return every year, so one high-income year means one year of higher premiums, not a permanent increase.</p>
+
+<p data-yours></p>
+
+<h2 id="example">A worked example</h2>
+<p>Take a hypothetical married couple who both retire in 2024. Their 2024 joint return shows $260,000 of modified AGI: most of a year of two salaries and a severance payment. In 2026 the older of them turns 65 and joins Medicare, and SSA looks at that 2024 return. $260,000 falls in the second joint tier, so their Part B premium is $284.10 per month instead of $202.90, plus $14.50 per month on top of their Part D plan, $1,148.40 more for the year.</p>
+<p>Their income in 2026 is about $90,000, from savings and one pension. Retiring is a life-changing event under SSA's rules, so they can ask SSA to use their 2026 income instead, and pay the standard premium.</p>
+
+<h2 id="appeal">Life-changing events and Form SSA-44</h2>
+<p>If your income has dropped since the year SSA used, you can ask for a new determination based on a more recent year, including an estimate of the current one, as long as the drop came from one of these life-changing events:</p>
+<ul>
+<li>Marriage, divorce or annulment, or the death of your spouse.</li>
+<li>Stopping work, or working fewer hours.</li>
+<li>Losing income from property because of a disaster or another event beyond your control.</li>
+<li>Losing pension income, for example when an employer's plan ends or cuts benefits.</li>
+<li>Receiving a settlement payment from a current or former employer because it closed, went bankrupt or reorganized.</li>
+</ul>
+<p>The event has to lower your income significantly, or change your filing status to one that uses lower thresholds. You ask using Form SSA-44, Medicare Income-Related Monthly Adjustment Amount Life-Changing Event, or at an appointment with SSA, and you'll need evidence: a letter from your employer showing the date you stopped work, a death or marriage certificate, a copy of your later tax return or your estimate of this year's income. If your actual income turns out higher than your estimate, SSA can adjust the surcharge later.</p>
+<p>Some changes don't count as life-changing events, even though they move your income a lot. A large capital gain, a Roth conversion or a big IRA withdrawal in the lookback year was your choice, so the surcharge stands. You can also ask SSA to recalculate if the IRS figure was wrong, if you've filed an amended return for that year, or if SSA used a three-year-old return when a two-year-old one now shows lower income. If SSA turns you down, you can ask for a reconsideration.</p>
+
+<h2 id="history">How IRMAA came about</h2>
+<p>Medicare charged everyone the same Part B premium until 2007. The Medicare Modernization Act of 2003 introduced income-related premiums for Part B from 2007, and the Affordable Care Act added the Part D surcharge from 2011. The ACA also froze the income lines at their 2010 level, $85,000 single and $170,000 joint, through 2019, so more people crossed them each year. Indexing to inflation resumed in 2020, which is why the lines now move up most years.</p>
+<p>The top tier is the exception. The Bipartisan Budget Act of 2018 added it from 2019, at $500,000 single and $750,000 joint, and those two figures aren't scheduled to rise with inflation until 2028.</p>
+
+<h2 id="manage">Managing it</h2>
+<p>You can't avoid the lookback, but you can plan around the lines.</p>
+<h3>Know where the lines are</h3>
+<p>Because each tier is a cliff, the cheapest place to be is just under a line. If you're doing a Roth conversion or realizing gains anyway, stopping a few thousand dollars short of $218,000 joint (or $109,000 single) can save more in premiums than the extra income was worth. Leave some margin: the lines for a future year aren't known yet, and income such as dividends and fund distributions isn't settled until December.</p>
+<h3>Bring income forward, before 63</h3>
+<p>Conversions and gains taken before the year you turn 63 never touch Medicare premiums. That makes the years just after retiring and before 63 a good time to do some of the heavy lifting, though before 65 the same income can cost you ACA premium credits instead. <a href="/learn/roth-conversions">Roth conversions</a> works through the trade-offs.</p>
+<h3>Spread large one-time income</h3>
+<p>Selling a large position or a rental property over two tax years, or converting in several smaller pieces, can keep each year in a lower tier than doing it all at once.</p>
+<h3>Use income that doesn't count</h3>
+<p>Roth money, the cost basis in a taxable account and an HSA for medical bills can all pay for spending without raising MAGI. From 70½, giving through qualified charitable distributions instead of from your checking account keeps those dollars out of MAGI altogether.</p>
+<h3>Keep the size in proportion</h3>
+<p>The first tier costs a couple $2,296.80 for one year. A conversion that saves 10 percentage points of tax on $100,000, $10,000 of tax, is still worth doing even if it costs a year in the first tier.</p>
+<h3>Plan for the survivor</h3>
+<p>After one spouse dies, the survivor files single from the year after, and two years later SSA compares their income with the single lines, which are half the joint ones. A widow or widower with $150,000 of income, comfortably under the joint line, can find themselves two tiers up. Converting while both spouses are alive is one way to keep the survivor's income lower.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>Healthcare shows your Medicare premiums from 65, Part B, Part D and Medigap, including any IRMAA at your retirement income. Roth Conversions puts the two-year lookback into its year-by-year projection, shows the IRMAA tier each year with and without conversions, and has a strategy that converts up to a chosen IRMAA line and stops. Watch the years that land one tier up, and check whether a slightly smaller conversion would keep them below the line.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Do I pay IRMAA if I have Medicare Advantage?</summary><p>Yes. Medicare Advantage members still pay the Part B premium, and the drug coverage in most Advantage plans is Part D, so both surcharges apply on the same terms as Original Medicare.</p></details>
+<details><summary>Does my spouse pay it too?</summary><p>Each person enrolled in Medicare pays their own premium, and on a joint return both are measured against the joint lines. A spouse who isn't on Medicare yet pays nothing until they enroll.</p></details>
+<details><summary>Is the surcharge permanent?</summary><p>No. SSA redetermines it every year from a newer tax return. If your income falls back below a line, your premium falls back too, two years later, or sooner if a life-changing event lets you file Form SSA-44.</p></details>
+<details><summary>Is IRMAA tax deductible?</summary><p>Medicare premiums, surcharge included, count as medical expenses, which you can deduct only if you itemize and only above 7.5% of AGI. If you're self-employed, you may be able to deduct them as health insurance premiums instead.</p></details>
+<details><summary>Do the lines go up each year?</summary><p>All but the top ones rise with inflation each year, and CMS announces the new premiums and lines each autumn for the next year. Because the lookback is two years, you're always planning against lines that haven't been published yet.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>IRMAA raises Medicare Part B and Part D premiums for people above $109,000 of modified AGI single or $218,000 joint in 2026.</li>
+<li>The tiers are cliffs: a couple $1 over the first line pays $2,296.80 more for the year.</li>
+<li>Premiums are set by income two years earlier, so income from the year you turn 63 counts for your first Medicare bill.</li>
+<li>Retiring, a spouse's death and a few other life-changing events let you ask SSA to use your newer income, with Form SSA-44.</li>
+<li>Roth conversions before 63, spreading large gains and income that doesn't count toward MAGI all help keep you under a line.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How Medicare's income surcharge works and what it costs</li><li>Why income two years ago sets this year's premium</li><li>How to appeal after retiring, and stay under a line</li></ul>
+  <ul class="terms">
+    <li data-term="IRMAA">Income-related monthly adjustment amount: the extra Medicare Part B and Part D premium paid by people above an income line.</li>
+    <li data-term="Modified AGI (for IRMAA)">Adjusted gross income plus tax-exempt interest, from the tax return two years before the premium year.</li>
+    <li data-term="Life-changing event">One of the events SSA accepts, such as stopping work or a spouse's death, for basing IRMAA on newer, lower income.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.cms.gov/newsroom/fact-sheets/2026-medicare-parts-b-premiums-deductibles">2026 Medicare Parts A and B premiums and deductibles</a> <span>CMS</span></li>
+    <li><a href="https://www.ssa.gov/benefits/medicare/medicare-premiums.html">Premiums: rules for higher-income beneficiaries</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/forms/ssa-44.pdf">Form SSA-44, Medicare IRMAA life-changing event</a> <span>Social Security Administration</span></li>
+    <li><a href="https://secure.ssa.gov/poms.nsf/lnx/0601120001">HI 01120.001, IRMAA new initial determinations</a> <span>SSA Program Operations Manual</span></li>
+    <li><a href="https://www.kitces.com/blog/bipartisan-budget-act-2018-irmaa-medicare-premium-surcharges-tuition-and-fees-deduction/">New Medicare premium surcharge tier in the Bipartisan Budget Act of 2018</a> <span>Kitces</span></li>
+  </ul>
+</footer>
+</article>

@@ -1,0 +1,167 @@
+<article class="lesson" data-slug="rmds" data-reviewed="2026-10-26"
+  data-title="Required minimum distributions"
+  data-idea="The yearly withdrawal the IRS makes you take, and how to plan for it"
+  data-tool="rmd" data-try="Project your required distributions every year to age 100 and test conversions before they start, with your plan already filled in.">
+
+<p class="lede">Money in a traditional IRA or 401(k) can grow for decades without being taxed, but not forever. From your early-to-mid seventies the IRS sets a minimum you must take out each year, and every dollar of it counts as taxable income whether you need it or not. Missing one is expensive, and how large they get in your eighties depends partly on what you do in your sixties.</p>
+
+<h2 id="what">What an RMD is</h2>
+<p>A required minimum distribution, or RMD, is the smallest amount you must withdraw from a tax-deferred retirement account in a given year. Congress gave traditional accounts their tax break so people would save for retirement, and the RMD rules are how the government eventually collects the tax it deferred. You can always take more than the minimum. You can't take less without a penalty.</p>
+<p>The calculation is a single division. Take the account's balance on December 31 of the previous year and divide it by a number from an IRS table, called the distribution period or divisor, for the age you reach this year. Suppose your IRA held $500,000 at the end of last year and you turn 75 this year. The divisor at 75 is 24.6, so your RMD is $500,000 ÷ 24.6, about $20,325. That's roughly 4.1% of the balance.</p>
+<p>The divisor is close to the number of years the IRS expects the payments to run, so the RMD is roughly the balance spread evenly over your remaining life expectancy, recalculated every year. Because the divisor shrinks as you age, the required share of the account grows each year.</p>
+
+<h2 id="when">When they start</h2>
+<p>Your first RMD is for the year you reach your starting age, which depends on when you were born. Recent laws have raised it in three steps, the last still to come. The SECURE Act of 2019 raised it from 70½ to 72, and SECURE 2.0, passed at the end of 2022, raised it to 73 from 2023 and to 75 for anyone born in 1960 or later.</p>
+
+<!-- data: start ages from lib/engine/math.js rmdStartAge (73 for 1951–1959, 75 for 1960 and later), which follows SECURE 2.0 sec. 107 and the IRS RMD FAQs.
+     Earlier ages: 70½ for those born before July 1, 1949 and 72 for July 1, 1949 through 1950 (SECURE Act of 2019). First-year deadlines: the year the age is reached + 1, April 1. -->
+<figure>
+  <table>
+    <thead><tr><th>Born</th><th>RMDs start in the year you turn</th><th>First RMD due by</th></tr></thead>
+    <tbody>
+      <tr><td>Before July 1, 1949</td><td>70½</td><td>Already under way</td></tr>
+      <tr><td>July 1, 1949, to the end of 1950</td><td>72</td><td>Already under way</td></tr>
+      <tr><td>1951–1959</td><td>73</td><td>April 1 of the year after you turn 73</td></tr>
+      <tr><td>1960 or later</td><td>75</td><td>April 1 of the year after you turn 75</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Starting ages for traditional IRAs, 401(k)s, 403(b)s and similar accounts. Every RMD after the first is due by December 31.</figcaption>
+</figure>
+
+<p>The first RMD has a grace period: you can put it off until April 1 of the following year. Every later one is due by December 31 of its own year. Someone born in 1960 turns 75 in 2035, so their first RMD can wait until April 1, 2036, but their second is due by December 31, 2036. Waiting means taking two RMDs in 2036, both taxed that year, which can push the pair into a higher bracket. Delaying usually only makes sense if your income in the first year will be unusually high.</p>
+<h3>Which accounts have them</h3>
+<ul>
+  <li>Traditional IRAs, SEP IRAs and SIMPLE IRAs, from your starting age, whether or not you still work.</li>
+  <li>401(k), 403(b) and 457(b) plans, from your starting age or, if you're still working for the employer that sponsors the plan, from the year you retire. The still-working exception doesn't apply if you own 5% or more of the company, and it covers only the plan at your current job, not old 401(k)s or IRAs.</li>
+  <li>Roth IRAs have no RMDs while the owner is alive, and since 2024 neither do Roth 401(k)s and other Roth accounts in workplace plans.</li>
+</ul>
+
+<h2 id="table">The Uniform Lifetime Table</h2>
+<p>Most people use the IRS Uniform Lifetime Table. It applies to every owner except one whose sole beneficiary is a spouse more than ten years younger; that owner uses the Joint and Last Survivor Table, which gives a larger divisor and smaller RMDs because two lives are expected to last longer than one. Both tables are in IRS Publication 590-B.</p>
+
+<!-- data: divisors from lib/engine/data/tables.js (ULT), the IRS Uniform Lifetime Table in effect from 2022 (Pub. 590-B Table III).
+     Share of the balance = 1 ÷ divisor: 1/26.5 = 3.77%, 1/24.6 = 4.07%, 1/20.2 = 4.95%, 1/16.0 = 6.25%, 1/12.2 = 8.20%, 1/8.9 = 11.24%, 1/6.4 = 15.63%.
+     RMD on $1,000,000 = 1,000,000 ÷ divisor, rounded to the dollar. -->
+<figure>
+  <table>
+    <thead><tr><th>Age that year</th><th>Divisor</th><th>Share of last year-end balance</th><th>RMD on $1,000,000</th></tr></thead>
+    <tbody>
+      <tr><td>73</td><td>26.5</td><td>3.8%</td><td>$37,736</td></tr>
+      <tr><td>75</td><td>24.6</td><td>4.1%</td><td>$40,650</td></tr>
+      <tr><td>80</td><td>20.2</td><td>5.0%</td><td>$49,505</td></tr>
+      <tr><td>85</td><td>16.0</td><td>6.3%</td><td>$62,500</td></tr>
+      <tr><td>90</td><td>12.2</td><td>8.2%</td><td>$81,967</td></tr>
+      <tr><td>95</td><td>8.9</td><td>11.2%</td><td>$112,360</td></tr>
+      <tr><td>100</td><td>6.4</td><td>15.6%</td><td>$156,250</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Selected ages from the IRS Uniform Lifetime Table, in use since 2022. The table continues past 100, with the divisor falling to 2.0 at 120 and over.</figcaption>
+</figure>
+
+<p>The current table took effect in 2022, when the IRS updated it for longer life expectancies. The divisors rose by about two years' worth: the old table used 22.9 at 75, the new one 24.6. For the same balance, RMDs became roughly 7% smaller.</p>
+<h3>Working out the total, and where to take it from</h3>
+<p>Each account's RMD is calculated on its own balance, but the rules for where you take the money differ by account type:</p>
+<ul>
+  <li>IRAs: add up the RMDs for all your traditional, SEP and SIMPLE IRAs and take the total from any one or more of them.</li>
+  <li>403(b)s: the same, among your 403(b) accounts only.</li>
+  <li>401(k)s and 457(b)s: each plan must pay its own RMD. Many people roll old 401(k)s into one IRA partly to make this simpler.</li>
+  <li>Spouses can't combine. Your RMD has to come from your accounts, your spouse's from theirs.</li>
+</ul>
+<p>You can take an RMD as cash or move shares out of the IRA "in kind" into a taxable account; either way the value counts as income. An RMD can't be rolled over into another IRA or converted to a Roth, and in any year you owe one, the first dollars you take out count toward it, so the RMD has to be satisfied before a Roth conversion. You can ask the custodian to withhold federal tax from the distribution, and the IRS treats withholding as if it were paid evenly through the year. Some retirees take one RMD in December with enough withheld to cover the tax on all their income, instead of paying quarterly estimates.</p>
+
+<h2 id="size">How large they get</h2>
+<p>A common surprise is that the balance doesn't shrink as fast as people expect. In the early years the required share, around 4% to 5%, is close to what a balanced portfolio might earn, so the account can hold steady or even keep growing well into your eighties while the RMDs climb.</p>
+
+<!-- data: a hypothetical $1,000,000 traditional IRA at the end of the year before the owner turns 75 (born 1960 or later).
+     Each year: RMD = balance ÷ ULT divisor for that age (lib/engine/math.js ultDivisor); the rest earns 3% or 5% after inflation; repeat to 100.
+     Peaks: at 3%, $54,057 at 92 (balance falls every year); at 5%, $77,030 at 95 (balance peaks near $1,019,811 at 80). Sum of RMDs 75–100: $1,271,244 at 3%, $1,642,329 at 5%. In today's dollars. -->
+<figure data-chart='{"type":"line","x":[75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100],"xLabel":"Age","y":"money","series":[{"name":"Earning 5% after inflation","tone":"accent","values":[40650,42503,44238,46239,48321,50486,52463,54789,56878,59367,61556,63783,66042,67826,70113,71808,73432,74962,76372,76814,77030,76067,75774,74114,72097,68605]},{"name":"Earning 3% after inflation","tone":"neutral","values":[40650,41693,42569,43647,44743,45857,46746,47888,48767,49931,50787,51622,52432,52822,53564,53814,53982,54057,54025,53303,52434,50793,49634,47621,45443,42418]}]}'>
+  <figcaption>Required distributions from a $1,000,000 IRA starting at 75, taking only the minimum each year. In today's dollars. A hypothetical example, not a forecast.</figcaption>
+</figure>
+
+<p>At 5% after inflation, the RMD nearly doubles between 75 and 95, from $40,650 to $77,030 in today's dollars, and the balance is still above $1 million at 80. At 3% the RMD rises more slowly and peaks in the early 90s. Either way the required withdrawals keep rising for most of retirement, and many retirees end up taking out more than they spend, paying tax on it and reinvesting the rest in a taxable account.</p>
+
+<p data-yours></p>
+
+<h2 id="ripple">Why the size matters</h2>
+<p>An RMD is ordinary income, taxed at the same rates as wages. A large one causes trouble in a few ways that tend to arrive together:</p>
+<ul>
+  <li>It can push you into a higher bracket for the whole retirement, at an age when your other income, Social Security, is already fixed.</li>
+  <li>It makes more of your Social Security taxable. Up to 85% of benefits become taxable as other income rises, so for a while each extra RMD dollar can pull up to 85 cents of benefits into taxable income with it. <a href="/learn/retirement-income-taxes">How retirement income is taxed</a> works through the thresholds.</li>
+  <li>It can raise your Medicare premiums. Medicare's surcharge, IRMAA, starts above $109,000 of income for a single filer and $218,000 for a married couple filing jointly in 2026, and it's set from your tax return two years earlier. <a href="/learn/irmaa">The IRMAA lesson</a> has the tiers.</li>
+  <li>It gets harder after a spouse dies. The survivor files as single the year after the death, with brackets about half as wide, while the RMD from the combined accounts stays about the same.</li>
+</ul>
+<p>The tax itself was always going to be owed on that money. What planning can change is the rate: 22% or 24% in your eighties, or 10% or 12% in your sixties.</p>
+
+<h2 id="missed">If you miss one</h2>
+<p>A missed or short RMD costs an excise tax of 25% of the amount you should have taken and didn't. If you correct it within two years, generally by taking the missed amount and filing a corrected return, the tax falls to 10%. Before SECURE 2.0 the penalty was 50%.</p>
+<p>The IRS can also waive it. You file Form 5329 for the year of the shortfall, take the missed distribution, and attach a letter explaining that it was a reasonable error, such as a custodian's mistake or an illness, and that you've fixed it. Most custodians will calculate your IRA RMD for you, and many will set up automatic distributions, which removes most of the risk.</p>
+
+<h2 id="qcd">Giving to charity from your IRA</h2>
+<p>A qualified charitable distribution, or QCD, sends money directly from your IRA to a charity. It counts toward your RMD but never shows up in your income, so it isn't taxed and doesn't raise your Social Security taxation or Medicare premiums. For anyone who gives to charity anyway and takes the standard deduction, which is most retirees, a QCD is usually the cheapest way to give: from 2026 someone who doesn't itemize can deduct at most $1,000 of cash gifts ($2,000 for a married couple), while a QCD keeps the whole gift out of your income.</p>
+<ul>
+  <li>You can start at 70½, before RMDs begin, though the gift only counts toward an RMD once one is due.</li>
+  <li>The limit for 2026 is $111,000 per person, and it rises with inflation each year. A married couple can each give up to the limit from their own IRAs.</li>
+  <li>The money has to go from the IRA custodian straight to the charity. A check made out to you and passed on doesn't count.</li>
+  <li>Donor-advised funds, supporting organizations and most private foundations don't qualify.</li>
+  <li>It works from IRAs, including inherited IRAs, but not from a 401(k), or from a SEP or SIMPLE IRA your employer is still paying into. Roll the money to an IRA first.</li>
+  <li>If you made deductible IRA contributions after 70½, the tax-free part of your QCDs is reduced by those contributions.</li>
+</ul>
+<p>There's also a one-time option to send up to $55,000 (the 2026 figure) to a charitable gift annuity or charitable remainder trust as a QCD. On your tax return the distribution goes on the IRA line with "QCD" written beside the taxable amount, and you need the charity's written acknowledgment, as for any gift.</p>
+
+<h2 id="inherited">Inherited accounts</h2>
+<p>When an IRA or 401(k) is inherited, different rules apply, and they changed sharply in 2020. A surviving spouse has the most choice, including treating the account as their own. A few other beneficiaries, called eligible designated beneficiaries, can still spread withdrawals over their own life expectancy: a minor child of the owner (until 21), someone who is disabled or chronically ill, and anyone no more than ten years younger than the owner.</p>
+<p>Almost everyone else, including most adult children, must empty the account by the end of the tenth year after the year the owner died. Under final IRS regulations issued in 2024, if the owner had already started RMDs, the heir must also take a yearly RMD in years one to nine, based on their own life expectancy. The IRS waived the penalty for missing those yearly amounts from 2021 through 2024, and they're required from 2025. An inherited Roth IRA also has to be emptied within ten years, but with no yearly minimum, and the withdrawals are generally tax-free.</p>
+<p>For planning, this matters because a large traditional IRA left to an adult child gets taxed over ten years, often during their own peak earning years. That's one more reason some retirees convert part of their traditional money to Roth while their own tax rates are low.</p>
+
+<h2 id="manage">Ways to plan around them</h2>
+<h3>Use the low-tax years before they start</h3>
+<p>For many people the years between retiring and their first RMD are the lowest-income years of their adult life: no paycheck, Social Security perhaps not yet claimed, and no required withdrawals. Taking traditional money out on purpose then, either to spend or to convert to a Roth, fills the 10% and 12% brackets that would otherwise go unused and shrinks the balance future RMDs are figured on. <a href="/learn/roth-conversions">Roth conversions</a> and <a href="/learn/withdrawal-order">Which account to draw from first</a> cover the trade-offs, including the effect on health premiums before 65 and Medicare's surcharge after.</p>
+<h3>Give through QCDs</h3>
+<p>If you give each year, routing the gifts through your IRA after 70½ turns taxable RMD dollars into tax-free ones. It's one of the few RMD strategies with no real downside for people who would give anyway.</p>
+<h3>Keep working, if you were going to</h3>
+<p>Staying employed past your starting age delays RMDs from your current employer's plan. Some people roll old IRAs into that plan, if it accepts them, to bring more money under the exception.</p>
+<h3>A longevity annuity</h3>
+<p>A qualifying longevity annuity contract, or QLAC, is a deferred annuity bought inside an IRA or 401(k) that starts paying no later than 85. The amount used to buy it, up to $210,000 per person for 2026, is left out of the balance your RMDs are based on until the payments begin. It's a way to delay tax on part of the account and buy income for very late life at the same time. <a href="/learn/annuities-and-pensions">Annuities and pensions</a> covers how they work.</p>
+<h3>Don't over-correct</h3>
+<p>Converting everything to Roth in your sixties can mean paying 22% or 24% now to avoid 12% later. The aim is to even out your taxable income across retirement, and that often leaves some money in the traditional account. It can be useful late in life, when large medical or care costs can be deductible and your bracket may be low.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The RMD calculator projects your required distributions every year to age 100 from your current balances and returns, works out your starting age from your birth year, and shows the largest RMD you'd face. Set Strategy to No conversions to see your RMDs on their own, then try Fill to the top of a bracket or Fill to an IRMAA threshold to see how conversions before RMDs begin change the peak and your lifetime tax.</p>
+<p>Watch three numbers: the first RMD, the largest one, and the total tax over your lifetime. If the largest RMD plus Social Security would put you over an IRMAA line, or well into the 22% or 24% bracket, the years before RMDs start are worth a closer look.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Do I have to spend my RMD?</summary><p>No. You have to withdraw it and pay tax on it, but you can reinvest what's left in a regular brokerage account. You can also put it in a Roth IRA if you have earned income to make a contribution. You can't put it back into a traditional IRA.</p></details>
+<details><summary>I have three IRAs. Do I take three RMDs?</summary><p>You calculate one for each, add them up, and take the total from whichever IRAs you like. The same goes for several 403(b)s. A 401(k) is different: each plan pays its own.</p></details>
+<details><summary>Does my RMD count toward my spending?</summary><p>Yes. If you'd withdraw $50,000 anyway and your RMD is $40,000, the RMD is part of that $50,000, not on top of it. RMDs only cause extra taxable income when they're larger than what you'd otherwise take from traditional accounts.</p></details>
+<details><summary>What if the market falls just before my RMD?</summary><p>The RMD is based on last December 31's balance, so a fall early in the year means the required share of what's left is larger. You don't have to sell at a low: you can move shares in kind to a taxable account, where they stay invested. You still owe tax on their value.</p></details>
+<details><summary>Will the starting age keep rising?</summary><p>It might. It has risen twice since 2019, the rise to 75 is already law, and Congress regularly revisits retirement rules. Plan with the age that applies to you now, and treat any future change as a bonus.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>RMDs start at 73 if you were born from 1951 through 1959, and at 75 if you were born in 1960 or later.</li>
+  <li>Each year's RMD is last year-end's balance divided by the IRS divisor for your age: 24.6 at 75, about 4.1%.</li>
+  <li>RMDs often keep rising into your late eighties or nineties, because the balance doesn't shrink as fast as people expect.</li>
+  <li>Missing one costs 25% of the shortfall, 10% if fixed within two years, and honest mistakes can be waived.</li>
+  <li>The years between retiring and the first RMD, QCDs from 70½ and a QLAC are the main ways to make them smaller.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>When RMDs start and how each year's is worked out</li>
+    <li>Why RMDs often grow through your eighties</li>
+    <li>How conversions, QCDs and QLACs shrink them</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Required minimum distribution (RMD)">The smallest amount you must withdraw each year from a traditional IRA or workplace plan once you reach your starting age. It's taxed as ordinary income.</li>
+    <li data-term="Uniform Lifetime Table">The IRS table of divisors most owners use. Last year-end's balance divided by the divisor for your age gives this year's RMD.</li>
+    <li data-term="Qualified charitable distribution (QCD)">A gift sent straight from an IRA to a charity, from age 70½. It counts toward your RMD and isn't taxed. Up to $111,000 per person in 2026.</li>
+    <li data-term="QLAC">A qualifying longevity annuity contract: a deferred annuity bought inside a retirement account that starts by 85. Up to $210,000 (2026) is left out of RMD calculations until it pays.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/publications/p590b">Publication 590-B, Distributions from Individual Retirement Arrangements</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/retirement-plan-and-ira-required-minimum-distributions-faqs">Retirement plan and IRA required minimum distributions FAQs</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/pub/irs-drop/n-25-67.pdf">Notice 2025-67: 2026 limits, including the QCD and QLAC amounts</a> <span>IRS</span></li>
+    <li><a href="https://www.bogleheads.org/wiki/Required_Minimum_Distribution">Required minimum distribution</a> <span>Bogleheads wiki</span></li>
+  </ul>
+</footer>
+</article>

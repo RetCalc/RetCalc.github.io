@@ -1,0 +1,162 @@
+<article class="lesson" data-slug="iras" data-reviewed="2026-10-26"
+  data-title="IRAs"
+  data-idea="Traditional and Roth IRAs: who can use them, and how"
+  data-tool="budget" data-try="Add an IRA line, switch it between traditional and Roth, and see what it costs each paycheck.">
+
+<p class="lede">An individual retirement account is one you open yourself, at any bank or brokerage, separate from any plan at work. It holds much less per year than a 401(k), but it lets you choose your own investments, and the Roth version is the most flexible retirement account there is. The rules on who can deduct a traditional IRA, who can put money in a Roth, and how money comes back out are where most of the questions are.</p>
+
+<h2 id="kinds">The two kinds, and the shared limit</h2>
+<p>A traditional IRA works like a traditional 401(k): contributions may be deductible, the money grows untaxed, and withdrawals are taxed as income. A Roth IRA is the reverse: no deduction, but qualified withdrawals, including all the growth, are tax-free. <a href="/learn/traditional-or-roth">Traditional or Roth</a> covers how to choose between them.</p>
+<p>For 2026, you can put in up to $7,500 in total across all your IRAs, traditional and Roth together, or $8,600 if you're 50 or older by the end of the year. That limit is separate from your 401(k), so you can fill both. A few more rules apply to everyone:</p>
+<ul>
+<li>You need earned income, such as wages or self-employment income, at least equal to what you contribute. Investment income, pensions and Social Security don't count. A spouse with no earnings can use the other's, as described below.</li>
+<li>There's no age limit. Since 2020, you can keep contributing to a traditional IRA at any age, as long as you're working.</li>
+<li>You have until the tax filing deadline, not counting extensions, to contribute for the year. Contributions for 2026 can be made until April 15, 2027; tell the brokerage which year each one is for.</li>
+<li>An IRA is an account, not an investment. Money you put in sits in cash until you buy something with it. Contributions left in the account's cash fund for years miss the growth the account was opened for, so check that each deposit gets invested.</li>
+</ul>
+
+<h2 id="deduct">When a traditional IRA is deductible</h2>
+<p>If neither you nor your spouse is covered by a retirement plan at work, a traditional IRA contribution is fully deductible at any income. If you are covered, by a 401(k), 403(b), pension or similar plan, the deduction phases out as your income rises. Your W-2 shows whether you count as covered: box 13 has a "Retirement plan" checkbox.</p>
+
+<!-- data: lib/engine/data/2026.js limits.iraPhase (cov s 81000-91000, m 129000-149000; spouse 242000-252000); married filing separately $0-$10,000 and the not-covered rule from IRS release IR-2025-111 / Notice 2025-67 -->
+<figure>
+  <table>
+    <thead><tr><th>Your situation in 2026</th><th>Full deduction up to</th><th>No deduction from</th></tr></thead>
+    <tbody>
+      <tr><td>Single, covered by a plan at work</td><td>$81,000</td><td>$91,000</td></tr>
+      <tr><td>Married filing jointly, you're covered</td><td>$129,000</td><td>$149,000</td></tr>
+      <tr><td>Married filing jointly, only your spouse is covered</td><td>$242,000</td><td>$252,000</td></tr>
+      <tr><td>Married filing separately, you're covered</td><td>$0</td><td>$10,000</td></tr>
+      <tr><td>Nobody on the return is covered</td><td colspan="2">Fully deductible at any income</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Traditional IRA deduction phase-outs for 2026, by modified adjusted gross income (MAGI). The range for married filing separately isn't adjusted for inflation.</figcaption>
+</figure>
+
+<p>Modified adjusted gross income, or MAGI, is your adjusted gross income with a few items added back, and for most people it's the same as AGI. Within a range, the deduction shrinks in proportion. Take Riley, single, with a 401(k) at work and MAGI of $85,000. That's $4,000 into a $10,000 range, so 40% of the deduction is lost and 60% is left: $4,500 of a $7,500 contribution is deductible. The IRS rounds the result up to the next $10, and anyone inside the range can deduct at least $200.</p>
+<p>Above the range, you can still contribute; you just can't deduct it. A nondeductible contribution grows untaxed and, when you withdraw it, the part you put in comes back tax-free while the growth is taxed. You track it on Form 8606 each year you contribute or withdraw. On its own that's a weak deal, since the growth is eventually taxed as ordinary income rather than at lower capital gains rates. Its main use is as the first step of the backdoor Roth below.</p>
+
+<h2 id="roth-limits">Who can contribute to a Roth IRA</h2>
+<p>Roth IRA contributions have income limits whether or not you have a plan at work.</p>
+
+<!-- data: lib/engine/data/2026.js limits.rothPhase (s 153000-168000, m 242000-252000); married filing separately $0-$10,000 from IRS release IR-2025-111 -->
+<figure>
+  <table>
+    <thead><tr><th>Filing status in 2026</th><th>Full contribution up to</th><th>No contribution from</th></tr></thead>
+    <tbody>
+      <tr><td>Single or head of household</td><td>$153,000</td><td>$168,000</td></tr>
+      <tr><td>Married filing jointly</td><td>$242,000</td><td>$252,000</td></tr>
+      <tr><td>Married filing separately</td><td>$0</td><td>$10,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Roth IRA contribution phase-outs for 2026, by modified adjusted gross income. A Roth conversion doesn't count toward this income.</figcaption>
+</figure>
+
+<p>It works the same way as the deduction. Single at $160,500 of MAGI is halfway through a $15,000 range, so the most you can put into a Roth IRA is $3,750. Whatever you can't put in the Roth can go into a traditional IRA instead, as long as the total stays under $7,500.</p>
+<p>If you contribute and then find your income was too high, you can fix it by the filing deadline, including extensions: either move the contribution and its earnings to a traditional IRA (a recharacterization) or take it back out. Left in place, an excess contribution costs a 6% tax every year until it's removed.</p>
+
+<h2 id="spousal">The spousal IRA</h2>
+<p>A spouse with little or no pay can still have an IRA, funded from the other spouse's earnings, as long as you file a joint return. Each spouse's IRA is in their own name with its own limit. Say Sam earns $90,000 and Jordan stays home with Nora. Together they can put $15,000 into IRAs for 2026, $7,500 each, because Sam's pay covers both. If both were 50 or older, it would be $17,200.</p>
+<p>For the deduction, Jordan isn't covered by a plan at work, so if Sam is, Jordan's traditional IRA uses the third line of the table: fully deductible up to $242,000 of joint MAGI. Sam's own deduction uses the $129,000–$149,000 range. Many couples in this position put the non-working spouse's money in a traditional IRA, where the deduction is easy to get.</p>
+
+<h2 id="backdoor">The backdoor Roth</h2>
+<p>Since 2010, anyone can convert a traditional IRA to a Roth, whatever their income. That opens a two-step route for people above the Roth income limit, usually called the backdoor Roth:</p>
+<ul>
+<li>Contribute to a traditional IRA, without taking a deduction (you couldn't anyway at that income if you have a plan at work).</li>
+<li>Convert it to a Roth IRA, usually within days, before it has had time to earn much. Since the contribution was already taxed, the conversion is tax-free, apart from any small gain in between.</li>
+</ul>
+<p>It's widely used, and the IRS hasn't challenged it. It only works cleanly, though, if you have no other pre-tax money in any traditional IRA, SEP IRA or SIMPLE IRA. That's because of the pro-rata rule.</p>
+<h3>The pro-rata rule</h3>
+<p>When you convert, you can't choose to convert only the after-tax dollars. The IRS treats all your traditional, SEP and SIMPLE IRAs as one pot, valued at December 31 of the year you convert, and every dollar you convert is part after-tax and part pre-tax in the same proportion as the pot.</p>
+
+<!-- data: arithmetic. Pot = 92,500 pre-tax + 7,500 after-tax = 100,000; after-tax share 7.5%. Converting 7,500: 7.5% x 7,500 = 562.50 tax-free, 6,937.50 taxable. With the 92,500 rolled into a 401(k) before December 31, the pot is the 7,500 alone and all of it converts tax-free. -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>With an old rollover IRA</th><th>After rolling it into a 401(k)</th></tr></thead>
+    <tbody>
+      <tr><td>Pre-tax money in IRAs, December 31</td><td>$92,500</td><td>$0</td></tr>
+      <tr><td>Nondeductible contribution</td><td>$7,500</td><td>$7,500</td></tr>
+      <tr><td>Share of the pot that's after-tax</td><td>7.5%</td><td>100%</td></tr>
+      <tr><td>Converting $7,500: tax-free</td><td>$562.50</td><td>$7,500</td></tr>
+      <tr><td>Converting $7,500: taxable</td><td class="neg">$6,937.50</td><td>$0</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A backdoor Roth with and without other pre-tax IRA money. Balances in a 401(k) or 403(b) aren't part of the pot.</figcaption>
+</figure>
+
+<p>With $92,500 sitting in a rollover IRA from an old job, most of the "backdoor" conversion is taxed. The usual fix is to move that pre-tax money into a current employer's 401(k), if the plan accepts roll-ins, before the end of the year. Workplace plans aren't counted, so the pot then holds only the after-tax contribution. The balance that counts is the one on December 31, so a rollover IRA opened later in the year, after the conversion, still ruins it.</p>
+<p>Married couples each have their own pot. One spouse's rollover IRA doesn't affect the other's backdoor Roth. Both steps go on Form 8606, where mistakes are common; tax software gets it right if you answer its questions carefully.</p>
+
+<h2 id="withdrawals">Taking money out</h2>
+<h3>Traditional IRA</h3>
+<p>Withdrawals are taxed as ordinary income, except for any nondeductible contributions, which come back tax-free in proportion (the same pro-rata math). Before 59½, there's a 10% additional tax on top, unless an exception applies. From 73, or 75 if you were born in 1960 or later, you must take required minimum distributions each year; <a href="/learn/rmds">Required minimum distributions</a> covers how they're figured.</p>
+<p>IRAs share most early-withdrawal exceptions with 401(k)s, but not all of them:</p>
+
+<!-- data: IRS Retirement topics: exceptions to tax on early distributions (IRA column); dollar limits from the same page -->
+<figure>
+  <table>
+    <thead><tr><th>Exception to the 10% tax</th><th>IRA</th><th>401(k)</th></tr></thead>
+    <tbody>
+      <tr><td>Leaving your job in or after the year you turn 55</td><td>No</td><td>Yes</td></tr>
+      <tr><td>First home, up to $10,000 lifetime</td><td>Yes</td><td>No</td></tr>
+      <tr><td>Higher education costs</td><td>Yes</td><td>No</td></tr>
+      <tr><td>Health insurance premiums while unemployed</td><td>Yes</td><td>No</td></tr>
+      <tr><td>Medical costs above 7.5% of AGI</td><td>Yes</td><td>Yes</td></tr>
+      <tr><td>Birth or adoption, up to $5,000 per child</td><td>Yes</td><td>Yes</td></tr>
+      <tr><td>A personal emergency, up to $1,000 per year</td><td>Yes</td><td>Yes</td></tr>
+      <tr><td>Substantially equal periodic payments</td><td>Yes</td><td>Yes, after leaving the job</td></tr>
+      <tr><td>Total and permanent disability</td><td>Yes</td><td>Yes</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The main exceptions to the 10% early-withdrawal tax. The withdrawal is still taxed as income; only the extra 10% is waived. There are a few more, listed by the IRS.</figcaption>
+</figure>
+
+<p>The first line is the one that catches people. If you leave a job at 56 and roll the 401(k) into an IRA, you lose the ability to take penalty-free withdrawals from it until 59½. Anyone planning to retire in their mid-to-late fifties should leave at least some money in the 401(k). <a href="/learn/bridge-to-59">Bridging to 59½</a> and <a href="/learn/rule-72t">72(t) payments</a> go into the options.</p>
+
+<h3>Roth IRA</h3>
+<p>Roth IRA withdrawals come out in a fixed order, and that order is what makes the account so flexible.</p>
+<ul>
+<li>Your contributions come out first, at any age, with no tax or penalty. Put in $7,500 per year for five years and you can take $37,500 back out whenever you like.</li>
+<li>Converted money comes out next, oldest conversion first. It's never taxed again, but before 59½ each conversion has its own five-year wait to avoid the 10% penalty.</li>
+<li>Earnings come out last. They're tax-free once you're 59½ and it's been five tax years since your first contribution to any Roth IRA. Before then, they're taxed and usually hit with the 10% penalty.</li>
+</ul>
+<p>The five-year clock for earnings starts on January 1 of the tax year of your first contribution. A contribution made in April 2027 for 2026 starts the clock on January 1, 2026. So it's worth opening a Roth IRA with even a small contribution early, to get the clock running. Roth IRAs have no required distributions for the owner.</p>
+
+<h2 id="moving">Rollovers and transfers</h2>
+<p>Money can move between IRAs, or from a workplace plan into an IRA, without tax. A direct transfer, where one provider sends the money to the other, has no limit on how often. An indirect rollover, where the money is paid to you and you redeposit it within 60 days, is limited to one per twelve months across all your IRAs, and a missed deadline makes the whole amount taxable.</p>
+<p>When you leave a job, rolling the 401(k) into an IRA gives you more investment choice and puts everything in one place. Keeping it in the plan, or rolling it into a new employer's plan, keeps the age-55 exception, keeps pre-tax money out of the backdoor Roth pot, and generally gives stronger protection from creditors under federal law.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Budget tool's Paycheck tab has an IRA line with a switch between traditional and Roth. A Roth IRA comes out of take-home pay in full. A traditional IRA also comes out of take-home pay, since you contribute it yourself rather than through payroll, but the tool takes the deduction off your income tax as far as the 2026 phase-out allows when you're in a 401(k) at work. Above the Roth income range, the line tells you to go through a backdoor Roth instead.</p>
+<p>Income Tax shows the deduction exactly: split your pre-tax deductions by kind and enter a traditional IRA, and it applies the phase-out to your income. <a href="/learn/where-each-dollar-goes">Where each dollar should go</a> covers where an IRA fits among your other accounts.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Can I have a 401(k) and an IRA?</summary><p>Yes. The limits are separate: $24,500 for the 401(k) and $7,500 for IRAs in 2026. Having the 401(k) only affects whether a traditional IRA contribution is deductible, not whether you can make one.</p></details>
+<details><summary>Can I contribute to both a traditional and a Roth IRA?</summary><p>Yes, but the $7,500 limit is shared. You could put $3,000 in one and $4,500 in the other.</p></details>
+<details><summary>What if I've made money from a side job only?</summary><p>Self-employment income counts as earned income, after the deduction for half of self-employment tax. You can also open a SEP IRA or a solo 401(k), which allow much more.</p></details>
+<details><summary>Is the backdoor Roth allowed?</summary><p>Yes. Each step is legal on its own, and the IRS hasn't challenged the combination. The usual trouble comes from the pro-rata rule and from mistakes on Form 8606, not from the IRS objecting to the strategy.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>For 2026 you can put $7,500 across all your IRAs, $8,600 at 50 and over, on top of any 401(k).</li>
+<li>With a plan at work, the traditional IRA deduction phases out at $81,000–$91,000 single or $129,000–$149,000 joint.</li>
+<li>Roth IRA contributions phase out at $153,000–$168,000 single or $242,000–$252,000 joint; above that, the backdoor Roth works if you have no other pre-tax IRA money.</li>
+<li>Roth contributions can come back out at any time; earnings wait until 59½ and five years.</li>
+<li>Rolling a 401(k) into an IRA gives up the age-55 exception.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>Who can deduct a traditional IRA in 2026</li><li>The Roth income limits and the backdoor Roth</li><li>How and when IRA money can come back out</li></ul>
+  <ul class="terms">
+    <li data-term="MAGI">Modified adjusted gross income: your AGI with a few items added back. It sets the IRA deduction and Roth phase-outs.</li>
+    <li data-term="Backdoor Roth">A nondeductible traditional IRA contribution converted to a Roth, for people whose income is above the Roth limit.</li>
+    <li data-term="Pro-rata rule">When you convert, each dollar is pre-tax and after-tax in the same proportion as all your traditional, SEP and SIMPLE IRAs together on December 31.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500">401(k) limit increases to $24,500 for 2026, IRA limit increases to $7,500</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p590a">Publication 590-A: contributions to IRAs</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p590b">Publication 590-B: distributions from IRAs</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-exceptions-to-tax-on-early-distributions">Exceptions to tax on early distributions</a> <span>IRS</span></li>
+    <li><a href="https://www.bogleheads.org/wiki/Backdoor_Roth">Backdoor Roth</a> <span>Bogleheads wiki</span></li>
+  </ul>
+</footer>
+</article>

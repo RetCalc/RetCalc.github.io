@@ -1,0 +1,177 @@
+<article class="lesson" data-slug="how-much-in-stocks" data-reviewed="2026-10-26"
+  data-title="How much in stocks"
+  data-idea="Choosing your mix while you save, and after you retire"
+  data-tool="advanced" data-try="Run your savings through every market since 1926 at the stock share you choose, with your plan already filled in.">
+
+<p class="lede">How you split your savings between stocks and bonds decides more about how your plan behaves than almost any fund you pick. More in stocks has meant more growth and deeper falls; less has meant a smoother ride and, held for too long, a real risk of falling behind inflation. The right share changes over a lifetime, though not always in the direction the rules of thumb say.</p>
+
+<h2 id="trade">The trade you're making</h2>
+<p>Your asset allocation, or mix, is the share of your savings in each kind of investment. People usually describe it by the stock share first: 60/40 means 60% stocks and 40% bonds. The table shows six mixes of US stocks and 10-year Treasuries from 1926 through 2025, each rebalanced back to its mix once a year.</p>
+
+<!-- data: engine backtest() (lib/engine/math.js) on lib/engine/data/history.js, 1926–2025, stocks and bonds at each share,
+     rebalanced yearly, no fee. realCagr: 7.29, 6.52, 5.57, 4.46, 3.20, 1.79.
+     Worst year (nominal): 1931 −41.78, 1931 −33.24, 1931 −24.71, 1931 −16.17, 2022 −14.95, 2022 −14.94.
+     Deepest fall (maxDD, yearly): −62.3 (1928–32), −50.9 (1928–32), −37.4 (1928–32), −23.1 (1929–32), −15.0 (2021–22), −18.0 (2020–22).
+     Worst rolling 10 years after inflation: −3.97, −3.25, −2.65, −2.93, −3.63, −4.49.
+     Worst rolling 30 years after inflation: 4.26, 3.80, 3.04, 1.92, 0.51, −1.39. -->
+<figure>
+  <table>
+    <thead><tr><th>Stocks / bonds</th><th>Per year after inflation</th><th>Worst year</th><th>Deepest fall</th><th>Worst 10 years</th><th>Worst 30 years</th></tr></thead>
+    <tbody>
+      <tr><td>100 / 0</td><td>7.3%</td><td class="neg">−41.8%</td><td class="neg">−62%</td><td class="neg">−4.0%</td><td>+4.3%</td></tr>
+      <tr><td>80 / 20</td><td>6.5%</td><td class="neg">−33.2%</td><td class="neg">−51%</td><td class="neg">−3.2%</td><td>+3.8%</td></tr>
+      <tr><td>60 / 40</td><td>5.6%</td><td class="neg">−24.7%</td><td class="neg">−37%</td><td class="neg">−2.6%</td><td>+3.0%</td></tr>
+      <tr><td>40 / 60</td><td>4.5%</td><td class="neg">−16.2%</td><td class="neg">−23%</td><td class="neg">−2.9%</td><td>+1.9%</td></tr>
+      <tr><td>20 / 80</td><td>3.2%</td><td class="neg">−15.0%</td><td class="neg">−15%</td><td class="neg">−3.6%</td><td>+0.5%</td></tr>
+      <tr><td>0 / 100</td><td>1.8%</td><td class="neg">−14.9%</td><td class="neg">−18%</td><td class="neg">−4.5%</td><td class="neg">−1.4%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>US stocks and 10-year Treasuries, 1926–2025, rebalanced yearly, no fees. Worst year and deepest fall are before inflation, and the deepest fall is measured at year ends; the 10 and 30-year columns are per year after inflation.</figcaption>
+</figure>
+
+<p>Read down the first three columns and it's a straight trade: each step toward stocks added roughly a point per year of growth after inflation and made the worst year and the deepest fall worse. Going from 60/40 to all stocks raised the return from 5.6% to 7.3% per year and took the deepest fall from 37% to 62%.</p>
+<p>The last two columns break the pattern. Over the worst ten years, 60/40 held up best; all bonds did worst of all, because the worst decade for bonds, the 1970s, was a decade of high inflation. Over the worst 30 years, all bonds was the only mix that lost spending power. Low risk over a year and low risk over a retirement aren't the same thing. A mix with too few stocks rarely falls far in a year, and it can lose ground for a generation.</p>
+
+<h2 id="saving">While you're saving</h2>
+<p>When retirement is decades away, two things work in favor of a high stock share. You won't sell for a long time, so a fall only matters if it's still there when you need the money, and over every 20 and 30-year stretch on record, stocks ended ahead of inflation. And every contribution you make after a fall buys shares at the lower price, so a crash early in your career does far less harm to your eventual balance than the headlines suggest.</p>
+<p>To see how that played out, take a hypothetical saver, Jordan, who is 40, has $100,000 saved and adds $1,000 per month for 25 years. The figures below run that plan through every 25-year stretch since 1926, one starting each month, at four different mixes, and show the result in today's dollars.</p>
+
+<!-- data: engine historicalRuns() (lib/engine/math.js), initial $100,000, $1,000 per month for 25 years with the contribution raised 3% per year,
+     stock share fixed (glide off), the rest 10-year Treasuries, no fee. 901 starts, January 1926 to January 2001, results in today's dollars.
+     Final-balance percentiles from bands[last]; worst from windows. Rounded to the nearest $1,000.
+     100%: p10 711,000, p50 1,378,000, p90 2,481,000, worst 446,000 (1957 start).
+     80%: 657,000, 1,187,000, 1,701,000, worst 414,000 (July 1957).
+     60%: 593,000, 1,027,000, 1,346,000, worst 379,000 (1957).
+     40%: 521,000, 751,000, 1,166,000, worst 331,000 (1956). -->
+<figure>
+  <table>
+    <thead><tr><th>Stocks</th><th>Worst start</th><th>Bad case (1 in 10 did worse)</th><th>Middle case</th><th>Good case (1 in 10 did better)</th></tr></thead>
+    <tbody>
+      <tr><td>100%</td><td>$446,000</td><td>$711,000</td><td>$1,378,000</td><td>$2,481,000</td></tr>
+      <tr><td>80%</td><td>$414,000</td><td>$657,000</td><td>$1,187,000</td><td>$1,701,000</td></tr>
+      <tr><td>60%</td><td>$379,000</td><td>$593,000</td><td>$1,027,000</td><td>$1,346,000</td></tr>
+      <tr><td>40%</td><td>$331,000</td><td>$521,000</td><td>$751,000</td><td>$1,166,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Jordan's balance after 25 years, in today's dollars: $100,000 to start plus $1,000 per month, raised 3% per year. 901 starting months from 1926 to 2001; the rest of each mix is 10-year Treasuries.</figcaption>
+</figure>
+
+<p>In every column, more stocks meant more money, and not only in the middle. The worst starts, in 1956 and 1957, ran into the inflation and flat markets of the 1970s, and still left Jordan with more at 100% stocks ($446,000) than at 40% ($331,000). For a 25-year saver in the US record, the cost of a high stock share was a bumpier ride along the way, with no lower bottom line at the end.</p>
+<p>Two cautions keep that from being a law. It's one country's history, and the US had one of the best centuries of any stock market. And a bumpy ride only costs nothing if you stay on. A saver at 100% stocks saw the balance drop by about two-fifths in 2008; anyone who sold then and waited for things to settle locked in the loss and missed the rebound.</p>
+
+<h3>The rules of thumb</h3>
+<p>You'll often see a mix set by age. "Age in bonds" says hold your age as a percentage in bonds, so 40% bonds at 40. "110 minus your age" in stocks is the gentler version, giving 70% stocks at 40 and 45% at 65. They're easy to remember, and they get the direction right: less in stocks as the time to spend gets closer. Neither looks at anything except age, though, and two 40-year-olds can be in very different places.</p>
+
+<h2 id="tolerance">Risk tolerance and risk capacity</h2>
+<p>Planners separate two questions that are easy to blur together.</p>
+<p>Risk tolerance is how you'd feel and act during a fall. The honest test is behavior: in a year like 2008, would you hold, or would you sell to make the losses stop? The table puts numbers on it, using 2008's returns from the same record.</p>
+
+<!-- data: 2008 calendar-year returns from HIST_STOCK and HIST_BOND (lib/engine/math.js): stocks −39.23%, 10-year Treasuries +19.33%.
+     Mix return = w × −39.23% + (1 − w) × 19.33%, on $500,000. 100%: −39.23% → −$196,163; 80%: −27.52% → −$137,599;
+     60%: −15.81% → −$79,035; 40%: −4.09% → −$20,472. Rounded to the nearest $1,000. -->
+<figure>
+  <table>
+    <thead><tr><th>Stocks / bonds</th><th>2008 return</th><th>Change on $500,000</th><th>Left at year end</th></tr></thead>
+    <tbody>
+      <tr><td>100 / 0</td><td class="neg">−39.2%</td><td class="neg">−$196,000</td><td>$304,000</td></tr>
+      <tr><td>80 / 20</td><td class="neg">−27.5%</td><td class="neg">−$138,000</td><td>$362,000</td></tr>
+      <tr><td>60 / 40</td><td class="neg">−15.8%</td><td class="neg">−$79,000</td><td>$421,000</td></tr>
+      <tr><td>40 / 60</td><td class="neg">−4.1%</td><td class="neg">−$20,000</td><td>$480,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>One calendar year, 2008, in the site's data: US stocks −39.2% (it uses monthly average prices; the S&amp;P 500's published total return was −37%), 10-year Treasuries +19.3%, before inflation. A hypothetical $500,000 at each mix.</figcaption>
+</figure>
+
+<p>Losing $196,000 in a year on paper is a different experience from reading "−39%" in a table. If the 100% row would have you selling, a mix you can actually hold through a fall will very likely leave you with more than a higher-return mix you abandon at the bottom.</p>
+<p>Risk capacity is how much loss your plan can absorb, whatever you feel about it. It depends on facts:</p>
+<ul>
+  <li>How soon you'll spend the money. Money for next year's living has little capacity for a fall; money for age 85 has a lot.</li>
+  <li>How much of your spending is covered by income that markets don't touch. Social Security, a pension or an annuity that pays most of your bills leaves your savings free to take more risk.</li>
+  <li>How flexible your spending is. If you could cut 10% for a few years without real hardship, a fall does less damage.</li>
+  <li>How far ahead of your goal you are. Someone with twice what they need can hold almost any mix; someone just short of it may need growth but can't afford a deep fall at the wrong time.</li>
+</ul>
+<p>The mix that fits is the lower of the two answers. High tolerance doesn't help a plan that has no room for a bad decade, and high capacity doesn't help someone who'll sell in a panic.</p>
+
+<h2 id="target-date">Target-date funds and glide paths</h2>
+<p>A glide path is a plan for how the mix changes over time. Target-date funds build one in: you pick the fund named for roughly the year you'll retire, and it shifts from stocks toward bonds on its own as that year approaches.</p>
+<p>Vanguard's Target Retirement funds are one example. They hold about 90% stocks until around age 40, lower the share gradually to about 50% at 65, and keep lowering it after retirement until they reach 30% stocks and 70% bonds around age 72. That makes it a "through" glide path, one that keeps changing past the target date. A "to" glide path stops changing at the target date. Fund families differ a good deal in how much stock they hold at the target year, so two 2045 funds can be quite different investments; the fund's own fact sheet shows its path.</p>
+<p>A target-date fund's strength is that it does the rebalancing and the shifting for you, which removes a lot of chances to make a bad decision at a bad time. Its weakness is that the path is set by age alone. It can't know that you have a pension, or a spouse with a large 401(k), or a plan to retire at 55.</p>
+
+<h2 id="retired">Once you retire</h2>
+<p>After you retire, the question changes from "how much will this grow?" to "will this last?". The chart runs a 30-year retirement through every January start from 1927 to 1996: $1,000,000 at retirement, $40,000 taken out in the first year and raised with inflation each year after, the classic 4% rule, at stock shares from 0% to 100%.</p>
+
+<!-- data: engine historicalBacktest() (lib/engine/drawdown.js) via ddOptsFromState({initial:1000000, years:30, rate:4, stock:s, strategy:"fixed"}),
+     January starts 1927–1996 (70 retirements), stocks and 10-year Treasuries rebalanced yearly, no fee.
+     successRate by stock share 0,10,...,100: 41.4, 50.0, 68.6, 82.9, 90.0, 94.3, 94.3, 94.3, 95.7, 95.7, 94.3 (%).
+     At 60%, the failures began in 1965, 1966, 1968 and 1969, matching the 4% rule and Drawdown Simulator articles. -->
+<figure data-chart='{"type":"line","x":[0,10,20,30,40,50,60,70,80,90,100],"xLabel":"Stock share (%)","y":"pct","series":[{"name":"Retirements that lasted 30 years at 4%","tone":"accent","values":[0.414,0.5,0.686,0.829,0.9,0.943,0.943,0.943,0.957,0.957,0.943]}]}'>
+  <figcaption>Share of 70 historical retirements, starting each January from 1927 to 1996, in which $40,000 per year, raised with inflation, lasted 30 years from $1,000,000. US stocks and 10-year Treasuries.</figcaption>
+</figure>
+
+<p>Below about 40% stocks, the plan failed far more often. With no stocks at all, more than half of these retirements ran out of money, because bonds alone didn't keep up with the withdrawals once inflation was counted. From half in stocks up, the line is nearly flat.</p>
+
+<!-- data: as the chart above. "Highest rate" bisects the first-year rate (ddQuick) for 100% success over the 70 January starts.
+     medianEnd: the 36th of the 70 sorted ending balances, in today's dollars, rounded to the nearest $1,000. -->
+<figure>
+  <table>
+    <thead><tr><th>Stocks</th><th>Lasted 30 years at 4%</th><th>Highest first-year rate that lasted every start</th><th>Middle amount left after 30 years</th></tr></thead>
+    <tbody>
+      <tr><td>0%</td><td>41%</td><td>2.42%</td><td>$0</td></tr>
+      <tr><td>20%</td><td>69%</td><td>3.43%</td><td>$165,000</td></tr>
+      <tr><td>40%</td><td>90%</td><td>3.69%</td><td>$772,000</td></tr>
+      <tr><td>50%</td><td>94%</td><td>3.75%</td><td>$1,217,000</td></tr>
+      <tr><td>60%</td><td>94%</td><td>3.79%</td><td>$1,616,000</td></tr>
+      <tr><td>80%</td><td>96%</td><td>3.82%</td><td>$3,016,000</td></tr>
+      <tr><td>100%</td><td>94%</td><td>3.69%</td><td>$4,136,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The same 70 retirements from $1,000,000. Amounts left are in today's dollars; the middle amount is the one half the retirements beat.</figcaption>
+</figure>
+
+<p>Anywhere from half to four-fifths in stocks supported nearly the same safe starting rate in the US record, between 3.75% and 3.82%. Within that range, the stock share made little difference to the worst cases and a large one to what was left over. The middle retirement at 80% stocks ended with nearly twice what it would have at 60%, but the worst starts ran out of money at both. All stocks did slightly worse at the bottom than 80/20, because the deepest early falls came with nothing to sell but stocks.</p>
+<p>So for many retirees the choice within that range is less about safety and more about what the money is for: a higher stock share has tended to leave more for later spending or heirs, at the price of bigger swings in the balance along the way.</p>
+
+<p data-yours></p>
+
+<h3>A rising glide path</h3>
+<p>The usual path keeps cutting stocks after retirement. In a paper published in the Journal of Financial Planning in January 2014, Wade Pfau and Michael Kitces tested the opposite: start retirement with fewer stocks and raise the share over the following years, for example from 30% to 60%. Their reasoning was sequence risk. The years just after you retire are when a fall does the most damage, so that's when the portfolio should be safest; by the time stocks are raised, the dangerous stretch has passed. They found rising paths could lower both the chance and the size of a shortfall compared with a fixed mix or a declining one.</p>
+<p>In the US record since 1926, at 4%, the differences were small. Going from 30% to 70% stocks over 30 years lasted in 65 of the 70 January starts; a fixed 60% lasted in 66, and so did going from 70% down to 30%. Starting at 40% and rising to 80% lasted in 68. The highest rate that lasted every start was within a few hundredths of a point for all of them. A rising path is a reasonable choice, especially for someone worried about a fall in the first few years, but this history doesn't show it as a big improvement. <a href="/learn/sequence-risk">Sequence-of-returns risk</a> covers why the early years matter so much.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>In <a href="/advanced">Advanced</a>, switch the chart to historical markets and set the stock share; your savings then run through every market since 1926 at that mix. Turn on the glide path to lower the share over the final years before you retire (it opens at 80% stocks, falling to 40%). Compare the bad case at a few different mixes, the way the Jordan table does, and look at how wide the range gets as the share rises.</p>
+<p>For retirement, the <a href="/drawdown">Drawdown Simulator</a> takes a stock share and, optionally, a share to end at, so you can test a fixed mix, a falling one or a rising one against every retirement since 1926 with your own spending and Social Security. Watch the worst starts and the middle amount left, since those are where the mix shows. The <a href="/backtest">Backtest</a> shows how any mix behaved year by year, without withdrawals.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Should Social Security count as a bond?</summary><p>Some planners treat it that way, since it pays a steady, inflation-adjusted income whatever markets do. It isn't something you can sell or rebalance, so it doesn't belong in your mix as a number. It does raise your risk capacity: the more of your spending it covers, the more of your savings can sit in stocks without putting your basic bills at risk.</p></details>
+<details><summary>Is 100% stocks too risky for a young saver?</summary><p>In the US record, Jordan's 25-year plan above ended with more at 100% stocks than at 80%, 60% or 40%, even from the worst start. The catch is staying put through falls of 40% or more. If you'd sell in one, a mix with some bonds that you'll hold is likely to work out better.</p></details>
+<details><summary>Do I need to rebalance?</summary><p>Left alone, a mix drifts toward whatever has grown fastest, usually stocks. A 60/40 mix left alone from 1926 was all stocks by 2025, with a deeper worst fall. Rebalancing once a year, or when a holding drifts more than a few points from its target, keeps the risk you chose. A target-date fund does it for you. <a href="/learn/when-markets-fall">When markets fall</a> covers rebalancing through a crash.</p></details>
+<details><summary>Should every account hold the same mix?</summary><p>No. What matters is the mix across everything you own. Many people hold bonds in tax-deferred accounts such as a traditional 401(k), where interest isn't taxed each year, and stocks in Roth and taxable accounts. A target-date fund in one account plus other funds elsewhere makes the overall mix harder to see, so add them up.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>More in stocks has meant more growth and deeper falls; from 1926 through 2025, 60/40 earned 5.6% per year after inflation and all stocks 7.3%.</li>
+  <li>Too few stocks has its own risk: over 30 years, all bonds lost spending power and failed most retirements at 4%.</li>
+  <li>The right mix is the lower of your risk tolerance and your risk capacity, and capacity depends on time, other income and flexibility.</li>
+  <li>Target-date funds lower stocks with age automatically, but only by age.</li>
+  <li>In retirement, half to four-fifths in stocks gave nearly the same worst case historically; the share mostly changed what was left over.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>What each stock share has returned and lost since 1926</li>
+    <li>The difference between risk tolerance and risk capacity</li>
+    <li>How the mix affects a retirement's chance of lasting</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Asset allocation">How your savings are split between stocks, bonds and cash. 60/40 means 60% stocks and 40% bonds.</li>
+    <li data-term="Glide path">A planned change in the mix over time, usually from stocks toward bonds as retirement nears.</li>
+    <li data-term="Risk capacity">How much loss your plan can absorb, set by how soon you need the money, your other income and how flexible your spending is.</li>
+    <li data-term="Rebalancing">Selling some of what has grown and buying what has lagged, to bring the mix back to its target.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.financialplanningassociation.org/article/journal/JAN14-reducing-retirement-risk-rising-equity-glide-path">Reducing retirement risk with a rising equity glide path (Pfau and Kitces, 2014)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://workplace.vanguard.com/investment/strategies/tdf-glide-path.html">Target-date fund glide path</a> <span>Vanguard</span></li>
+    <li><a href="https://www.investor.gov/introduction-investing/getting-started/asset-allocation">Asset allocation and diversification</a> <span>Investor.gov</span></li>
+    <li><a href="https://earlyretirementnow.com/2016/12/07/the-ultimate-guide-to-safe-withdrawal-rates-part-1-intro/">Safe withdrawal rates, part 1</a> <span>Early Retirement Now</span></li>
+  </ul>
+</footer>
+</article>

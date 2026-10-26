@@ -18,6 +18,7 @@ import { flow } from "@/components/dashboard/flows";
 import { money, money10 } from "@/components/dashboard/format";
 import type { YoursKey } from "@/lib/learn/catalog";
 import { runSeq, SEQ_RETURNS } from "./widgets/sequence-data";
+import { claimShare } from "./widgets/ClaimAge";
 
 /* ---------- The sample household ---------- */
 const SAMPLE: Profile = {
@@ -220,8 +221,11 @@ function build(key: YoursKey, P: Plan): Out | null {
     }
     case "couple-ss": {
       if (!couple(pr)) return { rows: [], note: <>This one is about couples; {yourP} plan is for one person.</>, line: null };
-      if (R.ss1 == null || R.ss2 == null) return need("both your birth years and pay");
-      const hi = Math.max(R.ss1, R.ss2);
+      if (R.ss1 == null || R.ss2 == null || !pr.p1.by || !pr.p2.by) return need("both your birth years and pay");
+      // A survivor gets the larger of their own check and the one who died's,
+      // and never less than 82.5% of the one who died's full benefit.
+      const pia1 = R.ss1 / claimShare(R.claim1 ?? 67, fraOf(pr.p1.by)), pia2 = R.ss2 / claimShare(R.claim2 ?? 67, fraOf(pr.p2.by));
+      const hi = Math.max(Math.max(R.ss1, 0.825 * pia1, R.ss2), Math.max(R.ss2, 0.825 * pia2, R.ss1));
       return {
         rows: [[`${names[0]}, from ${R.claim1}`, money10(R.ss1) + " per month"], [`${names[1]}, from ${R.claim2}`, money10(R.ss2) + " per month"], ["Survivor keeps", money10(hi) + " per month"]],
         line: <>When one of {who === "you" ? "you" : "them"} dies, the household keeps the larger benefit, about <b>{money10(hi)} per month</b>, and loses the smaller.</>,

@@ -1,0 +1,161 @@
+<article class="lesson" data-slug="how-long-to-plan-for" data-reviewed="2026-10-26"
+  data-title="How long to plan for"
+  data-idea="Life expectancy, the odds of living long, and why plans run to 95"
+  data-tool="drawdown" data-try="Set how many years the money has to last and see how often it lasted through every retirement since 1926, with your plan already filled in.">
+
+<p class="lede">A retirement plan needs an end date, and nobody knows theirs. Planning to your life expectancy sounds sensible, but it means planning for a retirement that about half of people outlive. This lesson looks at what the actuarial tables say, how the odds change for couples, and why most plans, RetCalc's included, run to 95.</p>
+
+<h2 id="average">Life expectancy is an average</h2>
+<p>The Social Security Administration's actuaries publish a life table each year: for every age, the chance of dying within the year and the average number of years left. The latest, for 2023, used in the 2026 Trustees Report, gives a 65-year-old man an average of 18.1 more years and a 65-year-old woman 20.7. So the average man who reaches 65 lives to about 83, and the average woman to about 86.</p>
+<p>An average describes a spread. Some 65-year-olds die within a few years; others live past 100. Early deaths pull the average down, so the middle of the spread, the age by which half have died, is a little later than the average: about 84 for men and about 87 for women. If you plan to your life expectancy, you're planning for a retirement that slightly more than half of people outlive.</p>
+<h3>Period and cohort tables</h3>
+<p>There's a second reason the average understates. The table above is a period table: it assumes today's death rates at every age stay as they are for the rest of your life. In practice they have kept falling, so the SSA also publishes cohort figures that build in projected improvements. For people turning 65 around now, the Trustees' cohort figures run roughly one year longer than the period table's. The figures below use the period table, which gives the shorter answer, so treat them as a floor.</p>
+
+<h3>The finish line moves as you age</h3>
+<p>Life expectancy is worked out for people who have already reached a given age, so it rises as you get older. Surviving each year removes one year of risk, and the expected age at death moves later.</p>
+
+<!-- data: SSA period life table, 2023 (2026 Trustees Report): life expectancy at exact age, added to that age. Men 25.73 at 55, 18.12 at 65, 11.42 at 75, 6.04 at 85, 4.11 at 90. Women 29.01, 20.66, 13.10, 7.02, 4.80. -->
+<figure>
+  <table>
+    <thead><tr><th>Having reached</th><th>Men, average age at death</th><th>Women, average age at death</th></tr></thead>
+    <tbody>
+      <tr><td>55</td><td>80.7</td><td>84.0</td></tr>
+      <tr><td>65</td><td>83.1</td><td>85.7</td></tr>
+      <tr><td>75</td><td>86.4</td><td>88.1</td></tr>
+      <tr><td>85</td><td>91.0</td><td>92.0</td></tr>
+      <tr><td>90</td><td>94.1</td><td>94.8</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Age plus remaining life expectancy, from the SSA's 2023 period life table.</figcaption>
+</figure>
+
+<p>Someone who plans at 55 to an average age of 81 and is still healthy at 75 finds the average has moved to 86. A plan revisited every few years has to keep pushing its end date out, so it makes sense to set one generously at the start.</p>
+
+<h2 id="odds">The odds of reaching each age</h2>
+<p>The more useful question for a plan is how likely you are to reach a given age. Here's what the SSA's table implies for someone who has already reached 65.</p>
+
+<!-- data: SSA period life table, 2023, as used in the 2026 Trustees Report (ssa.gov/oact/STATS/table4c6.html), read 26 October 2026. Chance of reaching age x from 65 = lives at x ÷ lives at 65. Men: 79,084 at 65; 71,916 at 70; 62,797 at 75; 50,785 at 80; 35,529 at 85; 19,063 at 90; 6,333 at 95; 999 at 100. Women: 87,399; 82,374; 75,248; 64,606; 49,469; 30,504; 12,612; 2,758. At least one of a couple = 1 − (1 − man) × (1 − woman), treating the two lives as independent, both 65. -->
+<figure data-chart='{"type":"line","x":[65,70,75,80,85,90,95,100],"xLabel":"Age","y":"pct","series":[{"name":"At least one of a couple","tone":"accent","values":[1,0.995,0.971,0.907,0.761,0.506,0.213,0.044]},{"name":"Woman","tone":"good","values":[1,0.943,0.861,0.739,0.566,0.349,0.144,0.032]},{"name":"Man","tone":"neutral","values":[1,0.909,0.794,0.642,0.449,0.241,0.080,0.013]}],"marks":[{"x":95,"label":"Plan to 95"}]}'>
+  <figcaption>The chance a 65-year-old is still alive at each later age, from the SSA's 2023 period life table. For a couple, both 65, the chance that at least one of them is.</figcaption>
+</figure>
+
+<!-- data: same table and arithmetic as the chart; "both" = man × woman. -->
+<figure>
+  <table>
+    <thead><tr><th>From 65, chance of reaching</th><th>Man</th><th>Woman</th><th>At least one of a couple</th><th>Both of a couple</th></tr></thead>
+    <tbody>
+      <tr><td>75</td><td>79%</td><td>86%</td><td>97%</td><td>68%</td></tr>
+      <tr><td>80</td><td>64%</td><td>74%</td><td>91%</td><td>47%</td></tr>
+      <tr><td>85</td><td>45%</td><td>57%</td><td>76%</td><td>25%</td></tr>
+      <tr><td>90</td><td>24%</td><td>35%</td><td>51%</td><td>8%</td></tr>
+      <tr><td>95</td><td>8%</td><td>14%</td><td>21%</td><td>1%</td></tr>
+      <tr><td>100</td><td>1%</td><td>3%</td><td>4%</td><td>Under 0.1%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>SSA 2023 period life table, the US population as a whole. People in good health, or with higher incomes, tend to do better than these figures.</figcaption>
+</figure>
+
+<p>Two things in the table matter for planning. A 65-year-old woman has better than a one-in-three chance of reaching 90. And for a couple, the chance that at least one of them reaches 90 is about even, and about one in five that one reaches 95.</p>
+
+<h2 id="couples">Couples plan for the longer life</h2>
+<p>A couple's savings have to last until the second death, not the first, so the plan has to reach the later of two lifetimes. That's why the couple column runs so much further to the right than either person alone. The chance that both of a 65-year-old couple are alive at 90 is 8%, but the chance that one of them is, and still needs an income, is 51%.</p>
+<p>The survivor's years usually cost less than the couple's did, but not half as much: housing, utilities and a car cost much the same for one person as for two. Income falls further than costs. When one spouse dies, the household keeps only the larger of the two Social Security benefits, and the smaller one stops; a pension may drop too, depending on the option chosen at retirement. That's one reason the higher earner's claiming age matters so much for couples, since it sets the survivor's benefit. <a href="/learn/spouses-and-survivors">Spouses and survivors</a> covers how it works.</p>
+<p>Age gaps stretch the horizon further. If one spouse is five years younger, the plan has to last until the younger one's late 80s or 90s, which may be 30 or 35 years after the older one retires.</p>
+
+<p data-yours></p>
+
+<h2 id="you">Your own odds are not the average</h2>
+<p>The SSA's table describes the whole population, and individuals differ a great deal from it. Health and habits matter most: smoking, weight, chronic illness and family history all move the odds. So do income and education. In a 2016 study of tax and Social Security records published in <i>JAMA</i>, Raj Chetty and colleagues found that at age 40, the richest 1% of Americans could expect to live 14.6 years longer than the poorest 1% for men, and 10.1 years longer for women.</p>
+<p>People who reach retirement with substantial savings tend to sit toward the longer-lived end of the population, so for them the averages above are, if anything, too short. The Actuaries Longevity Illustrator, built by the American Academy of Actuaries and the Society of Actuaries, asks about your age, sex, health and smoking and shows the odds of reaching each age, for you and a spouse.</p>
+
+<h2 id="history">How the numbers have changed</h2>
+<p>Retirements have lengthened a great deal since Social Security began paying monthly benefits in 1940. Life expectancy at 65 has risen by about six years for men and more than seven for women, with a dip during the COVID-19 pandemic that has since reversed.</p>
+
+<!-- data: SSA, 2026 Trustees Report, Table V.A4, period life expectancy at 65 (historical, and the intermediate projection for 2050). 2023 is estimated from final data below 65 and preliminary data from 65. -->
+<figure>
+  <table>
+    <thead><tr><th>Year</th><th>Men at 65, years left</th><th>Women at 65, years left</th></tr></thead>
+    <tbody>
+      <tr><td>1940</td><td>11.9</td><td>13.4</td></tr>
+      <tr><td>1960</td><td>12.9</td><td>15.9</td></tr>
+      <tr><td>1980</td><td>14.0</td><td>18.4</td></tr>
+      <tr><td>2000</td><td>15.9</td><td>19.0</td></tr>
+      <tr><td>2019</td><td>18.1</td><td>20.7</td></tr>
+      <tr><td>2021</td><td>16.9</td><td>19.7</td></tr>
+      <tr><td>2023</td><td>18.1</td><td>20.7</td></tr>
+      <tr><td>2050, projected</td><td>19.9</td><td>22.3</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Period life expectancy at 65 in the Social Security area population. The 2050 figures are the Trustees' intermediate projection.</figcaption>
+</figure>
+
+<p>The Trustees expect gains to continue slowly: about 1.5 more years at 65 between 2026 and 2050. For a 40-year-old today, that's a reason to treat the current tables as a lower bound on how long retirement might last.</p>
+
+<h2 id="horizon">What a longer horizon costs</h2>
+<p>Longevity risk is the risk of living longer than your money. The obvious defense is to plan for a long life, and the natural worry is that doing so means saving far more. The historical record suggests the cost is smaller than it sounds.</p>
+<p>Here's how a fixed withdrawal, raised each year with inflation, did across every US retirement start since 1926 for a 60% stock, 40% bond portfolio, for retirements of different lengths. The safe maximum is the highest first-year rate that lasted the full length from every start.</p>
+
+<!-- data: RetCalc's Drawdown Simulator engine, historicalBacktest and ddSafeByStart (lib/engine/drawdown.js), the /4-percent-rule landing settings: $1,000,000, 60% stocks and 40% 10-year Treasuries rebalanced yearly, a fixed withdrawal rising with inflation, a retirement starting each January from 1927, no fees. Rows for 30, 40 and 50 years match the 4% rule article. -->
+<figure>
+  <table>
+    <thead><tr><th>Length of retirement</th><th>4% lasted in</th><th>Safe maximum, every start</th><th>Target at the safe maximum, per $1 of yearly need</th></tr></thead>
+    <tbody>
+      <tr><td>20 years</td><td>100% of starts</td><td>4.62%</td><td>$21.6</td></tr>
+      <tr><td>25 years</td><td>100%</td><td>4.10%</td><td>$24.4</td></tr>
+      <tr><td>30 years</td><td>94.3%</td><td>3.79%</td><td>$26.4</td></tr>
+      <tr><td>35 years</td><td>90.8%</td><td>3.64%</td><td>$27.5</td></tr>
+      <tr><td>40 years</td><td>86.7%</td><td>3.52%</td><td>$28.4</td></tr>
+      <tr><td>45 years</td><td>83.6%</td><td>3.43%</td><td>$29.2</td></tr>
+      <tr><td>50 years</td><td>80.0%</td><td>3.36%</td><td>$29.8</td></tr>
+    </tbody>
+  </table>
+  <figcaption>US stocks and bonds, 60/40, every January start since 1927 with enough history after it. Longer retirements have fewer complete starts to test.</figcaption>
+</figure>
+
+<p>Going from 30 years to 40 lowers the safe rate from 3.79% to 3.52%, which raises the savings needed by about 8%. Each extra five years costs less than the last, because money set aside for the far end of retirement has decades to grow before it's spent. Planning too short is the more expensive mistake: running out at 88 can't be fixed by having had a little extra at 70.</p>
+<p>That asymmetry is why most planners use a planning age well past life expectancy, typically 95 and sometimes 100. RetCalc's Retirement Readiness Guide tests whether the money lasts to 95, or to the younger spouse's 95, and the Dashboard's chance of success also runs to 95. By the SSA's period table, a 65-year-old man has about an 8% chance of outliving a plan that runs to 95, a woman about 14% and a couple about 21%, before counting the extra years that better health and income usually add.</p>
+
+<h2 id="hedges">Other ways to protect against a long life</h2>
+<p>Planning to a late age isn't the only defense, and the others can let you plan with less.</p>
+<ul>
+<li>Delaying Social Security. Each year you wait past full retirement age, up to 70, raises the benefit by 8%, for life and adjusted for inflation. It pays off most in exactly the case you're worried about, a long life. <a href="/learn/when-to-claim">When to claim</a> works through the trade-off.</li>
+<li>An income annuity. A single-premium immediate annuity turns a lump sum into payments for life, so the insurer carries the risk of you living long. A deferred version bought at 65 and starting at 80 or 85 covers only the far end, for much less. <a href="/learn/annuities-and-pensions">Annuities and pensions</a> covers the costs and catches.</li>
+<li>Flexible spending. Strategies that adjust withdrawals to the portfolio, like guardrails or spending a percentage of the balance, can't run out on a fixed schedule; they spend less in bad stretches instead. <a href="/learn/fixed-or-flexible">Fixed or flexible spending</a> compares them.</li>
+<li>Keeping the house as a reserve. Home equity isn't spending money, but it can pay for care late in life through a sale or a reverse mortgage.</li>
+</ul>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Calculator shows what your savings could pay each year at 4%, the rate built for 30-year retirements. If you're retiring before 65, or want to plan to 100, treat that figure as an upper limit and look at a lower rate: at 3.5%, the income is an eighth smaller. Moving your retirement age changes both sides at once, the years you save and the years you fund.</p>
+<p>The Drawdown Simulator lets you set the number of years directly and see how often the money lasted across history for each. Try your plan at 30, 35 and 40 years and compare the worst cases.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Isn't planning to 95 too pessimistic?</summary><p>Planning to 95 is a decision about how much margin the money needs, and it says nothing about how long you expect to live. The cost of planning long is modest: going from 30 years to 40 raises the savings needed by about 8%. The cost of planning short is running out at an age when you can't go back to work. If you reach 85 with plenty left, you can spend more then.</p></details>
+<details><summary>Why do the SSA figures differ from other life expectancy numbers I've seen?</summary><p>Different tables answer different questions. Figures from birth are much lower than figures at 65, because they include deaths at younger ages. Period tables use one year's death rates; cohort tables project improvements and run longer. And insurers' annuity tables run longer still, because people who buy annuities tend to be healthier.</p></details>
+<details><summary>My parents died in their 70s. Should I plan shorter?</summary><p>Family history is one factor among many, and it doesn't guarantee a short life. If you plan shorter, you're betting the plan on it. A safer use of the information is to plan to a normal horizon and spend more freely early on, when you can be sure of enjoying it.</p></details>
+<details><summary>What if I'm retiring at 55?</summary><p>Then 95 means 40 years, and the safe withdrawal rate for 40-year historical retirements was 3.52%, not 3.79%. Early retirees also face more years before Social Security and Medicare, which raises what savings must cover at first. <a href="/learn/fire">FIRE</a> covers planning for long retirements.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>At 65, the SSA's tables give men about 18 more years and women about 21, but those are averages and about half of people live longer.</li>
+<li>A 65-year-old couple has about a 51% chance that one of them reaches 90, and 21% that one reaches 95.</li>
+<li>Healthier, wealthier and better-educated people tend to live longer than the population tables show.</li>
+<li>Planning to 95 instead of 85 costs less than it sounds, because the far years have time to grow; running out early can't be undone.</li>
+<li>Delaying Social Security, a lifetime annuity and flexible spending all hedge a long life.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>What life expectancy does and doesn't tell you</li><li>The odds that you, or one of a couple, reach 90 or 95</li><li>Why plans run to 95, and what that costs</li></ul>
+  <ul class="terms">
+    <li data-term="Life expectancy">The average number of years left at a given age. At 65 it's about 18 years for US men and 21 for women; about half of people live longer.</li>
+    <li data-term="Longevity risk">The risk of living longer than your money lasts. It grows with every year a plan is too short.</li>
+    <li data-term="Planning age">The age a plan assumes the money must last to, usually 95 or later, set well past life expectancy.</li>
+    <li data-term="Period life table">A table of death rates by age from a single year, which assumes those rates never improve. Cohort tables, which allow for improvement, show longer lives.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.ssa.gov/oact/STATS/table4c6.html">Actuarial life table</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/oact/TR/2026/lr5a4.html">Period life expectancy, 2026 Trustees Report</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/oact/TR/2026/lr5a5.html">Cohort life expectancy, 2026 Trustees Report</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.longevityillustrator.org/">Actuaries Longevity Illustrator</a> <span>American Academy of Actuaries and Society of Actuaries</span></li>
+    <li><a href="https://healthinequality.org/">The Health Inequality Project: income and life expectancy in the United States</a> <span>Chetty and colleagues, JAMA, 2016</span></li>
+  </ul>
+</footer>
+</article>

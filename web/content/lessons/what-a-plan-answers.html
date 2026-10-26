@@ -1,0 +1,120 @@
+<article class="lesson" data-slug="what-a-plan-answers" data-reviewed="2026-10-26"
+  data-title="What a retirement plan answers"
+  data-idea="Three questions, the few inputs that decide them, and where to start"
+  data-tool="guide" data-try="Answer one question at a time and get your number, a readiness score and the changes that would help most, with your plan already filled in.">
+
+<p class="lede">A retirement plan sounds like a big document, but underneath it answers three plain questions: how much you'll need, whether it will last as long as you do, and how sure you can be. A handful of inputs decide most of the answer. Once you know which ones, the rest of retirement planning is detail you can take one piece at a time.</p>
+
+<h2 id="three-questions">The three questions</h2>
+<p>Every retirement calculator, spreadsheet and financial planner is working on some version of the same three questions. They're worth separating, because each one depends on different things and goes wrong in different ways.</p>
+
+<h3>How much will you need?</h3>
+<p>This is the number people usually mean when they ask about retirement. It starts with what you'll spend each year once you stop working, takes away what Social Security and any pension will pay, and turns the gap into a lump sum your savings would have to supply. A common shortcut multiplies the gap by 25, which is the <a href="/learn/four-percent-rule">4% rule</a> turned around: 4% of 25 times your yearly gap is one year of it.</p>
+
+<h3>Will it last?</h3>
+<p>A target is only useful against a length of time. Money that comfortably covers 25 years of retirement can run short over 35. So a plan has to pick an age to plan to, and for most people that age is well past their life expectancy, for reasons covered in <a href="/learn/how-long-to-plan-for">How long to plan for</a>. It also has to decide how you'll draw the money down: the same amount every year, rising with prices, or an amount that bends with the markets.</p>
+
+<h3>How sure can you be?</h3>
+<p>Nobody knows what markets will return over the next 30 or 40 years, or what inflation will do. A plan built on one average return gives one answer, and the real future won't match it. A better plan shows a range: what happens in good decades, in poor ones, and in the worst stretches on record. The most a plan can honestly say is something like "this held up in most of the markets on record, and here's what it would take to hold up in more of them."</p>
+
+<h2 id="example">One plan, worked through</h2>
+<p>Here's a made-up example you can check with a calculator. Maya is 40, earns $85,000 per year, and has $80,000 saved for retirement. She adds $700 per month, holds a balanced mix of stocks and bonds, and plans to retire at 67. In retirement she expects to spend $60,000 per year, taxes included, in today's dollars.</p>
+<p>Start with the first question, how much she'll need. Social Security, estimated from a steady career at her pay and claimed at 67, would pay her about $36,150 per year. That leaves about $23,850 per year for her savings to cover, and 25 times that is about $596,000. That's her target.</p>
+<p>Next, what she's on course for. At 4.5% per year after inflation, the return RetCalc's Calculator assumes for a balanced mix, her $80,000 plus $700 per month grows to about $690,000 by 67, in today's dollars. That's about 116% of her target, so on the middle path she's ahead.</p>
+<p>The other two questions are whether it lasts and how sure she can be. The 25 times rule comes from 30-year retirements, which would take Maya from 67 to 97, long enough for most people. The weaker point is the return. If her investments earn 3% per year after inflation instead of 4.5%, she reaches 67 with about $519,000, or 87% of her target. Her plan is on track in an average market and short in a poor one.</p>
+
+<!-- data: the Calculator's own engine, projectBasic (lib/engine/calculators.js), monthly contributions held level in today's dollars, from age 40 to 67 (27 years), $80,000 starting, $700 per month. Real returns 4.5% (Balanced), 3% (the Calculator's low band, 4.5% minus 1.5 points) and 5.75% (Growth). Social Security from ssEstimate(85000, 35, claim age) with the 2026 bend points: $36,151 at 67, $41,935 at 69, $31,330 at 65 (unrounded in the targets). Target = 25 × (spending − Social Security). Spending $60,000; 10% less is $54,000. Retiring at 65 or 69 moves the claim to that age too. Share covered = savings ÷ target. -->
+<figure>
+  <table>
+    <thead><tr><th>One change at a time</th><th>Savings at retirement</th><th>Target (25 × the gap)</th><th>Share covered</th></tr></thead>
+    <tbody>
+      <tr><td>Maya's plan as it stands</td><td>$690,409</td><td>$596,236</td><td>116%</td></tr>
+      <tr><td>Markets earn 3%, not 4.5%</td><td>$518,872</td><td>$596,236</td><td>87%</td></tr>
+      <tr><td>Retire at 65 instead of 67</td><td>$616,429</td><td>$716,738</td><td>86%</td></tr>
+      <tr><td>Save $950 per month, not $700</td><td>$843,212</td><td>$596,236</td><td>141%</td></tr>
+      <tr><td>A growth mix (5.75%)</td><td>$881,973</td><td>$596,236</td><td>148%</td></tr>
+      <tr><td>Spend 10% less in retirement</td><td>$690,409</td><td>$446,236</td><td>155%</td></tr>
+      <tr><td>Retire at 69 instead of 67</td><td>$771,197</td><td>$451,634</td><td>171%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A hypothetical 40-year-old, in today's dollars. Each row changes one input and leaves the rest as they were. Social Security is claimed at the retirement age in each row.</figcaption>
+</figure>
+
+<p>Each row moves one input, and they don't move the answer equally. Two years of work, from 67 to 69, changes her position more than anything else on the list, because it does three things at once: two more years of saving and growth, a larger Social Security check for life, and two fewer years for the savings to fund. Spending 10% less does nearly as much, because spending sets the target itself. A poor market, which she can't control, can take her from comfortably ahead to short.</p>
+
+<p data-yours></p>
+
+<h2 id="inputs">The inputs that matter most</h2>
+<p>A full plan can ask for dozens of figures. Most of the answer comes from six of them.</p>
+<ul>
+<li>What you'll spend in retirement sets the size of the target, and today's spending is the best starting point for it. Each $1,000 per year of spending that savings must cover adds about $25,000 to the target. <a href="/learn/spending-target">From spending to a target</a> goes through it, including the taxes on top.</li>
+<li>How much you save, and for how long. Early in a career, what you put in matters far more than what the market does. <a href="/learn/savings-rate">Your savings rate is the lever</a> shows how directly it sets the number of years you have to work.</li>
+<li>Your retirement age sets two clocks at once: how many years you have left to save, and how many years the money has to last. That's why the retirement-age rows in the table move so much.</li>
+<li>Social Security and any pension arrive every month for life, rising with prices in Social Security's case, and shrink the part savings must cover. For many households it's the largest single source of retirement income.</li>
+<li>How the money is invested matters next. More in stocks raises the expected return and widens the range of outcomes. <a href="/learn/compound-growth">Time does most of the work</a> shows how much a point or two of return adds up to over decades.</li>
+<li>Then there's how long you plan for. Planning to 95 instead of 85 means funding ten more years, and it's the reason a plan can't simply aim at average life expectancy.</li>
+</ul>
+<p>Some inputs matter less than people expect. The exact return you assume, to a tenth of a point, is guesswork either way; it's better to look at a range. Your exact balance today matters less than how much you'll add over the next decade, if you're young. And a precise spending figure for age 85 is impossible to know, so most plans start from today's spending and adjust it.</p>
+
+<h3>Everything in today's dollars</h3>
+<p>Plans are easier to read with every figure in today's dollars, meaning what the money would buy at today's prices. If prices rise 3% per year for the next 27 years, Maya's $690,000 would show up on her statement at 67 as about $1.53 million. The larger figure buys no more than the smaller one does today. RetCalc shows today's dollars throughout, so you can compare a future figure with prices you know. <a href="/learn/todays-dollars">Today's dollars</a> explains the conversion and the inflation history behind it.</p>
+
+<h2 id="cushion">The cushion under everything</h2>
+<p>Before any of this works, a plan needs a floor: enough cash to absorb a car repair, a medical bill or a few months between jobs without borrowing at credit card rates or pulling money out of a retirement account, which can bring taxes and penalties. That's the job of an <a href="/learn/emergency-fund">emergency fund</a>, and it usually comes before investing for retirement beyond any employer match. Without one, an ordinary bad month can knock a plan off course.</p>
+
+<h2 id="tracks">How the rest of Learn fits together</h2>
+<p>The lessons are grouped into eight tracks. Each one answers part of the three questions, and you can take them in any order. If you're starting out, this track first, then whichever matches the decision in front of you.</p>
+
+<!-- data: the eight tracks and their order from lib/learn/catalog.ts; the question each feeds is this lesson's own mapping. -->
+<figure>
+  <table>
+    <thead><tr><th>Track</th><th>What it covers</th><th>Which question it answers</th></tr></thead>
+    <tbody>
+      <tr><td><a href="/learn/what-a-plan-answers">Foundations</a></td><td>Growth, inflation, savings rate, the target, the horizon and the cushion</td><td>All three, in outline</td></tr>
+      <tr><td><a href="/learn/where-each-dollar-goes">Saving and accounts</a></td><td>Which account each dollar goes to: 401(k), IRA, Roth, HSA, taxable</td><td>How much you'll have</td></tr>
+      <tr><td><a href="/learn/stocks-bonds-cash">Investing and risk</a></td><td>What you own, how much it swings, and how a plan measures risk</td><td>How sure you can be</td></tr>
+      <tr><td><a href="/learn/four-percent-rule">Withdrawing</a></td><td>Turning savings into income: withdrawal rates, strategies, account order, RMDs</td><td>Whether it lasts</td></tr>
+      <tr><td><a href="/learn/tax-brackets">Taxes</a></td><td>How income is taxed now and in retirement, Roth conversions, IRMAA, states</td><td>How much you'll need</td></tr>
+      <tr><td><a href="/learn/social-security-benefit">Social Security and health care</a></td><td>Your benefit, when to claim, Medicare, and cover before 65</td><td>How much you'll need</td></tr>
+      <tr><td><a href="/learn/fire">Retiring early</a></td><td>Leaving work before the usual ages and paying for the gap to 59½ and 65</td><td>Whether it lasts</td></tr>
+      <tr><td><a href="/learn/rent-or-buy">Big decisions</a></td><td>Homes, mortgages, debt, college and children</td><td>How much you'll have, and need</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Each track's name opens its first lesson.</figcaption>
+</figure>
+
+<p>A few lessons are worth reading early whatever your age. <a href="/learn/employer-match">The employer match</a> is often the best return available to you. <a href="/learn/sequence-risk">Sequence-of-returns risk</a> explains why the years around your retirement date carry the most risk. And <a href="/learn/when-to-claim">When to claim</a> covers a decision that can change your income for life by tens of percent.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Retirement Readiness Guide walks through these questions in order, one card at a time, and teaches as it goes. The Quick check is twelve short cards and takes about ten minutes; the Full walkthrough adds the deeper cards and takes an hour or more, best with your statements open. By the sixth card it shows your number: what you're on course for at retirement against what a plan like yours needs.</p>
+<p>The Guide then answers the third question properly. Instead of one average return, it replays your plan through every retirement since 1926, year by year and account by account, with Social Security estimated and each year's income tax worked out, and asks how often the money lasted to 95 (or to the younger spouse's 95). It also shows which change would help most, sized for you: saving more, retiring later or spending less.</p>
+<p>If you'd rather start smaller, the <a href="/calculator">Calculator</a> answers the first question in six inputs, with a band for better and worse markets.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>How often should I redo my plan?</summary><p>A yearly check is plenty for most people, plus a fresh look whenever something large changes: a new job, a marriage or divorce, a child, an inheritance, a move, or a market fall big enough to worry you. The inputs that matter most, spending, saving and the retirement date, change slowly, so a plan rarely needs more than that.</p></details>
+<details><summary>I'm in my 50s and haven't saved much. Is it too late to plan?</summary><p>No, though the levers change. With fewer years left, compounding does less of the work, so saving rate, retirement age and Social Security timing do more. Working two or three years longer, or claiming Social Security later, can close a gap that saving alone can't. From 50 you can also put more into a 401(k) and an IRA each year through catch-up contributions.</p></details>
+<details><summary>Do I need a financial planner for this?</summary><p>Not to answer the three questions; the arithmetic is the same either way. A planner can help with decisions that involve taxes, insurance or estates, and with sticking to a plan in a bad year. If you hire one, it helps to know these basics first, so you can follow the reasoning and ask how they're paid.</p></details>
+<details><summary>What if my plan says I'm short?</summary><p>That's useful to know early. The table above shows the usual options, and they can be combined: a little more saved, one or two more years of work, a bit less spending, or a later Social Security claim. Small changes made ten or twenty years out add up to much more than the same changes made the year before you retire.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>A retirement plan answers three questions: how much you'll need, whether it lasts as long as you do, and how sure you can be.</li>
+<li>Spending, saving, the retirement date, Social Security, the investment mix and the planning horizon decide most of the answer.</li>
+<li>Working longer and spending less usually move a plan more than anything else, because each one changes both sides of it.</li>
+<li>A good plan shows a range of markets, not one average, and reads in today's dollars.</li>
+<li>An emergency fund comes first, so an ordinary bad month doesn't land on the plan.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>The three questions every retirement plan answers</li><li>Which few inputs move a plan most</li><li>Where each part of Learn fits</li></ul>
+  <ul class="terms">
+    <li data-term="Today's dollars">A future amount shown at today's prices, so it can be compared with what money buys now. At 3% inflation, $1 million in 35 years buys what about $355,000 buys today.</li>
+    <li data-term="Withdrawal rate">The share of your savings you take out in the first year of retirement. At 4%, a $500,000 portfolio pays $20,000 in year one, usually raised with inflation after that.</li>
+    <li data-term="Planning age">The age a plan assumes the money must last to, often 95. It's set well past life expectancy, because about half of people outlive the average.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.ssa.gov/myaccount/">my Social Security</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.investor.gov/financial-tools-calculators/financial-tools/ballpark-etimate">Ballpark E$timate</a> <span>Investor.gov (SEC)</span></li>
+    <li><a href="https://www.investor.gov/introduction-investing/investing-basics/investment-accounts/tax-advantaged-accounts/retirement-savings">Retirement savings</a> <span>Investor.gov (SEC)</span></li>
+  </ul>
+</footer>
+</article>

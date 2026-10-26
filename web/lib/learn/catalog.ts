@@ -22,8 +22,9 @@ export const TRACKS: Track[] = [
     "social-security-benefit", "when-to-claim", "spouses-and-survivors", "social-security-future", "health-cover-before-65", "medicare", "long-term-care"] },
   { id: "early", name: "Retiring early", blurb: "Leaving work before the usual ages, and paying for the gap.", lessons: [
     "fire", "bridge-to-59", "rule-72t", "roth-conversion-ladder"] },
-  { id: "decisions", name: "Big decisions", blurb: "Homes, debt, college and children, and how each fits the plan.", lessons: [
-    "rent-or-buy", "mortgage-payoff", "paying-down-debt", "saving-for-college", "children-and-the-plan", "home-in-retirement"] },
+  { id: "decisions", name: "Big decisions", blurb: "Homes, debt, college, children and protecting it all, and how each fits the plan.", lessons: [
+    "rent-or-buy", "mortgage-payoff", "paying-down-debt", "saving-for-college", "children-and-the-plan", "home-in-retirement",
+    "insurance", "beneficiaries-and-estate"] },
 ];
 
 export const LESSON_SLUGS: string[] = TRACKS.flatMap((t) => t.lessons);

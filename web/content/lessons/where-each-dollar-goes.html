@@ -1,0 +1,142 @@
+<article class="lesson" data-slug="where-each-dollar-goes" data-reviewed="2026-10-26"
+  data-title="Where each dollar should go"
+  data-idea="The usual order for saving, and when to change it"
+  data-tool="budget" data-try="Split each paycheck between the match, an HSA, an IRA and the rest, in the usual order or your own.">
+
+<p class="lede">Once you have money to save, the next question is where to put it. There are half a dozen places it could go, each with its own tax treatment, limits and rules. Most planners use roughly the same order, starting with the employer match and ending with an ordinary brokerage account. Here is that order, the reasoning behind it, and the situations where it makes sense to change it.</p>
+
+<h2 id="order">The usual order, step by step</h2>
+<p>Each step below is taken in turn. You move to the next one only once the current step is filled or doesn't apply to you. Someone saving $300 per month might never get past the second step, and that's fine. Someone saving $3,000 per month might fill every one.</p>
+
+<!-- data: order as the brief sets (the Budget tool's Paycheck tab, tools/budget/paycheck-math.ts PC_PLANS.usual, puts an added emergency fund line right after the match, ahead of the HSA, and has no debt line); 2026 limits from lib/engine/data/2026.js limits (k401 base 24500, ira base 7500, hsa self 4400 / family 8750); 8% debt line as the Guide uses it (tools/guide/steps/ch2-standing.tsx) -->
+<figure>
+  <table>
+    <thead><tr><th>Step</th><th>Where the money goes</th><th>Why it comes here</th><th>How much (2026)</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>A small cash cushion</td><td>Keeps a surprise bill off a credit card</td><td>About one month of spending</td></tr>
+      <tr><td>2</td><td>401(k) up to the full employer match</td><td>An instant 50% or 100% return</td><td>Whatever the formula asks, often 6% of pay</td></tr>
+      <tr><td>3</td><td>Debt charging about 8% or more</td><td>A guaranteed return equal to the rate</td><td>All of it, highest rate first</td></tr>
+      <tr><td>4</td><td>HSA, if you have a qualifying health plan</td><td>No tax going in, growing or coming out for health costs</td><td>$4,400 self-only, $8,750 family</td></tr>
+      <tr><td>5</td><td>The rest of the emergency fund</td><td>Three to six months of spending you can reach fast</td><td>Sized from your spending</td></tr>
+      <tr><td>6</td><td>An IRA, Roth or traditional</td><td>Your choice of funds; Roth money stays flexible</td><td>$7,500, or $8,600 at 50 and over</td></tr>
+      <tr><td>7</td><td>401(k) beyond the match</td><td>Tax breaks on a much larger amount</td><td>Up to $24,500 in total</td></tr>
+      <tr><td>8</td><td>A taxable brokerage account</td><td>No limits and no rules on when you take it out</td><td>Anything left</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The usual order for long-term saving. Catch-up amounts for people 50 and over are in the limits lesson.</figcaption>
+</figure>
+
+<p>Put that way it looks rigid, but each step is there for a reason you can test against your own situation. The first three are about not losing money: to a missed match, to interest, or to a surprise you have to borrow for. The last five are about which account gives the most tax help for each extra dollar.</p>
+
+<h2 id="why">Why the order runs this way</h2>
+<p>The quickest way to see the logic is to follow the same amount of take-home pay into different accounts. Take someone in the 22% federal bracket who can give up $3,000 of take-home pay per year, every year, for 25 years. The money earns 5% per year after inflation wherever it sits, and we'll assume their tax rate in retirement is also 22%, so no account gets an edge from a guess about future rates.</p>
+<ul>
+<li><b>Taxable account:</b> the $3,000 goes in as is. Dividends are taxed every year and the gains are taxed when sold.</li>
+<li><b>Roth IRA:</b> the $3,000 goes in as is and comes out tax-free.</li>
+<li><b>Traditional 401(k):</b> because the contribution comes off taxable income, giving up $3,000 of take-home pay lets $3,846 go in. It's all taxed at 22% on the way out.</li>
+<li><b>401(k) with a 50% match:</b> the same $3,846, plus $1,923 from the employer.</li>
+<li><b>HSA through payroll, spent on health care:</b> no income tax and no Social Security or Medicare tax going in, so $4,264 goes in, and nothing is taxed coming out.</li>
+</ul>
+
+<!-- data: 25 annual end-of-year deposits at 5% real, annuity factor ((1.05^25 - 1)/0.05) = 47.727. Take-home cost $3,000 each. Roth 3,000 x 47.727 = 143,181. Traditional 3,000/0.78 = 3,846.15 in, x 47.727 x 0.78 = 143,181. With 50% match (3,846.15 + 1,923.08) x 47.727 x 0.78 = 214,772. HSA 3,000/(1 - 0.22 - 0.0765) = 4,264.39 in, x 47.727 = 203,527 (under the $4,400 self-only limit). Taxable: 3% price growth + 2% dividends, dividends taxed 15% each year and reinvested (added to basis); all sold at year 25 with 15% on the gain: 137,399 before sale, basis 97,570, 131,425 after. Script: scratchpad/agents/saving/calc1.mjs -->
+<figure data-chart='{"type":"bar","x":["Taxable account","Roth IRA","Traditional 401(k)","401(k) with a 50% match","HSA for health costs"],"xLabel":"Where $3,000 of take-home pay goes each year","y":"money","series":[{"name":"After tax, after 25 years","tone":"accent","values":[131425,143181,143181,214772,203527]}]}'>
+  <figcaption>What $3,000 of take-home pay per year becomes after 25 years, after all tax, in today's dollars. Assumes 5% growth after inflation, a 22% tax rate now and later, and 15% on dividends and gains in the taxable account. State tax is left out.</figcaption>
+</figure>
+
+<p>The match is worth more than any tax break: $214,772 against $143,181 for the same sacrifice. The HSA comes close behind, because it's the only account that skips income tax and payroll tax on the way in and income tax on the way out. The Roth and the traditional 401(k) end at exactly the same figure, because when your tax rate is the same now and later, paying the tax first or last gives the same answer. The choice between them comes down to how your rate will change. That's covered in <a href="/learn/traditional-or-roth">Traditional or Roth</a>.</p>
+<p>The taxable account trails, but by less than people often expect: about 8% behind the Roth after 25 years. Its job in the order is to hold whatever the other accounts can't.</p>
+
+<h2 id="steps">Each step in detail</h2>
+
+<h3>A small cushion first</h3>
+<p>Before investing anything, it helps to have enough cash that a car repair or a dental bill doesn't go on a credit card at 22%. A month of spending is a common starting point. The full fund, usually three to six months, gets built later in the order. <a href="/learn/emergency-fund">An emergency fund comes first</a> covers how big it should be and where to keep it.</p>
+
+<h3>The employer match</h3>
+<p>If your employer adds money when you contribute to a 401(k), 403(b) or similar plan, contributing enough to get all of it is the best return available almost anywhere. A 50% match is a 50% gain on the day the money lands, before any investment return. In Vanguard's 2026 report on the plans it runs, covering 2025, the average promised match was 4.7% of pay and the median 4.0%. On a $70,000 salary, a 4% match is $2,800 per year.</p>
+<p>Two details can change how good the match really is. One is vesting: some plans only let you keep the match after two to six years of service. The other is how the match is calculated, especially if you contribute a lot early in the year. Both are covered in <a href="/learn/employer-match">The employer match</a>.</p>
+
+<h3>High-interest debt</h3>
+<p>Paying off a debt earns its interest rate, guaranteed and tax-free. Credit cards charged 22% on average on accounts paying interest in mid-2026, according to the Federal Reserve, and no investment reliably earns that. So any balance on a card, a payday loan or a high-rate personal loan goes ahead of everything except the match.</p>
+<p>Where to draw the line is a judgment. Around 8% is a common cut-off: above it, paying the debt usually beats expected investment returns after tax; below it, the case is closer. A 3% mortgage or a 4% student loan usually stays on its normal schedule while you invest. Between about 5% and 8%, splitting extra money between the two is perfectly reasonable. <a href="/learn/paying-down-debt">Paying down debt</a> has the details, and <a href="/learn/mortgage-payoff">Pay off the mortgage early?</a> covers the biggest debt most people have.</p>
+
+<h3>The HSA</h3>
+<p>A health savings account is open to you only if you're covered by a qualifying high-deductible health plan. If you are, it has the best tax treatment in the code. Contributions through payroll skip income tax and Social Security and Medicare tax; the money grows untaxed; and it comes out untaxed for medical costs at any age. After 65 it can be spent on anything, taxed like a traditional IRA. <a href="/learn/hsa">The HSA</a> covers the rules.</p>
+<p>The HSA comes before the IRA because of that extra layer of tax saving. Many people also count part of it toward their emergency fund, since a medical bill is one of the most common emergencies and the HSA can pay it.</p>
+
+<h3>The rest of the emergency fund</h3>
+<p>With the match collected and the expensive debt gone, this is the point to finish the cash reserve. It earns less than investments, and that's the price of having it there when you need it. In the Budget tool's Paycheck tab the emergency fund is a line you add, and its usual order puts it right after the match, ahead of the HSA; you can set each line yourself.</p>
+
+<h3>An IRA</h3>
+<p>Why an IRA before putting more into the 401(k)? Mostly choice. A 401(k) offers a menu your employer picked, sometimes with high fees. An IRA at a large brokerage lets you buy almost any fund, including low-cost index funds. A Roth IRA adds flexibility: what you put in (not the growth) can come back out at any time, tax- and penalty-free.</p>
+<p>For 2026 the limit is $7,500, or $8,600 at 50 and over. Roth IRA contributions phase out for single filers with modified adjusted gross income between $153,000 and $168,000, and for married couples filing jointly between $242,000 and $252,000. Above that, there's a two-step route called the backdoor Roth. <a href="/learn/iras">IRAs</a> explains all of this.</p>
+<p>If your 401(k) already has good low-cost index funds, this step matters less, and some people skip straight to filling the 401(k).</p>
+
+<h3>More 401(k)</h3>
+<p>The 401(k) limit for 2026 is $24,500 of your own contributions, counting the part that earned the match. People 50 and over can add $8,000, and people who turn 60, 61, 62 or 63 this year can add $11,250 instead if their plan allows it. That's far more room than an IRA, which is why the 401(k) carries most of the saving for anyone saving a large share of their pay. A 403(b) or 457(b) works the same way here.</p>
+
+<h3>A taxable brokerage account</h3>
+<p>Everything past the tax-advantaged limits goes into an ordinary investment account. There's no tax break up front, but long-term gains and qualified dividends are taxed at lower rates than wages, and you can take money out whenever you like, at any age, for any reason. <a href="/learn/taxable-account">The taxable account</a> covers how to keep its taxes low.</p>
+
+<h2 id="break">When to change the order</h2>
+<p>The order assumes a fairly typical situation: a job with a decent 401(k), a goal of retiring in your sixties, and no large expense coming soon. Each of the cases below moves things around.</p>
+
+<h3>Your employer doesn't match</h3>
+<p>Then step two disappears, and the IRA usually comes before the 401(k), since it has better investment choices. If your employer offers a plan with good funds and you want to save more than the IRA allows, the 401(k) comes next as normal.</p>
+
+<h3>Your 401(k) has expensive funds</h3>
+<p>Take the match anyway; a 50% gain covers decades of high fees. But beyond the match, an IRA and even a taxable account with cheap index funds can beat a plan whose funds cost 1% per year or more. <a href="/learn/fees-and-index-funds">Fees and index funds</a> shows what that 1% costs over thirty years. Check the plan's fee disclosure before deciding.</p>
+
+<h3>You want to retire early</h3>
+<p>Money in a 401(k) or traditional IRA generally can't come out before 59½ without a 10% penalty, with some exceptions. If you plan to stop work at 50, you need money you can reach in your fifties. That pushes the taxable account and Roth contributions up the list. The 401(k) still has a place, and there are ways to reach it before 59½. <a href="/learn/bridge-to-59">Bridging to 59½</a> works through which money pays for which years.</p>
+
+<h3>Your income is low, or high</h3>
+<p>If your income is modest, the Roth version of each account usually makes more sense than the traditional one, because the tax break on a traditional contribution is small when your rate is 10% or 12%. You might also qualify for the Saver's Credit, a tax credit of 10% to 50% of up to $2,000 per person of retirement contributions. For 2026 it's available up to $40,250 of adjusted gross income for single filers and $80,500 for married couples filing jointly. From 2027 it's scheduled to become a Saver's Match, paid into your retirement account instead.</p>
+<p>If your income is high, you may not be able to contribute to a Roth IRA directly or deduct a traditional IRA. The backdoor Roth covers the first problem; for the second, the 401(k) does the heavy lifting.</p>
+
+<h3>A large expense is coming</h3>
+<p>Money for a house down payment in three years, or a wedding next year, doesn't belong in a retirement account or in stocks. It belongs in savings or short-term Treasuries, and it comes ahead of the later steps in the order until it's set aside. Taking it back out of most retirement accounts early costs tax and penalties.</p>
+
+<h3>Your employer's stock</h3>
+<p>Some plans pay the match in company stock, or offer it at a discount. If the company struggles, you could lose your job and see your savings fall at the same time. Collect the match, but plan to move it into diversified funds once the plan lets you.</p>
+
+<h2 id="research">What the research shows about getting it wrong</h2>
+<p>The most expensive mistakes in this order happen at the start: never enrolling, or contributing less than the match pays for. Two studies show how common that is.</p>
+<p>In 2001, Brigitte Madrian and Dennis Shea studied a large company that switched its 401(k) from opt-in to automatic enrollment. Participation among new hires jumped, and a large share of them stayed at the default contribution rate and the default fund, even though they were free to change both. They called it the power of suggestion. Automatic enrollment has spread a long way since: 61% of the plans Vanguard administered used it in 2025, and a 2022 law, SECURE 2.0, requires most 401(k) and 403(b) plans set up after it passed to enroll new employees automatically from 2025.</p>
+<p>In a later study, published in 2011, James Choi, David Laibson and Madrian looked at employees at seven companies who could take money out of their 401(k) at any time without penalty. For them, contributing up to the match was free money with no lock-up. Even so, between 20% and 60% of them, depending on the company, contributed less than the match required, giving up as much as 6% of their pay per year. Telling them about it in writing didn't change their behavior.</p>
+<p>So it pays to check your contribution rate against your plan's match formula once, set it, and then raise it each time you get a raise. Many plans offer automatic increases of 1% per year; turning that on means you never have to remember.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Budget tool's Paycheck tab works through this order with your own pay. Enter your gross pay, filing status and state, your employer's match formula and whether you have an HSA. It takes out taxes and your budget, then shows what's free each paycheck. Each line (401(k) up to the match, HSA, IRA, 401(k) beyond the match, taxable brokerage, and an emergency fund if you add one) has a slider, and a starting plan such as The usual order fills them for you, each up to its limit in turn. Pre-tax lines cost your take-home pay less than they put away, so the tool shows both.</p>
+<p data-yours></p>
+<p>To see what a given saving rate becomes by retirement, carry the total into the Calculator. If you have high-interest debt, the Debt Payoff tool shows how fast extra payments clear it and how much interest they save.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Should I pay off student loans before investing?</summary><p>It depends on the rate. Private loans at 8% or more usually come first, after the match. Federal loans at 4% to 6% can stay on schedule while you invest, especially if you might qualify for forgiveness, which rewards paying the minimum. Always collect the match first.</p></details>
+<details><summary>Roth or traditional at each step?</summary><p>The order is about which account; the Roth or traditional question is separate and applies at the 401(k) and IRA steps alike. The short version: if your tax rate now is low compared with what you expect in retirement, Roth usually wins; if it's high, traditional. <a href="/learn/traditional-or-roth">Traditional or Roth</a> goes into it.</p></details>
+<details><summary>What if I can't afford to get the full match?</summary><p>Contribute what you can and raise it by a point or two each year, or with each raise. A pre-tax 401(k) dollar costs you less than a dollar of take-home pay, by your tax rate, so getting to the match often costs less than it seems. The Paycheck tab shows the take-home cost exactly.</p></details>
+<details><summary>Does a 529 plan for my children fit in this order?</summary><p>Usually after your own retirement saving is on track. There are loans for college, and none for retirement. <a href="/learn/saving-for-college">Saving for college</a> covers how 529 plans work and how to balance the two.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Collect the full employer match first; it's an instant 50% or 100% return.</li>
+<li>Pay off debt charging about 8% or more next, and keep a cash cushion.</li>
+<li>Then the HSA if you're eligible, an IRA, the rest of the 401(k), and finally a taxable account.</li>
+<li>When your tax rate is the same now and later, Roth and traditional end in the same place.</li>
+<li>Early retirement, high fees, a near-term expense or very low or high income can each change the order.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>The usual order for each dollar you save</li><li>Why the match and the HSA beat other accounts</li><li>When it makes sense to change the order</li></ul>
+  <ul class="terms">
+    <li data-term="Employer match">Money your employer adds to your retirement plan when you contribute, such as 50 cents per dollar on the first 6% of pay.</li>
+    <li data-term="Tax-advantaged account">An account with a tax break: a 401(k), IRA or HSA. Each has a yearly contribution limit and rules on withdrawals.</li>
+    <li data-term="Taxable account">An ordinary brokerage account. No tax break or limit; dividends and gains are taxed, usually at lower rates than wages.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://workplace.vanguard.com/insights-and-research/report/how-america-saves-2026.html">How America Saves 2026</a> <span>Vanguard</span></li>
+    <li><a href="https://www.nber.org/papers/w7682">The power of suggestion: inertia in 401(k) participation and savings behavior</a> <span>Madrian and Shea, NBER</span></li>
+    <li><a href="https://www.nber.org/papers/w11554">$100 bills on the sidewalk: suboptimal investment in 401(k) plans</a> <span>Choi, Laibson and Madrian, NBER</span></li>
+    <li><a href="https://www.bogleheads.org/wiki/Prioritizing_investments">Prioritizing investments</a> <span>Bogleheads wiki</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-savings-contributions-credit-savers-credit">Retirement savings contributions credit (Saver's Credit)</a> <span>IRS</span></li>
+  </ul>
+</footer>
+</article>

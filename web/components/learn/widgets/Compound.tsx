@@ -21,7 +21,7 @@ const FROM = 20, TO = 60, END = 65;
 
 /** What `monthly` saved from `start` to 65 comes to, in today's dollars. */
 export function atEnd(start: number, monthly: number, real: number): { fv: number; invested: number } {
-  const r = projectBasic({ initial: 0, contrib: monthly, period: "month", years: END - start, real, withdrawal: 0.04 }) as { fv: number; invested: number };
+  const r = projectBasic({ initial: 0, contrib: monthly, period: "Monthly", years: END - start, real, withdrawal: 0.04 }) as { fv: number; invested: number };
   return { fv: r.fv, invested: r.invested };
 }
 

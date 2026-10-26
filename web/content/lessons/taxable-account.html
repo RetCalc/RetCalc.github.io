@@ -1,0 +1,123 @@
+<article class="lesson" data-slug="taxable-account" data-reviewed="2026-10-26"
+  data-title="The taxable account"
+  data-idea="How an ordinary brokerage account is taxed, and how to keep it low"
+  data-tool="optimizer" data-try="Find the withdrawal order, including when to draw on the brokerage account, that leaves the most after tax.">
+
+<p class="lede">A taxable account is an ordinary brokerage account: no tax break going in, no limits, no rules about when you take money out. It's where saving goes once the 401(k), IRA and HSA are full, and for anyone retiring early it's often the money that pays for the first years. It's taxed more lightly than people assume, and a few habits keep it that way.</p>
+
+<h2 id="how">How it's taxed</h2>
+<p>You put in money that has already been taxed. From then on, tax comes due in three ways:</p>
+<ul>
+<li>Interest, and dividends that aren't "qualified", are taxed each year as ordinary income, at the same rates as wages.</li>
+<li>Qualified dividends, which include most dividends from US companies and from broad stock index funds, as long as you've held the shares for more than 60 days around the ex-dividend date, are taxed each year at the lower long-term capital gains rates.</li>
+<li>When you sell, the gain, meaning the sale price minus what you paid (your cost basis), is taxed. Held more than one year, it's a long-term gain, taxed at 0%, 15% or 20%. Held one year or less, it's a short-term gain, taxed as ordinary income.</li>
+</ul>
+<p>The part of a sale that's your original money comes back untaxed. Say you bought shares for $25,000 that are now worth $40,000. If you sell all of them, the gain is $15,000 and only that is taxed. If you sell $10,000 worth, only 37.5% of it is gain, so $3,750 is taxable. Compare a traditional IRA, where every dollar withdrawn is taxed as income.</p>
+<p>Long-term gains and qualified dividends sit on top of your other income and are taxed by where they land:</p>
+
+<!-- data: lib/engine/data/2026.js ltcg (s 49450, 545500; m 98900, 613700), stated as taxable income including the gain (Rev. Proc. 2025-32 sec. 3.03). NIIT 3.8% over MAGI $200,000 single / $250,000 joint, lib/engine/math.js NIIT, not indexed. -->
+<figure>
+  <table>
+    <thead><tr><th>Rate on long-term gains and qualified dividends</th><th>Single, taxable income</th><th>Married filing jointly</th></tr></thead>
+    <tbody>
+      <tr><td>0%</td><td>Up to $49,450</td><td>Up to $98,900</td></tr>
+      <tr><td>15%</td><td>$49,450 to $545,500</td><td>$98,900 to $613,700</td></tr>
+      <tr><td>20%</td><td>Above $545,500</td><td>Above $613,700</td></tr>
+      <tr><td>Plus 3.8% net investment income tax</td><td>Above $200,000 of MAGI</td><td>Above $250,000 of MAGI</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Federal rates for 2026. Taxable income is after the standard deduction and includes the gains. The 3.8% tax applies to your investment income or to your MAGI above the threshold, whichever is smaller, and its thresholds aren't adjusted for inflation.</figcaption>
+</figure>
+
+<p>Most states tax capital gains as ordinary income, so add your state's rate on top.</p>
+
+<h2 id="zero">The 0% bracket</h2>
+<p>The 0% rate is more useful than it sounds, because it's measured on taxable income, after the standard deduction. For 2026 a married couple's standard deduction is $32,200, so they can have up to $131,100 of total income (with no other deductions) and still pay 0% on every dollar of long-term gains in it. Their ordinary income is taxed at its usual rates either way.</p>
+<p>Take a couple in their early sixties, retired, with $60,000 of traditional IRA withdrawals. After the $32,200 deduction, $27,800 of ordinary income is taxable, using up the 10% bracket and a bit of the 12%. Their federal tax is $2,840. They need another $40,000, and they can get it three ways:</p>
+
+<!-- data: computeRetireTax (lib/engine/math.js), married, both under 65, no Social Security, Florida (no state tax). Base: trad 60,000 -> federal 2,840. trad 100,000 -> 7,640 (extra 4,800). trad 60,000 + brok 40,000 with gainPct 0.375 -> 2,840 (extra 0). Gains that fit at 0%: 98,900 - 27,800 = 71,100; brok 111,100 with 71,100 of gain -> 2,840; 10,000 more gain -> 4,340 (15% on the excess). Script: scratchpad/agents/saving/calc3.mjs and an inline run. -->
+<figure>
+  <table>
+    <thead><tr><th>Where the extra $40,000 comes from</th><th>Extra federal tax</th></tr></thead>
+    <tbody>
+      <tr><td>More from the traditional IRA</td><td>$4,800</td></tr>
+      <tr><td>Selling $40,000 of shares bought for $25,000</td><td>$0</td></tr>
+      <tr><td>A Roth IRA</td><td>$0</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A married couple under 65 already withdrawing $60,000 from a traditional IRA, 2026 federal tax. The $15,000 gain falls inside the 0% bracket.</figcaption>
+</figure>
+
+<p>In fact this couple could realize up to $71,100 of long-term gains and still pay nothing on them: that's the room between their $27,800 of taxable ordinary income and the $98,900 top of the 0% bracket. Every dollar of gain beyond that is taxed at 15%.</p>
+<h3>Harvesting gains at 0%</h3>
+<p>If you have room in the 0% bracket and don't need the money, you can sell shares at a gain and buy them straight back. You pay no tax, and your cost basis resets to today's price, so those gains are never taxed later. There's no waiting period for this, unlike the rule for losses below. Low-income years early in retirement, before Social Security and required withdrawals start, are the usual time to do it.</p>
+<p>Gains still count as income for other purposes. They raise your adjusted gross income, which sets ACA premium credits before 65, the Medicare IRMAA surcharges two years later, and how much of your Social Security is taxable. Your state may tax them too. So a gain that's free federally can still cost something; check the whole picture first. <a href="/learn/withdrawal-order">Which account to draw from first</a> covers how this fits with Roth conversions, which compete for the same low brackets.</p>
+
+<h2 id="drag">Tax drag while you hold</h2>
+<p>A taxable account pays some tax every year on dividends, even if you sell nothing. That's called tax drag. For a broad stock index fund, it's small.</p>
+
+<!-- data: $10,000 deposited at the end of each year for 30 years. Total return 7% per year before inflation: 5% price growth plus 2% dividends. Tax-free: grows at 7%. Taxable: dividends taxed at 15% each year and reinvested (added to basis); "all sold" takes 15% of the gain at each point. Year 30: 944,608 tax-free; 895,124 taxable unsold, basis 451,002; 828,506 after selling. Not adjusted for inflation. -->
+<figure data-chart='{"type":"line","x":[0,5,10,15,20,25,30],"xLabel":"Years investing","y":"money","series":[{"name":"No tax, as in a Roth","tone":"accent","values":[0,57507,138164,251290,409955,632490,944608]},{"name":"Taxable, not sold","tone":"neutral","values":[0,57164,136222,245559,396773,605901,895124]},{"name":"Taxable, after selling everything","tone":"muted","dash":true,"values":[0,56362,132167,234862,374746,566061,828506]}]}'>
+  <figcaption>$10,000 of after-tax money invested at the end of each year in a stock index fund returning 7% per year (2% of it dividends), with 15% tax on dividends and gains. Not adjusted for inflation.</figcaption>
+</figure>
+
+<p>After thirty years, yearly dividend tax has cost about 5% of the balance, and selling everything would cost about 7% more. Still, the taxable account keeps about 88% of what a Roth would have, and more if the shares are never sold, as the section on heirs below explains.</p>
+<p>Drag is much larger for investments that pay out a lot of ordinary income. That's the idea behind asset location: holding each kind of investment in the account where it's taxed least.</p>
+<ul>
+<li>Taxable bonds, bond funds and REITs pay interest or dividends taxed as ordinary income. They usually belong in a 401(k) or IRA, if there's room.</li>
+<li>Broad stock index funds pay mostly qualified dividends and rarely distribute gains. They suit a taxable account.</li>
+<li>In a high bracket, municipal bonds, whose interest is free of federal tax, can make sense for bonds held in a taxable account.</li>
+<li>Exchange-traded funds rarely pay out capital gains, because of the way shares are created and redeemed. Many actively managed mutual funds pay out gains every year, which you owe tax on even if you reinvest them.</li>
+</ul>
+
+<h2 id="losses">Tax-loss harvesting</h2>
+<p>When an investment falls below what you paid, you can sell it, take the loss, and buy something similar so you stay invested. Losses offset gains first. Beyond that, up to $3,000 per year ($1,500 if married filing separately) comes off ordinary income, and anything left over carries forward to future years with no time limit.</p>
+<p>The catch is the wash sale rule. If you buy the same or a "substantially identical" investment within 30 days before or after the sale, the loss is disallowed for now; it's added to the cost of the new shares instead. That includes purchases in your IRA or your spouse's accounts, and a wash sale against an IRA purchase loses the loss permanently. Automatic dividend reinvestment can trigger it by accident. The usual approach is to switch to a similar fund that tracks a different index, such as from an S&amp;P 500 fund to a total US market fund, for at least 31 days. Many investors treat those two as different enough, though the IRS has never ruled on it.</p>
+<p>Harvesting a loss lowers your basis, so it defers tax more than it removes it: the gain you avoid now shows up when you eventually sell the replacement. The benefit is real when the losses offset ordinary income at 22% or more while the later gain is taxed at 15% or 0%, or when the shares are never sold at all.</p>
+
+<h2 id="heirs">Heirs and charity</h2>
+<p>Shares you still own when you die get a new cost basis equal to their value on the date of death, called a step-up in basis. The gain during your lifetime is never taxed. In community property states, both halves of a married couple's community property are stepped up when the first spouse dies. This is one reason older retirees often spend from traditional accounts and keep their most appreciated shares: traditional money is taxed to heirs, while appreciated shares pass with the gain wiped out.</p>
+<p>Shares given away while you're alive keep your basis, so a gift to an adult child in a higher bracket can cost more tax than leaving it to them. Gifts to charity work the other way. Donating shares held more than one year lets you deduct their full value, if you itemize, and neither you nor the charity pays tax on the gain. A donor-advised fund lets you make the gift in one year and choose the charities later.</p>
+
+<h2 id="selling">Choosing which shares to sell</h2>
+<p>If you've bought the same fund many times, each purchase is a separate lot with its own cost and date. Unless you say otherwise, most brokerages sell the oldest first, which usually means the largest gains. Mutual funds often default to average cost. Most brokerages let you pick lots yourself, called specific identification, or set a default such as highest cost first, which keeps realized gains small. Set it before you sell; it can't be changed afterwards.</p>
+
+<h2 id="why">What it's good for</h2>
+<p>The taxable account gets less attention than retirement accounts, but it does things they can't. There's no limit on how much you put in and no penalty for taking it out at any age, which makes it the main source of money for <a href="/learn/bridge-to-59">the years before 59½</a> for early retirees. Only the gain on a sale counts as income, so it can pay for one year of spending while showing very little income, which matters when ACA premium credits or Medicare surcharges depend on it. And it can hold money for goals that aren't retirement, a few years or a decade away.</p>
+<p>Its drawbacks are the yearly tax drag and the lack of any break up front, and one that has nothing to do with tax: money you can reach easily is easier to spend.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Optimizer tests the order in which you draw on your accounts in retirement: the usual order of brokerage first, then traditional, then Roth, against drawing traditional money first each year up to the top of a bracket. It runs each through every market since 1926 with 2026 federal and state tax, so you can see what each order costs over your whole retirement.</p>
+<p>Income Tax shows one year in detail. In retirement mode, enter a brokerage withdrawal and the share of it that's gain, and it stacks the gain on your other income, shows how much falls in the 0% band and adds the 3.8% tax where it applies. The Advanced calculator splits your savings into traditional, Roth and taxable accounts so your projection taxes each one its own way.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Do I owe tax if I don't sell anything?</summary><p>On dividends, interest and any capital gains your funds pay out, yes, every year, even if they're reinvested. On the rise in value of shares you still hold, no.</p></details>
+<details><summary>Is a taxable account a bad place to save?</summary><p>Not if the tax-advantaged accounts are already full, or you need money before 59½. For broad stock funds held for decades, the tax cost is modest, as the chart shows.</p></details>
+<details><summary>What about short-term gains?</summary><p>Gains on shares held one year or less are taxed at ordinary income rates, up to 37% federal. Waiting past the one-year mark before selling lowers the rate a lot: from 22% to 15% for many people, or from 12% to 0%.</p></details>
+<details><summary>Does reinvesting dividends avoid the tax?</summary><p>No. They're taxed in the year they're paid. Reinvested dividends do add to your cost basis, so keep track of them, or rely on the brokerage's records, so you don't pay tax on them twice when you sell.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Only the gain on what you sell is taxed, and long-term gains are taxed at 0%, 15% or 20% for 2026.</li>
+<li>Married couples pay 0% on long-term gains up to $98,900 of taxable income, $49,450 single.</li>
+<li>Broad stock index funds suit a taxable account; bonds usually belong in tax-deferred ones.</li>
+<li>Harvest losses to offset gains and $3,000 of income per year, avoiding wash sales for 30 days either side.</li>
+<li>Shares held until death get a step-up in basis; shares given to charity avoid the gain entirely.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How gains and dividends are taxed in 2026</li><li>How to use the 0% bracket and harvest losses</li><li>Where a taxable account fits in a plan</li></ul>
+  <ul class="terms">
+    <li data-term="Cost basis">What you paid for an investment, plus reinvested dividends. Only the amount above it is taxed when you sell.</li>
+    <li data-term="Long-term capital gain">A gain on something held more than one year, taxed at 0%, 15% or 20% rather than ordinary rates.</li>
+    <li data-term="Wash sale">Buying a substantially identical investment within 30 days of selling it at a loss, which disallows the loss for now.</li>
+    <li data-term="Step-up in basis">At death, an investment's cost basis resets to its value that day, so the lifetime gain is never taxed.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/taxtopics/tc409">Topic 409: capital gains and losses</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/taxtopics/tc559">Topic 559: net investment income tax</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p550">Publication 550: investment income and expenses</a> <span>IRS</span></li>
+    <li><a href="https://www.bogleheads.org/wiki/Tax-efficient_fund_placement">Tax-efficient fund placement</a> <span>Bogleheads wiki</span></li>
+    <li><a href="https://www.bogleheads.org/wiki/Tax_loss_harvesting">Tax loss harvesting</a> <span>Bogleheads wiki</span></li>
+  </ul>
+</footer>
+</article>

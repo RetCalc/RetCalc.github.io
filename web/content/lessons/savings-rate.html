@@ -1,0 +1,138 @@
+<article class="lesson" data-slug="savings-rate" data-reviewed="2026-10-26"
+  data-title="Your savings rate is the lever"
+  data-idea="What you control, how many working years it buys, and how to raise it"
+  data-tool="fire" data-try="Find the age your savings could let you stop working, and how much sooner saving more gets you there, with your plan already filled in.">
+
+<p class="lede">You can't choose what markets return, but you can choose how much of your income you keep. That share, your savings rate, decides more of a retirement plan than anything else you control. It sets how fast your savings grow and, less obviously, how much you'll need, because every dollar you save is also a dollar you've learned to live without.</p>
+
+<h2 id="what">What a savings rate is</h2>
+<p>Your savings rate is the share of your income that goes to saving and investing instead of spending. For retirement, that usually means contributions to a 401(k), 403(b), IRA or HSA, plus anything else you invest for the long term.</p>
+<p>Two definitions are in common use, and it helps to know which one a rule of thumb means.</p>
+<ul>
+<li>Share of gross pay, including your employer's match. This is how most retirement guidelines are written, including the common target of 15%. Someone earning $80,000 who puts $6,400 into a 401(k) (8%) and gets a $3,200 match (4%) has a savings rate of 12%: $9,600 ÷ $80,000.</li>
+<li>Share of take-home pay. Early-retirement writers often measure it this way: what you save divided by what you take home after taxes, with any pre-tax retirement contributions added back. It produces a bigger percentage for the same saving, and it's the version that ties neatly to how long you'll have to work.</li>
+</ul>
+<p>Either works, as long as you compare like with like. RetCalc's Retirement Readiness Guide uses the first, gross pay with the match counted.</p>
+
+<h2 id="control">What you control, and what markets do</h2>
+<p>Two things build a retirement balance: what you put in and what it earns. Early on, what you put in matters far more. Compare two hypothetical savers. One saves $10,000 per year and earns only 2% after inflation. The other saves $5,000 per year and earns 7%, about what US stocks have returned after inflation since 1926.</p>
+
+<!-- data: plain arithmetic. Balance = yearly saving × ((1 + r)^n − 1) ÷ r, deposits at the end of each year, steady real return r, in today's dollars. $10,000 at 2%: 52,040 (5 yrs), 109,497 (10), 172,934 (15), 242,974 (20), 320,303 (25), 405,681 (30). $5,000 at 7%: 28,754, 69,082, 125,645, 204,977, 316,245, 472,304. -->
+<figure data-chart='{"type":"line","x":[0,5,10,15,20,25,30],"xLabel":"Years saving","y":"money","series":[{"name":"Saves $10,000 per year, earns 2%","tone":"good","values":[0,52040,109497,172934,242974,320303,405681]},{"name":"Saves $5,000 per year, earns 7%","tone":"accent","values":[0,28754,69082,125645,204977,316245,472304]}]}'>
+  <figcaption>Twice the saving at a poor return against half the saving at a strong one. Returns after inflation, in today's dollars.</figcaption>
+</figure>
+
+<p>For the first twenty years, the bigger saver stays ahead despite a return worth less than a third as much. After 10 years she has $109,497 to the other saver's $69,082. The lines only cross at about 25 years, and the higher return pulls ahead in the last stretch, when there's a large balance for it to work on.</p>
+<p>Most saving careers follow the same pattern. In the first decade or so your contributions are most of your balance, so the amount you save is the main thing that moves it. In the last decade or two, growth on a large balance takes over. And unlike the return, the savings rate is yours to set from the first paycheck.</p>
+
+<h2 id="years">How many years each rate buys</h2>
+<p>A higher savings rate gets you to retirement faster for two reasons at once. More money goes in each year. And the more you save, the less you're living on, so the less your savings will need to replace. Someone saving 10% of take-home pay lives on 90% of it and needs savings big enough to supply that. Someone saving 50% lives on half, and needs a target only a little more than half as large.</p>
+<p>Put those together and you get a table that the blogger Mr. Money Mustache (Pete Adeney) made widely known in 2012. It assumes you start with nothing, earn 5% per year after inflation, and stop working when your savings reach 25 times your yearly spending, enough to draw 4% per year.</p>
+
+<!-- data: computed by month. Savings rate s is a share of take-home pay (taken as 1). Each month adds s ÷ 12; the balance grows at 5% per year after inflation (monthly rate 1.05^(1/12) − 1); the target is (1 − s) × 25 at a 4% withdrawal rate, or (1 − s) ÷ 0.035 at 3.5%. Years = months to reach the target ÷ 12, rounded to the nearest year (half a year shown for 50% and above where the rounding hides a difference). Starting balance zero. Matches the FIRE article: half of take-home in about 17 years, a quarter in about 32. -->
+<figure>
+  <table>
+    <thead><tr><th>Savings rate, share of take-home pay</th><th>Years to independence, 4% withdrawals</th><th>At 3.5% withdrawals</th></tr></thead>
+    <tbody>
+      <tr><td>5%</td><td>65</td><td>68</td></tr>
+      <tr><td>10%</td><td>51</td><td>54</td></tr>
+      <tr><td>15%</td><td>43</td><td>45</td></tr>
+      <tr><td>20%</td><td>36</td><td>39</td></tr>
+      <tr><td>25%</td><td>32</td><td>34</td></tr>
+      <tr><td>30%</td><td>28</td><td>30</td></tr>
+      <tr><td>40%</td><td>21</td><td>23</td></tr>
+      <tr><td>50%</td><td>16.5</td><td>18</td></tr>
+      <tr><td>60%</td><td>12.5</td><td>13.5</td></tr>
+      <tr><td>70%</td><td>8.5</td><td>9.5</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Starting from nothing, earning 5% per year after inflation. Independence means savings of 25 times yearly spending (4%) or about 28.6 times (3.5%).</figcaption>
+</figure>
+
+<p>Most of the gain is at the top of the table. Going from 10% to 20% takes fifteen years off a working life. Going from 20% to 30% takes off another eight. Each additional point is worth less as the rate rises, but the early points are worth a great deal. The lower withdrawal rate in the third column, often used for retirements expected to last 40 years or more, adds one to three years.</p>
+<p>The table has limits worth knowing. It ignores Social Security, which for most people covers a good part of spending from their 60s, and so overstates how long a conventional retiree needs to work. It ignores what you've already saved, which shortens the time: someone saving 25% who already has two years of take-home pay invested gets there in about 25 years instead of 32. And it assumes spending stays at the level you lived on while saving, which is the point: a high savings rate only works because it comes with a lower cost of living.</p>
+
+<p data-yours></p>
+
+<h2 id="match">Counting the employer match</h2>
+<p>An employer match is money your employer adds to your 401(k) or similar plan when you contribute. It counts toward your savings rate in full, because it's money saved for your retirement that you'd otherwise not have.</p>
+<p>Formulas vary. A common one is 50% of what you contribute up to 6% of pay, which adds 3% of pay if you put in 6%. Another is dollar for dollar up to 4% or 5%. Whatever the formula, contributing less than it takes to get the whole match leaves part of your pay on the table. Someone earning $60,000 whose employer matches 50% up to 6% gets $1,800 per year by contributing $3,600; contributing only 3% gets half of that.</p>
+<p>Two details can change the value. Many plans vest the match over several years, so leaving a job early can mean leaving some of it behind. And some plans add a true-up at year end if you hit the annual limit early and missed match on later paychecks. <a href="/learn/employer-match">The employer match</a> covers formulas, vesting and true-ups in detail.</p>
+
+<h2 id="enough">How much is enough</h2>
+<p>The usual answer for someone starting in their 20s or early 30s is about 15% of gross pay, match included. The Center for Retirement Research at Boston College reached a similar figure in 2014 for a typical household, and it's the level at which RetCalc's Guide gives full marks for saving.</p>
+<p>The right rate depends heavily on when you start, because a later start leaves compounding less time. Here's the share of pay needed to reach a common benchmark, savings of ten times your pay by 67, for someone whose pay stays level after inflation and who has nothing saved yet.</p>
+
+<!-- data: plain arithmetic. Required share of pay = 10 ÷ (((1 + r)^n − 1) ÷ r), the future-value-of-annuity factor, with n = 67 − starting age, yearly deposits at year end, r = 4.5% (the Calculator's Balanced mix) or 5.75% (its Growth mix), after inflation. Pay level in today's dollars; nothing saved at the start. -->
+<figure>
+  <table>
+    <thead><tr><th>Start saving at</th><th>Share of pay, balanced mix (4.5%)</th><th>Share of pay, growth mix (5.75%)</th></tr></thead>
+    <tbody>
+      <tr><td>25</td><td>8.4%</td><td>6.1%</td></tr>
+      <tr><td>30</td><td>11.0%</td><td>8.3%</td></tr>
+      <tr><td>35</td><td>14.6%</td><td>11.5%</td></tr>
+      <tr><td>40</td><td>19.7%</td><td>16.3%</td></tr>
+      <tr><td>45</td><td>27.5%</td><td>23.7%</td></tr>
+      <tr><td>50</td><td>40.4%</td><td>36.2%</td></tr>
+      <tr><td>55</td><td>64.7%</td><td>60.1%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The share of pay to save each year, match included, to have ten times your pay by 67. Returns after inflation; a starting balance of zero.</figcaption>
+</figure>
+
+<p>Starting at 25 needs well under 10%. Starting at 45 from nothing needs more than a quarter of pay, which few people can manage, so a late start usually means combining a higher savings rate with other levers: working a little longer, claiming Social Security later, or planning on lower spending. Ten times pay is only a benchmark. Your own target depends on what you'll spend and what Social Security will pay, which <a href="/learn/spending-target">From spending to a target</a> works through.</p>
+
+<h2 id="raise">Raising it over time</h2>
+<p>The easiest time to save more is when your pay goes up, because you never get used to spending the extra. Saving half of every raise lets your spending grow too, while your savings rate climbs year by year.</p>
+<p>Richard Thaler and Shlomo Benartzi built a 401(k) feature around this idea, which they called Save More Tomorrow. Employees agreed in advance to raise their contribution with each future pay raise. In the first company to use it, reported in the <i>Journal of Political Economy</i> in 2004, participants' average saving rate went from 3.5% to 13.6% over 40 months. Many plans now offer automatic increases of one percentage point per year, and under the SECURE 2.0 Act, 401(k) and 403(b) plans set up after December 29, 2022 must, from 2025, enroll eligible employees automatically at 3% to 10% of pay and raise that by a point each year to at least 10% (and no more than 15%). Businesses with 10 or fewer employees or less than three years old, church and government plans, and SIMPLE 401(k) plans are exempt. Employees can opt out or choose a different rate.</p>
+<p>Take a hypothetical 30-year-old earning $60,000, with pay level after inflation, earning 4.5% per year after inflation until 67. Saving a flat 6% builds about $327,700. Starting at 6% and raising it one point per year until it reaches 15% builds about $701,700, more than twice as much, and the higher rate is reached by 39.</p>
+
+<!-- data: plain arithmetic, yearly deposits at year end, 37 years (30 to 67), 4.5% real. Flat: 60,000 × 6% × ((1.045^37 − 1) ÷ 0.045) = 327,749. Escalating: year k (0-based) saves min(15%, 6% + 1% × k) of 60,000, balance × 1.045 + deposit each year = 701,722. A flat 15% from the start: 819,372. -->
+<figure>
+  <table>
+    <thead><tr><th>Saving from 30 to 67, on $60,000 of pay</th><th>Balance at 67</th></tr></thead>
+    <tbody>
+      <tr><td>A flat 6% every year</td><td>$327,749</td></tr>
+      <tr><td>6%, rising one point per year to 15%</td><td>$701,722</td></tr>
+      <tr><td>A flat 15% every year</td><td>$819,372</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Hypothetical saver earning 4.5% per year after inflation, pay level in today's dollars. Match included in the percentages.</figcaption>
+</figure>
+
+<p>Other ways to lift the rate without feeling it: send bonuses and tax refunds straight to savings, keep saving the amount of a car payment or a daycare bill after it ends, and set contributions as a percentage of pay so they rise automatically with every raise.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The FIRE calculator shows how the savings rate moves the age you could stop working. Its starting example is Alex, 30, with $10,000 invested and spending $40,000 per year, so a target of $1,000,000 at 4%. With its starting assumption of about 5.3% per year after inflation, saving $1,000 per month gets Alex there at 66.6, a normal retirement age. Saving $2,000 per month gets there at 55.4, and $2,500 at 52.1. Doubling the saving takes eleven years off.</p>
+<p>Enter your own savings and spending and try raising the monthly amount in steps. The Coast FIRE view is useful too: it shows the age at which what you've saved would grow to your target by a normal retirement age without another contribution. At $2,000 per month, Alex reaches it at 38.9.</p>
+<p>In the Retirement Readiness Guide, the savings rate is one of the five areas of your score, worth 20 points, with full marks at 15% of gross pay counting any match. If your plan already has enough, a lower rate earns full marks too, so choosing to coast isn't penalized.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Does paying down debt count as saving?</summary><p>Not in the usual definition, but extra payments on high-interest debt are one of the best uses of money, since paying off a card charging 24% is a guaranteed 24% return. A sensible order is to get any employer match first, then clear high-interest debt, then raise retirement saving. <a href="/learn/paying-down-debt">Paying down debt</a> covers when investing wins instead.</p></details>
+<details><summary>Should I count my home equity or mortgage principal?</summary><p>Most retirement guidelines leave it out. Paying down a mortgage builds wealth, but a home doesn't pay for groceries in retirement unless you sell it or borrow against it. Owning it outright does lower your retirement spending, which shrinks the target instead.</p></details>
+<details><summary>I can only save 3% right now. Is it worth it?</summary><p>Yes. Start where you can, make sure it's enough to get any employer match, and raise it by a point whenever your pay goes up. The habit matters, and the first dollars saved have the longest to compound.</p></details>
+<details><summary>Can I save too much?</summary><p>You can save more than your plan needs, at the cost of things you might have enjoyed earlier. If your plan shows you're well ahead, a lower savings rate, earlier retirement or more spending now are all reasonable choices. The point of a target is to know when you've done enough.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Your savings rate is the share of income you save. Count the employer match, and know whether a rule uses gross or take-home pay.</li>
+<li>Early in a career, how much you save moves your balance far more than what markets return.</li>
+<li>A higher rate shortens your working life twice over: more goes in, and you need less because you live on less.</li>
+<li>About 15% of gross pay, match included, is the usual target for someone starting in their 20s or early 30s; a later start needs more.</li>
+<li>Raising the rate with each pay raise, even a point at a time, can more than double what you end up with.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>Why the savings rate is the biggest lever you control</li><li>How many working years each savings rate buys</li><li>Counting the match, and raising the rate painlessly</li></ul>
+  <ul class="terms">
+    <li data-term="Savings rate">The share of income you save. Retirement guidelines usually mean gross pay with the employer match included: $9,600 saved on $80,000 is 12%.</li>
+    <li data-term="Employer match">What your employer adds to your retirement plan when you contribute, such as 50% of your contributions up to 6% of pay.</li>
+    <li data-term="Financial independence">Having enough invested that withdrawals could cover your spending, so work becomes optional. At 4%, that's 25 times yearly spending.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.mrmoneymustache.com/2012/01/13/the-shockingly-simple-math-behind-early-retirement/">The shockingly simple math behind early retirement</a> <span>Mr. Money Mustache, 2012</span></li>
+    <li><a href="https://www.chicagobooth.edu/research/rustandy/social-impact-research/research-papers/2004/save-more-tomorrow-using-behavioral-economics-to-increase-employee-saving">Save More Tomorrow: using behavioral economics to increase employee saving</a> <span>Thaler and Benartzi, Journal of Political Economy, 2004</span></li>
+    <li><a href="https://crr.bc.edu/how-much-should-people-save/">How much should people save?</a> <span>Center for Retirement Research at Boston College, 2014</span></li>
+    <li><a href="https://www.irs.gov/irb/2025-08_IRB#REG-100669-24">Automatic enrollment requirements under section 414A (proposed regulations)</a> <span>IRS</span></li>
+  </ul>
+</footer>
+</article>

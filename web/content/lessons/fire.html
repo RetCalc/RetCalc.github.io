@@ -1,0 +1,136 @@
+<article class="lesson" data-slug="fire" data-reviewed="2026-10-26"
+  data-title="FIRE and financial independence"
+  data-idea="Your number, your savings rate and a lower rate for a long retirement"
+  data-tool="fire" data-try="See when your savings could cover your spending, and when you could stop adding to them, with your plan already filled in.">
+
+<p class="lede">FIRE stands for financial independence, retire early. The goal is a portfolio big enough that its withdrawals cover your spending, so work becomes something you choose. The arithmetic is the same as any retirement plan, but a retirement that starts at 45 instead of 65 changes several of the numbers that go into it.</p>
+
+<h2 id="number">Your FIRE number</h2>
+<p>Your FIRE number is your yearly spending divided by the share of the portfolio you plan to withdraw in the first year, your withdrawal rate. At 4%, that's 25 times your spending. Someone who spends $50,000 per year needs $1,250,000 at 4%. At 3.5% the same spending needs about $1,430,000, and at 3.25% about $1,540,000.</p>
+<p>The spending figure is what most of the work goes into, and it's easy to get too low. It has to include the things an employer used to pay for or that come around only every few years:</p>
+<ul>
+<li>Health insurance. Before Medicare at 65 you buy your own, and for a couple in their fifties the full price of a marketplace plan can run well over $20,000 per year. What you actually pay depends heavily on your income, which is why <a href="/learn/health-cover-before-65">health cover before 65</a> is part of planning an early retirement.</li>
+<li>Tax on what you withdraw. Money from a traditional 401(k) or IRA is taxed as income when it comes out. A single person taking $50,000 from a traditional IRA in 2026, with no other income, owes about $3,820 of federal income tax on it, before any state tax.</li>
+<li>Costs that come every few years, like a car, a roof, a new furnace or help for a grown child. A budget built from monthly bills leaves them out, so spread them over the years and add them in.</li>
+</ul>
+<p>Home equity isn't part of the number. A paid-off house lowers what you spend, and that lowers the number, but the house itself doesn't produce income unless you sell it or borrow against it.</p>
+
+<h2 id="longer">Why a longer retirement needs a lower rate</h2>
+<p>The 4% rule comes from William Bengen's 1994 study, which looked for the highest first-year withdrawal, raised with inflation every year after, that would have lasted 30 years from every starting year in the US record. A 45-year-old who stops working may need the money to last 50 years, and the extra two decades give a bad stretch of markets more room to do damage. (The <a href="/learn/four-percent-rule">4% rule</a> lesson covers what the rule assumes.)</p>
+<p>The table runs the same test on longer retirements, with a 60/40 mix of US stocks and bonds and spending raised with inflation each year.</p>
+
+<!-- data: lib/engine historicalBacktest() on ddOptsFromState({initial: 1000000, stock: 60, strategy: "fixed", rate, years}), annual starts from 1927 on the record since 1926. "Highest rate" bisects rate until every start lasts. Matches the 4% rule article (3.79%, 3.52%, 3.36%; 94.3%, 86.7%, 80.0%). -->
+<figure>
+  <table>
+    <thead><tr><th>Length of retirement</th><th>Starts tested</th><th>Highest rate that lasted from every start</th><th>4% lasted</th><th>3.5% lasted</th></tr></thead>
+    <tbody>
+      <tr><td>30 years</td><td>70</td><td>3.79%</td><td>94.3%</td><td>100%</td></tr>
+      <tr><td>35 years</td><td>65</td><td>3.64%</td><td>90.8%</td><td>100%</td></tr>
+      <tr><td>40 years</td><td>60</td><td>3.52%</td><td>86.7%</td><td>100%</td></tr>
+      <tr><td>45 years</td><td>55</td><td>3.43%</td><td>83.6%</td><td>98.2%</td></tr>
+      <tr><td>50 years</td><td>50</td><td>3.36%</td><td>80.0%</td><td>94.0%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>US stocks and bonds since 1926, 60% stocks, a fixed withdrawal raised with inflation. "Lasted" is the share of starting years in which the money held out for the whole period.</figcaption>
+</figure>
+
+<p>Over 50 years, 4% ran out in one start in five. The failures began in 1937, in 1962–69 and in 1973; the 1960s starts ran into the high inflation and weak stocks of the 1970s within their first decade. At 3.5%, three 50-year starts ran out (1965, 1966 and 1969); at 3.25%, none did.</p>
+<p>The safe rate falls more slowly than you might expect: going from 30 years to 50 cuts it by less than half a percentage point, from 3.79% to 3.36%. Once a portfolio has lasted 30 years, it has usually grown enough that the extra years cost little. The middle outcome at 3.5% over 50 years ended with about $2.3 million after inflation from a $1 million start. The lower rate is there for the worst starts. Most retirees who use it end up with far more than they needed.</p>
+
+<h3>A long retirement needs stocks</h3>
+<p>The longer the money has to last, the more it depends on growth. Here is the same test with different shares in stocks.</p>
+
+<!-- data: same test as the table, highest rate lasting every start, by stock share (rest in bonds): 30 years 3.69%, 3.79%, 3.82%, 3.69%; 50 years 3.08%, 3.36%, 3.44%, 3.36%. -->
+<figure data-chart='{"type":"bar","x":["40% stocks","60% stocks","80% stocks","100% stocks"],"xLabel":"Stock share","y":"pct","series":[{"name":"30 years","tone":"neutral","values":[0.0369,0.0379,0.0382,0.0369]},{"name":"50 years","tone":"accent","values":[0.0308,0.0336,0.0344,0.0336]}]}'>
+  <figcaption>The highest first-year withdrawal that lasted from every start in US data since 1926, raised with inflation each year after.</figcaption>
+</figure>
+
+<p>With 40% in stocks, the safe rate over 50 years drops to 3.08%, because bonds alone went through long stretches of losing to inflation. Between 60% and 100% stocks the safe rate barely moves. What changes is how much the balance swings along the way, and whether you can sit through it.</p>
+
+<h3>What other research finds</h3>
+<p>Karsten Jeske's Safe Withdrawal Rate series on the Early Retirement Now blog, begun in 2016, is a long, detailed study of very long retirements. Testing 60-year retirements on US data back to 1871, he found that 4% failed far more often over 60 years than over 30, and summed it up as 3.5% being the new 4% for long horizons, lower still when stock prices start out high. They are high now: Shiller's CAPE, a measure of stock prices against ten years of earnings, was 41.0 at the end of September 2026, above where it stood at the start of any retirement in the record that has 30 years of history after it. Starting valuations are the subject of <a href="/learn/cape-valuations">their own lesson</a>.</p>
+<p>That's why many early retirees plan on 3.25% to 3.5%, or start higher with firm rules for cutting back in bad years. A rate of 3.5% means a number about 28.6 times spending; 3.25% means about 30.8 times.</p>
+
+<h2 id="savings">The savings rate decides how long it takes</h2>
+<p>Early on, what you save matters far more than what your investments earn, and every dollar you save is also a dollar you've shown you can live without. A higher savings rate raises the pile and lowers the number it has to reach.</p>
+
+<!-- data: years n from a zero start, saving s of take-home pay at the end of each year, spending 1 - s, 5% real return: n = ln(1 + 0.05 * M * (1 - s) / s) / ln(1.05), M = 25 at 4% and 1/0.035 = 28.57 at 3.5%. -->
+<figure data-chart='{"type":"line","x":["10%","20%","30%","40%","50%","60%","70%"],"xLabel":"Share of take-home pay saved","y":"num","series":[{"name":"Years to reach 25 times spending (4%)","tone":"neutral","values":[51.4,36.7,28.0,21.6,16.6,12.4,8.8]},{"name":"Years to reach 28.6 times spending (3.5%)","tone":"accent","values":[53.9,39.0,30.1,23.5,18.2,13.7,9.8]}]}'>
+  <figcaption>Years from nothing saved to financial independence, earning 5% per year after inflation. Spending is whatever isn't saved.</figcaption>
+</figure>
+
+<p>Saving half of take-home pay reaches 25 times spending in about 17 years; saving a quarter takes about 32. Planning on 3.5% instead of 4% adds only about a year and a half at a 50% savings rate. The last years before independence are when the balance grows fastest, so the larger target costs less time than it seems. Starting with some savings already shortens all of these. The <a href="/learn/savings-rate">savings rate lesson</a> goes into how to measure and raise yours.</p>
+
+<p data-yours></p>
+
+<h2 id="kinds">Lean, fat, barista and coast</h2>
+<p>The FIRE community has names for different versions of the same idea. The math is the same in all of them; what changes is the spending figure or how much work stays in the picture.</p>
+<ul>
+<li>Lean FIRE means independence on a small budget, often under $40,000 per year. The number is smaller and you get there sooner, but there's little room to cut if markets go badly early on, and an unexpected cost takes a larger bite.</li>
+<li>Fat FIRE means a larger budget, often $100,000 or more. It takes longer to reach, but a big budget usually has spending you could trim in a bad decade, and that is a safety margin of its own.</li>
+<li>Barista FIRE means leaving a career for part-time or lower-paid work that covers part of your spending, often chosen partly for health insurance (the name comes from the coffee-shop job). If you spend $60,000 and part-time work brings in $24,000 after tax, the portfolio covers $36,000. At 3.5% that takes about $1,030,000 instead of about $1,710,000.</li>
+<li>Coast FIRE is the point where what you've already saved would grow to your full retirement number by a normal retirement age with no more contributions. From then on you only need to earn what you spend.</li>
+</ul>
+
+<!-- data: coast amount = 1,250,000 / 1.05^(65 - age): 226,613; 289,222; 369,128; 471,112; 601,271, rounded to the nearest $1,000. -->
+<figure>
+  <table>
+    <thead><tr><th>Your age today</th><th>Years to 65</th><th>Invested today to coast to $1.25 million</th></tr></thead>
+    <tbody>
+      <tr><td>30</td><td>35</td><td>$227,000</td></tr>
+      <tr><td>35</td><td>30</td><td>$289,000</td></tr>
+      <tr><td>40</td><td>25</td><td>$369,000</td></tr>
+      <tr><td>45</td><td>20</td><td>$471,000</td></tr>
+      <tr><td>50</td><td>15</td><td>$601,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>What would grow to $1,250,000 by 65, enough for $50,000 per year at 4%, earning 5% per year after inflation with nothing added. All figures in today's dollars.</figcaption>
+</figure>
+
+<p>Coasting depends on the return assumption more than any other version. At 4% after inflation instead of 5%, a 35-year-old would need about $385,000 rather than $289,000, because thirty years of compounding magnifies a one-point difference. A cautious coaster keeps contributing a little, or checks every few years whether the balance is still on track.</p>
+
+<h2 id="early">What changes when you stop at 45 instead of 65</h2>
+<h3>Reaching your money before 59½</h3>
+<p>Most people's savings sit in 401(k)s and IRAs, and withdrawals before 59½ usually carry a 10% penalty on top of income tax. There are legal ways around it: money in a regular brokerage account, Roth IRA contributions, the rule of 55, 72(t) payments and a Roth conversion ladder. Planning which money pays for which years is the subject of the next lesson, <a href="/learn/bridge-to-59">bridging to 59½</a>. If you're still saving, how much goes into taxable accounts versus retirement accounts is worth deciding with that bridge in mind.</p>
+<h3>Health insurance and income</h3>
+<p>Before 65, marketplace premiums depend on your household income. For 2026 the premium tax credit stops entirely above 400% of the federal poverty line, $84,600 for a household of two. An early retiree living on brokerage sales, where only the gain counts as income, can often keep income low and premiums modest. The same retiree drawing from a traditional IRA counts every dollar.</p>
+<h3>A smaller Social Security benefit, later</h3>
+<p>Social Security bases your benefit on your 35 highest-earning years, adjusted for wage growth. Stop working at 45 after starting at 23 and you have 22 years of earnings; the other 13 count as zeros. Your statement at ssa.gov assumes you keep working until you claim, so it will overstate the benefit if you stop early. Benefits also can't start before 62. Many early retirees leave Social Security out of their FIRE number as a margin of safety and treat it as a raise later.</p>
+<h3>More exposure to a bad start</h3>
+<p>The first decade of retirement matters most for how long the money lasts, and an early retiree goes through it with no paycheck and a long road ahead. <a href="/learn/sequence-risk">Sequence-of-returns risk</a> covers why. The most common defense among early retirees is flexibility: being able to cut spending for a few years, or to earn something, if markets fall soon after you stop. Even $15,000 per year of part-time income in the first years shrinks the withdrawals that do the most damage.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The FIRE Calculator takes your savings, what you add each month, your expected return and the spending you need, and shows when you'd reach your number and when you could coast. Set the withdrawal rate to 3.5% or 3.25% if you're planning a retirement of 40 years or more. Historical mode runs your saving years through every market since 1926; the success slider picks how cautious to be, so at 90% you see the age by which 9 in 10 historical paths had arrived.</p>
+<p>Once you have a date, test the retirement itself. In the Drawdown Simulator, set the length to 45 or 50 years and look at the worst starts. Then take the plan to the Bridge to check that you can reach enough money before 59½ without penalties.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Is the 4% rule too risky for retiring at 45?</summary><p>For a fixed withdrawal raised with inflation and never cut, the record says yes, slightly: over 50 years, 4% ran out in one start in five. A rate between 3.25% and 3.5%, or 4% with a willingness to cut back after bad years, held up much better.</p></details>
+<details><summary>Should my FIRE number include Social Security?</summary><p>It can. If you count it, the portfolio only has to cover the full spending until benefits start, then the part benefits don't cover. Use an estimate that assumes you stop working early, and remember benefits can't start before 62.</p></details>
+<details><summary>Do I need to keep a bond allocation in early retirement?</summary><p>History says a long retirement needs a large share in stocks; with 40% stocks the 50-year safe rate fell to about 3.1%. Bonds and cash still do a job in the first years, giving you something other than stocks to sell after a fall. How much you hold is a trade between growth and how big a swing you can live with; <a href="/learn/how-much-in-stocks">how much in stocks</a> goes through it.</p></details>
+<details><summary>What if I reach my number and want to keep working?</summary><p>Plenty of people do. Independence means work is optional, and each extra year of working adds a year of saving, a year of growth and one less year to fund. Many people use the cushion to switch to work they like more, for less pay.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Your FIRE number is your spending divided by your withdrawal rate, and the spending figure needs health insurance, taxes and irregular costs in it.</li>
+<li>Over 50 years, the highest rate that lasted from every start in US data since 1926 was about 3.36%; many early retirees plan on 3.25% to 3.5%.</li>
+<li>A long retirement needs a large share in stocks. With 40% stocks the 50-year safe rate fell to 3.08%.</li>
+<li>Your savings rate decides how long it takes; planning on 3.5% instead of 4% adds only a year or two.</li>
+<li>Retiring early also means bridging to 59½, buying your own health insurance and a smaller Social Security benefit.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How to work out your FIRE number</li><li>Why a 50-year retirement needs a lower rate</li><li>Lean, fat, barista and coast FIRE</li></ul>
+  <ul class="terms">
+    <li data-term="Financial independence">Having enough invested that withdrawals could cover your spending, so work becomes optional.</li>
+    <li data-term="Withdrawal rate">The first year's withdrawal as a share of the portfolio. At 4%, $1,000,000 supports $40,000 in the first year, raised with inflation after.</li>
+    <li data-term="Coast FIRE">The point where your savings would grow to your full retirement number by a normal retirement age without further contributions.</li>
+    <li data-term="Savings rate">The share of your take-home pay you save. It sets both how fast your savings grow and how much you need.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://earlyretirementnow.com/safe-withdrawal-rate-series/">The Safe Withdrawal Rate series</a> <span>Early Retirement Now</span></li>
+    <li><a href="https://earlyretirementnow.com/2016/12/07/the-ultimate-guide-to-safe-withdrawal-rates-part-1-intro/">The ultimate guide to safe withdrawal rates, part 1</a> <span>Early Retirement Now</span></li>
+    <li><a href="https://www.financialplanningassociation.org/sites/default/files/2021-04/MAR04%20Determining%20Withdrawal%20Rates%20Using%20Historical%20Data.pdf">Determining withdrawal rates using historical data (Bengen, 1994)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://www.healthcare.gov/glossary/premium-tax-credit/">Premium tax credit</a> <span>HealthCare.gov</span></li>
+    <li><a href="https://shillerdata.com/">Online data: stock prices, earnings and the CAPE ratio</a> <span>Robert Shiller</span></li>
+  </ul>
+</footer>
+</article>

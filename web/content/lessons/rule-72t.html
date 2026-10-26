@@ -1,0 +1,131 @@
+<article class="lesson" data-slug="rule-72t" data-reviewed="2026-10-26"
+  data-title="72(t) payments"
+  data-idea="Penalty-free IRA payments before 59½, if you never change them"
+  data-tool="72t" data-try="Size a 72(t) payment and the IRA to split off for it, and compare it with the other routes to 59½, with your plan already filled in.">
+
+<p class="lede">A 72(t) plan lets you draw from an IRA at any age without the 10% early-withdrawal penalty, as long as you take a payment set by an IRS formula, every year, without changing it. It pays from the first year, which makes it the usual way into pre-tax money for someone retiring well before 55. The price is the lock-in, and the rules on what breaks it are strict.</p>
+
+<h2 id="deal">How the deal works</h2>
+<p>The tax code's list of exceptions to the early-withdrawal penalty includes payments that are part of a series of substantially equal periodic payments, made at least once each year over your life expectancy. The IRS calls this a SoSEPP; most people say SEPP or 72(t), after the section of the code. Once you start, the rules are:</p>
+<ul>
+<li>The payments must continue unchanged until five years after the first payment or until you reach 59½, whichever is later. Start at 50 and you're committed until 59½. Start at 57 and you're committed until 62.</li>
+<li>The five years are counted to the day. In the IRS's own example, payments that begin on December 1, 2024, at 56, must continue unchanged until December 1, 2029, even though the owner turns 59½ in February 2028.</li>
+<li>Each payment is still ordinary income, taxed like a paycheck. Only the 10% goes away.</li>
+<li>From a 401(k) or 403(b), payments can only begin after you've left that employer. From an IRA, there's no such condition.</li>
+<li>Each plan covers one account. You can't combine the balances of several IRAs into one calculation, though you can run a separate plan from each.</li>
+</ul>
+<p>You can take the yearly amount in one payment or in monthly or quarterly installments, as long as the total for the year is right.</p>
+
+<h2 id="methods">The three methods</h2>
+<p>IRS Notice 2022-6 sets out three methods that automatically count as substantially equal. They differ in the formula and in whether the payment stays fixed.</p>
+<ul>
+<li>The RMD method divides the account balance by your life expectancy from an IRS table, the same way required minimum distributions work. It's recalculated every year from the balance at the end of the year before, so the payment moves with the market.</li>
+<li>Fixed amortization pays the balance out like a mortgage in reverse: a level payment over your life expectancy at an interest rate you choose. The payment is set in the first year and stays the same number of dollars every year after.</li>
+<li>Fixed annuitization divides the balance by an annuity factor, the cost of $1 per year for life, built from IRS mortality rates and your chosen interest rate. It's also fixed from the first year.</li>
+</ul>
+<p>For the RMD and amortization methods you also pick one of three life expectancy tables. The Single Life Table gives the shortest life expectancy, so the largest payment: 36.2 years at age 50. The Uniform Lifetime Table gives a longer one, 48.5 years at 50, and a smaller payment. The Joint and Last Survivor Table uses your age and your beneficiary's; the younger the beneficiary, the longer the life expectancy and the smaller the payment.</p>
+
+<h3>A worked example</h3>
+<p>Rosa is 50, retired, and has $800,000 in a rollover IRA. Here's what each choice would pay her in the first year.</p>
+
+<!-- data: life expectancies from Notice 2022-6 and Treas. Reg. 1.401(a)(9)-9: Single Life 36.2 at 50 (lib/engine/data/tables.js BR_SLT), Uniform Lifetime 48.5 at 50 (Notice 2022-6 Appendix A), Joint and Last Survivor 40.2 for ages 50 and 55 (the Notice's own example). RMD method: 800,000 / table entry. Amortization: 800,000 x r / (1 - (1 + r)^-n), the formula in the IRS SEPP FAQ (it reproduces their $21,102). Annuitization: 800,000 / 15.8615, the end-of-year life annuity factor at 5% from the Table 4 mortality rates in Treas. Reg. 1.401(a)(9)-9(e), computed the way the IRS FAQ computes its 18.1568 at 4%. 5.54% is 120% of the October 2026 mid-term rate (Rev. Rul. 2026-19). -->
+<figure>
+  <table>
+    <thead><tr><th>Method</th><th>Table or factor</th><th>First-year payment</th><th>Later years</th></tr></thead>
+    <tbody>
+      <tr><td>RMD method</td><td>Uniform Lifetime, 48.5</td><td>$16,495</td><td>Recalculated each year</td></tr>
+      <tr><td>RMD method</td><td>Joint, with a beneficiary of 55, 40.2</td><td>$19,900</td><td>Recalculated each year</td></tr>
+      <tr><td>RMD method</td><td>Single Life, 36.2</td><td>$22,099</td><td>Recalculated each year</td></tr>
+      <tr><td>Amortization at 5%</td><td>Uniform Lifetime, 48.5</td><td>$44,142</td><td>The same</td></tr>
+      <tr><td>Amortization at 5%</td><td>Joint, with a beneficiary of 55, 40.2</td><td>$46,548</td><td>The same</td></tr>
+      <tr><td>Amortization at 5%</td><td>Single Life, 36.2</td><td>$48,250</td><td>The same</td></tr>
+      <tr><td>Annuitization at 5%</td><td>IRS mortality rates</td><td>$50,437</td><td>The same</td></tr>
+      <tr><td>Amortization at 5.54%</td><td>Single Life, 36.2</td><td>$51,655</td><td>The same</td></tr>
+    </tbody>
+  </table>
+  <figcaption>First-year payments on an $800,000 IRA at age 50. 5.54% was the highest rate allowed for payments starting in November 2026.</figcaption>
+</figure>
+
+<p>The fixed methods pay more than twice what the RMD method does at the start, because they assume the balance earns interest while it's paid out; the RMD method simply divides. Annuitization comes out a little above amortization under the current tables. The IRS's own example shows the same thing: on $400,000 at age 50 and 4%, amortization pays $21,102 and annuitization $22,030. The Bridge's 72(t) setting offers amortization, the method most people use and the easiest to check by hand, and the RMD method.</p>
+<p>The RMD method's payment is small, but it's the only one that falls when the balance falls, so it can't drain the account. The fixed methods take the same dollars whatever the market does.</p>
+
+<h2 id="rate">The interest rate rule</h2>
+<p>For amortization and annuitization you choose the interest rate, up to a ceiling: the greater of 5% or 120% of the federal mid-term rate for either of the two months before the month of your first payment. The IRS publishes the mid-term rate monthly in its applicable federal rates.</p>
+<p>The 5% alternative dates from 2022. Before Notice 2022-6, the only ceiling was 120% of the mid-term rate, and in January 2022 that was 1.57%. At that rate Rosa's amortization payment would have been about $29,140 instead of $48,250. The notice added the 5% alternative for plans starting in 2023, and allowed it for 2022.</p>
+<p>When rates are low, 5% is the ceiling. In January 2026, 120% of the mid-term rate was 4.57%, so 5% applied. By autumn it had risen above 5%: 5.40% in September 2026 and 5.54% in October. A plan whose first payment comes in November 2026 can use any rate up to 5.54%. The Bridge's 72(t) setting starts at 5%, which is always allowed; you can enter a higher rate when the mid-term rate allows it.</p>
+<p>You don't have to use the highest rate. A lower rate gives a smaller payment from the same balance, which is one way to take only what you need.</p>
+<h3>Which balance counts</h3>
+<p>For the fixed methods, the balance only has to be determined reasonably. The notice treats any balance from December 31 of the year before the first payment up to the day of the first payment as reasonable, so you have some room to pick the date. For the RMD method it's the balance at the end of the previous year, every year.</p>
+
+<h2 id="split">Using only part of an IRA</h2>
+<p>Most people don't need the full payment their whole IRA would produce, and they don't want all of it locked in. The usual answer is to split the IRA first: move exactly the amount the payment needs into a separate IRA, start the plan on that one, and leave the rest free.</p>
+<p>Say Rosa needs $30,000 per year from the plan. Amortization at 5% over 36.2 years pays about 6.03% of the balance, so she moves $497,412 into a new IRA, which pays exactly $30,000. The other $302,588 stays in her original IRA, outside the plan, where she can leave it alone, convert some of it to a Roth, or draw on it after 59½. If she needs more later, she can start a second plan on part of that IRA, with its own five-year clock.</p>
+<p>Splitting is a trustee-to-trustee transfer between IRAs, done before the first payment. After the plan starts, adding money to the plan's IRA is a modification, and moving money out of it is safe only under the narrow rule described below.</p>
+
+<p data-yours></p>
+
+<h2 id="breaking">What breaks a plan, and what it costs</h2>
+<p>Any change to the payment before the lock ends is a modification. That includes:</p>
+<ul>
+<li>taking more than the payment, or less, or skipping a year;</li>
+<li>adding money to the plan's IRA, including a contribution or a rollover in;</li>
+<li>rolling a payment back into an IRA.</li>
+</ul>
+<p>The cost is retroactive. In the year of the modification, the 10% applies to that year's withdrawals, and a recapture tax adds the 10% that would have applied to every earlier payment, plus interest. If Rosa took $48,250 per year and changed course in her fifth year, the recapture alone would be $19,300 on the first four payments, plus interest, on top of the penalty and income tax for that year.</p>
+<p>A few things don't count as a modification:</p>
+<ul>
+<li>death or disability;</li>
+<li>running out: if the account is used up and the last payment is smaller, there's no penalty and no recapture;</li>
+<li>one switch from amortization or annuitization to the RMD method, which you can make in any later year. After that, any further change is a modification.</li>
+<li>since 2024, moving all or part of the plan's IRA to another IRA, as long as the two accounts together keep paying exactly what the plan requires. SECURE 2.0 added this to the tax code; the IRS's own 72(t) guidance hasn't been updated for it yet, so it's worth confirming with your custodian before relying on it.</li>
+</ul>
+<p>Once the lock ends, the plan is over. You can take any amount, stop, or combine the IRAs again.</p>
+
+<h2 id="markets">When markets fall during a plan</h2>
+<p>A fixed payment keeps coming out of a shrinking balance, and that can drain the plan's IRA years early. The one-time switch to the RMD method is the protection. The chart follows Rosa's $800,000 if she had started in 2000, with 70% in stocks, through the falls of 2000–02 and 2008.</p>
+
+<!-- data: Rosa's IRA from January 2000 at 50: $800,000, 70% US stocks / 30% bonds, nominal calendar-year returns from lib/engine plMix(70) (r and pi combined). Payment at the start of each year, then that year's return. Fixed: $48,250 every year (amortization 5%, 36.2). Switched: $48,250 for 2000-02, then from 2003 the balance divided by the Single Life entry for that age (33.4 at 53 ... 28.0 at 59): $16,388, $18,980, $20,879, $22,061, $24,373, $25,989, $20,286. Values are balances at the start of each age, then at 60. -->
+<figure data-chart='{"type":"line","x":[50,51,52,53,54,55,56,57,58,59,60],"xLabel":"Age","y":"money","series":[{"name":"Fixed payment throughout","tone":"bad","values":[800000,754630,656313,547365,579827,586621,568860,579041,567959,407122,427149]},{"name":"Switched to the RMD method at 53","tone":"good","values":[800000,754630,656313,547365,616841,659769,675071,726301,751079,568011,651931]}],"marks":[{"x":53,"label":"Switch"}]}'>
+  <figcaption>The plan IRA's balance, starting in 2000 with $800,000 and $48,250 per year, in dollars of each year. US stocks and bonds as RetCalc's data records them, from monthly average prices, so a year's return can differ from the S&amp;P 500's published calendar-year figure.</figcaption>
+</figure>
+
+<p>Staying fixed took $482,500 out over ten years and left about $427,000 at 60. Switching in 2003 cut the payment from $48,250 to $16,388, and it stayed between about $16,000 and $26,000 through 59. That left about $652,000 at 60, but she took out only about $294,000 in all. The switch protects the account at the cost of a much smaller income, so it works best when other money can fill the gap.</p>
+<p>A fixed payment also loses buying power. Prices rose about 28% over that decade, so the last $48,250 bought about a fifth less than the first.</p>
+
+<h2 id="fit">When 72(t) fits</h2>
+<p>A 72(t) plan suits someone retiring well before 55 with most of their savings in pre-tax accounts and not enough in a brokerage account or Roth contributions to cover five years. It pays from the first year, with no waiting period, which a Roth conversion ladder can't do. The two are often combined: a 72(t) plan on part of the IRA pays for the first five years while ladder conversions from the rest mature. The <a href="/learn/bridge-to-59">bridging to 59½</a> lesson compares it with the other routes.</p>
+<p>It fits less well if you're 55 or older and leaving a job with a 401(k), since the rule of 55 opens that plan with no lock-in at all. And because each payment is taxable income, it raises the income that sets your marketplace health premiums every year of the plan.</p>
+<h3>Getting the paperwork right</h3>
+<p>Your IRA custodian reports each payment on Form 1099-R. If it shows distribution code 2, the exception is already noted. If it shows code 1, file Form 5329 with exception number 02 so you aren't charged the 10%. Keep a record of the method, table, interest rate and balance date you used, since you may need to show how the payment was figured.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Can I start 72(t) payments from my 401(k)?</summary><p>Yes, once you've left that employer. Many people roll the 401(k) into an IRA first, so they can split off exactly the balance the payment needs. If you're leaving in or after the year you turn 55, the rule of 55 may serve you better.</p></details>
+<details><summary>Is annuitization better than amortization?</summary><p>Under the current tables it pays slightly more, by about 4% to 5% in the examples above. Both are fixed for the life of the plan. Amortization is easier to check by hand, and it's what the Bridge uses for a fixed payment.</p></details>
+<details><summary>What if I take a little extra one year by mistake?</summary><p>That's a modification, even if the amount is small. Automatic payments for the exact amount, with no other activity in the plan's IRA, make the mistake hard to make.</p></details>
+<details><summary>Can I convert money in the plan's IRA to a Roth?</summary><p>Not safely. A conversion is a distribution from that IRA, and the IRS has long treated it as a change to the payments. Convert from a separate IRA outside the plan instead.</p></details>
+<details><summary>Do I have to use one of the three methods?</summary><p>The three methods are automatically accepted. The IRS says others aren't ruled out, but anything else would need its own justification if questioned, so most plans use one of the three.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>A 72(t) plan takes an IRS-set payment from an IRA every year, with no 10% penalty, until five years have passed or you reach 59½, whichever is later.</li>
+<li>Amortization and annuitization fix the payment; the RMD method recalculates it each year and starts at less than half as much.</li>
+<li>The interest rate can be up to the greater of 5% or 120% of the federal mid-term rate; in October 2026 that was 5.54%.</li>
+<li>Split off an IRA sized for the payment you need, and never add to it or take extra from it.</li>
+<li>Breaking the plan brings back the 10% on every payment so far, plus interest. A one-time switch to the RMD method doesn't.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How the three 72(t) methods set the payment</li><li>How the interest rate and life expectancy table change it</li><li>What breaks a plan and what that costs</li></ul>
+  <ul class="terms">
+    <li data-term="SEPP">Substantially equal periodic payments: the IRS formula payments that let you draw from an IRA before 59½ without the 10% penalty.</li>
+    <li data-term="Modification">Any change to a 72(t) payment before the lock ends. It brings back the 10% on every earlier payment, plus interest.</li>
+    <li data-term="Federal mid-term rate">An interest rate the IRS publishes monthly, based on Treasury yields for terms of three to nine years.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/retirement-plans/substantially-equal-periodic-payments">Substantially equal periodic payments</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/pub/irs-drop/n-22-06.pdf">Notice 2022-6</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/applicable-federal-rates">Applicable federal rates</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/instructions/i5329">Instructions for Form 5329</a> <span>IRS</span></li>
+    <li><a href="https://www.law.cornell.edu/uscode/text/26/72">26 US Code 72, including 72(t)(4)</a> <span>Cornell Law School LII</span></li>
+  </ul>
+</footer>
+</article>
