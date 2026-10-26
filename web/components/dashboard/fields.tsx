@@ -4,7 +4,7 @@
    where you live, and one person's pay. The profile holds numbers; fields
    hold text as typed. */
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { MoneyField, SelectField } from "@/components/fields/Field";
 import { groupDigits, parseNum } from "@/lib/format";
@@ -20,6 +20,17 @@ export const THIS_YEAR = new Date().getFullYear();
 export const txt = (n: number | null | undefined) => (n == null ? "" : groupDigits(n, true));
 export const num = (s: string) => (s.trim() === "" ? null : parseNum(s));
 export const pctTxt = (v: number | null | undefined) => (v == null ? "" : String(Math.round(v * 10000) / 100));
+
+/** A number field's text as typed, while it still says the saved number:
+    the saved number alone would drop what's only half typed ("6." or
+    "6.10" show as "6"). When the saved number changes some other way, the
+    field shows the new one. */
+export function useTyped(shown: string): [string, (v: string) => void] {
+  const [typed, setTyped] = useState(shown);
+  const a = shown.trim(), b = typed.trim();
+  const same = a === "" ? b === "" : b !== "" && Math.abs(parseNum(a) - parseNum(b)) < 0.006;
+  return [same ? typed : shown, setTyped];
+}
 
 export function years(from: number, to: number) {
   const out: number[] = [];

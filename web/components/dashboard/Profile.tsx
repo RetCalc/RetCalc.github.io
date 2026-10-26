@@ -19,7 +19,7 @@ import { Field, MoneyField, NumberField, SelectField } from "@/components/fields
 import { RISKS } from "@/lib/engine/typed";
 import { Frame } from "./Frame";
 import { toolHref } from "./host";
-import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt, type PKey } from "./fields";
+import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt, useTyped, type PKey } from "./fields";
 import { money } from "./format";
 import { flow } from "./flows";
 import { couple, holdings, mortgage, nameOf, nowYear, realGrowth, spendMonth } from "./model";
@@ -34,6 +34,7 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
   const A = pr.assume, real = realGrowth(pr);
   const put = (v: Partial<P["assume"]>) => set((p) => ({ ...p, assume: { ...p.assume, ...v } }));
   const preset = RISKS.find((r) => Math.abs(r.real - real) < 0.0005);
+  const [growthTxt, setGrowthTxt] = useTyped(pctTxt(A.growth)), [inflTxt, setInflTxt] = useTyped(pctTxt(A.inflation));
   return (
     <Tile id="assumptions" icon={SlidersHorizontalIcon} title="Assumptions" right={<span className="dsh-cap">Used by every figure on your dashboard</span>}>
       <div className="dsh-stats">
@@ -49,8 +50,8 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
         ))}
       </div>
       <div className="dsh-row3 dsh-pair dsh-mt dsh-fields-sm">
-        <NumberField id="dshGrowth" label={<TipLabel text="Growth per year, before inflation" id="growth" />} unit="%" step={0.25} max={20} value={pctTxt(A.growth)} onValueChange={(v) => put({ growth: (num(v) ?? 0) / 100 })} />
-        <NumberField id="dshInfl" label={<TipLabel text="Inflation per year" id="inflation" />} unit="%" step={0.25} max={15} value={pctTxt(A.inflation)} onValueChange={(v) => put({ inflation: (num(v) ?? 0) / 100 })} />
+        <NumberField id="dshGrowth" label={<TipLabel text="Growth per year, before inflation" id="growth" />} unit="%" step={0.25} max={20} value={growthTxt} onValueChange={(v) => { setGrowthTxt(v); put({ growth: (num(v) ?? 0) / 100 }); }} />
+        <NumberField id="dshInfl" label={<TipLabel text="Inflation per year" id="inflation" />} unit="%" step={0.25} max={15} value={inflTxt} onValueChange={(v) => { setInflTxt(v); put({ inflation: (num(v) ?? 0) / 100 }); }} />
         <NumberField id="dshStocks" label={<TipLabel text="In stocks once retired" id="stocks" />} unit="%" step={5} max={100} value={String(A.stocks)} onValueChange={(v) => put({ stocks: Math.max(0, Math.min(100, num(v) ?? 0)) })} />
       </div>
       <div className="dsh-mt"><Note>
@@ -142,6 +143,7 @@ export function Profile() {
   const setP = (k: PKey, v: Partial<Person>) => set((p) => ({ ...p, [k]: { ...p[k], ...v } }));
   const keys: PKey[] = two ? ["p1", "p2"] : ["p1"];
   const accounts = hasAccounts(data.entries);
+  const [rateTxt, setRateTxt] = useTyped(pctTxt(mortgage(pr, data.entries).rate));
   return (
     <Frame current="profile" title="Profile" sub="Everything your plan is built on. Changes save as you go.">
       <div className="dsh-grid dsh-two dsh-flush">
@@ -223,7 +225,7 @@ export function Profile() {
                 <div className="dsh-row3 dsh-pair">
                   <MoneyField id="dshPValue" label="What it's worth" value={txt(H.home || null)} onValueChange={(v) => update((d) => ({ ...d, entries: withHome(d, { value: num(v) }) }))} />
                   <MoneyField id="dshPOwed" label="Left on the mortgage" value={txt(H.mortgage || null)} onValueChange={(v) => update((d) => ({ ...d, entries: withHome(d, { owed: num(v) }) }))} />
-                  <NumberField id="dshPMRate" label="Its interest rate" unit="%" step={0.125} max={20} value={pctTxt(mortgage(pr, data.entries).rate)} onValueChange={(v) => { const r = v.trim() === "" ? null : (num(v) ?? 0) / 100; set((p) => ({ ...p, mortRate: r })); update((d) => ({ ...d, entries: withHome(d, { rate: r }) })); }} />
+                  <NumberField id="dshPMRate" label="Its interest rate" unit="%" step={0.125} max={20} value={rateTxt} onValueChange={(v) => { setRateTxt(v); const r = v.trim() === "" ? null : (num(v) ?? 0) / 100; set((p) => ({ ...p, mortRate: r })); update((d) => ({ ...d, entries: withHome(d, { rate: r }) })); }} />
                 </div>
               ) : pr.home === "rent" ? <div className="dsh-row"><MoneyField id="dshPRent" label="Rent" unit="per month" value={txt(pr.rent)} onValueChange={(v) => set((p) => ({ ...p, rent: num(v) }))} /><div /></div> : null}
             </div>

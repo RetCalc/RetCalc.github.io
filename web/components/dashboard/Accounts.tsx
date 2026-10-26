@@ -22,6 +22,7 @@ import { Frame } from "./Frame";
 import { longDate, money, shortMoney } from "./format";
 import { ASSET_GROUPS, ASSET_KINDS, DEBT_GROUPS, DEBT_KINDS, groupOf, kindName, type Group } from "./kinds";
 import { Tile, TipLabel } from "./ui";
+import { pctTxt, useTyped } from "./fields";
 import { entryFrom, netWorth, newId, sum, today, useDashboard, withEntry, type Entry, type Item } from "./store";
 
 const byGroup = (items: Item[], side: Item["side"]) => {
@@ -158,7 +159,7 @@ function EditList({ items, side, onChange }: { items: Item[]; side: Item["side"]
             {kinds.map((k) => <option key={k.kind} value={k.kind}>{k.name}</option>)}
           </NativeSelect>
           <Affixed prefix="$"><MoneyInput aria-label="Amount" nonNeg value={i.value ? groupDigits(i.value, true) : ""} onValueChange={(v) => put(i.id, { value: parseNum(v) })} /></Affixed>
-          {side === "debt" ? <Affixed suffix="%"><NumberInput aria-label="Interest rate" nonNeg step={0.25} max={40} value={i.rate != null ? String(Math.round(i.rate * 10000) / 100) : ""} onValueChange={(v) => put(i.id, { rate: v.trim() === "" ? null : parseNum(v) / 100 })} /></Affixed> : null}
+          {side === "debt" ? <RateInput rate={i.rate ?? null} onRate={(rate) => put(i.id, { rate })} /> : null}
           <Button variant="ghost" size="icon" aria-label={"Remove " + (i.name || kindName(i.kind))} onClick={() => onChange(items.filter((x) => x.id !== i.id))}><Trash2Icon aria-hidden="true" /></Button>
         </div>
       ))}
@@ -290,5 +291,16 @@ export function Accounts() {
         </DialogContent>
       </Dialog>
     </Frame>
+  );
+}
+
+/** A debt's interest rate, in percent, keeping a half-typed "6." as typed. */
+function RateInput({ rate, onRate }: { rate: number | null; onRate: (r: number | null) => void }) {
+  const [text, setText] = useTyped(pctTxt(rate));
+  return (
+    <Affixed suffix="%">
+      <NumberInput aria-label="Interest rate" nonNeg step={0.25} max={40} value={text}
+        onValueChange={(v) => { setText(v); onRate(v.trim() === "" ? null : parseNum(v) / 100); }} />
+    </Affixed>
   );
 }

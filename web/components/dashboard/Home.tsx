@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { MoneyField, NumberField } from "@/components/fields/Field";
 import { Frame } from "./Frame";
 import { toolHref } from "./host";
-import { num, pctTxt, txt } from "./fields";
+import { num, pctTxt, txt, useTyped } from "./fields";
 import { MONTHS, money } from "./format";
 import { mortgage } from "./model";
 import { useDashboard, withHome } from "./store";
@@ -18,6 +18,7 @@ import { Note, Tile, TipLabel } from "./ui";
 export function Home() {
   const { data, setProfile: set, update } = useDashboard();
   const pr = data.profile, M = mortgage(pr, data.entries);
+  const [rateTxt, setRateTxt] = useTyped(pctTxt(M.rate));
   const paidOff = M.payoff != null ? `${MONTHS[Math.floor((M.payoff % 1) * 12)]} ${Math.floor(M.payoff)}` : null;
   if (pr.home === "rent") {
     return (
@@ -45,7 +46,7 @@ export function Home() {
         {M.owed > 0 ? (
           <>
             <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3 dsh-pair">
-              <NumberField id="dshHRate" label="Interest rate" unit="%" step={0.125} max={20} value={pctTxt(M.rate)} onValueChange={(v) => { const r = v.trim() === "" ? null : (num(v) ?? 0) / 100; set((p) => ({ ...p, mortRate: r })); update((d) => ({ ...d, entries: withHome(d, { rate: r }) })); }} />
+              <NumberField id="dshHRate" label="Interest rate" unit="%" step={0.125} max={20} value={rateTxt} onValueChange={(v) => { setRateTxt(v); const r = v.trim() === "" ? null : (num(v) ?? 0) / 100; set((p) => ({ ...p, mortRate: r })); update((d) => ({ ...d, entries: withHome(d, { rate: r }) })); }} />
               <MoneyField id="dshHPay" label="Payment, principal and interest" unit="per month" value={txt(pr.mortPay)} onValueChange={(v) => set((p) => ({ ...p, mortPay: num(v) }))} />
               <div />
             </div></div>
