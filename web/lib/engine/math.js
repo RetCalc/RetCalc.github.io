@@ -6,7 +6,7 @@
    through typed.ts (core.js), not this file: math.js and drawdown.js read
    each other's names, and core.js loads them in the order that works. */
 import {
-  HIST_CASH, HIST_SV
+  HIST_CASH, HIST_SV, HIST_MA_CASH, HIST_MA_SV
 } from "./drawdown.js";
 import {
   yearData, HIST_START, HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, ULT
@@ -1868,7 +1868,12 @@ export function ssDrawdownStreams(inc1, claim1, inc2, claim2, couple, retireAge,
    contribution schedule, growth and glide are whatever the plan says.
  * @param {Object} g - {initial, fees}
  * @param {StageParams[]} stages - each may carry .mix (stock share, 0-1) and
- *   .glide {on, years, endMix}
+ *   .glide {on, years, endMix}; and .sv and .cash (shares, 0-1) for a fuller
+ *   mix: then .mix is all stocks (US and small value), small value is .sv of
+ *   it, cash is .cash of the rest and bonds are what's left. A glide moves the
+ *   stocks' total, small value keeping its share of the stocks and cash its
+ *   share of the rest (as the Drawdown Simulator's mix does). Small value and
+ *   cash start in July 1926, so a mix with either starts its runs there.
  * @returns {Object} bands (percentiles per year), traces (one path per starting
  *   year, aligned with bands), windows, finals, count
  */
@@ -1889,11 +1894,14 @@ export function historicalRuns(g, stages){
      a quarterly contributor buys in March, June, September and December, not in
      twelve equal slices — which is the whole point of running this monthly. */
   const plan = [];
-  let elapsedM = 0;
+  let elapsedM = 0, full = false;
   for (let si = 0; si < stages.length; si++){
     const st = stages[si];
     const ppy = PPY[st.period];
     const mix = (st.mix == null ? .8 : st.mix);
+    // A fuller mix: small value's share of the stocks, cash's of the rest.
+    const svOf = Math.max(0, Math.min(1, st.sv || 0)), cashOf = Math.max(0, Math.min(1, st.cash || 0));
+    if (svOf > 0 || cashOf > 0) full = true;
     const glideOn = !!(st.glide && st.glide.on);
     const gYears = glideOn ? Math.min(st.glide.years, st.years) : 0;
     const endMix = glideOn
@@ -1908,17 +1916,21 @@ export function historicalRuns(g, stages){
       if (ppy >= 12) amount = grown * (ppy / 12);       // weekly, bi-weekly, monthly
       else if (ppy === 4) amount = (k % 3 === 0) ? grown : 0;   // quarterly
       else amount = (k % 12 === 0) ? grown : 0;                 // annually
+      const wc = Math.max(0, Math.min(1, w));
       plan.push({stage: si + 1,
                  year: (elapsedM + k) / 12,
                  amount,
-                 w: Math.max(0, Math.min(1, w))});
+                 w: wc, sv: wc * svOf, cash: (1 - wc) * cashOf});
     }
     elapsedM += months;
   }
 
   const M = plan.length;
   if (!M) return base;
-  const count = avail - N + 1;
+  // Small value and cash begin six months in (July 1926).
+  const from = full ? 6 : 0;
+  if (N > avail - from) return Object.assign(base, {tooLong:true});
+  const count = avail - N + 1 - from;
   const feeM = Math.pow(1 + (g.fees || 0), 1 / 12) - 1;   // annual fee, monthly
   /* Band points once a year keeps the chart the same shape it has always been;
      the arithmetic underneath is still month by month. */
@@ -1932,17 +1944,19 @@ export function historicalRuns(g, stages){
   for (let wi = 0; wi < count; wi++){
     let bal = g.initial, cum = 1, mi = 0;
     for (let k = 0; k < M; k++){
-      const pl = plan[k], idx = wi + k;
-      let r = (pl.w * HIST_M_STOCK[idx] + (1 - pl.w) * HIST_M_BOND[idx]) / 100 - feeM;
+      const pl = plan[k], idx = from + wi + k;
+      let r = (full
+        ? ((pl.w - pl.sv) * HIST_M_STOCK[idx] + pl.sv * HIST_MA_SV[idx] + (1 - pl.w - pl.cash) * HIST_M_BOND[idx] + pl.cash * HIST_MA_CASH[idx]) / 100
+        : (pl.w * HIST_M_STOCK[idx] + (1 - pl.w) * HIST_M_BOND[idx]) / 100) - feeM;
       if (r <= -0.999) r = -0.999;
       bal = bal * (1 + r) + pl.amount;
       cum *= (1 + HIST_M_INFL[idx] / 100);
       if (mi < marks.length && marks[mi] === k){ paths[mi][wi] = bal / cum; mi++; }
     }
     finals[wi] = bal / cum;
-    const y0 = HIST_START + Math.floor(wi / 12);
-    windows.push({start: y0, startMonth: (wi % 12) + 1,
-                  end: HIST_START + Math.floor((wi + N - 1) / 12),
+    const y0 = HIST_START + Math.floor((from + wi) / 12);
+    windows.push({start: y0, startMonth: ((from + wi) % 12) + 1,
+                  end: HIST_START + Math.floor((from + wi + N - 1) / 12),
                   final: bal / cum});
   }
 
@@ -1959,7 +1973,7 @@ export function historicalRuns(g, stages){
      every-start lines. A start every month would be twelve times as many,
      too dense to read as lines; the percentiles above still use them all. */
   const traces = [];
-  for (let wi = 0; wi < count; wi += 12){
+  for (let wi = (12 - from) % 12; wi < count; wi += 12){
     const t = new Array(marks.length);
     for (let j = 0; j < marks.length; j++) t[j] = paths[j][wi];
     traces.push(t);

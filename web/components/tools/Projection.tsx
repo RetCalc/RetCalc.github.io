@@ -162,6 +162,9 @@ interface PanelProps {
   setHistMixEnd: (v: string) => void;
   /** The glide's ending mix is asked for only when the plan glides. */
   glides: boolean;
+  /** In place of the stock share field: a button that opens a fuller mix
+      (the Dashboard's Calculator: US stocks, small-cap value, bonds, cash). */
+  mixButton?: React.ReactNode;
   /** Fields in the Monte Carlo bar before Re-roll, and the note after it. */
   mcFields?: React.ReactNode;
   mcHint: React.ReactNode;
@@ -196,8 +199,10 @@ export function ProjectionChart(props: PanelProps) {
           </span>
         </CardAction></CardHeader>
       <div className="mcbar" id={"histBar" + sfx} hidden={mode !== "hist"}>
-        <Field id={"histMix" + sfx} label={<Tipped text="Stock mix" k="histmix" />}>
-          <Affixed suffix="%" className="w-26"><NumberInput id={"histMix" + sfx} nonNeg step={5} max={100} value={props.histMix} onValueChange={props.setHistMix} /></Affixed></Field>
+        {props.mixButton ?? (
+          <Field id={"histMix" + sfx} label={<Tipped text="Stock mix" k="histmix" />}>
+            <Affixed suffix="%" className="w-26"><NumberInput id={"histMix" + sfx} nonNeg step={5} max={100} value={props.histMix} onValueChange={props.setHistMix} /></Affixed></Field>
+        )}
         <Field id={"histMixEnd" + sfx} wrapId={"histGlideWrap" + sfx} hidden={!props.glides} label={<Tipped text="Glides to" k="histglidemix" />}>
           <Affixed suffix="%" className="w-26"><NumberInput id={"histMixEnd" + sfx} nonNeg step={5} max={100} value={props.histMixEnd} onValueChange={props.setHistMixEnd} /></Affixed></Field>
         <div className="hint m-0" id={"histNote" + sfx}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div>

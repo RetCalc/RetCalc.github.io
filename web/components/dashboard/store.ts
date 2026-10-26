@@ -83,6 +83,10 @@ export interface Profile {
       as typed until "Use the plan's figures". A starting rate here decides
       what the plan spends once retired; retSpend is then the goal. */
   ddOwn?: Record<string, string>;
+  /** The Calculator's historical mode mix while saving, in percent: US
+      stocks, small-cap value and cash (bonds the rest), and where the
+      stocks' total glides to in the last stage. Unset until changed there. */
+  calcMix?: { stock: string; sv: string; cash: string; end: string };
   /** The tools behind the tabs, as their own inputs: budget (pay, the
       budget and the saving sliders), tax, social (pay history), drawdown. */
   tools: { budget?: ToolInputs; tax?: ToolInputs; social?: ToolInputs; drawdown?: ToolInputs };

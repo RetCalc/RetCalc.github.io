@@ -46,6 +46,8 @@ import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
 import { ChevronDownIcon, CircleAlertIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { Modal, ModalTop } from "@/components/shell/Modal";
+import { MixRows, mixForm, mixOk, type MixForm } from "@/tools/drawdown/MixRows";
+import { ChevronRightIcon } from "lucide-react";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 
 const TARGET_LABEL = "(your target above)";
@@ -499,6 +501,7 @@ export function Stages() {
             mode={mode} setMode={setMode} band={band} setBand={setBand}
             histMix={s.histMix} setHistMix={set("histMix")} histMixEnd={s.histMixEnd} setHistMixEnd={set("histMixEnd")}
             glides={mode === "hist" && R.rows.length > 0 && !!last?.glide?.on}
+            mixButton={dash ? <HistMixButton s={s} setState={setState} /> : undefined}
             mcHint={<>5,000 simulations per redraw. Volatility is
               set per stage, in your plan.</>}
             chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100)} legendExtra="Stage boundary"
@@ -630,8 +633,12 @@ function chartData(s: StagesInputs, V: ReturnType<typeof stagesCompute>, mode: C
   const marks = R.summary.slice(0, -1).map((x) => ({ year: x.endYear, label: String(x.stage + 1) }));
   const start = { year: 0, stage: 1, base: g.initial, hi: g.initial, lo: g.initial, p25: g.initial, p75: g.initial };
   if (mode === "hist") {
-    const mix = fraction(s.histMix), endMix = fraction(s.histMixEnd);
-    const H = historicalRuns({ initial: g.initial, fees: g.fees }, P.eff.map((st) => ({ ...st, mix, ...(st.glide?.on ? { glide: { ...st.glide, endMix } } : {}) })));
+    // US stocks and small-cap value together are the stocks; small value's
+    // share of them and cash's share of the rest (bonds are what's left).
+    const us = fraction(s.histMix), svP = fraction(s.histSv ?? "0"), cashP = fraction(s.histCash ?? "0"), stocks = Math.min(1, us + svP);
+    const mix = stocks, endMix = fraction(s.histMixEnd);
+    const full = svP > 0 || cashP > 0 ? { sv: stocks > 0 ? svP / stocks : 0, cash: stocks < 1 ? cashP / (1 - stocks) : 0 } : {};
+    const H = historicalRuns({ initial: g.initial, fees: g.fees }, P.eff.map((st) => ({ ...st, mix, ...full, ...(st.glide?.on ? { glide: { ...st.glide, endMix } } : {}) })));
     return histChart(start, H, marks, (b) => ({ stage: (b as { stage?: number }).stage }));
   }
   if (mode === "mc") {
@@ -650,4 +657,44 @@ function chartData(s: StagesInputs, V: ReturnType<typeof stagesCompute>, mode: C
     lo: (loR.chartRows[i] ? loR.chartRows[i].end : r.end) / defl(r.year),
   }))];
   return { ...emptyChart(), pts, marks, legend: "band" };
+}
+
+/* Historical mode's mix in the Dashboard's Calculator: the four holdings of
+   the Drawdown Simulator's and the Backtest's pop-ups, adding up to 100%,
+   each earning its actual returns. */
+function mixWords(s: StagesInputs): string {
+  const us = parseNum(s.histMix), sv = parseNum(s.histSv ?? "0"), cash = parseNum(s.histCash ?? "0"), bond = Math.max(0, 100 - us - sv - cash);
+  const parts: [number, string][] = [[us, "US stocks"], [sv, "small-cap value"], [bond, "bonds"], [cash, "cash"]];
+  return parts.filter(([v]) => v > 0).map(([v, n]) => fmtNum(v) + "% " + n).join(", ") || "Nothing invested";
+}
+function HistMixButton({ s, setState }: { s: StagesInputs; setState: (f: (c: StagesInputs) => StagesInputs) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Field id="histMixBtnS" label={<Tipped text="Asset mix" k="histmix" />}>
+      <Button variant="outline" className="w-full max-w-90 justify-between" id="histMixBtnS" onClick={() => setOpen(true)}>
+        <span className="min-w-0 flex-1 truncate text-left">{mixWords(s)}</span><ChevronRightIcon className="text-muted-foreground" aria-hidden="true" /></Button>
+      {open ? <HistMixDialog s={s} close={() => setOpen(false)} save={(f) => setState((c) => ({ ...c, histMix: f.stock, histSv: f.sv, histCash: f.cash }))} /> : null}
+    </Field>
+  );
+}
+function HistMixDialog({ s, close, save }: { s: StagesInputs; close: () => void; save: (f: MixForm) => void }) {
+  const [f, setF] = useState<MixForm>(() => {
+    const stock = parseNum(s.histMix), sv = parseNum(s.histSv ?? "0"), cash = parseNum(s.histCash ?? "0");
+    return mixForm({ stock, sv, bond: Math.max(0, 100 - stock - sv - cash), cash });
+  });
+  const up = (k: keyof MixForm) => (v: string) => setF((c) => ({ ...c, [k]: v }));
+  const ok = mixOk(f);
+  return (
+    <Modal size="wide" onClose={close} focus="[data-mix]">
+      <h3>Asset mix</h3>
+      <div className="formhint">How your savings are invested while you save. Each holding earns its actual monthly returns; small-cap value and cash start in July 1926, so a mix with either starts its runs there. A glide in your last stage moves the stocks&apos; total, small-cap value keeping its share of them.</div>
+      <MixRows f={f} up={up} totId="histMixTotS" />
+      <div className="formactions"><Button variant="outline" className="flex-1" data-mixcancel onClick={close}>Cancel</Button>
+        <Button className="flex-1" data-mixok disabled={!ok} onClick={() => {
+          if (!ok) return;
+          save({ stock: String(parseNum(f.stock)), sv: String(parseNum(f.sv)), bond: f.bond, cash: String(parseNum(f.cash)) });
+          close();
+        }}>Use this mix</Button></div>
+    </Modal>
+  );
 }

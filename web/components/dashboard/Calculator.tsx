@@ -27,9 +27,12 @@ import { useDashboard, type Profile } from "./store";
 
 const Stages = dynamic(() => import("@/tools/stages/Stages").then((m) => m.Stages), { ssr: false });
 
-/** What the profile keeps from the calculator: the children's costs, and
-    how they're covered (by your age, where the calculator counts years). */
-function fromStages(p: Profile, s: StagesInputs): Profile {
+/** What the profile keeps from the calculator: historical mode's mix, the
+    children's costs, and how they're covered (by your age, where the
+    calculator counts years). */
+function fromStages(p0: Profile, s: StagesInputs): Profile {
+  const mix = { stock: s.histMix, sv: s.histSv ?? "0", cash: s.histCash ?? "0", end: s.histMixEnd };
+  const p = JSON.stringify(mix) === JSON.stringify(p0.calcMix ?? { stock: "80", sv: "0", cash: "0", end: "40" }) ? p0 : { ...p0, calcMix: mix };
   const k = s.kids;
   if (!k) return p;
   const next = {
@@ -49,10 +52,10 @@ export function Calculator() {
   }, [pr, data.entries]);
   const summary = <>{childrenSentence(pr)} <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Change them in Profile</Button></>;
   return (
-    <Frame current="calculator" title="Calculator" sub="Filled in from your plan. Child costs changed here update your plan; everything else stays here.">
+    <Frame current="calculator" title="Calculator" sub="Filled in from your plan. Child costs and the historical mix changed here are saved to your plan; everything else stays here.">
       {/* New child costs build the stages again, from the plan. */}
       <Hosted key={costsKey(pr)} household={null} cover={coverScope(flow(pr))} seed={seed} slots={{ kidsSummary: summary }}
-        keep={(id, d) => { if (id === "stages" && (d as unknown as StagesInputs).kids) setProfile((p) => fromStages(p, d as unknown as StagesInputs)); }}>
+        keep={(id, d) => { if (id === "stages") setProfile((p) => fromStages(p, d as unknown as StagesInputs)); }}>
         <Stages />
       </Hosted>
     </Frame>

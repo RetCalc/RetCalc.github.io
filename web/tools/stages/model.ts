@@ -53,6 +53,9 @@ export const STAGES_DEFAULTS = {
   saOn: false, ...STAGE_ACCOUNT_FIELDS,
   stages: DEFAULT_STAGES,
   solveFor: "After-Tax Withdrawal", target: groupDigits(100000, true), histMix: "80", histMixEnd: "40",
+  /** Historical mode's fuller mix (the Dashboard's Calculator): small-cap
+      value and cash, in percent, beside histMix's US stocks; bonds are the rest. */
+  histSv: "0", histCash: "0",
   /** "Planning for kids?": the children the stages were last built around,
       and the amounts typed in "How will you cover this?" (tools/stages/kids.ts). */
   kids: null as PlanKids | null, kidCover: {} as Record<string, Partial<Monthly>>,

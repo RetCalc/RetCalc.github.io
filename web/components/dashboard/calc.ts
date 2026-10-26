@@ -151,9 +151,11 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
     stages: [stage(A.years, { monthly: own + F.match }, 0)],
   };
   // The children, and how their costs are covered, counted from year 0 as the Calculator counts.
+  // Historical mode's mix as last set in the Calculator.
+  const M = pr.calcMix, withMix = (s: StagesInputs): StagesInputs => (M ? { ...s, histMix: M.stock, histSv: M.sv, histCash: M.cash, histMixEnd: M.end } : s);
   const kids = planKidsOf(pr), withKids = (s: StagesInputs) => (kids ? { ...s, kids, kidCover: shiftCover(pr.kidCover ?? {}, KID_BASE - (ageOf(pr.p1) ?? KID_BASE)) } : s);
   const years = planYears(R);
-  if (!years.length) return withKids(base);
+  if (!years.length) return withMix(withKids(base));
   const groups = planGroups(years);
   // Each stage as the plan has it year by year, then as one stage growing
   // at a steady rate, found so the two come to the same at retirement.
@@ -185,6 +187,6 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
     const fixed = at((lo + hi) / 2);
     if (Math.abs(total(fixed) - target) < Math.abs(total(out) - target)) out.splice(0, out.length, ...fixed);
   }
-  return withKids({ ...base, stages: out });
+  return withMix(withKids({ ...base, stages: out }));
 }
 
