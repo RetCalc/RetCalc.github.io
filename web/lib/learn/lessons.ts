@@ -15,8 +15,10 @@ export interface ChartSpec {
   type: "line" | "area" | "bar";
   x: (number | string)[];
   xLabel?: string;
+  /** How numeric x values are written: plain (the default), as money or as percents. */
+  xFormat?: "money" | "pct" | "num";
   y?: "money" | "pct" | "num";
-  series: { name: string; values: (number | null)[]; tone?: "good" | "bad" | "accent" | "neutral" | "muted"; dash?: boolean }[];
+  series: { name: string; values: (number | null)[]; tone?: "good" | "bad" | "accent" | "neutral" | "muted"; dash?: boolean; step?: boolean }[];
   marks?: { x: number | string; label: string }[];
   band?: { from: number; to: number; label?: string };
 }
@@ -148,10 +150,16 @@ export function nextOf(slug: string): LessonSummary | null {
   return i >= 0 && i + 1 < order.length ? order[i + 1] : null;
 }
 
-/** Previews for the Learn home: each lesson's first picture. */
-export const previews = cache((): Record<string, Segment> => {
-  const out: Record<string, Segment> = {};
-  for (const t of TRACKS) for (const s of t.lessons) { const l = lesson(s); if (l?.preview) out[s] = l.preview; }
+/** What the Learn home shows beside a suggested lesson: its first
+    picture, or, for a lesson without one, its sections. */
+export type Preview = Segment | { kind: "toc"; items: string[] };
+
+export const previews = cache((): Record<string, Preview> => {
+  const out: Record<string, Preview> = {};
+  for (const t of TRACKS) for (const s of t.lessons) {
+    const l = lesson(s);
+    if (l) out[s] = l.preview ?? { kind: "toc", items: l.toc.map((x) => x.text) };
+  }
   return out;
 });
 

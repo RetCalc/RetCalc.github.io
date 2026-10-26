@@ -23,7 +23,8 @@
       "name": "Retirement and HSA contribution limits, and the IRA deduction and Roth IRA phase-outs",
       "what": "401(k)/403(b)/457 deferral limit and catch-ups (50+ and 60 to 63), the IRA limit and catch-up, HSA self-only and family limits and the 55+ catch-up, and the MAGI ranges over which a traditional IRA deduction phases out with a plan at work, and the MAGI ranges over which direct Roth IRA contributions phase out. Income Tax's pre-tax deductions pop-up warns against them and the engine applies the phase-out; the Budget tool's Paycheck tab points to a backdoor Roth past the Roth range (it never caps the line).",
       "where": [
-        "web/lib/engine/data/<year>.js: limits (k401, ira, hsa, iraPhase, rothPhase)"
+        "web/lib/engine/data/<year>.js: limits (k401, ira, hsa, iraPhase, rothPhase)",
+        "web/content/lessons/contribution-limits.html (the reference tables) and the other Saving and accounts lessons (where-each-dollar-goes, employer-match, traditional-or-roth, iras, hsa): 2026 limits, phase-outs and HDHP figures, some of them (SIMPLE, the total limit, pay cap, Roth catch-up wage line, HDHP figures) not in the data file"
       ],
       "source": "IRS notice on retirement plan limits (Notice 2025-67 gave 2026), usually out in late October or November; IRS revenue procedure on HSA limits (Rev. Proc. 2025-19 gave 2026), usually out in May",
       "cadence": "Yearly, with the new tax year",
@@ -227,7 +228,8 @@
       "name": "Today's CAPE reading",
       "what": "The latest Shiller CAPE, shown against the historical record and used by the CAPE withdrawal strategy's 'today' figures.",
       "where": [
-        "web/lib/engine/data/history.js: CAPE_NOW, CAPE_NOW_ASOF"
+        "web/lib/engine/data/history.js: CAPE_NOW, CAPE_NOW_ASOF",
+        "web/content/lessons/cape-valuations.html: today's CAPE in the prose, a table and In short (search the lessons for the old reading)"
       ],
       "source": "multpl.com Shiller PE (monthly)",
       "cadence": "Monthly",
@@ -313,7 +315,8 @@
       "name": "72(t) interest rate default",
       "what": "The rate the Bridge's 72(t) payment starts with: up to the greater of 5% or 120% of the federal mid-term rate.",
       "where": [
-        "web/tools/bridge/model.ts: seppRate"
+        "web/tools/bridge/model.ts: seppRate",
+        "web/content/lessons/rule-72t.html: the dated 120%-of-mid-term figures"
       ],
       "source": "IRS Applicable Federal Rates (monthly revenue rulings)",
       "cadence": "Quarterly check; only matters if 120% of the mid-term rate goes above 5%",

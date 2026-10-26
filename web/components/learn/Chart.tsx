@@ -31,6 +31,7 @@ function niceStep(span: number, n = 5): number {
 export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
   const W = 720, H = 300, L = 58, R = 18, T = 16, B = 34;
   const n = spec.x.length, bars = spec.type === "bar";
+  const xText = (x: number | string) => (typeof x === "number" && spec.xFormat ? fmt(x, spec.xFormat) : String(x));
   const all = spec.series.flatMap((s) => s.values).filter((v): v is number => v != null);
   let lo = Math.min(0, ...all), hi = Math.max(0, ...all);
   if (hi === lo) hi = lo + 1;
@@ -53,8 +54,14 @@ export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
 
   const paths = spec.series.map((s, k) => {
     const pts = s.values.map((v, i) => (v == null ? null : [X(i), Y(v)] as const));
-    let d = "", pen = false;
-    pts.forEach((p) => { if (!p) { pen = false; return; } d += (pen ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); pen = true; });
+    let d = "", prevY: number | null = null;
+    pts.forEach((p) => {
+      if (!p) { prevY = null; return; }
+      // A step series holds each value until the next point, then jumps.
+      if (prevY != null && s.step) d += "L" + p[0].toFixed(1) + " " + prevY.toFixed(1);
+      d += (prevY != null ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1);
+      prevY = p[1];
+    });
     const first = pts.find(Boolean), last = [...pts].reverse().find(Boolean);
     const area = spec.type === "area" && first && last ? `${d}L${last[0].toFixed(1)} ${Y(Math.max(lo, 0)).toFixed(1)}L${first[0].toFixed(1)} ${Y(Math.max(lo, 0)).toFixed(1)}Z` : null;
     return { d, area, color: toneOf(s.tone, k), dash: s.dash };
@@ -77,7 +84,7 @@ export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
           {Array.from({ length: Math.round((hi - lo) / step) + 1 }, (_, i) => lo + i * step).map((v) => (
             <g key={v}><line x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} className={v === 0 ? "zero" : undefined} /><text x={L - 8} y={Y(v) + 4} textAnchor="end">{fmt(v, spec.y)}</text></g>
           ))}
-          {xl.map((i) => <text key={i} x={X(i)} y={H - 12} textAnchor="middle">{String(spec.x[i])}</text>)}
+          {xl.map((i) => <text key={i} x={X(i)} y={H - 12} textAnchor="middle">{xText(spec.x[i])}</text>)}
           {spec.xLabel ? <text x={W - R} y={H - 0} textAnchor="end" className="lrn-xl">{spec.xLabel}</text> : null}
         </g>
         {bars
@@ -98,7 +105,7 @@ export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
       <table className="sr-only">
         <caption>{label}</caption>
         <thead><tr><th>{spec.xLabel ?? ""}</th>{spec.series.map((s) => <th key={s.name}>{s.name}</th>)}</tr></thead>
-        <tbody>{spec.x.map((x, i) => <tr key={i}><th>{String(x)}</th>{spec.series.map((s) => <td key={s.name}>{s.values[i] == null ? "" : fmt(s.values[i] as number, spec.y, false)}</td>)}</tr>)}</tbody>
+        <tbody>{spec.x.map((x, i) => <tr key={i}><th>{xText(x)}</th>{spec.series.map((s) => <td key={s.name}>{s.values[i] == null ? "" : fmt(s.values[i] as number, spec.y, false)}</td>)}</tr>)}</tbody>
       </table>
     </div>
   );

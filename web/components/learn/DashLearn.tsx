@@ -6,11 +6,11 @@
 import { useState } from "react";
 import { Frame, SignedIn } from "@/components/dashboard/Frame";
 import type { Track } from "@/lib/learn/catalog";
-import type { Lesson, LessonSummary, Segment } from "@/lib/learn/lessons";
+import type { Lesson, LessonSummary, Preview } from "@/lib/learn/lessons";
 import { LearnHome, LearnSearch } from "./LearnHome";
 import { LessonPage } from "./LessonPage";
 
-export function DashLearnHome({ lessons, previews }: { lessons: LessonSummary[]; previews: Record<string, Segment> }) {
+export function DashLearnHome({ lessons, previews }: { lessons: LessonSummary[]; previews: Record<string, Preview> }) {
   const [q, setQ] = useState("");
   return (
     <SignedIn>

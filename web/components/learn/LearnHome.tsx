@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { TRACKS, type TrackId } from "@/lib/learn/catalog";
-import type { LessonSummary, Segment } from "@/lib/learn/lessons";
+import type { LessonSummary, Preview as PreviewData } from "@/lib/learn/lessons";
 import { Chart } from "./Chart";
 import { Widget } from "./widgets";
 import { useLearn } from "./progress";
@@ -25,8 +25,14 @@ function Ring({ share }: { share: number }) {
   return <span className="lrn-ring" style={{ "--p": Math.round(share * 100) } as React.CSSProperties} aria-hidden="true" />;
 }
 
-function Preview({ seg }: { seg: Segment | undefined }) {
+function Preview({ seg }: { seg: PreviewData | undefined }) {
   if (!seg) return null;
+  if (seg.kind === "toc") return (
+    <div className="lrn-prev lrn-prev-toc">
+      <span className="lrn-eyebrow">In this lesson</span>
+      <ol>{seg.items.map((t) => <li key={t}>{t}</li>)}</ol>
+    </div>
+  );
   if (seg.kind === "chart") return <div className="lrn-prev"><Chart spec={seg.spec} label={seg.caption.replace(/<[^>]+>/g, "")} /></div>;
   if (seg.kind === "widget") return <div className="lrn-prev"><Widget name={seg.name} label={seg.caption.replace(/<[^>]+>/g, "")} /></div>;
   return null;
@@ -58,7 +64,7 @@ function Stop({ l, n, status, mode }: { l: LessonSummary; n: number; status: "re
   );
 }
 
-export function LearnHome({ lessons, previews, mode, search: outerSearch }: { lessons: LessonSummary[]; previews: Record<string, Segment>; mode: LearnMode; search?: string }) {
+export function LearnHome({ lessons, previews, mode, search: outerSearch }: { lessons: LessonSummary[]; previews: Record<string, PreviewData>; mode: LearnMode; search?: string }) {
   const { read } = useLearn();
   const picks = useSuggestions(lessons, read);
   const pick = picks[0], top = pick ? lessons.find((l) => l.slug === pick.slug) : undefined;

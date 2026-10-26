@@ -36,7 +36,12 @@
 .lrn-also { font-size: 13px; color: var(--ds-muted); }
 .lrn-also a { color: var(--ds-text); text-decoration: underline; text-decoration-color: var(--ds-rule-strong); text-underline-offset: 3px; }
 .lrn-prev { border: 1px solid var(--ds-rule); border-radius: 14px; background: var(--ds-ground); padding: 12px 14px 8px; min-width: 0; }
-.lrn-prev .lrn-mover, .lrn-prev .lrn-readout { display: none; }
+.lrn-prev .lrn-mover, .lrn-prev .lrn-readout, .lrn-prev .lrn-mixes { display: none; }
+.lrn-prev-toc { padding: 16px 20px; }
+.lrn-prev-toc ol { margin: 10px 0 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 0; }
+.lrn-prev-toc li { counter-increment: s; display: flex; gap: 12px; padding: 8px 0; border-top: 1px solid var(--ds-rule); font-size: 14px; }
+.lrn-prev-toc li:first-child { border-top: 0; }
+.lrn-prev-toc li::before { content: counter(s); color: var(--ds-muted); font-variant-numeric: tabular-nums; min-width: 14px; }
 @media (max-width: 1100px) { .lrn-next4u { grid-template-columns: 1fr; } .lrn-prev { display: none; } }
 @media (max-width: 560px) { .lrn-next4u { padding: 18px; } .lrn-next4u h2 { font-size: 24px; } }
 
@@ -125,6 +130,7 @@
 .lrn-prose td { padding: 8px 10px; border-bottom: 1px solid var(--ds-rule); vertical-align: top; }
 .lrn-prose tbody tr:last-child td { border-bottom: 0; }
 .lrn-prose td.neg { color: var(--ds-loss); }
+.lrn-prose td:first-child { min-width: 4.5em; }
 .lrn-prose details { padding: 12px 0; border-top: 1px solid var(--ds-rule); }
 .lrn-prose details:last-of-type { border-bottom: 1px solid var(--ds-rule); margin-bottom: 18px; }
 .lrn-prose summary { cursor: pointer; font-weight: 600; font-size: 16.5px; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
@@ -207,6 +213,8 @@
 .lrn-mover label { color: var(--ds-muted); white-space: nowrap; }
 .lrn-mover [data-slot="native-range"] { flex: 1; }
 .lrn-mover output { min-width: 140px; text-align: right; font-weight: 500; }
+.lrn-mixes { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; overflow-x: auto; }
+.lrn-mixes .lrn-cap { white-space: nowrap; }
 .lrn-readout { margin: 10px 0 0 !important; font-size: 13.5px; color: var(--ds-muted); line-height: 1.5; }
 .lrn-readout b { color: var(--ds-text); font-weight: 500; }
 @media (max-width: 640px) { .lrn-mover { flex-wrap: wrap; } .lrn-mover output { text-align: left; min-width: 0; } }

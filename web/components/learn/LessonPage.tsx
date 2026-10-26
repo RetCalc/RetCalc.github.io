@@ -122,7 +122,8 @@ export function LessonPage({ lesson, next, track, mode }: { lesson: Lesson; next
             <Card size="sm">
               <CardHeader><CardTitle><CalculatorIcon aria-hidden="true" />Try it</CardTitle></CardHeader>
               <CardContent><div className="lrn-try">
-                <p>{lesson.tryText}</p>
+                {/* The public tools fill in from Your household, not the plan; only the Dashboard's copies take the plan. */}
+                <p>{mode === "dashboard" ? lesson.tryText : lesson.tryText.replace(/, with your plan already filled in\./, ".")}</p>
                 <Button nativeButton={false} render={<Link href={tryHref} />}>Open the tool<ArrowRightIcon aria-hidden="true" /></Button>
               </div></CardContent>
             </Card>

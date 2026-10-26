@@ -104,7 +104,7 @@ The footer:
   learn ("Why the order of returns matters once you withdraw"). Shown when
   the lesson is suggested.
 - `terms`: two to four key terms with a one or two sentence definition.
-- `deeper`: two to five outside links, primary or trusted sources only (SSA,
+- `deeper`: two to eight outside links (most lessons need four or five), primary or trusted sources only (SSA,
   IRS, Medicare.gov, HealthCare.gov, Investor.gov, the Federal Reserve,
   the original papers, Bogleheads wiki, Early Retirement Now, Kitces,
   Morningstar). Every study or researcher the text names must be listed
@@ -124,10 +124,13 @@ Every lesson has at least one picture; most have two or three.
   your data, as JSON:
   - `type`: "line", "area" or "bar" (bars are grouped by series).
   - `x`: the x values (numbers or short labels); `xLabel`: what x is
-    ("Age", "Year", "Years invested").
+    ("Age", "Year", "Years invested"); `xFormat`: "money" or "pct" to
+    write numeric x values as $150K or 4% (keep them numbers, so marks
+    and spacing work).
   - `y`: "money", "pct" (values as 0.04 for 4%) or "num".
   - `series`: up to four, each `{"name", "values", "tone"}`; tone is "good",
-    "bad", "accent", "neutral" or "muted"; `"dash": true` for a dotted line.
+    "bad", "accent", "neutral" or "muted"; `"dash": true` for a dotted line, `"step": true` for a value that
+    holds until the next point and then jumps (tax brackets).
   - Optional `marks`: `[{"x": 62, "label": "Retire at 62"}]`, vertical lines;
     `band`: `{"from": 57, "to": 72, "label": "Most exposed"}`, a shaded span.
   - Keep JSON inside single quotes; no apostrophes inside it (write
@@ -144,7 +147,7 @@ worked out: the formula, the engine function and inputs, or the source.
 
 Lessons with a Your numbers panel show it beside the text, built from the
 reader's plan (or a sample household, Sam and Jordan with their daughter
-Nora, when they have none). If your lesson has one (see the list below),
+Nora, when they have none). If your lesson has one (`YOURS` in `lib/learn/catalog.ts` lists them),
 place `<p data-yours></p>` once, right after the passage it applies to; it
 becomes one sentence applying the lesson to the reader's own plan. Don't
 write the figures yourself. Lessons without a key have no `data-yours`.
