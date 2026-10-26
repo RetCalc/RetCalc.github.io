@@ -290,13 +290,14 @@ export function YoursPanel({ k }: { k: YoursKey }) {
   const P = usePlan(), out = useMemo(() => build(k, P), [k, P]);
   if (!out) return null;
   return (
-    <aside className="lrn-yours" aria-label="Your numbers">
+    // A section, not an aside: the site's older styles make every aside sticky.
+    <section className="lrn-yours" aria-label="Your numbers">
       <div className="lrn-yours-h"><SparklesIcon aria-hidden="true" />{P.sample ? "Sample numbers" : "Your numbers"}</div>
       {out.rows.length ? <dl>{out.rows.map(([a, b, tone]) => <div key={a}><dt>{a}</dt><dd className={tone}>{b}</dd></div>)}</dl> : null}
       {out.note ? <p className="lrn-yours-note">{out.note}</p> : null}
       {P.sample ? <Button size="sm" variant="outline" className="lrn-yours-btn" nativeButton={false} render={<Link href="/dashboard/setup" />}>Use my own numbers</Button> : null}
       <Footnote P={P} />
-    </aside>
+    </section>
   );
 }
 
