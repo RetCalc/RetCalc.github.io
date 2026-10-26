@@ -29,19 +29,19 @@
 <p>Prices have risen faster than inflation over the long run. Between 1995–96 and 2025–26, average in-state tuition and fees at public four-year colleges roughly doubled after inflation, from $5,940 to $11,950 in today's dollars. The last decade has been calmer: adjusted for inflation, they fell 7% at public four-year colleges and rose 2% at private ones. Planners commonly assume college costs will grow 4% to 5% per year, a bit above general inflation.</p>
 
 <h2 id="howmuch">How much to save</h2>
-<p>College Savings opens with a public in-state school at $27,000 per year today, close to the College Board's $25,850 for tuition, fees, housing and food, with costs rising 4% per year, savings earning 6% and a newborn with 18 years to go. Those numbers make the first year of college cost $54,697, about double today's price. All four years come to $232,269.</p>
-<p>You don't need all of it saved on the first day of college. The account keeps earning while the first years are paid, so it needs $212,674 at the start. Saving $558 per month from birth gets there, and those monthly deposits add up to only about $120,600. Growth covers the rest.</p>
+<p>College Savings opens with a public in-state school at $26,000 per year today, the College Board's $25,850 for tuition, fees, housing and food rounded, with costs rising 4% per year, savings earning 6% and a newborn with 18 years to go. Those numbers make the first year of college cost $52,671, about double today's price. All four years come to $223,666.</p>
+<p>You don't need all of it saved on the first day of college. The account keeps earning while the first years are paid, so it needs $204,797 at the start. Saving $538 per month from birth gets there, and those monthly deposits add up to only about $116,100. Growth covers the rest.</p>
 
-<!-- data: collegeSavingsCalc (lib/engine/calculators.js) with the College Savings defaults: annualCost 27,000, tuitionInfl 4%, investRet 6%,
-     saved 0, collegeYrs 4, yearsUntil 18. yearCosts 54,697 / 56,885 / 59,160 / 61,527, total 232,269; targetAtStart 212,674; monthly 558.26.
-     Deposits: 558.26 × 12 × 18 = 120,584. Other rows change annualCost (59,000, the private preset) and yearsUntil (10, 5). Half = monthly / 2. -->
+<!-- data: collegeSavingsCalc (lib/engine/calculators.js) with the College Savings defaults: annualCost 26,000, tuitionInfl 4%, investRet 6%,
+     saved 0, collegeYrs 4, yearsUntil 18. yearCosts 52,671 / 54,778 / 56,969 / 59,248, total 223,666; targetAtStart 204,797; monthly 537.58.
+     Deposits: the rows' contributions sum to 116,118. Other rows change annualCost (61,000, the private preset) and yearsUntil (10, 5). Half = monthly / 2. -->
 <figure>
   <table>
-    <thead><tr><th>Start saving with</th><th>Public in-state, $27,000 today</th><th>Half of it</th><th>Private, $59,000 today</th><th>Half of it</th></tr></thead>
+    <thead><tr><th>Start saving with</th><th>Public in-state, $26,000 today</th><th>Half of it</th><th>Private, $61,000 today</th><th>Half of it</th></tr></thead>
     <tbody>
-      <tr><td>18 years to go</td><td>$558</td><td>$279</td><td>$1,220</td><td>$610</td></tr>
-      <tr><td>10 years to go</td><td>$956</td><td>$478</td><td>$2,090</td><td>$1,045</td></tr>
-      <tr><td>5 years to go</td><td>$1,838</td><td>$919</td><td>$4,017</td><td>$2,008</td></tr>
+      <tr><td>18 years to go</td><td>$538</td><td>$269</td><td>$1,261</td><td>$631</td></tr>
+      <tr><td>10 years to go</td><td>$921</td><td>$461</td><td>$2,161</td><td>$1,080</td></tr>
+      <tr><td>5 years to go</td><td>$1,770</td><td>$885</td><td>$4,153</td><td>$2,076</td></tr>
     </tbody>
   </table>
   <figcaption>Monthly saving to cover four years, with costs growing 4% per year and savings earning 6%, starting from nothing.</figcaption>
@@ -51,8 +51,8 @@
 <p>Very few families save the full sticker price, and they don't have to. Covering half or two-thirds with savings and the rest from income during the college years, grants, scholarships, a student's earnings and modest loans is a common, workable plan. Saving something early does more than saving more later.</p>
 
 <!-- data: collegeSavingsCalc rows[].balance at each year's end, rounded to $1,000, with the default inputs. -->
-<figure data-chart='{"type":"area","x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],"xLabel":"Child age","y":"money","series":[{"name":"College account","tone":"accent","values":[7000,14000,22000,30000,39000,48000,58000,68000,79000,91000,103000,116000,130000,145000,160000,177000,194000,213000]}]}'>
-  <figcaption>The account balance with $558 saved each month from birth at 6%. About $120,600 of the $213,000 at 18 was deposited; the rest is growth.</figcaption>
+<figure data-chart='{"type":"area","x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],"xLabel":"Child age","y":"money","series":[{"name":"College account","tone":"accent","values":[7000,14000,21000,29000,37000,46000,56000,66000,76000,87000,99000,112000,125000,139000,154000,170000,187000,205000]}]}'>
+  <figcaption>The account balance with $538 saved each month from birth at 6%. About $116,100 of the $205,000 at 18 was deposited; the rest is growth.</figcaption>
 </figure>
 
 <p data-yours></p>
@@ -111,9 +111,9 @@
 
 <h2 id="investing">How to invest a college account</h2>
 <p>Because the bill arrives on a fixed date, a college account should get safer as that date nears. A large fall in stocks when the student is 17 leaves no time to recover. Most 529 plans offer age-based or target-enrollment portfolios that do this for you, starting mostly in stocks and moving into bonds and cash through the high school years.</p>
-<p>College Savings assumes a 6% return throughout, a reasonable average for a mix that starts in stocks and ends in bonds. If you hold mostly cash or bonds the whole time, use a lower figure. At 3%, the $558 per month from birth becomes $779 per month.</p>
+<p>College Savings assumes a 6% return throughout, a reasonable average for a mix that starts in stocks and ends in bonds. If you hold mostly cash or bonds the whole time, use a lower figure. At 3%, the $538 per month from birth becomes $751 per month.</p>
 
-<!-- data: collegeSavingsCalc with the defaults and investRet 3%: monthly 779. -->
+<!-- data: collegeSavingsCalc with the defaults and investRet 3%: monthly 750.57. -->
 
 <h2 id="tool">Seeing it in your own numbers</h2>
 <p>College Savings takes each child's age, the school type or your own yearly cost, how many years of college, and what you've already saved. It shows the monthly amount, the cost when each child starts and the balance year by year. With more than one child, it works out one amount for a shared account, which can step down once the oldest starts college.</p>
@@ -128,7 +128,7 @@
 
 <section class="insum"><h2 id="short">In short</h2><ul>
 <li>A public in-state college costs about $25,850 per year in tuition, fees, housing and food (2025–26); a private one about $60,920. Most students pay less after grants.</li>
-<li>From birth, about $558 per month covers four years at a public school, assuming 4% cost growth and 6% returns; half that covers half.</li>
+<li>From birth, about $538 per month covers four years at a public school, assuming 4% cost growth and 6% returns; half that covers half.</li>
 <li>529 plans grow tax-free for college, K-12 tuition, apprenticeships, credentials and some student loans, and leftovers can partly move to a Roth IRA.</li>
 <li>Parent-owned 529s barely affect aid; retirement accounts and grandparent 529s don't count on the FAFSA.</li>
 <li>Retirement comes first, at least to the match. Loans exist for college, not for retirement.</li>
