@@ -17,6 +17,7 @@ import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { Frame } from "./Frame";
 import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./charts";
 import { daysSince, longDate, money, shortMoney } from "./format";
+import { collegeChildren, collegeKid, collegeYears } from "./college";
 import { FACTORS, ageOf, answers, couple, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
 import { explain } from "./readiness";
@@ -110,16 +111,15 @@ export function timeline(d: DashData, R: Results): { lanes: Lane[]; from: number
     });
   });
   // Each child, the ones you have and the ones planned: daycare to 5 when
-  // there's paid childcare, and college from 18 when you're helping.
-  const kinds = ["dsh-k1", "dsh-k2", "dsh-k3"] as const;
-  const child = (name: string, born: number, i: number, planned: boolean) => {
-    const spans: Lane["spans"] = [];
+  // there's paid childcare, and college when you're helping (from 18 for
+  // four years, or as College Savings set it).
+  const kinds = ["dsh-k1", "dsh-k2", "dsh-k3"] as const, ys = collegeYears(pr);
+  collegeChildren(pr).forEach((c, i) => {
+    const born = c.by ?? from + c.bornIn, spans: Lane["spans"] = [];
     if (pr.childcare && born + 5 > from) spans.push({ from: born, to: born + 5, kind: kinds[i % 3], label: "Daycare" });
-    if (pr.college.help !== "none") spans.push({ from: born + 18, to: born + 22, kind: kinds[i % 3], label: `College ${born + 18} to ${born + 22}` });
-    lanes.push({ name, spans, events: planned ? [{ at: born, label: "Born about " + born }] : [] });
-  };
-  pr.kidList.slice(0, pr.kids).forEach((k, i) => { if (k.by) child(k.name.trim() || `Child ${i + 1}`, k.by, i, false); });
-  for (let i = 0; i < pr.planned.count; i++) child(pr.planned.count > 1 ? `Planned child ${i + 1}` : "Planned child", from + pr.planned.firstIn + i * pr.planned.spacing, pr.kids + i, true);
+    if (pr.college.help !== "none") { const s = from + ys[i], e = s + collegeKid(pr, i).years; spans.push({ from: s, to: e, kind: kinds[i % 3], label: `College ${s} to ${e}` }); }
+    lanes.push({ name: c.name, spans, events: c.planned ? [{ at: born, label: "Born about " + born }] : [] });
+  });
   const M = mortgage(pr, d.entries);
   if (M.payoff != null) lanes.push({ name: "Home", spans: [{ from, to: M.payoff, kind: "dsh-k3", label: "Mortgage" }], events: [{ at: M.payoff, label: "Paid off " + Math.floor(M.payoff) }] });
   return { lanes, from, to: Math.min(to, from + 70) };

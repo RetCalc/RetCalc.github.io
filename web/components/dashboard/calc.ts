@@ -39,7 +39,8 @@ function shared(pr: Profile, entries: Entry[]) {
     salary: F.pi.gross, matchPct: F.b.pcMatchRate, matchCap: F.b.pcMatchUpTo,
     status: couple(pr) ? "m" : "s", state: taxState(pr),
     years: pr.p1.retire && ageOf(pr.p1) != null ? Math.max(1, pr.p1.retire - ageOf(pr.p1)!) : 30,
-    target: ((pr.retSpend ?? spendMonth(pr) ?? 0) * 12),
+    // What the plan spends once retired: the goal, or the strategy's when a rate is set on Retirement.
+    target: Math.round((results(pr, entries).spend ?? pr.retSpend ?? spendMonth(pr) ?? 0) * 12),
     nominal: (1 + realGrowth(pr)) * (1 + infl) - 1,
   };
 }
@@ -160,18 +161,30 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
   const yearly = groups.flatMap((gr) => years.slice(gr.from, gr.to).map((y) => ({ y, name: gr.label })));
   const value = (stages: StageInputs[]) => stagesCompute({ ...base, stages }, null).R.fvReal;
   const asYears = (from: number) => yearly.slice(from).map((x, i) => stage(1, x.y, 0, x.name, from + i > 0));
-  const out: StageInputs[] = [];
+  const out: StageInputs[] = [], made: { n: number; first: PlanYear; growth: number }[] = [];
   groups.forEach((gr, gi) => {
     const first = years[gr.from], n = gr.to - gr.from, level = years.slice(gr.from, gr.to).every((y) => Math.abs(y.monthly - first.monthly) < 0.5);
-    if (level || n < 2) { out.push(stage(n, first, 0, exact(gi), gi > 0)); return; }
+    if (level || n < 2) { out.push(stage(n, first, 0, exact(gi), gi > 0)); made.push({ n, first, growth: 0 }); return; }
     const want = value([...out, ...asYears(gr.from)]);
     let lo = -0.5, hi = 0.5;
     for (let k = 0; k < 40; k++) {
       const mid = (lo + hi) / 2;
       if (value([...out, stage(n, first, mid, exact(gi), gi > 0), ...asYears(gr.to)]) < want) lo = mid; else hi = mid;
     }
-    out.push(stage(n, first, (lo + hi) / 2, exact(gi), gi > 0));
+    out.push(stage(n, first, (lo + hi) / 2, exact(gi), gi > 0)); made.push({ n, first, growth: (lo + hi) / 2 });
   });
+  // The plan counts the first part-year to the next birthday a little
+  // differently, and the stages save in whole dollars, so they can end a
+  // few dollars apart. The last stage's growth takes up the difference, so
+  // the Calculator lands on the plan's own figure (Retirement starts there).
+  const target = R.atRetire, li = out.length - 1, total = (stages: StageInputs[]) => stagesCompute(withKids({ ...base, stages }), null).R.fvReal;
+  if (target != null && li >= 0 && Math.abs(total(out) - target) >= 0.5) {
+    const m = made[li], at = (gr: number) => [...out.slice(0, li), stage(m.n, m.first, gr, exact(li), li > 0)];
+    let lo = m.growth - 0.05, hi = m.growth + 0.05;
+    for (let k = 0; k < 50; k++) { const mid = (lo + hi) / 2; if (total(at(mid)) < target) lo = mid; else hi = mid; }
+    const fixed = at((lo + hi) / 2);
+    if (Math.abs(total(fixed) - target) < Math.abs(total(out) - target)) out.splice(0, out.length, ...fixed);
+  }
   return withKids({ ...base, stages: out });
 }
 

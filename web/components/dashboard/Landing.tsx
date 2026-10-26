@@ -58,8 +58,8 @@ const PAGES: { icon: LucideIcon; name: string; what: string }[] = [
   { icon: LandmarkIcon, name: "Taxes", what: "This year's, line by line" },
   { icon: ReceiptIcon, name: "Spending", what: "Your budget and emergency fund" },
   { icon: PiggyBankIcon, name: "Savings", what: "Where each paycheck goes" },
-  { icon: SunsetIcon, name: "Retirement", what: "Withdrawal strategies and your chance of success" },
   { icon: CalculatorIcon, name: "Calculator", what: "Your saving, stage by stage" },
+  { icon: SunsetIcon, name: "Retirement", what: "Withdrawal strategies and your chance of success" },
   { icon: WrenchIcon, name: "Tools", what: "All 14, opened with your numbers" },
   { icon: ListChecksIcon, name: "Next steps", what: "Changes ranked by how much they help" },
 ];

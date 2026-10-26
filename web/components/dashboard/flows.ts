@@ -200,7 +200,12 @@ export function socialBenefits(s: SocialInputs): { you: number; spouse: number |
 /** The Drawdown Simulator on the plan: what's saved at retirement, the
     years to 95, the stock mix, Social Security and the strategy come from
     the profile; the strategy's own settings are the ones saved there. */
-export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; taxYr: number; years: number; ss1: number; ss2: number; claim: number; claim2?: number | null; retire: number } | null): DrawdownState {
+/** The simulator's figures that come from the plan, which a person can set
+    for themselves on Retirement (kept in Profile.ddOwn). The stock mix and
+    the first claiming age go back into the plan's own settings instead. */
+export const DD_OWN = ["rate", "initial", "years", "retireAge", "ssMode", "ssAmount", "ssAmount2", "ssDelay2"] as const;
+
+export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; taxYr: number; years: number; ss1: number; ss2: number; claim: number; claim2?: number | null; retire: number } | null, own = true): DrawdownState {
   const cur = withDefaults(DRAWDOWN_DEF, pr.tools.drawdown ?? {});
   if (!plan) return cur;
   const couple = pr.who === "couple" && plan.ss2 > 0;
@@ -216,15 +221,27 @@ export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; ta
   // The starting rate: the plan's spending in its first year, with a year's
   // tax on it; Social Security pays part of it once claimed, savings the
   // rest. Always from the plan, so the two can't drift apart.
+  // Unless set on Retirement: then it's the plan's spending that follows.
   const rate = Math.round(((plan.spendYr + plan.taxYr) / Math.max(1, plan.fv)) * 10000) / 100;
-  return { ...next, rate: String(rate), ...(pr.strategy ? { strategy: pr.strategy } : {}) } as DrawdownState;
+  return { ...next, rate: String(rate), ...(own ? pr.ddOwn : {}), ...(pr.strategy ? { strategy: pr.strategy } : {}) } as DrawdownState;
 }
 
 /** What the profile keeps when the Drawdown changes: its settings, and the
     strategy once one is picked there (opening it on its default isn't a choice). */
-export function fromDrawdown(pr: Profile, d: DrawdownState, opened?: string): Profile {
+export function fromDrawdown(pr: Profile, d: DrawdownState, opened?: string, plan?: Parameters<typeof drawdownFor>[1]): Profile {
   const strategy = pr.strategy == null && String(d.strategy) === opened ? null : String(d.strategy);
-  return { ...pr, strategy, tools: { ...pr.tools, drawdown: d as unknown as ToolInputs } };
+  const next: Profile = { ...pr, strategy, tools: { ...pr.tools, drawdown: d as unknown as ToolInputs } };
+  if (!plan) return next;
+  // Every figure changed here is kept: one that differs from the plan's is
+  // the person's own; set back to the plan's, it follows the plan again.
+  const base = drawdownFor(pr, plan, false) as unknown as Record<string, unknown>, now = d as unknown as Record<string, unknown>;
+  const same = (k: string) => (k === "ssMode" ? String(now[k]) === String(base[k]) : Math.abs(parseNum(String(now[k] ?? "")) - parseNum(String(base[k] ?? ""))) < 0.005);
+  const own: Record<string, string> = {};
+  DD_OWN.forEach((k) => { if (now[k] != null && !same(k)) own[k] = String(now[k]); });
+  next.ddOwn = Object.keys(own).length ? own : undefined;
+  if (!same("stock")) next.assume = { ...pr.assume, stocks: Math.max(0, Math.min(100, Math.round(parseNum(String(now.stock))))) };
+  if (!same("ssDelay")) next.ss = { ...pr.ss, claim: Math.max(62, Math.min(70, Math.round(parseNum(String(now.ssDelay))))) };
+  return next;
 }
 
 /** The chosen strategy's chance across history, with its saved settings. */

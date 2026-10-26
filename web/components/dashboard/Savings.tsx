@@ -106,7 +106,7 @@ export function Savings() {
   const efOn = budgetFor(pr).pcEfOn;
   return (
     <Frame current="savings" title="Savings" sub={F.hasPay ? `${money(F.invested + F.match)} per month into savings, with your employer's match` : "Where your paycheck goes"}>
-      <Tile icon={PiggyBankIcon} title="Each month">
+      <Tile id="month" icon={PiggyBankIcon} title="Each month">
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">You save and invest</div><div className="dsh-fig dsh-key">{money(F.invested)}<small>per month</small></div></div>
           <div className="dsh-stat"><div className="dsh-label">Employer match</div><div className="dsh-fig dsh-md">{money(F.match)}<small>per month</small></div></div>

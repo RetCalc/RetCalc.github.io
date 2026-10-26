@@ -12,7 +12,16 @@ export interface Help {
   base: Record<string, unknown> | null;
 }
 /** The tools with a tour. */
-export const TOUR_TOOLS = new Set(["tax", "mortgage", "budget", "college", "rentbuy", "drawdown", "roth", "debt", "backtest", "healthcare", "fire", "bridge", "social"]);
+export const TOUR_TOOLS = new Set(["tax", "mortgage", "budget", "college", "rentbuy", "drawdown", "roth", "debt", "backtest", "healthcare", "fire", "bridge", "social", "optimizer"]);
+
+/* Tours a page brings with it (the Dashboard's tabs), registered when its
+   code loads, so the site's own pages never load them. Typed loosely here;
+   tours.ts has the shape. */
+const extra: Record<string, unknown> = {};
+export function registerTours(t: Record<string, unknown>) { Object.assign(extra, t); }
+export const extraTour = (id: string) => extra[id];
+/** Whether there's a tour for this id, the site's or a page's. */
+export const hasTour = (id: string) => TOUR_TOOLS.has(id) || id in extra;
 
 let help: Help | null = null;
 const listeners = new Set<() => void>();
@@ -27,5 +36,5 @@ export function useHelp(): Help | null {
 /** Opens a tool's help, or closes it if it's the one open. */
 export function toggleHelp(tool: string) {
   if (help?.tool === tool) setHelp(null);
-  else if (TOUR_TOOLS.has(tool)) setHelp({ tool, path: window.location.pathname, page: 0, min: false, base: null });
+  else if (hasTour(tool)) setHelp({ tool, path: window.location.pathname, page: 0, min: false, base: null });
 }

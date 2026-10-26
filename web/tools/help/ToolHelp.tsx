@@ -7,7 +7,7 @@
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { TOUR_TOOLS, helpNow, setHelp, toggleHelp, useHelp } from "./state";
+import { hasTour, helpNow, setHelp, toggleHelp, useHelp } from "./state";
 import { Button } from "@/components/ui/button";
 
 const HelpPanel = dynamic(() => import("./HelpPanel"), { ssr: false });
@@ -15,7 +15,7 @@ const HelpPanel = dynamic(() => import("./HelpPanel"), { ssr: false });
 /** The Help button, on a tool that has a tour. */
 export function HelpButton({ tool }: { tool: string }) {
   const h = useHelp();
-  if (!TOUR_TOOLS.has(tool)) return null;
+  if (!hasTour(tool)) return null;
   return (
     <Button variant="outline" size="sm" className="ml-auto flex-none self-center" id="toolHelpBtn" aria-controls="thCoach" aria-expanded={h?.tool === tool} onClick={() => toggleHelp(tool)}>
       <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" strokeWidth="1.4" />

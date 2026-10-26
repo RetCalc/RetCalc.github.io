@@ -7,7 +7,7 @@ import { couple, holdings, mortgage, nowYear, type Results } from "./model";
 import { DEFAULT_ASSUMPTIONS, hasAccounts, type DashData } from "./store";
 import { daysSince, money10 } from "./format";
 import { detailed, flow } from "./flows";
-import { collegeNeedOf } from "./college";
+import { collegeChildren, collegeNeedOf, collegeYears } from "./college";
 import { toolHref } from "./host";
 import { room } from "./readiness";
 
@@ -52,8 +52,8 @@ export function allSteps(d: DashData, R: Results): Step[] {
     const year = pr.p1.by ? pr.p1.by + drop.from : Math.round(nowYear() + (drop.from - (R.S.I.age ?? 0)));
     add({ id: "kids-drop", title: `Saving drops to ${money10(drop.monthly)} per month in ${year}, with the match`, why: `${words(drop.label)}: see how each stage saves`, action: "Open Calculator", href: "/dashboard/calculator", done: false, gain: 3 });
   }
-  const kids = pr.kidList.slice(0, pr.kids).filter((k) => k.by && k.by + 18 > nowYear());
-  if (kids.length && pr.college.help !== "none") add({ id: "college-tool", title: "Plan college in detail", why: `${kids[0].name.trim() || "Your first child"} starts in ${kids[0].by! + 18}`, action: "Plan it", href: toolHref("college", "/dashboard/next"), done: false, gain: 2 });
+  const ys = collegeYears(pr), first = collegeChildren(pr).findIndex((c, i) => !c.planned && ys[i] > 0);
+  if (first >= 0 && pr.college.help !== "none" && !pr.college.plan) add({ id: "college-tool", title: "Plan college in detail", why: `${collegeChildren(pr)[first].name} starts in ${Math.floor(nowYear()) + ys[first]}`, action: "Plan it", href: toolHref("college", "/dashboard/next"), done: false, gain: 2 });
 
   // Sharper figures.
   add({ id: "ss", title: "Check your Social Security", why: "Your statement's figure or your pay history, not an estimate", action: "Check", href: "/dashboard/income#social-security", done: pr.ss.checked || R.abroad, gain: 5 });

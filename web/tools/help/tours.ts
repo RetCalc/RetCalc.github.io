@@ -16,6 +16,7 @@ import type { DebtInputs } from "@/tools/debt/model";
 import type { DrawdownState } from "@/tools/drawdown/fields";
 import { escapeHtml } from "@/tools/drawdown/text";
 import type { FireInputs } from "@/tools/fire/model";
+import type { OptimizerInputs } from "@/tools/optimizer/model";
 import { mortgageInput, type Inputs as MortgageInputs } from "@/tools/mortgage/model";
 import { mortgage } from "@/lib/engine/typed";
 import type { RothInputs } from "@/tools/roth/model";
@@ -27,6 +28,8 @@ type Base = Record<string, unknown>;
 interface Ctx<S> { s: S; base: Base }
 export interface Tour<S = Record<string, unknown>> {
   name: string; title: string;
+  /** What the tour reads, when it isn't the open tool's inputs (a Dashboard tab's plan). */
+  read?: () => S;
   start?: (c: { s: S }) => Base;
   pages: { title: string; focus: string; show?: () => void; tasks: (c: Ctx<S>) => HelpTask[] }[];
   chip: (c: Ctx<S>) => string;
@@ -129,7 +132,7 @@ const budget: Tour<BudgetInputs> = { name: "Budget", title: "Build a budget that
         { h: "Saving isn't a line here: the <b>Paycheck</b> tab plans it from what's left after these. <b>+ College savings</b> brings that goal in from its tool." },
       ];
     } },
-    { title: "Reading it", focus: "#bgTotal", tasks: () => [
+    { title: "Reading it", focus: "#bgTotal || #bgWhere", tasks: () => [
       { h: "<b>Your budget, per month</b> is every line added up, with yearly bills spread over the year. <b>Where it goes</b> splits it by group, largest first." },
       { h: "A common starting point is the 50/30/20 split of take-home pay: about half on needs, 30% on wants and 20% to savings and extra debt payments. Treat it as a gauge, not a rule." },
       { h: "Then the <b>Paycheck</b> tab, at the top: your gross pay, what taxes take, how each check covers this budget, and where the rest goes." },
@@ -430,4 +433,29 @@ const social: Tour<SocialInputs> = { name: "Social Security Calculator", title: 
   ],
   chip: ({ s }) => { const S = socialFigures(s); if (!(S.you.pia > 0)) return ""; return "Claim at " + S.you.claim + "<br><b>" + money(S.monthly) + "/mo</b>"; } };
 
-export const TOURS = { tax, mortgage: mortgageTour, budget, college, rentbuy, drawdown, roth, debt, backtest, healthcare, fire, bridge, social } as unknown as Record<string, Tour>;
+const optimizer: Tour<OptimizerInputs> = { name: "Retirement Plan Optimizer", title: "Find your best retirement plan",
+  start: ({ s }) => ({ mode: s.mode, claim: s.claim, mix: s.mix, target: s.target }),
+  pages: [
+    { title: "Where you start", focus: "#opModeSeg", tasks: ({ s, base }) => [
+      { h: "The Optimizer tries every age to claim Social Security, every order to draw from your accounts, and Roth conversions, then tests each through every market since 1926. It needs to know where you stand first." },
+      { h: "<b>Retirement day</b> or <b>Today</b>: start from what you'll have the day you retire, or from today's balances and what you save each month until then.", ok: tried(s.mode !== base.mode) },
+      { h: "<b>Filing status</b>, <b>State</b> and each person's <b>age</b> set the tax rules, the Medicare years and when Social Security can start." },
+      { h: "Your savings by how they're taxed. <b>Traditional</b> 401(k)s and IRAs are taxed when you take money out; <b>Roth</b> money comes out tax-free; <b>Brokerage and cash</b> is taxed only on its gains. Which you draw from first is one of the things the search decides." },
+    ] },
+    { title: "Retirement and what matters", focus: "#opSpend", tasks: ({ s, base }) => [
+      { h: "<b>Spending, after tax</b> is what you want to live on each year once retired, in today's dollars. The search pays the taxes on top, so leave them out." },
+      { h: "<b>Stocks</b> is the share of your savings in stocks once retired; the rest is in bonds. More in stocks swings more but has usually lasted longer.", ok: tried(s.mix !== base.mix) },
+      { h: "Each person's Social Security check at 67, from a statement at ssa.gov if you have one. <b>You'd claim it at</b> is the usual plan the search is compared against; it tries every other age too.", ok: tried(s.claim !== base.claim) },
+      { h: "A <b>Pension</b>, if you'll have one, with the age it starts and whether it rises with prices." },
+      { h: "<b>Health insurance</b> prices coverage before 65 and Medicare after. <b>Heirs' tax rate</b> is what anyone inheriting your traditional accounts would pay on them. <b>Must last in</b> is how sure you want to be: the share of past markets the plan has to survive.", ok: tried(s.target !== base.target) },
+    ] },
+    { title: "The search and your roadmap", focus: "#opGoals", tasks: () => [
+      { h: "Pick what the best plan should do: <b>Leave the most</b> after tax, <b>Make it last</b> in the most markets, or <b>Spend the most</b> each year while still lasting." },
+      { h: "Press <b>Find my best plan</b>. The search runs in your browser and takes a moment; it checks thousands of combinations.", ok: tried(text("#opOut").length > 0) },
+      { h: "The answer compares <b>Your roadmap</b> with <b>The usual way</b> (claiming at the age you gave, spending from brokerage, then traditional, then Roth, with no conversions). The badge shows what the difference is worth." },
+      { h: "<b>Show every year</b> lays out the roadmap year by year: what to convert to Roth, which account each year's spending comes from, and the taxable income that leaves." },
+    ] },
+  ],
+  chip: () => "" };
+
+export const TOURS = { tax, mortgage: mortgageTour, budget, college, rentbuy, drawdown, roth, debt, backtest, healthcare, fire, bridge, social, optimizer } as unknown as Record<string, Tour>;

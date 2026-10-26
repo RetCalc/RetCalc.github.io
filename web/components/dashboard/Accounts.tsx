@@ -215,7 +215,7 @@ export function Accounts() {
 
   return (
     <Frame current="accounts" title="Net worth" sub={last ? (draft ? "Editing; saving adds a new entry" : "As of " + longDate(last.date)) : "Nothing entered yet"}>
-      <Tile icon={ChartBarIcon} title="Assets and debts" right={
+      <Tile id="picture" icon={ChartBarIcon} title="Assets and debts" right={
         <Segmented aria-label="Today or over time">
           <SegmentedItem pressed={view === "today"} onPressedChange={() => setView("today")}>Today</SegmentedItem>
           <SegmentedItem pressed={view === "time"} onPressedChange={() => setView("time")}>Over time</SegmentedItem>

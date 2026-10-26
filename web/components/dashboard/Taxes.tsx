@@ -29,7 +29,7 @@ export function Taxes() {
   const yr = F.gross * 12;
   return (
     <Frame current="taxes" title="Taxes" sub={T ? `${money(T.federal + T.state + T.fica)} per year` : "Add your pay in Income"}>
-      <Tile icon={LandmarkIcon} title="This year">
+      <Tile id="this-year" icon={LandmarkIcon} title="This year">
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Pay after taxes</div><div className="dsh-fig dsh-key">{F.hasPay ? money(F.afterTax) : "—"}<small>per month</small></div></div>
           <div className="dsh-stat"><div className="dsh-label">Federal income tax</div><div className="dsh-fig dsh-md">{T ? money(T.federal) : "—"}<small>per year</small></div></div>

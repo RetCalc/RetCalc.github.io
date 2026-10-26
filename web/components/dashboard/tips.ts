@@ -18,6 +18,7 @@ export const TIPS = {
   growth: "How much your savings earn each year until you retire, before inflation. Less inflation, it's what they really gain, so every figure stays in today's dollars. The usual 7.6% is 4.5% after 3% inflation.",
   inflation: "How fast prices rise each year. Every figure on your dashboard is in today's dollars, so inflation is taken out: growth before inflation, less this, is what your savings really gain.",
   stocks: "Once you retire, your plan is tested in every market since 1926 instead of at a steady rate. This is the share in stocks then, with the rest in 10-year Treasury bonds. More in stocks swings more, and has usually lasted longer.",
+  stratSpend: "What your plan spends each month once retired, before taxes, in today's dollars: your withdrawal strategy's first year, from the starting rate you set on Retirement. Your goal from Profile is shown under it.",
   retSpend: "What you expect to spend each month once retired, in today's dollars, before taxes (the plan adds those on top). Many people spend less than while working.",
   saved: "Your retirement and investment accounts: 401(k)s, IRAs, Roth and brokerage accounts, and HSAs. Checking and savings count as your emergency fund instead, and your home isn't spent in retirement.",
   payTaxed: "Before taxes is your gross pay, as on an offer letter or at the top of a pay stub. After taxes is what reaches your bank account; we work back from it.",

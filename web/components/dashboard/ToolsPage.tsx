@@ -6,8 +6,9 @@
    changed in a tool stays in that tool. */
 
 import Link from "next/link";
-import { useMemo, useSyncExternalStore } from "react";
-import { ChevronLeftIcon } from "lucide-react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import { CheckIcon, ChevronLeftIcon } from "lucide-react";
+import type { CollegeInputs } from "@/tools/college/model";
 import { Button } from "@/components/ui/button";
 import { ToolsBrowser } from "@/components/tools/ToolsBrowser";
 import type { PickerData } from "@/components/tools/picker-data";
@@ -15,7 +16,7 @@ import { TOOLS, type ToolSub } from "@/lib/tools";
 import { Frame, SECTIONS, SignedIn } from "./Frame";
 import { Hosted, TOOL_VIEWS, householdOf, seedFor, toolHref } from "./host";
 import { useDashboard, type Entry, type Profile } from "./store";
-import { collegeNeedOf } from "./college";
+import { applyCollege, collegeNeedOf, sameCollege } from "./college";
 import { flow } from "./flows";
 import { money } from "./format";
 import { holdings, mortgage, results } from "./model";
@@ -74,7 +75,12 @@ const fromNow = () => {
 const noop = () => () => {};
 
 function Tool({ sub }: { sub: ToolSub }) {
-  const { data } = useDashboard();
+  const { data, setProfile } = useDashboard();
+  // College Savings' figures as they stand, for "Apply to my plan".
+  const [college, setCollege] = useState<CollegeInputs | null>(null);
+  const [applied, setApplied] = useState(false);
+  const apply = college && !sameCollege(data.profile, college) ? applyCollege(data.profile, college) : null;
+  const mismatch = sub === "college" && college != null && apply == null && !sameCollege(data.profile, college);
   const back = useSyncExternalStore(noop, fromNow, () => "/dashboard/tools");
   const backName = back === "/dashboard" ? "Dashboard" : SECTIONS.find((s) => back === "/dashboard/" + s.id)?.name ?? "Tools";
   // The profile as the tool opens; later changes to the profile don't reach
@@ -83,16 +89,25 @@ function Tool({ sub }: { sub: ToolSub }) {
   const household = useMemo(() => householdOf(data.profile, data.entries), [data.profile, data.entries]);
   const View = TOOL_VIEWS[sub], tab = PLAN_TAB[sub];
   return (
-    <Frame current="tools" title={TOOLS[sub].name}
+    <Frame current="tools" title={TOOLS[sub].name} help={sub}
       sub={tab ? undefined : "Filled in from your dashboard. Changes here stay in this tool."}
-      actions={<Button variant="outline" nativeButton={false} render={<Link href={back} />}><ChevronLeftIcon aria-hidden="true" />Back to {backName}</Button>}>
-      {tab ? (
+      actions={<>
+        {sub === "college" ? <Button disabled={!apply || applied} onClick={() => { if (apply) { setProfile(() => apply); setApplied(true); } }}>{applied || (college && sameCollege(data.profile, college)) ? <><CheckIcon aria-hidden="true" />{applied ? "Applied to my plan" : "Your plan matches"}</> : "Apply to my plan"}</Button> : null}
+        <Button variant="outline" nativeButton={false} render={<Link href={back} />}><ChevronLeftIcon aria-hidden="true" />Back to {backName}</Button>
+      </>}>
+      {sub === "college" ? (
         <div>
-          <Note>Filled in from your plan, to try things on: changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id + (tab.hash ?? "")} />}>{tab.name}</Button>.
-            {sub === "college" && data.profile.college.help === "part" ? <> You plan to pay part of college, so each year&apos;s cost here is half the school&apos;s {money(data.profile.college.cost)}.</> : null}</Note>
+          <Note>Filled in from your plan. Change anything here (each child&apos;s cost, when they start and for how long, what&apos;s saved, the return, tuition inflation), then Apply to my plan to keep it.
+            {data.profile.college.help === "part" && !data.profile.college.plan ? <> Each year&apos;s cost here is your half of the school&apos;s {money(data.profile.college.cost)}.</> : null}
+            {mismatch ? <> <b>The children here don&apos;t match your plan&apos;s.</b> Add or remove children in <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Profile</Button>, then come back.</> : null}</Note>
+        </div>
+      ) : tab ? (
+        <div>
+          <Note>Filled in from your plan, to try things on: changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id + (tab.hash ?? "")} />}>{tab.name}</Button>.</Note>
         </div>
       ) : null}
-      <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={seed} household={household}><View /></Hosted></div>
+      <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={seed} household={household}
+        keep={sub === "college" ? (id, d) => { if (id === "college") { setCollege(d as unknown as CollegeInputs); setApplied(false); } } : undefined}><View /></Hosted></div>
     </Frame>
   );
 }

@@ -53,13 +53,17 @@ export const toolHref = (sub: ToolSub, from?: string) => `/dashboard/tools/${sub
 /** What goes into savings each month, with the match: the paycheck's, or setup's. */
 const flowMonthly = (pr: Profile) => { const F = flow(pr); return F.hasPay ? F.invested + F.match : contribMonth(pr); };
 
+const round = (v: number | null, times = 1) => (v == null ? null : Math.round(v * times));
+
 /** The household every tool knows how to take in, from the profile. */
 export function householdOf(pr: Profile, entries: Entry[]): SavedHousehold {
   const H = holdings(entries, pr), two = couple(pr);
   return {
     status: two ? "m" : "s", age: ageOf(pr.p1), spouseAge: two ? ageOf(pr.p2) : null, retire: pr.p1.retire,
-    state: taxState(pr), saved: H.trad + H.roth + H.brok, monthly: flowMonthly(pr),
-    income: grossYear(pr.p1), income2: two ? grossYear(pr.p2) : null, spend: spendMonth(pr),
+    state: taxState(pr), saved: Math.round(H.trad + H.roth + H.brok), monthly: round(flowMonthly(pr)),
+    income: round(grossYear(pr.p1)), income2: two ? round(grossYear(pr.p2)) : null,
+    // The household's spending is spending once retired, per year: what the plan spends.
+    spend: round(results(pr, entries).spend ?? spendMonth(pr), 12),
     savedAt: 1,
   };
 }

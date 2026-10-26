@@ -12,7 +12,7 @@
 
 import type { Cover, Monthly } from "@/tools/plan/kids";
 import type { SavedHousehold } from "@/lib/household";
-import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { readSession, readStored, writeSession, writeStored } from "@/lib/storage";
 import { useToast } from "@/components/shell/Toast";
@@ -64,6 +64,20 @@ export function ToolRegistryProvider({ children }: { children: React.ReactNode }
 
 export function useActiveTool(): ActiveTool | null {
   return use(RegistryContext).active;
+}
+
+/* A tool in a scope (the Dashboard) isn't the page's, so the header's save
+   and share leave it alone, but its Help still reads its inputs: each
+   scoped tool's latest, by id. */
+const scoped = new Map<string, ToolInputs>();
+const scopedListeners = new Set<() => void>();
+function setScopedState(id: string, state: ToolInputs) {
+  scoped.set(id, state);
+  scopedListeners.forEach((l) => l());
+}
+/** A scoped tool's inputs as they stand, for its Help. */
+export function useScopedState(id: string): ToolInputs | undefined {
+  return useSyncExternalStore((l) => { scopedListeners.add(l); return () => scopedListeners.delete(l); }, () => scoped.get(id), () => undefined);
 }
 
 /* Saved scenarios, one list per tool, as retcalc.scenarios-<id>.v1. A list
@@ -310,6 +324,8 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
   // The header's controls see this tool, and its inputs as they change
   // (in a scope, the page's own register instead).
   useRegisterTool(def, state, (data) => setState(withDefaults(def, data)), !!scope);
+  // In a scope Help still reads the tool's inputs as they change.
+  useEffect(() => { if (scope) setScopedState(def.id, state); }, [scope, def.id, state]);
 
   const set = useCallback(
     <K extends keyof S>(k: K) => (v: S[K]) => setState((s) => ({ ...s, [k]: v })),

@@ -6,22 +6,26 @@
 
 import { useEffect } from "react";
 import { CoachPanel, revealFor, useFoldOnType, useRereads } from "@/components/shell/CoachPanel";
-import { useActiveTool } from "@/components/tools/ToolState";
-import { helpNow, setHelp, type Help } from "./state";
-import { TOURS } from "./tours";
+import { useActiveTool, useScopedState } from "@/components/tools/ToolState";
+import { extraTour, helpNow, setHelp, type Help } from "./state";
+import { TOURS, type Tour } from "./tours";
 
 export default function HelpPanel({ h }: { h: Help }) {
-  const active = useActiveTool();
-  const T = TOURS[h.tool], P = T.pages, pi = Math.max(0, Math.min(P.length - 1, h.page));
+  // The open tool's inputs: the page's tool, or one inside the Dashboard.
+  const page = useActiveTool(), inScope = useScopedState(h.tool);
+  const state = page?.state ?? inScope;
+  const T = TOURS[h.tool] ?? (extraTour(h.tool) as Tour), P = T.pages, pi = Math.max(0, Math.min(P.length - 1, h.page));
+  // What the tour reads: the inputs of the open tool, or what its page gives (`read`).
+  const now = () => (T.read ? T.read() : state ?? {});
   // On opening: what the tool looks like now, and the first part's view.
   useEffect(() => {
     if (h.base) return;
     let base: Record<string, unknown> = {};
-    try { base = T.start ? T.start({ s: active?.state ?? {} }) : {}; } catch { /* starts plain */ }
+    try { base = T.start ? T.start({ s: T.read ? T.read() : state ?? {} }) : {}; } catch { /* starts plain */ }
     setHelp({ ...h, base });
     P[0].show?.();
     setTimeout(() => revealFor(P[0].focus), 0);
-  }, [h, T, P, active]);
+  }, [h, T, P, state]);
   useRereads(true);
   useFoldOnType(true, () => !!helpNow()?.min, () => { const x = helpNow(); if (x) setHelp({ ...x, min: true }); });
   // Escape closes it.
@@ -30,7 +34,7 @@ export default function HelpPanel({ h }: { h: Help }) {
     document.addEventListener("keydown", esc);
     return () => document.removeEventListener("keydown", esc);
   }, []);
-  const c = { s: active?.state ?? {}, base: h.base ?? {} };
+  const c = { s: now(), base: h.base ?? {} };
   let tasks: { h: string; ok?: boolean }[] = [], chip = "";
   // Help only ticks: a nudge is the guide's.
   try { tasks = P[pi].tasks(c).map((t) => ({ h: t.h, ok: t.ok === true ? true : undefined })); } catch { tasks = []; }

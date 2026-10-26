@@ -41,6 +41,13 @@ export interface Assumptions {
 }
 export const DEFAULT_ASSUMPTIONS: Assumptions = { growth: 1.045 * 1.03 - 1, inflation: 0.03, stocks: 60 };
 
+/** A child's college as applied from College Savings: the age it starts,
+    years of it, and what you'll pay a year (today's dollars). */
+export interface CollegeKid { start: number; years: number; cost: number }
+/** College Savings' figures, applied: each child's (in collegeChildren's
+    order), what's saved for it, its return and tuition's inflation (percent). */
+export interface CollegePlan { kids: CollegeKid[]; saved: number; ret: number; infl: number }
+
 export interface Profile {
   who: "single" | "couple" | null;
   kids: number;
@@ -71,6 +78,11 @@ export interface Profile {
   ss: { checked: boolean; own1: number | null; own2: number | null; claim: number | null; claim2: number | null };
   /** The withdrawal strategy chosen (the Drawdown Simulator's ids); null: none yet. */
   strategy: string | null;
+  /** The Drawdown Simulator's own figures, set on Retirement in place of
+      the plan's (the starting rate, balance, years, Social Security): kept
+      as typed until "Use the plan's figures". A starting rate here decides
+      what the plan spends once retired; retSpend is then the goal. */
+  ddOwn?: Record<string, string>;
   /** The tools behind the tabs, as their own inputs: budget (pay, the
       budget and the saving sliders), tax, social (pay history), drawdown. */
   tools: { budget?: ToolInputs; tax?: ToolInputs; social?: ToolInputs; drawdown?: ToolInputs };
@@ -87,8 +99,10 @@ export interface Profile {
   planned: { count: number; firstIn: number; spacing: number; bornAge?: number };
   /** Paid childcare before school, and where (it sets the cost). */
   childcare: boolean; careArea: "city" | "suburb" | "rural";
-  /** Helping with college: how much, and the kind of school (its yearly cost). */
-  college: { help: "none" | "part" | "all"; cost: number };
+  /** Helping with college: how much, and the kind of school (its yearly
+      cost); `plan` once College Savings' figures are applied (they replace
+      the kind of school and how much, until one of those is picked again). */
+  college: { help: "none" | "part" | "all"; cost: number; plan?: CollegePlan };
   /** Children's costs per month when they aren't the typical ones ("" for
       typical): birth to 5, 6 to 12, 13 to 18; and a later child's share of
       the first's, in percent. */

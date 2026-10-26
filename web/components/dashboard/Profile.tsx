@@ -22,7 +22,8 @@ import { toolHref } from "./host";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt, type PKey } from "./fields";
 import { money } from "./format";
 import { flow } from "./flows";
-import { couple, holdings, mortgage, nameOf, realGrowth, spendMonth } from "./model";
+import { couple, holdings, mortgage, nameOf, nowYear, realGrowth, spendMonth } from "./model";
+import { collegeChildren, collegeKid, collegeYears } from "./college";
 import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, useDashboard, withHome, type Person, type Profile as P } from "./store";
 import { Note, Tile, Tip, TipLabel } from "./ui";
 
@@ -92,18 +93,19 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
               <div />
             </div>
             <div className="dsh-row3">
-              <SelectField id="dshPCollege" label={<TipLabel text="Helping with college" id="college" />} value={pr.college.help} onChange={(v) => set((p) => ({ ...p, college: { ...p.college, help: v as P["college"]["help"] } }))}>
+              <SelectField id="dshPCollege" label={<TipLabel text="Helping with college" id="college" />} value={pr.college.help} onChange={(v) => set((p) => ({ ...p, college: { help: v as P["college"]["help"], cost: p.college.cost } }))}>
                 <option value="none">No</option><option value="part">Some of it (about half)</option><option value="all">All of it</option>
               </SelectField>
               {pr.college.help !== "none" ? (
-                <SelectField id="dshPSchool" label="The kind of school" value={String(pr.college.cost)} onChange={(v) => set((p) => ({ ...p, college: { ...p.college, cost: Number(v) } }))}>
+                <SelectField id="dshPSchool" label="The kind of school" value={String(pr.college.cost)} onChange={(v) => set((p) => ({ ...p, college: { help: p.college.help, cost: Number(v) } }))}>
                   <option value="27000">Public, in state ($27,000 per year)</option><option value="59000">Private ($59,000 per year)</option><option value="82000">Elite ($82,000 per year)</option>
                 </SelectField>
               ) : <div />}
-              <div className="dsh-self-end">{pr.college.help !== "none" ? <Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("college", "/dashboard/profile")} />}>Plan it in College Savings</Button> : null}</div>
+              <div className="dsh-self-end">{pr.college.help !== "none" ? <Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("college", "/dashboard/profile")} />}>{pr.college.plan ? "Change it in College Savings" : "Plan it in College Savings"}</Button> : null}</div>
             </div>
+            {pr.college.help !== "none" && pr.college.plan ? <CollegeApplied pr={pr} /> : null}
             <div className="dsh-readonly">
-              <p className="dsh-cap dsh-flush">Each child costs about <b>{money(early)}</b> per month to age 5, <b>{money(school)}</b> to 12 and <b>{money(teen)}</b> to 18{pr.kids + pr.planned.count > 1 ? <>, and each later one <b>{pr.childCosts.later || "80"}%</b> of that</> : null}, in today&apos;s dollars.{pr.college.help !== "none" ? " College comes out of saving for four years from 18, unless you save ahead for it in Spending." : ""}</p>
+              <p className="dsh-cap dsh-flush">Each child costs about <b>{money(early)}</b> per month to age 5, <b>{money(school)}</b> to 12 and <b>{money(teen)}</b> to 18{pr.kids + pr.planned.count > 1 ? <>, and each later one <b>{pr.childCosts.later || "80"}%</b> of that</> : null}, in today&apos;s dollars.{pr.college.help !== "none" ? (pr.college.plan ? " College comes out of saving in the years set in College Savings, unless you save ahead for it in Spending." : " College comes out of saving for four years from 18, unless you save ahead for it in Spending.") : ""}</p>
               <div className="dsh-inline">
                 <Button variant="outline" size="sm" onClick={() => setCosts(true)}>Edit child costs</Button>
                 {coverSegs(pr).length ? <Button variant="outline" size="sm" onClick={() => setCover(true)}>How you cover it</Button> : null}
@@ -116,6 +118,21 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
         ) : null}
       </div>
     </Tile>
+  );
+}
+
+/** College as applied from College Savings: each child's cost, start and
+    years, and what's saved, at what return and tuition inflation. */
+function CollegeApplied({ pr }: { pr: P }) {
+  const kids = collegeChildren(pr), ys = collegeYears(pr), C = pr.college.plan!;
+  return (
+    <div className="dsh-readonly">
+      <p className="dsh-cap dsh-flush"><b>From College Savings:</b></p>
+      <ul className="dsh-collegelist">
+        {kids.map((k, i) => { const c = collegeKid(pr, i), y = Math.floor(nowYear()) + ys[i]; return <li key={i}><span>{k.name}</span><span>{money(c.cost)} per year from {y}, {c.years} {c.years === 1 ? "year" : "years"}</span></li>; })}
+      </ul>
+      <p className="dsh-cap dsh-flush">{money(C.saved)} saved for it, {C.ret}% return, {C.infl}% tuition inflation per year. Picking how much or a kind of school above replaces these.</p>
+    </div>
   );
 }
 
@@ -165,7 +182,7 @@ export function Profile() {
             </div>
             <div className="dsh-row">
               <MoneyField id="dshPRetSpend" label={<TipLabel text="Spending once retired" id="retSpend" />} unit="per month" value={txt(pr.retSpend)} placeholder={txt(spendMonth(pr))} onValueChange={(v) => set((p) => ({ ...p, retSpend: num(v) }))} />
-              <div className="dsh-hint dsh-self-end">{pr.retSpend == null ? "Leave blank to use what you spend today." : "Today's spending is " + money(spendMonth(pr) ?? 0) + " per month."}</div>
+              <div className="dsh-hint dsh-self-end">{pr.ddOwn?.rate != null ? "Your goal. The plan spends what your starting rate on Retirement gives." : pr.retSpend == null ? "Leave blank to use what you spend today." : "Today's spending is " + money(spendMonth(pr) ?? 0) + " per month."}</div>
             </div></div>
           </Tile>
           <Tile id="saving" icon={WalletIcon} title="Saving">

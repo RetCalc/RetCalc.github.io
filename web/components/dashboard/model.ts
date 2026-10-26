@@ -10,7 +10,7 @@ import type { Answers } from "@/tools/guide/store";
 import { parseNum } from "@/lib/format";
 import { budgetFor, drawdownFor, drawdownSuccess, flow, savingAt, taxState } from "./flows";
 import { paycheckInput } from "@/tools/budget/paycheck-math";
-import { collegeNeedOf } from "./college";
+import { collegeKid, collegeNeedOf, collegeYears } from "./college";
 import { yearlySaving } from "./cover";
 import { drawdownSetup } from "@/tools/drawdown/model";
 import { DD_STRAT_NAMES } from "@/tools/drawdown/text";
@@ -70,14 +70,6 @@ export function holdings(entries: Entry[], pr: Profile) {
   };
 }
 
-/** Each child's years until college (18), the ones you have and the ones
-    planned; negative once it's begun. */
-export function collegeStarts(pr: Profile): number[] {
-  const now = pr.kidList.slice(0, pr.kids).filter((k) => k.by).map((k) => 18 - (ageOf(k) ?? 0));
-  const planned = Array.from({ length: pr.planned.count }, (_, i) => 18 + pr.planned.firstIn + i * pr.planned.spacing);
-  return [...now, ...planned];
-}
-
 /** The profile and latest entry as the Guide's answers. */
 export function answers(pr: Profile, entries: Entry[] = []): Answers {
   const two = couple(pr), abroad = outsideUS(pr), H = holdings(entries, pr);
@@ -128,14 +120,30 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
     // Saved ahead in the budget: that share of college is paid from it, not
     // from saving in the college years.
     const need = collegeNeedOf(pr), ahead = need > 0 ? Math.min(1, F.college / need) : 0;
-    const share = pr.college.help === "all" ? 1 : 0.5, monthly = ((pr.college.cost * share) / 12) * (1 - ahead);
-    collegeStarts(pr).forEach((years, i) => {
+    // Applied from College Savings: tuition's own inflation beyond prices in
+    // general (the plan is in today's dollars), and what's already saved,
+    // growing at its return until it pays the first bills.
+    const P = pr.college.plan, infl = pr.assume.inflation;
+    const realT = P ? (1 + P.infl / 100) / (1 + infl) - 1 : 0, realR = P ? (1 + P.ret / 100) / (1 + infl) - 1 : 0;
+    const per: { i: number; k: number; m: number }[] = [];
+    collegeYears(pr).forEach((y, i) => {
       // A child already in college has its years still to go.
-      if (years <= -4 || monthly < 1) return;
-      const from = Math.max(0, years);
-      events.push({ id: "college" + i, kind: "custom", from: a.age! + from, to: a.age! + years + 4, delta: -monthly, label: "College" });
-      for (let k = from; k < years + 4; k++) college[k] = (college[k] ?? 0) + monthly;
+      const kid = collegeKid(pr, i);
+      for (let k = Math.max(0, y); k < y + kid.years; k++) per.push({ i, k, m: (kid.cost * Math.pow(1 + realT, k)) / 12 });
     });
+    let fund = P?.saved ?? 0;
+    const last = per.reduce((t, p) => Math.max(t, p.k), -1);
+    for (let k = 0; k <= last; k++) {
+      const due = per.filter((p) => p.k === k), total = due.reduce((t, p) => t + p.m * 12, 0);
+      const paid = Math.min(fund, total), left = total > 0 ? 1 - paid / total : 1;
+      fund = (fund - paid) * (1 + realR);
+      due.forEach((p) => {
+        const monthly = p.m * left * (1 - ahead);
+        if (monthly < 1) return;
+        events.push({ id: "college" + p.i + "-" + k, kind: "custom", from: a.age! + k, to: a.age! + k + 1, delta: -monthly, label: "College" });
+        college[k] = (college[k] ?? 0) + monthly;
+      });
+    }
   }
   if (events.length) a.events = events;
   // Saving year by year, account by account: the children's costs and
@@ -193,6 +201,12 @@ export interface Results {
       saved settings: its name, chance across history, and first year's
       spending per month. */
   strategy: { id: string; name: string; success: number; first: number } | null;
+  /** What the Drawdown Simulator starts from: the plan's figures with the
+      spending goal's starting rate (the person's own figures go on top). */
+  ddPlan: ReturnType<typeof drawdownPlan>;
+  /** Spending once retired per month: the goal from Profile, and what the
+      plan spends (the same, unless a starting rate is set on Retirement). */
+  goal: number | null; spend: number | null;
   abroad: boolean;
 }
 
@@ -218,13 +232,33 @@ export function drawdownPlan(S: Sim | null, ss1: number | null, ss2: number | nu
 }
 
 export function results(pr: Profile, entries: Entry[]): Results {
-  const a = answers(pr, entries), S0 = sim(a), abroad = outsideUS(pr);
+  const abroad = outsideUS(pr);
+  let a = answers(pr, entries);
+  const G = sim(a);
+  const ddPlan = G ? drawdownPlan(G, abroad ? 0 : G.ss.a1 / 12, abroad || !couple(pr) ? 0 : G.ss.a2 / 12, G.ss.claim) : null;
+  // A starting rate set on Retirement decides what the plan spends: the
+  // spending that, with its taxes, comes to that rate of savings at
+  // retirement (as the simulator's own starting rate counts them). Taxes
+  // don't move in step with spending (spending less leaves more for the
+  // required withdrawals later), so it's found by a few secant steps.
+  let S0 = G;
+  const ownRate = pr.ddOwn?.rate != null ? parseNum(pr.ddOwn.rate) / 100 : null;
+  if (G && ownRate != null && G.spend + G.taxYr > 0) {
+    const want = ownRate * G.fv, at = (sp: number) => sim({ ...a, retSpend: Math.max(0, sp) });
+    let x0 = G.spend, f0 = G.spend + G.taxYr - want;
+    let x1 = want * (G.spend / (G.spend + G.taxYr)), S1 = at(x1), f1 = S1 ? S1.spend + S1.taxYr - want : f0;
+    for (let k = 0; k < 6 && S1 && Math.abs(f1) > 1 && f1 !== f0; k++) {
+      const x2 = x1 - (f1 * (x1 - x0)) / (f1 - f0);
+      x0 = x1; f0 = f1; x1 = x2; S1 = at(x1); f1 = S1 ? S1.spend + S1.taxYr - want : f1;
+    }
+    a = { ...a, retSpend: Math.max(0, x1) };
+    S0 = S1 ?? G;
+  }
   // A strategy chosen on the Retirement tab is the plan's: its chance across
   // history stands in for spending a fixed amount, in the score too.
   let chosen: Results["strategy"] = null;
   if (S0 && pr.strategy) {
-    const ss1 = abroad ? 0 : S0.ss.a1 / 12, ss2 = abroad || !couple(pr) ? 0 : S0.ss.a2 / 12;
-    const d = drawdownFor(pr, drawdownPlan(S0, ss1, ss2, S0.ss.claim)), set = drawdownSetup(d);
+    const d = drawdownFor(pr, ddPlan), set = drawdownSetup(d);
     chosen = { id: pr.strategy, name: DD_STRAT_NAMES[pr.strategy] ?? pr.strategy, success: drawdownSuccess(d), first: set.firstW / 12 };
   }
   const S = S0 && chosen ? { ...S0, success: chosen.success } : S0;
@@ -253,7 +287,7 @@ export function results(pr: Profile, entries: Entry[]): Results {
     atRetire: S ? S.fv : null, retireYear, path, equity,
     // Months of the spending the emergency fund is sized on (the budget, or the emergency budget).
     cushion: H.cash != null && efMonth > 0 ? H.cash / efMonth : null,
-    strategy: chosen, abroad,
+    strategy: chosen, ddPlan, goal: G ? G.spend / 12 : null, spend: S ? S.spend / 12 : null, abroad,
   };
 }
 

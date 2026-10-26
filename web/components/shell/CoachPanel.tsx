@@ -24,8 +24,18 @@ const SIDECAR = "(min-width:1400px)";
 
 /* What a part is about, outlined: a field with its label, a figure with
    its label and note, a table with its scroll box, a section as itself. */
+/** A part's target: the first of its selectors (split by " || ") that's on
+    screen, so a part can name a stand-in for where its own is hidden (the
+    Dashboard hides a tool's repeated headline). */
+export function findTarget(sel: string): Element | null {
+  for (const one of sel.split(" || ")) {
+    const f = [...document.querySelectorAll(one)].find((e) => e.getClientRects().length);
+    if (f) return f;
+  }
+  return null;
+}
 function markTarget(sel: string): Element | null {
-  const f = document.querySelector(sel);
+  const f = findTarget(sel);
   if (!f) return null;
   if (f.matches("input,select,textarea,.seg")) return f.closest(".field") ?? f.parentElement;
   if (f.matches("table")) return f.closest(".scroll") ?? f;
@@ -138,10 +148,17 @@ export function CoachPanel({ id, label, sub, title, min, onToggle, onClose, clos
 /** Brings the part of the tool a tour part is about into view, clear of
     the tab rail at the top and the panel at the bottom. */
 export function revealFor(sel: string) {
-  const f = document.querySelector(sel);
+  const f = findTarget(sel);
   if (!f) return;
   // A Drawdown Simulator setting only shown in Advanced brings Advanced up.
   if (f.closest("#asideDD .ddadv")) (document.querySelector('#asideDD [data-ddin="adv"]:not(.on)') as HTMLButtonElement | null)?.click();
+  // Inside a side panel that scrolls on its own (a tool's inputs, sticky
+  // beside the results), bring it into that panel's view first.
+  const box = f.closest("aside");
+  if (box && box.scrollHeight > box.clientHeight + 1) {
+    const fr = f.getBoundingClientRect(), br = box.getBoundingClientRect();
+    if (fr.top < br.top || fr.bottom > br.bottom) box.scrollTop += fr.top - br.top - 12;
+  }
   const r = f.getBoundingClientRect(), rail = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--navh")) || 44) + 16;
   const panel = document.querySelector(".gd-coach") as HTMLElement | null;
   const below = panel && !window.matchMedia(SIDECAR).matches ? panel.offsetHeight : 0;

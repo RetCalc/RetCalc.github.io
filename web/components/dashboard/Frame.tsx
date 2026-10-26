@@ -19,7 +19,9 @@ import { useAccount } from "@/components/account/AccountProvider";
 import { AccountButton } from "@/components/account/AccountButton";
 import { setThemeChoice, useThemeChoice, type ThemeChoice } from "@/lib/theme";
 import { useLanding } from "./land";
+import { HelpButton } from "@/tools/help/ToolHelp";
 import { Landing } from "./Landing";
+import { TAB_TOURS } from "./tours";
 import { OUTSIDE_US, hasAccounts, unstarted, useDashboard } from "./store";
 
 import { SECTION_NAMES, type Section } from "./sections";
@@ -35,8 +37,8 @@ export const SECTIONS: { id: Section; name: string; icon: LucideIcon }[] = [
   { id: "taxes", name: SECTION_NAMES.taxes, icon: LandmarkIcon },
   { id: "spending", name: SECTION_NAMES.spending, icon: ReceiptIcon },
   { id: "savings", name: SECTION_NAMES.savings, icon: PiggyBankIcon },
-  { id: "retirement", name: SECTION_NAMES.retirement, icon: SunsetIcon },
   { id: "calculator", name: SECTION_NAMES.calculator, icon: CalculatorIcon },
+  { id: "retirement", name: SECTION_NAMES.retirement, icon: SunsetIcon },
   { id: "tools", name: SECTION_NAMES.tools, icon: WrenchIcon },
   { id: "next", name: SECTION_NAMES.next, icon: ListChecksIcon },
   { id: "learn", name: SECTION_NAMES.learn, icon: GraduationCapIcon },
@@ -124,7 +126,7 @@ export function SignedIn({ children, setup }: { children: ReactNode; setup?: boo
 
 /** A dashboard page: the rail, the title bar and the page. Someone who
     hasn't started setup sees the front page instead (SignedIn). */
-export function Frame({ current, title, sub, actions, children }: { current: Section; title: string; sub?: ReactNode; actions?: ReactNode; children: ReactNode }) {
+export function Frame({ current, title, sub, actions, help, children }: { current: Section; title: string; sub?: ReactNode; actions?: ReactNode; help?: string; children: ReactNode }) {
   const { data } = useDashboard();
   const fresh = unstarted(data);
   useLanding();
@@ -145,7 +147,7 @@ export function Frame({ current, title, sub, actions, children }: { current: Sec
           {/* New, with kinks still to work out. */}
           <Badge variant="highlight">Beta</Badge>
           {sub ? <span className="dsh-sub">{sub}</span> : null}
-          <div className="dsh-r">{actions}<AccountButton inDashboard /></div>
+          <div className="dsh-r">{help ? <HelpButton tool={help} /> : TAB_TOURS[current] ? <HelpButton tool={TAB_TOURS[current]} /> : null}{actions}<AccountButton inDashboard /></div>
         </header>
         <div className="dsh-page" id="dsh-page" tabIndex={-1}>{fresh ? null : children}</div>
       </div>

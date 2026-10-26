@@ -38,13 +38,13 @@ function PlanHero() {
   const pr = data.profile;
   const R = useMemo(() => results(pr, data.entries), [pr, data.entries]);
   const ss = R.abroad ? 0 : R.ss ?? 0;
-  const goal = pr.retSpend ?? spendMonth(pr) ?? 0;
+  const goal = pr.retSpend ?? spendMonth(pr) ?? 0, ownRate = pr.ddOwn?.rate != null;
   const tax = R.abroad ? ", before taxes" : "";
   return (
     <Tile icon={SunsetIcon} title="Your plan">
       <div className="dsh-stats">
         <div className="dsh-stat"><div className="dsh-label">Savings at retirement{R.retireYear ? ", " + R.retireYear : ""}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
-        <div className="dsh-stat"><div className="dsh-label"><TipLabel text="You plan to spend" id="retSpend" /></div><div className="dsh-fig dsh-md">{money(goal)}<small>per month</small></div></div>
+        <div className="dsh-stat"><div className="dsh-label">{ownRate ? <TipLabel text="Your strategy spends" id="stratSpend" /> : <TipLabel text="You plan to spend" id="retSpend" />}</div><div className="dsh-fig dsh-md">{money(R.spend ?? goal)}<small>per month</small></div>{ownRate && R.goal != null ? <div className="dsh-cap dsh-mt6">Your goal: {money(R.goal)}</div> : null}</div>
         {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Taxes, on top" id="taxes" /></div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div></div> : null}
         {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text={"Social Security" + (R.ssYear ? ", from " + R.ssYear : "")} id="ssTotal" /></div><div className="dsh-fig dsh-md">{money(ss)}<small>per month</small></div></div> : null}
         <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div></div>
