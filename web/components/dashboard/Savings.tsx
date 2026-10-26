@@ -102,13 +102,15 @@ export function Savings() {
   const pr = data.profile, F = flow(pr);
   const Budget = TOOL_VIEWS.budget;
   const rate = F.gross > 0 ? (F.invested + F.match) / F.gross : null;
+  // Shown once the emergency fund line is in "Where the rest goes", even at 0.
+  const efOn = budgetFor(pr).pcEfOn;
   return (
     <Frame current="savings" title="Savings" sub={F.hasPay ? `${money(F.invested + F.match)} per month into savings, with your employer's match` : "Where your paycheck goes"}>
       <Tile icon={PiggyBankIcon} title="Each month">
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">You save and invest</div><div className="dsh-fig dsh-key">{money(F.invested)}<small>per month</small></div></div>
           <div className="dsh-stat"><div className="dsh-label">Employer match</div><div className="dsh-fig dsh-md">{money(F.match)}<small>per month</small></div></div>
-          <div className="dsh-stat"><div className="dsh-label">To the emergency fund</div><div className="dsh-fig dsh-md">{money(F.ef)}<small>per month</small></div></div>
+          {efOn ? <div className="dsh-stat"><div className="dsh-label">To the emergency fund</div><div className="dsh-fig dsh-md">{money(F.ef)}<small>per month</small></div></div> : null}
           <div className="dsh-stat"><div className="dsh-label">{F.left >= 0 ? <TipLabel text="Not assigned" id="notAssigned" /> : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(F.left))}<small>per month</small></div></div>
           {rate != null ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Savings rate, with the match" id="savingsRate" /></div><div className="dsh-fig dsh-md">{Math.round(rate * 1000) / 10}%</div></div> : null}
         </div>
