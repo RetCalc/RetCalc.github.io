@@ -98,7 +98,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
               </SelectField>
               {pr.college.help !== "none" ? (
                 <SelectField id="dshPSchool" label="The kind of school" value={String(pr.college.cost)} onChange={(v) => set((p) => ({ ...p, college: { help: p.college.help, cost: Number(v) } }))}>
-                  <option value="27000">Public, in state ($27,000 per year)</option><option value="59000">Private ($59,000 per year)</option><option value="82000">Elite ($82,000 per year)</option>
+                  <option value="26000">Public, in state ($26,000 per year)</option><option value="61000">Private ($61,000 per year)</option><option value="82000">Elite ($82,000 per year)</option>
                 </SelectField>
               ) : <div />}
               <div className="dsh-self-end">{pr.college.help !== "none" ? <Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("college", "/dashboard/profile")} />}>{pr.college.plan ? "Change it in College Savings" : "Plan it in College Savings"}</Button> : null}</div>

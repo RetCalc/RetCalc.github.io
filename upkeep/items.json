@@ -236,11 +236,11 @@
       "where": ["web/tools/college/model.ts: the presets and default kid", "web/content/articles/college.html: the worked example", "web/components/dashboard/Profile.tsx and college.ts: the Dashboard's school choices (public, private, elite) repeat the presets"],
       "source": "College Board, Trends in College Pricing (published in late October)",
       "cadence": "Yearly, after College Board publishes",
-      "last_updated": "2026-09-30",
-      "data_for": "2025-26 school year",
-      "next_due": "2026-11-30",
+      "last_updated": "2026-10-26",
+      "data_for": "College Board Trends in College Pricing 2025 (2025-26): $25,850 public in-state and $60,920 private non-profit for tuition, fees, housing and food, rounded to $26,000 and $61,000",
+      "next_due": "2027-11-30",
       "priority": "medium",
-      "notes": "The article quotes $27,000 and a monthly saving figure the tests check."
+      "notes": "The article quotes $26,000 and monthly saving figures the tests check. The elite preset ($82,000) has no College Board figure behind it."
     },
     {
       "id": "child-costs",
@@ -263,12 +263,12 @@
       "what": "The rate the Bridge's 72(t) payment starts with: up to the greater of 5% or 120% of the federal mid-term rate.",
       "where": ["web/tools/bridge/model.ts: seppRate"],
       "source": "IRS Applicable Federal Rates (monthly revenue rulings)",
-      "cadence": "Quarterly check; only matters if 120% of the mid-term rate goes above 5%",
-      "last_updated": "2026-10-13",
-      "data_for": "5%",
+      "cadence": "Check quarterly: the default must not exceed the greater of 5% or 120% of the mid-term rate for either of the two months before payments start",
+      "last_updated": "2026-10-26",
+      "data_for": "5.5% (120% of the federal mid-term rate was 5.40% in September and 5.54% in October 2026, Rev. Ruls. 2026-17 and 2026-19)",
       "next_due": "2027-01-15",
       "priority": "low",
-      "notes": ""
+      "notes": "Lower it back toward 5% if the mid-term rate falls. The 72(t) article's worked example sets 5% itself, so its figures stay."
     },
     {
       "id": "debt-defaults",

@@ -1321,7 +1321,7 @@ group("Articles: Income tax");
 
 group("Articles: Mortgage and rent vs. buy");
 (function () {
-  var m = { price: 450000, down: 90000, rate: .065, term: 30, taxPct: .011, ins: 1800, pmiPct: 0, hoa: 0, maintPct: .01, util: 300 };
+  var m = { price: 450000, down: 90000, rate: .0725, term: 30, taxPct: .011, ins: 1800, pmiPct: 0, hoa: 0, maintPct: .01, util: 300 };
   var M = mortgage(m);
   says("mortgage", "Principal and interest: " + dollars(M.pi) + " per month");
   says("mortgage", "(" + dollars(M.tax) + " per month) and $1,800 per year in insurance (" + dollars(M.ins) + "), the housing payment is " + dollars(M.pi + M.tax + M.ins));
@@ -1329,14 +1329,14 @@ group("Articles: Mortgage and rent vs. buy");
   var X = mortgage(Object.assign({}, m, { extraMonthly: 200 }));
   says("mortgage", "gone in " + X.payoffMonth + " months");
   says("mortgage", "saves " + dollars(M.totalInterest - X.totalInterest) + " of interest");
-  var F = mortgage(Object.assign({}, m, { rate: .0575, term: 15 }));
+  var F = mortgage(Object.assign({}, m, { rate: .065, term: 15 }));
   says("mortgage", dollars(F.pi) + " per month, " + dollars(F.pi - M.pi) + " more, but total interest of " + dollars(F.totalInterest));
   ok(F.totalInterest < .4 * M.totalInterest, "15-year interest under 40% of the 30-year's");
   var P = mortgage(Object.assign({}, m, { down: 45000, pmiPct: .006 }));
   says("mortgage", "adds " + dollars(P.pmi) + " per month");
   says("mortgage", "in month " + P.pmiEndMonth + ", " + dollars(P.pmiPaid) + " in all");
 
-  var rb = { price: 450000, downPct: 20, rate: 6.5, term: 30, propTax: 1.1, ins: 1800, maint: 1, closePct: 3, sellPct: 3,
+  var rb = { price: 450000, downPct: 20, rate: 7.25, term: 30, propTax: 1.1, ins: 1800, maint: 1, closePct: 3, sellPct: 3,
              rent: 1800, rentInc: 3.2, appr: 4, invest: 7, horizon: 30, gainTax: 15, status: "m" };
   var R = rentBuyCalc(rb), L = R.years[29];
   says("rentbuy", dollars(R.monthlyBuy) + " per month in the first year: " + dollars(R.pi) + " of principal and interest");
@@ -1350,13 +1350,13 @@ group("Articles: Mortgage and rent vs. buy");
 
 group("Articles: College, budget and debt");
 (function () {
-  function cs(o) { return collegeSavingsCalc(Object.assign({ yearsUntil: 18, annualCost: 27000, tuitionInfl: .04, investRet: .06, saved: 0, collegeYrs: 4 }, o)); }
+  function cs(o) { return collegeSavingsCalc(Object.assign({ yearsUntil: 18, annualCost: 26000, tuitionInfl: .04, investRet: .06, saved: 0, collegeYrs: 4 }, o)); }
   var C = cs({});
   says("college", "make the first year " + dollars(C.yearCosts[0]));
   says("college", dollars(C.monthly) + " per month from birth covers all four years");
   says("college", "hold " + dollars(C.targetAtStart) + " on the first day");
   says("college", "it's " + dollars(cs({ yearsUntil: 10 }).monthly) + " per month for the same school");
-  says("college", "would take " + dollars(cs({ annualCost: 59000 }).monthly) + " per month from birth");
+  says("college", "would take " + dollars(cs({ annualCost: 61000 }).monthly) + " per month from birth");
   says("college", "about $" + Math.round(C.monthly / 10) * 10 + " per month from birth");
   says("college", "closer to $" + Math.round(cs({ yearsUntil: 10 }).monthly / 10) * 10);
 

@@ -146,7 +146,7 @@ export const EMPTY_PROFILE: Profile = {
   ss: { checked: false, own1: null, own2: null, claim: null, claim2: null }, strategy: null,
   tools: {}, raise: 0, growth: {},
   planned: { count: 0, firstIn: 2, spacing: 3 }, childcare: true, careArea: "suburb",
-  college: { help: "none", cost: 27000 },
+  college: { help: "none", cost: 26000 },
   childCosts: { early: "", school: "", teen: "", later: "80" }, kidCover: {},
 };
 export const EMPTY: DashData = { profile: EMPTY_PROFILE, entries: [], step: 0, skipped: [], done: false };

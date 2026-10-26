@@ -42,7 +42,7 @@ export function collegeInputsOf(pr: Profile): CollegeInputs | null {
   const P = pr.college.plan, ys = collegeYears(pr);
   const kids = ys.flatMap((y, i) => {
     if (y <= 0) return [];
-    const k = collegeKid(pr, i), preset = ["27000", "59000", "82000"].includes(String(k.cost)) ? String(k.cost) : "0";
+    const k = collegeKid(pr, i), preset = ["26000", "61000", "82000"].includes(String(k.cost)) ? String(k.cost) : "0";
     return [{ preset, cost: groupDigits(k.cost, true), years: String(Math.min(25, y)), collegeYrs: String(k.years) }];
   });
   if (!kids.length) return null;

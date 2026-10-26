@@ -6,14 +6,14 @@ import type { CollegeInput, CollegePlan } from "@/lib/engine/types";
 import { fmtNum, groupDigits, money, parseNum } from "@/lib/format";
 
 export const CL_PRESETS: [string, string][] = [
-  ["27000", "Public in-state · ~$27,000/yr"], ["59000", "Private non-profit · ~$59,000/yr"],
+  ["26000", "Public in-state · ~$26,000/yr"], ["61000", "Private non-profit · ~$61,000/yr"],
   ["82000", "Elite / Ivy · ~$82,000/yr"], ["0", "Custom"],
 ];
 
 export interface Kid { preset: string; cost: string; years: string; collegeYrs: string }
 
 export const COLLEGE_DEFAULTS = {
-  kids: [{ preset: "27000", cost: groupDigits(27000, true), years: "18", collegeYrs: "4" }] as Kid[],
+  kids: [{ preset: "26000", cost: groupDigits(26000, true), years: "18", collegeYrs: "4" }] as Kid[],
   saved: "0", ret: "6", infl: "4",
 };
 export type CollegeInputs = typeof COLLEGE_DEFAULTS;
