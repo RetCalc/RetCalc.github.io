@@ -206,3 +206,16 @@ test("Paycheck to Retirement on two devices: the newer stays, the other is kept 
   // Nothing typed on the other side: nothing to keep.
   assert.equal(mergeItem("paycheck-plan", c(laptop, 300), c({ step: "start", reached: "start", tools: {} }, 200), base)!.keep, undefined);
 });
+
+test("Learn on two devices: lessons read on either stay read, each with its earlier date", () => {
+  const laptop = { read: { "sequence-risk": "2026-10-20", "four-percent-rule": "2026-10-22" } };
+  const phone = { read: { "four-percent-rule": "2026-10-21", "hsa": "2026-10-23" } };
+  const m = mergeItem("learn", c(laptop, 300), c(phone, 200), null)!;
+  assert.deepEqual(m.value, { read: { "four-percent-rule": "2026-10-21", "hsa": "2026-10-23", "sequence-risk": "2026-10-20" } });
+  assert.equal(m.toLocal, true);
+  assert.equal(m.toAccount, true);
+  // Marked unread on one device since they last agreed: that side wins, so it stays unread.
+  const base = fingerprint(laptop);
+  const u = mergeItem("learn", c({ read: { "four-percent-rule": "2026-10-22" } }, 400), c(laptop, 300), base)!;
+  assert.deepEqual(u.value, { read: { "four-percent-rule": "2026-10-22" } });
+});

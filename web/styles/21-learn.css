@@ -30,8 +30,8 @@
 .lrn-next4u h2 { margin: 8px 0 8px; font-size: 30px; font-weight: 600; letter-spacing: -.025em; line-height: 1.15; }
 .lrn-why { margin: 0; font-size: 15px; color: var(--ds-muted); line-height: 1.5; }
 .lrn-next4u ul { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 7px; font-size: 14px; }
-.lrn-next4u li { display: flex; gap: 9px; }
-.lrn-next4u li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ds-amber); margin-top: 8px; flex: none; }
+.lrn-next4u ul li { display: flex; gap: 9px; }
+.lrn-next4u ul li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ds-amber); margin-top: 8px; flex: none; }
 .lrn-acts { display: flex; align-items: center; gap: 16px; margin-top: 18px; flex-wrap: wrap; }
 .lrn-also { font-size: 13px; color: var(--ds-muted); }
 .lrn-also a { color: var(--ds-text); text-decoration: underline; text-decoration-color: var(--ds-rule-strong); text-underline-offset: 3px; }
