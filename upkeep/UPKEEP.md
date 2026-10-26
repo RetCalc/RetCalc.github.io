@@ -167,6 +167,17 @@ that has changed. Only then move its `data-reviewed` date to today. Run the
 checks above and `node scripts/lastmod.mjs`. `check.py` works out this
 item's dates from the articles themselves; don't edit them in `items.json`.
 
+### Lesson reviews (each lesson every 90 days)
+
+Covers `lessons` (web/content/lessons/, the Learn section; how one is
+written is in its README.md). A review means reading the lesson against the
+current site and its sources: every figure is what the data files and tools
+show, every rule and research claim still holds, every Go deeper link opens
+and says what it's cited for. Only then move its `data-reviewed` date to
+today. When any other item here is updated (a tax year, Medicare premiums,
+the Trustees Report, CAPE), search the lessons for the old figure as well.
+`check.py` works out this item's dates from the lessons themselves.
+
 ### Defaults (mortgage rate, housing, college, 72(t), debt, assumptions)
 
 Check the source named in the entry. Round figures are intentional: change

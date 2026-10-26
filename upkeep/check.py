@@ -35,9 +35,9 @@ def derive(item):
             item["last_updated"] = asof.isoformat()
             item["next_due"] = (asof + dt.timedelta(days=item.get("max_age_days", 36))).isoformat()
             item["data_for"] = "%s, the %s reading" % (m.group(1), asof.strftime("%-d %B %Y"))
-    elif item.get("derive") == "articles":
+    elif item.get("derive") in ("articles", "lessons"):
         dates = {}
-        for p in glob.glob(os.path.join(ROOT, "web", "content", "articles", "*.html")):
+        for p in glob.glob(os.path.join(ROOT, "web", "content", item["derive"], "*.html")):
             m = re.search(r'<article[^>]*data-reviewed="(\d{4}-\d\d-\d\d)"', open(p, encoding="utf-8").read())
             if m:
                 dates[os.path.basename(p)[:-5]] = m.group(1)
@@ -47,8 +47,8 @@ def derive(item):
             item["last_updated"] = oldest
             item["next_due"] = (day(oldest) + dt.timedelta(days=age)).isoformat()
             stale = sorted(k for k, v in dates.items() if v == oldest)
-            item["data_for"] = "%d articles; oldest review %s (%s)" % (
-                len(dates), oldest, ", ".join(stale) if len(stale) <= 3 else "%d of them" % len(stale))
+            item["data_for"] = "%d %s; oldest review %s (%s)" % (
+                len(dates), item["derive"], oldest, ", ".join(stale) if len(stale) <= 3 else "%d of them" % len(stale))
     return item
 
 

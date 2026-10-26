@@ -6,7 +6,9 @@
       "area": "Taxes",
       "name": "Federal income tax brackets and deductions",
       "what": "Federal brackets, standard deduction, long-term capital gains breakpoints, the age-65 extra standard deduction, and the 2025-2028 senior deduction.",
-      "where": ["web/lib/engine/data/<year>.js (2026.js today): fed, fedStd, ltcg, seniorAddl, seniorBonus. A new year is a new file; see UPKEEP.md"],
+      "where": [
+        "web/lib/engine/data/<year>.js (2026.js today): fed, fedStd, ltcg, seniorAddl, seniorBonus. A new year is a new file; see UPKEEP.md"
+      ],
       "source": "IRS revenue procedure for the coming tax year (Rev. Proc. 2025-32 gave 2026), usually out in late October",
       "cadence": "Yearly. Prepare in November or December; switch on January 1",
       "last_updated": "2026-09-29",
@@ -20,7 +22,9 @@
       "area": "Taxes",
       "name": "Retirement and HSA contribution limits, and the IRA deduction and Roth IRA phase-outs",
       "what": "401(k)/403(b)/457 deferral limit and catch-ups (50+ and 60 to 63), the IRA limit and catch-up, HSA self-only and family limits and the 55+ catch-up, and the MAGI ranges over which a traditional IRA deduction phases out with a plan at work, and the MAGI ranges over which direct Roth IRA contributions phase out. Income Tax's pre-tax deductions pop-up warns against them and the engine applies the phase-out; the Budget tool's Paycheck tab points to a backdoor Roth past the Roth range (it never caps the line).",
-      "where": ["web/lib/engine/data/<year>.js: limits (k401, ira, hsa, iraPhase, rothPhase)"],
+      "where": [
+        "web/lib/engine/data/<year>.js: limits (k401, ira, hsa, iraPhase, rothPhase)"
+      ],
       "source": "IRS notice on retirement plan limits (Notice 2025-67 gave 2026), usually out in late October or November; IRS revenue procedure on HSA limits (Rev. Proc. 2025-19 gave 2026), usually out in May",
       "cadence": "Yearly, with the new tax year",
       "last_updated": "2026-10-18",
@@ -34,8 +38,10 @@
       "area": "Taxes",
       "name": "Social Security wage base, benefit bend points and earnings-test limits",
       "what": "The Social Security tax wage cap (also the cap on earnings the benefit estimate counts), the two bend points in the benefit formula, and the retirement earnings test's two exempt amounts (under full retirement age, and the year it's reached), which the claiming tool applies.",
-      "where": ["web/lib/engine/data/<year>.js: fica (fica.ssCap is the wage base, also the benefit estimate's earnings cap), ss.bend1, ss.bend2, ss.earn.under, ss.earn.fraYear",
-        "web/lib/engine/data/tables.js: SS_AWI, the national average wage index by year (add the newest year each October; ssa.gov/oact/cola/AWI.html). The calculator indexes past pay with the index two years before the data year"],
+      "where": [
+        "web/lib/engine/data/<year>.js: fica (fica.ssCap is the wage base, also the benefit estimate's earnings cap), ss.bend1, ss.bend2, ss.earn.under, ss.earn.fraYear",
+        "web/lib/engine/data/tables.js: SS_AWI, the national average wage index by year (add the newest year each October; ssa.gov/oact/cola/AWI.html). The calculator indexes past pay with the index two years before the data year"
+      ],
       "source": "SSA's annual COLA and wage-base fact sheet, released in October",
       "cadence": "Yearly. Switch with the federal tax figures on January 1",
       "last_updated": "2026-09-29",
@@ -49,7 +55,9 @@
       "area": "Taxes",
       "name": "State income tax brackets and deductions (50 states and DC)",
       "what": "Every state's brackets, standard deduction, personal exemption and credits. Illinois has extra detail (exemption cliff, 65+ amount). Also which pre-tax deductions each state keeps in its base (states.preTaxed: Pennsylvania, New Jersey, California and Massachusetts as of 2026).",
-      "where": ["web/lib/engine/data/<year>.js: states.tax, states.preTaxed (and states.year, the year the state figures are for)"],
+      "where": [
+        "web/lib/engine/data/<year>.js: states.tax, states.preTaxed (and states.year, the year the state figures are for)"
+      ],
       "source": "Tax Foundation, State Individual Income Tax Rates and Brackets (as of January 1), usually published in February; state revenue departments for detail",
       "cadence": "Yearly, after the Tax Foundation survey comes out",
       "last_updated": "2026-09-29",
@@ -63,7 +71,9 @@
       "area": "Taxes",
       "name": "State rules for retirement income",
       "what": "Which states tax Social Security, pension and IRA exclusions, extra deductions or credits at 65, and states with no early-withdrawal penalty add-on.",
-      "where": ["web/lib/engine/data/<year>.js: states.retire, states.ssTaxed, states.noExpansion (Medicaid non-expansion; the plan engine and the Bridge)"],
+      "where": [
+        "web/lib/engine/data/<year>.js: states.retire, states.ssTaxed, states.noExpansion (Medicaid non-expansion; the plan engine and the Bridge)"
+      ],
       "source": "State revenue departments; Tax Foundation and AARP state guides as a cross-check",
       "cadence": "Yearly, early in the year",
       "last_updated": "2026-10-13",
@@ -77,7 +87,9 @@
       "area": "Taxes",
       "name": "Local income tax states and notes",
       "what": "Which states have local income taxes (and so show Income Tax's optional local field), each one's usual base (wages or state taxable income), its one-line note (Maryland's county range, New York City's range) and its lookup links.",
-      "where": ["web/tools/tax/local.ts: LOCAL_TAX"],
+      "where": [
+        "web/tools/tax/local.ts: LOCAL_TAX"
+      ],
       "source": "Tax Foundation's state and local income tax data; each state's revenue department (Maryland Comptroller county rates, New York tax department for NYC); check each lookup link still opens",
       "cadence": "Yearly, with the state tax update",
       "last_updated": "2026-10-26",
@@ -91,7 +103,9 @@
       "area": "Healthcare",
       "name": "Medicare Part B premium and IRMAA tiers",
       "what": "The standard Part B premium and the income tiers that raise Part B and Part D for higher earners.",
-      "where": ["web/lib/engine/data/<year>.js: medicare.irmaa (the Healthcare tool reads it through HC_IRMAA)"],
+      "where": [
+        "web/lib/engine/data/<year>.js: medicare.irmaa (the Healthcare tool reads it through HC_IRMAA)"
+      ],
       "source": "CMS Medicare Parts A and B premiums and deductibles fact sheet, usually out in October or November",
       "cadence": "Yearly. Switch on January 1",
       "last_updated": "2026-10-13",
@@ -105,7 +119,9 @@
       "area": "Healthcare",
       "name": "Medicare Part D and Medigap cost estimates",
       "what": "The average standalone Part D premium and the rough monthly range for a Medigap Plan G policy at 65.",
-      "where": ["web/lib/engine/data/<year>.js: medicare.partD, medicare.medigap (the plan engine and the Healthcare tool both read them)"],
+      "where": [
+        "web/lib/engine/data/<year>.js: medicare.partD, medicare.medigap (the plan engine and the Healthcare tool both read them)"
+      ],
       "source": "CMS Part D premium announcement (summer); KFF or insurer surveys for Medigap",
       "cadence": "Yearly, in the fall",
       "last_updated": "2026-10-13",
@@ -119,7 +135,11 @@
       "area": "Healthcare",
       "name": "ACA marketplace premiums and subsidies",
       "what": "Average benchmark Silver premium by state, the poverty line the subsidies are measured against, the subsidy percentages, and whether the enhanced credits are back.",
-      "where": ["web/lib/engine/data/<year>.js: aca.fplBase, aca.fplPerAddl, aca.premium40, aca.cliff, aca.contrib (the applicable-percentage table)", "web/tools/about/About.tsx: the '2026 rules' ACA text (the Healthcare tool names the year from the data)", "web/components/dashboard/About.tsx: the Dashboard's copy of the same text"],
+      "where": [
+        "web/lib/engine/data/<year>.js: aca.fplBase, aca.fplPerAddl, aca.premium40, aca.cliff, aca.contrib (the applicable-percentage table)",
+        "web/tools/about/About.tsx: the '2026 rules' ACA text (the Healthcare tool names the year from the data)",
+        "web/components/dashboard/About.tsx: the Dashboard's copy of the same text"
+      ],
       "source": "KFF Marketplace Average Benchmark Premiums (late October or November); HHS poverty guidelines (January, used for the next coverage year); IRS applicable-percentage revenue procedure (summer)",
       "cadence": "Yearly, for the coming coverage year",
       "last_updated": "2026-09-29",
@@ -133,7 +153,10 @@
       "area": "Taxes",
       "name": "RMD and life-expectancy tables",
       "what": "The IRS Uniform Lifetime Table (RMDs), the Single Life table (72(t) payments), and the RMD starting age, which works out birth year from the newest tax year in web/lib/engine/data/.",
-      "where": ["web/lib/engine/data/tables.js: ULT, BR_SLT (not by year)", "web/lib/engine/math.js: rmdStartAge (reads the newest year from data/)"],
+      "where": [
+        "web/lib/engine/data/tables.js: ULT, BR_SLT (not by year)",
+        "web/lib/engine/math.js: rmdStartAge (reads the newest year from data/)"
+      ],
       "source": "IRS Publication 590-B",
       "cadence": "Yearly check. The tables rarely change (last in 2022); rmdStartAge rolls with the newest tax year",
       "last_updated": "2026-09-29",
@@ -147,7 +170,15 @@
       "area": "Taxes",
       "name": "The tax year named in the site's text",
       "what": "Every place the site says '2026' about its rules: page titles and descriptions, tool badges and headings, the footer, preview cards, articles and FAQs.",
-      "where": ["web/lib/page-meta.json", "web/lib/cards.ts", "web/components/shell/Footer.tsx", "web/components/dashboard/FinePrint.tsx (the Dashboard's copy of the disclaimer)", "web/components/dashboard/About.tsx (the Dashboard's copy of the About tool sections: 2026 limits and rules, and the market record's last month)", "web/content/articles/*.html", "web/tools/**: 'grep -rn 2026 web --include=*.ts --include=*.tsx'. Most tools name the year from the data (yearData().year, NEWEST_YEAR); what's left is static text"],
+      "where": [
+        "web/lib/page-meta.json",
+        "web/lib/cards.ts",
+        "web/components/shell/Footer.tsx",
+        "web/components/dashboard/FinePrint.tsx (the Dashboard's copy of the disclaimer)",
+        "web/components/dashboard/About.tsx (the Dashboard's copy of the About tool sections: 2026 limits and rules, and the market record's last month)",
+        "web/content/articles/*.html",
+        "web/tools/**: 'grep -rn 2026 web --include=*.ts --include=*.tsx'. Most tools name the year from the data (yearData().year, NEWEST_YEAR); what's left is static text"
+      ],
       "source": "Follows the tax items above",
       "cadence": "Yearly, on January 1, together with the federal switch",
       "last_updated": "2026-10-13",
@@ -161,7 +192,11 @@
       "area": "Market data",
       "name": "Stock, bond and inflation history",
       "what": "Monthly S&P 500 total returns, 10-year Treasury returns, CPI-U inflation and the historical CAPE series, January 1926 onward. Every historical test on the site runs on these.",
-      "where": ["web/lib/engine/data/history.js: HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, HIST_M_CAPE (and the '1,200 months' comment)", "web/components/shell/Footer.tsx and the articles: '1926 to 2025'", "web/tools/about/About.tsx and web/components/dashboard/About.tsx: Historical's 'January 1926 to December 2025' and its run counts"],
+      "where": [
+        "web/lib/engine/data/history.js: HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, HIST_M_CAPE (and the '1,200 months' comment)",
+        "web/components/shell/Footer.tsx and the articles: '1926 to 2025'",
+        "web/tools/about/About.tsx and web/components/dashboard/About.tsx: Historical's 'January 1926 to December 2025' and its run counts"
+      ],
       "source": "Robert Shiller's dataset (Yale), via multpl, for prices, dividends, yields and CAPE; US BLS for CPI-U (December's CPI comes out mid-January)",
       "cadence": "Yearly: add the past year's 12 months once December's data is in",
       "last_updated": "2026-09-29",
@@ -175,7 +210,9 @@
       "area": "Market data",
       "name": "Cash (T-bill) and small-cap value history",
       "what": "Monthly one-month Treasury bill and small-company value returns, July 1926 onward.",
-      "where": ["web/lib/engine/data/history.js: HIST_M_CASH, HIST_M_SV"],
+      "where": [
+        "web/lib/engine/data/history.js: HIST_M_CASH, HIST_M_SV"
+      ],
       "source": "Kenneth R. French Data Library (Dartmouth): the Fama-French factors file for T-bills, the 2x3 size/book-to-market portfolios for small value",
       "cadence": "Yearly, with the market history, once French posts December",
       "last_updated": "2026-09-29",
@@ -189,7 +226,9 @@
       "area": "Market data",
       "name": "Today's CAPE reading",
       "what": "The latest Shiller CAPE, shown against the historical record and used by the CAPE withdrawal strategy's 'today' figures.",
-      "where": ["web/lib/engine/data/history.js: CAPE_NOW, CAPE_NOW_ASOF"],
+      "where": [
+        "web/lib/engine/data/history.js: CAPE_NOW, CAPE_NOW_ASOF"
+      ],
       "source": "multpl.com Shiller PE (monthly)",
       "cadence": "Monthly",
       "last_updated": "2026-09-30",
@@ -205,7 +244,9 @@
       "area": "Housing",
       "name": "Default mortgage rate",
       "what": "The 30-year rate the Mortgage and Rent vs. Buy tools start with. The pages call it a starting point, not a live quote.",
-      "where": ["web/lib/engine/data/tables.js: MORT_RATE_30 (and its comment)"],
+      "where": [
+        "web/lib/engine/data/tables.js: MORT_RATE_30 (and its comment)"
+      ],
       "source": "Freddie Mac Primary Mortgage Market Survey (weekly); use a rounded recent average",
       "cadence": "Quarterly, or sooner if rates move more than half a point",
       "last_updated": "2026-10-13",
@@ -219,7 +260,10 @@
       "area": "Housing",
       "name": "Home price, rent and housing-cost defaults",
       "what": "The starting home price, rent, rent growth, home appreciation, property tax rate and insurance in the Mortgage and Rent vs. Buy tools.",
-      "where": ["web/tools/mortgage/model.ts: MORTGAGE_DEFAULTS", "web/tools/rentbuy/model.ts: RENTBUY_DEFAULTS"],
+      "where": [
+        "web/tools/mortgage/model.ts: MORTGAGE_DEFAULTS",
+        "web/tools/rentbuy/model.ts: RENTBUY_DEFAULTS"
+      ],
       "source": "NAR or Census median home price; Census or Zillow median rent; Tax Foundation property tax rates",
       "cadence": "Yearly",
       "last_updated": "2026-10-05",
@@ -233,7 +277,11 @@
       "area": "Other defaults",
       "name": "College cost presets",
       "what": "The yearly cost of a public in-state and a private school (tuition, room and board) the College Savings tool offers.",
-      "where": ["web/tools/college/model.ts: the presets and default kid", "web/content/articles/college.html: the worked example", "web/components/dashboard/Profile.tsx and college.ts: the Dashboard's school choices (public, private, elite) repeat the presets"],
+      "where": [
+        "web/tools/college/model.ts: the presets and default kid",
+        "web/content/articles/college.html: the worked example",
+        "web/components/dashboard/Profile.tsx and college.ts: the Dashboard's school choices (public, private, elite) repeat the presets"
+      ],
       "source": "College Board, Trends in College Pricing (published in late October)",
       "cadence": "Yearly, after College Board publishes",
       "last_updated": "2026-09-30",
@@ -247,7 +295,10 @@
       "area": "Other defaults",
       "name": "What children cost (the Guide and Paycheck to Retirement)",
       "what": "Monthly cost of a child by age: everyday costs before school ($1,300), 6 to 12 ($1,400) and 13 to 18 ($1,500); childcare on top by area (big city $1,500, suburb or small city $1,000, rural $700); 20% less for a later child. Rounded to $100.",
-      "where": ["web/tools/guide/schedule.ts: CHILD_COST and the source line CHILD_SOURCE", "web/tools/about/About.tsx: the Guide's 'Children and other changes' figures and the 'What children cost' source line"],
+      "where": [
+        "web/tools/guide/schedule.ts: CHILD_COST and the source line CHILD_SOURCE",
+        "web/tools/about/About.tsx: the Guide's 'Children and other changes' figures and the 'What children cost' source line"
+      ],
       "source": "USDA, Expenditures on Children by Families, 2015 (middle-income married couples, Table 1), brought to today's prices with the CPI-U; Department of Labor Women's Bureau, National Database of Childcare Prices (center care, by county size), brought forward with the CPI for day care and preschool",
       "cadence": "Yearly: carry both forward with the CPI; switch to a newer USDA study or childcare-price release when one comes out",
       "last_updated": "2026-10-19",
@@ -261,7 +312,9 @@
       "area": "Other defaults",
       "name": "72(t) interest rate default",
       "what": "The rate the Bridge's 72(t) payment starts with: up to the greater of 5% or 120% of the federal mid-term rate.",
-      "where": ["web/tools/bridge/model.ts: seppRate"],
+      "where": [
+        "web/tools/bridge/model.ts: seppRate"
+      ],
       "source": "IRS Applicable Federal Rates (monthly revenue rulings)",
       "cadence": "Quarterly check; only matters if 120% of the mid-term rate goes above 5%",
       "last_updated": "2026-10-13",
@@ -275,7 +328,10 @@
       "area": "Other defaults",
       "name": "Debt Payoff example rates",
       "what": "The example debts' interest rates, mainly the credit card APR.",
-      "where": ["web/tools/debt/model.ts: ROWS", "web/content/articles/debt.html (if it quotes them)"],
+      "where": [
+        "web/tools/debt/model.ts: ROWS",
+        "web/content/articles/debt.html (if it quotes them)"
+      ],
       "source": "Federal Reserve G.19 consumer credit report (credit card rates)",
       "cadence": "Yearly",
       "last_updated": "2026-10-05",
@@ -289,7 +345,11 @@
       "area": "Other defaults",
       "name": "Long-run assumption defaults",
       "what": "Default return before inflation (8.5%), inflation (3%), college cost growth (4%), heirs' tax rate and similar starting assumptions.",
-      "where": ["web/lib/engine/calculators.js: DEFAULTS, BASIC_DEFAULTS, RISK_LEVELS", "web/tools/*/model.ts: each tool's defaults", "web/lib/engine/plan.js: PL_HEIR"],
+      "where": [
+        "web/lib/engine/calculators.js: DEFAULTS, BASIC_DEFAULTS, RISK_LEVELS",
+        "web/tools/*/model.ts: each tool's defaults",
+        "web/lib/engine/plan.js: PL_HEIR"
+      ],
       "source": "Long-run history on the site itself; Vanguard and Morningstar capital-market outlooks as a sanity check",
       "cadence": "Yearly review; change rarely",
       "last_updated": "2026-10-13",
@@ -303,7 +363,9 @@
       "area": "Taxes",
       "name": "New laws that change the rules mid-year",
       "what": "Federal or state legislation that changes brackets, deductions, ACA subsidies (the enhanced credits that expired after 2025), RMD ages or Social Security taxation between the yearly updates.",
-      "where": ["Wherever the law lands; usually the year's file in web/lib/engine/data/, math.js and the articles"],
+      "where": [
+        "Wherever the law lands; usually the year's file in web/lib/engine/data/, math.js and the articles"
+      ],
       "source": "IRS newsroom, Tax Foundation tracker, KFF for ACA, state revenue departments",
       "cadence": "Quarterly check",
       "last_updated": "2026-10-13",
@@ -317,7 +379,9 @@
       "area": "Articles",
       "name": "Article reviews ('Last reviewed' month)",
       "what": "Each tool page's article shows the month it was last reviewed. A review means checking its figures, sources and links still hold; only then move its date.",
-      "where": ["web/content/articles/*.html: data-reviewed on each <article>"],
+      "where": [
+        "web/content/articles/*.html: data-reviewed on each <article>"
+      ],
       "source": "The article's own sources and the site's current figures",
       "cadence": "Each article every 90 days (set max_age_days to change it)",
       "last_updated": "2026-10-13",
@@ -327,6 +391,24 @@
       "derive": "articles",
       "max_age_days": 90,
       "notes": "check.py reads every article's data-reviewed date: last_updated is the oldest, next_due is that plus max_age_days. Run node web/scripts/lastmod.mjs after editing an article."
+    },
+    {
+      "id": "lessons",
+      "area": "Learn",
+      "name": "Learn lesson reviews ('Last reviewed' month) and their outside links",
+      "what": "Each Learn lesson shows the month it was last reviewed. A review means checking every figure, rule and research claim it quotes against the site's current data and its sources, and that each Go deeper link still opens and says what it's cited for; only then move its date.",
+      "where": [
+        "web/content/lessons/*.html: data-reviewed on each <article>; the Go deeper links in each <footer>"
+      ],
+      "source": "The site's data files (web/lib/engine/data/), the tool articles, and each lesson's own sources",
+      "cadence": "Each lesson every 90 days (set max_age_days to change it); also whenever a figure it quotes changes (new tax year, Medicare premiums, Trustees Report, CAPE)",
+      "last_updated": "2026-10-26",
+      "data_for": "",
+      "next_due": "2027-01-24",
+      "priority": "medium",
+      "derive": "lessons",
+      "max_age_days": 90,
+      "notes": "check.py reads every lesson's data-reviewed date. Lessons quote this year's limits, brackets, Medicare and ACA figures, Social Security figures and today's CAPE: when one of those items is updated, search content/lessons/ for the old figure too."
     }
   ]
 }
