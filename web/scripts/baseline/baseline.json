@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-26T16:38:13.469Z",
+  "recorded": "2026-10-26T20:08:38.216Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -650,19 +650,19 @@
     {
       "id": "College: defaults: one child, public in-state, 18 years",
       "out": {
-        "monthly": 558.2579,
-        "totalFuture": 232269.0364,
-        "targetAtStart": 212673.5861,
-        "shortfall": 212673.5861
+        "monthly": 537.5817,
+        "totalFuture": 223666.4795,
+        "targetAtStart": 204796.7867,
+        "shortfall": 204796.7867
       },
       "fields": {
-        "monthly": "765e9a8ff55a1038",
-        "rows": "d3bd7c306850daf7",
+        "monthly": "fae2aba2cb5fd21c",
+        "rows": "9db47b420e5fba15",
         "savingsAtStart": "5feceb66ffc86f38",
-        "shortfall": "c7162cf380950e2c",
-        "targetAtStart": "c7162cf380950e2c",
-        "totalFuture": "553ed04e32a3d670",
-        "yearCosts": "e732a98732be049b"
+        "shortfall": "5255a7f5f2d29f6d",
+        "targetAtStart": "5255a7f5f2d29f6d",
+        "totalFuture": "217de0e9525072fe",
+        "yearCosts": "1d1a4f246ca45b86"
       }
     },
     {
@@ -796,28 +796,28 @@
         "bridgeYears": 2,
         "acaMagi": 260000,
         "pctFPL": 12.2931,
-        "benchmarkMonthly": 1887.1549,
-        "netPremium": 1887.1549,
+        "benchmarkMonthly": 817,
+        "netPremium": 817,
         "credit": 0,
-        "enhancedNet": 1841.6667,
+        "enhancedNet": 817,
         "irmaaTier": 1,
         "medicareLow": 453.6,
         "medicareHigh": 533.6,
-        "bronze": 1415.3662,
-        "gold": 2358.9437,
+        "bronze": 612.75,
+        "gold": 1021.25,
         "cliff400": 84600,
         "tierSavings": 95.7,
         "nextTierThreshold": 342000,
         "nextTierCost": 144.7
       },
       "fields": {
-        "aca": "2008d0256bca7ad7",
+        "aca": "6498a6b0007ee4bc",
         "acaMagi": "9e7671068ee9f4c1",
-        "enh": "3edacf3b6e616ec0",
+        "enh": "4c88303c87c7eb26",
         "fpl": "48ff6cf0c4990494",
-        "grossMonthly": "fd3c3c19b2142fda",
+        "grossMonthly": "7b2c21ead1522776",
         "medicare": "1c30e6e0fa673979",
-        "std": "1ce7461df800452b",
+        "std": "a9c6a2979f46edb2",
         "tiers": "6e2db03bfddb72c3"
       }
     },
@@ -868,16 +868,16 @@
       "out": {
         "bestPlan": "Blended plan",
         "holds": 100,
-        "taxCost": 74761.8111,
-        "leftAt59": 1936129.2582,
+        "taxCost": 80783.493,
+        "leftAt59": 1926561.7388,
         "plans": "Blended plan: 100%; Roth conversion ladder: 85%; Brokerage, then Roth contributions: 53%; 72(t) payments: 100%; Pay the 10% penalty: 100%",
-        "firstYearGross": 60629.1693
+        "firstYearGross": 60613.3341
       },
       "fields": {
-        "after": "7fd80fdada1579d6",
-        "ctx": "ad4ae16aa21e1356",
-        "run": "77b0fcb81d534d34",
-        "sc": "2bd43f1b630490eb"
+        "after": "e86436436a386868",
+        "ctx": "fdca76b2a4520974",
+        "run": "be089a474fa211d8",
+        "sc": "e3bac686fa552b2e"
       }
     },
     {
@@ -892,9 +892,9 @@
       },
       "fields": {
         "after": "04c0536e556b525f",
-        "ctx": "0d360cf702dbc163",
-        "run": "809bac5c94d953c8",
-        "sc": "87f423c4d8f1382f"
+        "ctx": "fd86fb99886c6ea5",
+        "run": "06c959cb7f0a091e",
+        "sc": "8358171d67e3a5a4"
       }
     },
     {
@@ -991,7 +991,7 @@
         "age1": "81b8a03f97e8787c",
         "age2": "39fa9ec190eee7b6",
         "alts": "8bd54d9a677032ad",
-        "base": "b7fd374e8bd0451c",
+        "base": "a5a47c84ebf893a9",
         "best": "6879b5ecb0f5ecc4",
         "first": "255ac64f2a9b3741",
         "floor": "8139b33952401b3e",
@@ -1068,10 +1068,10 @@
         "needAtRetirement": 924000
       },
       "fields": {
-        "S": "d3fdcd80ab28eee6",
+        "S": "3dc3c1f8c4a41bd8",
         "need": "8687fbfca8bdf1d5",
         "sc": "cf1beef94f7af3dd",
-        "strats": "0945edb3cd94a083"
+        "strats": "6eff53e7da569dd9"
       }
     },
     {
@@ -1085,7 +1085,7 @@
         "needAtRetirement": 380000
       },
       "fields": {
-        "S": "a5ca85f2b391d27a",
+        "S": "544e8b14726cd7e4",
         "need": "df61f9f8bfae765c",
         "sc": "f5f05cd352878bbb",
         "strats": "527c72e4b619ddab"
