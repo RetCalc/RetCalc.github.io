@@ -442,6 +442,40 @@ const Tools: Pic = ({ data }) => {
   );
 };
 
+/** The Dashboard: a rail of pages beside three tiles: net worth climbing
+    to the arrowhead, where a paycheck goes, and a readiness score with its
+    rows. */
+const Dashboard: Pic = () => {
+  const tile = (x: number, y: number, w: number, h: number) => <rect x={x} y={y} width={w} height={h} rx={18} fill={C.ground} />;
+  const net = Array.from({ length: 14 }, (_, i): Pt => [110 + i * 32, 226 - 150 * Math.pow(i / 13, 1.6) - (i % 3 === 1 ? 6 : 0)]);
+  const r = 62, circ = 2 * Math.PI * r;
+  const parts: [number, string][] = [[0.34, C.lav], [0.25, C.rose], [0.31, C.amber], [0.1, C.teal]];
+  let at = 0;
+  return (
+    <>
+      {tile(18, 20, 50, 494)}
+      {Array.from({ length: 9 }, (_, i) => <rect key={i} x={33} y={44 + i * 50} width={20} height={20} rx={6} fill={i === 1 ? C.amber : C.strong} opacity={i === 1 ? 1 : 0.55} />)}
+      {tile(80, 20, 482, 250)}
+      <path d={smooth(net.map(([x, y]): Pt => [x, y - 34])) + "L" + net[13][0] + " " + (net[13][1] + 40) + smooth([...net].reverse().map(([x, y]): Pt => [x, y + 40])).replace("M", "L") + "Z"} fill={C.sky} opacity={0.14} />
+      <path d={smooth(net)} fill="none" stroke={C.amber} strokeWidth={5} strokeLinecap="round" />
+      <circle cx={net[0][0]} cy={net[0][1]} r={7} fill={C.amber} />
+      <Arrowhead at={[net[13][0] + 10, net[13][1] - 4]} from={net[12]} />
+      {tile(80, 282, 235, 232)}
+      <g transform="translate(197.5 398) rotate(-90)">
+        {parts.map(([f, col], i) => { const el = <circle key={i} r={r} fill="none" stroke={col} strokeWidth={26} strokeDasharray={`${f * circ - 4} ${circ}`} strokeDashoffset={-at * circ} />; at += f; return el; })}
+      </g>
+      {tile(327, 282, 235, 232)}
+      {[0.3, 0.21, 0.16, 0.18, 0.15].map((f, i, a) => { const x0 = 349 + a.slice(0, i).reduce((s, v) => s + v, 0) * 191; return <rect key={i} x={x0} y={312} width={f * 191 - 5} height={16} rx={5} fill={i === 2 ? C.strong : C.teal} />; })}
+      {Array.from({ length: 4 }, (_, i) => (
+        <g key={i}>
+          <circle cx={360} cy={372 + i * 34} r={8} fill="none" stroke={C.teal} strokeWidth={3} />
+          <rect x={378} y={367 + i * 34} width={[120, 96, 132, 84][i]} height={10} rx={5} fill={C.strong} opacity={0.7} />
+        </g>
+      ))}
+    </>
+  );
+};
+
 /** Social Security: the check at 62, 67 and 70 as three columns, the plan
     line climbing across their tops to the arrowhead. */
 const Social: Pic = () => {
@@ -462,5 +496,5 @@ const Social: Pic = () => {
 const PICS: Record<CardArt, Pic> = {
   fan: Fan, growth: Growth, accounts: Accounts, stages: Stages, guide: Guide, fire: Fire, bridge: Bridge, sepp: Sepp,
   health: Health, optimizer: Optimizer, social: Social, roth: Roth, rmd: Rmd, tax: Tax, rentbuy: RentBuy, mortgage: Mortgage,
-  budget: Budget, college: College, debt: Debt, backtest: Backtest, tools: Tools,
+  budget: Budget, college: College, debt: Debt, backtest: Backtest, tools: Tools, dashboard: Dashboard,
 };

@@ -9,17 +9,21 @@
 import type { Slug } from "@/lib/site";
 
 export type CardArt = "fan" | "growth" | "accounts" | "stages" | "guide" | "fire" | "bridge" | "sepp" | "health"
-  | "optimizer" | "social" | "roth" | "rmd" | "tax" | "rentbuy" | "mortgage" | "budget" | "college" | "debt" | "backtest" | "tools";
+  | "optimizer" | "social" | "roth" | "rmd" | "tax" | "rentbuy" | "mortgage" | "budget" | "college" | "debt" | "backtest" | "tools" | "dashboard";
 
 export interface Card {
   title: string;
   text: string;
   art: CardArt;
+  /** The line beside the address, when not "Free, no account needed". */
+  foot?: string;
 }
 
 const SINCE = "against every retirement since 1926.";
 
-export const CARDS: Partial<Record<Slug, Card>> = {
+/* The Dashboard isn't one of the site's pages (it's account-only and kept
+   out of search), but its links still get a card. */
+export const CARDS: Partial<Record<Slug | "dashboard", Card>> = {
   home: { title: "The complete retirement planning toolkit.", art: "fan",
     text: "Free calculators for saving, spending and taxes in retirement, tested against every market since 1926." },
   calculator: { title: "Retirement Calculator", art: "growth",
@@ -30,6 +34,8 @@ export const CARDS: Partial<Record<Slug, Card>> = {
     text: "Plan your savings in stages, with different contributions and returns for each." },
   guide: { title: "Retirement Readiness Check", art: "guide",
     text: "Answer a few questions and get a score out of 100, with a plan for what to do next." },
+  dashboard: { title: "Financial Dashboard", art: "dashboard", foot: "Free with an account",
+    text: "Net worth, pay, taxes, spending, saving and your retirement plan, all in one place." },
   tools: { title: "Free Financial Planning Tools", art: "tools",
     text: "Calculators for retirement, taxes, Roth conversions, healthcare, mortgages, budgets and debt." },
 

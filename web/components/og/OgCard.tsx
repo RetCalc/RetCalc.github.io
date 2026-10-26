@@ -22,7 +22,7 @@ export function OgCard({ card, data }: { card: Card; data: HomeData }) {
             : <h1 className={s.title}>{card.title}</h1>}
           <p className={s.text}>{card.text}</p>
         </div>
-        <div className={s.foot}><b>retcalc.app</b><span>Free, no account needed</span></div>
+        <div className={s.foot}><b>retcalc.app</b><span>{card.foot ?? "Free, no account needed"}</span></div>
       </div>
       <div className={s.art}><Art art={card.art} data={data} /></div>
     </div>

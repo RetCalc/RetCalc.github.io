@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { PencilIcon, PlusIcon, Trash2Icon, WalletIcon, LandmarkIcon, CalendarDaysIcon, ChartBarIcon } from "lucide-react";
+import { PencilIcon, PlusIcon, Trash2Icon, WalletIcon, LandmarkIcon, CalendarDaysIcon, ChartBarIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -174,6 +174,9 @@ export function Accounts() {
   const last = data.entries[data.entries.length - 1] ?? entryFrom(data.profile);
   const [view, setView] = useState<"today" | "time">("today");
   const [draft, setDraft] = useState<{ date: string; items: Item[] } | null>(null);
+  // The entry asked about before it's deleted, by its date.
+  const [removing, setRemoving] = useState<string | null>(null);
+  const remove = () => { const date = removing; update((d) => ({ ...d, entries: d.entries.filter((e) => e.date !== date) })); setRemoving(null); };
   const items = draft?.items ?? last?.items ?? [];
   const startEdit = () => setDraft({ date: today(), items: (last?.items ?? []).map((i) => ({ ...i })) });
   const saveEntry = () => {
@@ -262,19 +265,30 @@ export function Accounts() {
       {data.entries.length ? (
         <Tile id="entries" icon={CalendarDaysIcon} title="Your entries" className="dsh-r4" right={<span className="dsh-cap">{data.entries.length} so far</span>}>
           <div className="dsh-scrollx"><table className="dsh-tbl">
-            <thead><tr><th>Date</th><th>Assets</th><th>Debts</th><th>Net worth</th><th>Change</th></tr></thead>
+            <thead><tr><th>Date</th><th>Assets</th><th>Debts</th><th>Net worth</th><th>Change</th><th><span className="sr-only">Delete</span></th></tr></thead>
             <tbody>
               {data.entries.slice().reverse().map((e, i, arr) => {
                 const before = arr[i + 1], ch = before ? netWorth(e) - netWorth(before) : null;
                 return (
                   <tr key={e.date}><td>{longDate(e.date)}</td><td>{money(sum(e.items, "asset"))}</td><td>{money(sum(e.items, "debt"))}</td><td>{money(netWorth(e))}</td>
-                    <td>{ch == null ? <span className="dsh-muted">First entry</span> : <span className={ch >= 0 ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{ch >= 0 ? "+" : "-"}{money(Math.abs(ch))}</span>}</td></tr>
+                    <td>{ch == null ? <span className="dsh-muted">First entry</span> : <span className={ch >= 0 ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{ch >= 0 ? "+" : "-"}{money(Math.abs(ch))}</span>}</td>
+                    <td className="dsh-del"><Button variant="ghost" size="icon-xs" aria-label={"Delete the entry from " + longDate(e.date)} onClick={() => setRemoving(e.date)}><XIcon aria-hidden="true" /></Button></td></tr>
                 );
               })}
             </tbody>
           </table></div>
         </Tile>
       ) : null}
+      <Dialog open={!!removing} onOpenChange={(o) => { if (!o) setRemoving(null); }}>
+        <DialogContent aria-labelledby="dshDelTitle">
+          <h2 id="dshDelTitle" className="dsh-dlg-h">Delete the entry from {removing ? longDate(removing) : ""}?</h2>
+          <p className="dsh-cap">Its balances come off your net worth history{data.entries.length === 1 ? ", and with no entries left your net worth goes back to what setup gave" : ""}. This can&apos;t be undone.</p>
+          <div className="dsh-navbtns dsh-wrapbtns">
+            <Button variant="destructive" onClick={remove}>Delete entry</Button>
+            <Button variant="outline" onClick={() => setRemoving(null)}>Cancel</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Frame>
   );
 }

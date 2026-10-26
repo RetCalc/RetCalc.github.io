@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { OgCard } from "@/components/og/OgCard";
 import { homeData } from "@/components/home/data";
 import { CARDS } from "@/lib/cards";
-import type { Slug } from "@/lib/site";
 
 export const dynamicParams = false;
 export const metadata = { robots: { index: false, follow: false } };
@@ -16,7 +15,7 @@ export function generateStaticParams() {
 
 export default async function CardPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const card = CARDS[slug as Slug];
+  const card = CARDS[slug as keyof typeof CARDS];
   if (process.env.NODE_ENV !== "development" || !card) notFound();
   return <OgCard card={card} data={homeData()} />;
 }
