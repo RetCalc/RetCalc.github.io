@@ -1,0 +1,157 @@
+<article class="lesson" data-slug="paying-down-debt" data-reviewed="2026-10-26"
+  data-title="Paying down debt"
+  data-idea="Which debt first, how much faster, and when to invest instead"
+  data-tool="debt" data-try="List your debts and compare avalanche and snowball month by month, with your debt-free date and the interest each one costs.">
+
+<p class="lede">High-interest debt works like compound growth in reverse: the interest charges grow on themselves, month after month. Paying it off is one of the few guaranteed returns in personal finance, and with several debts, how much extra you put toward them matters more than which one you pay first.</p>
+
+<h2 id="rate">Why the interest rate matters so much</h2>
+<p>Credit cards are where most expensive debt lives. The Federal Reserve's figures put the average rate on cards that were charged interest at 22.15% in the second quarter of 2026. At that kind of rate, a balance that only gets the minimum payment shrinks slowly, and much of every payment goes to interest.</p>
+<p>Take a $9,800 card at 22.9%, the first debt in the Debt Payoff tool's starting list, with a fixed $245 payment every month. In the first month, $187 of that $245 is interest. Only $58 reduces the balance. Kept up, the payment clears the card in 77 months, a little over six years, and the interest comes to $8,878, nearly as much as the original balance.</p>
+
+<!-- data: debtRun (lib/engine/math.js) with one debt: balance 9,800, APR 22.9%, payment fixed at each amount, mode "min".
+     First month's interest 9,800 × 0.229 / 12 = 187.02. Months and total interest: 245 → 77, 8,878; 300 → 52, 5,698; 400 → 34, 3,537; 545 → 23, 2,318. -->
+<figure>
+  <table>
+    <thead><tr><th>Paid each month</th><th>Card paid off in</th><th>Total interest</th></tr></thead>
+    <tbody>
+      <tr><td>$245</td><td>77 months</td><td>$8,878</td></tr>
+      <tr><td>$300</td><td>52 months</td><td>$5,698</td></tr>
+      <tr><td>$400</td><td>34 months</td><td>$3,537</td></tr>
+      <tr><td>$545</td><td>23 months</td><td>$2,318</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A $9,800 card at 22.9%, with no new charges and the same payment every month.</figcaption>
+</figure>
+
+<p>Adding $55 per month to the payment saves more than two years and about $3,200. Adding $300 cuts the interest by about three-quarters. The first extra dollars do the most, because at the start nearly all of the payment is interest.</p>
+<p>Real card minimums are usually smaller than a fixed $245. Issuers commonly set the minimum at a small percentage of the balance plus that month's interest, so the minimum falls as the balance falls, and paying only the minimum can stretch the debt out much longer than the table shows. Your statement has a box showing how long the minimum would take.</p>
+
+<h2 id="methods">Avalanche and snowball</h2>
+<p>With more than one debt, the question is where the extra money goes. Two methods are popular, and they share the part that does most of the work:</p>
+<ul>
+<li>Pay every debt's minimum, every month.</li>
+<li>Put every spare dollar on one debt at a time.</li>
+<li>When that debt is gone, roll its whole payment, minimum plus extra, onto the next one. The amount aimed at each debt keeps growing.</li>
+</ul>
+<p>They differ only in the order. The <b>avalanche</b> goes after the highest interest rate first. The <b>snowball</b> goes after the smallest balance first, whatever its rate.</p>
+<p>Here are the four debts Debt Payoff starts with, $49,400 in all, with minimums that add up to $930 per month: a $9,800 credit card at 22.9%, a $1,900 store card at 8.9%, a $16,200 car loan at 7.4% and a $21,500 student loan at 5.5%.</p>
+
+<!-- data: debtRun with the Debt Payoff starting list (tools/debt/model.ts ROWS) and extra 300.
+     Minimums only (mode "min", no rollover): 123 months, interest 18,321. Avalanche: 47 months, 8,155; snowball: 48 months, 8,578.
+     Months each debt is cleared: avalanche credit card 23, store card 24, car loan 33, student loan 47; snowball store card 6, credit card 25, car loan 33, student loan 48. -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>Minimums only</th><th>Avalanche, $300 extra</th><th>Snowball, $300 extra</th></tr></thead>
+    <tbody>
+      <tr><td>First debt cleared</td><td>Month 37</td><td>Month 23, the credit card</td><td>Month 6, the store card</td></tr>
+      <tr><td>Debt-free</td><td>Month 123</td><td>Month 47</td><td>Month 48</td></tr>
+      <tr><td>Total interest</td><td>$18,321</td><td>$8,155</td><td>$8,578</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Four debts, $49,400 in all, with minimums of $930 per month. Minimums only means each debt gets just its own minimum, with nothing rolled over.</figcaption>
+</figure>
+
+<p>The avalanche costs less, as it always will: money aimed at the highest rate saves the most interest. Here it saves $424 and finishes one month sooner. The snowball clears its first debt in month 6 instead of month 23. That early win is the snowball's whole case, and the research below suggests it's a real one.</p>
+<p>The bigger gap in the table is between either method and minimums only: more than six years and about $10,000 of interest. The rollover and the extra $300 do that, whichever order you pick.</p>
+
+<!-- data: debtRun months[].balance every 6 months, rounded to $100; minimums only vs avalanche with 300 extra. Minimums run to month 123. -->
+<figure data-chart='{"type":"line","x":[0,6,12,18,24,30,36,42,48,54,60,66,72,78,84,90,96,102,108,114,120,126],"xLabel":"Months","y":"money","series":[{"name":"Minimums only","tone":"bad","values":[49400,46200,42800,39200,35500,31600,27600,23600,19800,17900,15800,13700,11300,9200,8100,6900,5700,4500,3200,1900,500,0]},{"name":"Avalanche, $300 extra","tone":"good","values":[49400,44300,38800,32900,26500,19800,12900,5800,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}]}'>
+  <figcaption>What's owed on the four debts over time. With the rollover and $300 extra, the total falls faster every time a debt is cleared.</figcaption>
+</figure>
+
+<h3>When the order costs more</h3>
+<p>The two methods land close together here because the smallest debt is small and its rate is low. The gap grows when a large balance carries the highest rate and has to wait its turn under the snowball. Take a different set: a $14,000 card at 24.9%, a $2,500 card at 19.9%, a $6,000 car loan at 6.9% and a $4,000 personal loan at 11.5%, with $300 extra. The avalanche finishes in 31 months with $6,882 of interest; the snowball in 32 months with $7,899, about $1,000 more. Even then, the extra payment matters more than the order.</p>
+
+<!-- data: debtRun with Card A 14,000 at 24.9% min 350; Card B 2,500 at 19.9% min 75; car loan 6,000 at 6.9% min 250; personal loan 4,000 at 11.5% min 130; extra 300.
+     Avalanche 31 months, 6,882; snowball 32 months, 7,899. -->
+
+<h2 id="research">What research says about motivation</h2>
+<p>If the avalanche is cheaper, why does anyone use the snowball? Because getting out of debt takes years of sticking to a plan, and over that long, motivation counts.</p>
+<p>In a set of experiments published in 2011, Moty Amar, Dan Ariely, Shahar Ayal, Cynthia Cryder and Scott Rick found that people tend to pay off small debts first even when larger debts carry higher rates, a habit they called <b>debt account aversion</b>. People seem to count debts as well as dollars.</p>
+<p>A 2012 study by David Gal and Blake McShane at Northwestern's Kellogg School used records from a debt settlement program and found that closing out individual debt accounts predicted whether people went on to clear all their debt, whatever the dollar size of the accounts closed. A 2016 study by Keri Kettle, Remi Trudel, Simon Blanchard and Gerald Häubl found that putting repayments on one account instead of spreading them across several made people more motivated to get out of debt, most of all when the payments went to the smallest account.</p>
+<p>So the snowball's quick wins seem to help some people keep going. If you're confident you'll stick with a plan, the avalanche saves money. If you've started and stopped before, the snowball's small extra cost may buy the follow-through. A middle path: clear one or two tiny balances first for the win, then switch to the highest rate.</p>
+
+<h2 id="extra">The extra payment is the bigger lever</h2>
+<p>Whatever the order, how much extra you can put in each month decides most of the outcome. With the same four debts:</p>
+
+<!-- data: debtRun with the starting list, avalanche, extra 100 to 700: months 60, 53, 47, 43, 40, 34; interest 11,510; 9,452; 8,155; 7,226; 6,515; 5,480.
+     Minimums only: 123 months, 18,321. -->
+<figure>
+  <table>
+    <thead><tr><th>Extra each month</th><th>Debt-free in</th><th>Total interest</th></tr></thead>
+    <tbody>
+      <tr><td>None, minimums only</td><td>123 months</td><td>$18,321</td></tr>
+      <tr><td>$100</td><td>60 months</td><td>$11,510</td></tr>
+      <tr><td>$200</td><td>53 months</td><td>$9,452</td></tr>
+      <tr><td>$300</td><td>47 months</td><td>$8,155</td></tr>
+      <tr><td>$400</td><td>43 months</td><td>$7,226</td></tr>
+      <tr><td>$500</td><td>40 months</td><td>$6,515</td></tr>
+      <tr><td>$700</td><td>34 months</td><td>$5,480</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The four starting debts, avalanche order. Even $100 extra with the rollover halves the time of minimums only.</figcaption>
+</figure>
+
+<p>Notice how much of the gain comes from the first $100, and the rollover behind it. Going from minimums to $100 extra saves more than five years. Each later $100 saves less time, because there's less debt left to clear. What usually undoes a plan is spending a paid-off debt's payment instead of rolling it over, or adding new charges to a card you're paying down. The order rarely does.</p>
+
+<h2 id="invest">Pay down debt or invest?</h2>
+<p>Paying off a debt earns exactly its interest rate, risk-free. A 22.9% card paid off is a 22.9% return nobody can take away. No investment reliably earns that, so expensive debt usually comes first. As rates fall, the choice gets closer:</p>
+<ul>
+<li>Above about 7% to 8%, which covers most credit cards, store cards and many personal loans: paying it off is hard to beat.</li>
+<li>Between about 4% and 7%, which covers many car loans, student loans and mortgages: a judgment call. Paying it down is a sure return in the middle of what a balanced portfolio might earn.</li>
+<li>Below about 4%, safe investments may pay as much as the debt costs, so there's little reason to rush.</li>
+</ul>
+<p>Two things come before any of this. First, get the full employer match in a 401(k). A match of 50 cents per dollar is an instant 50% return, more than any debt costs. Second, keep a small emergency fund, even while paying off cards, so a car repair doesn't go straight back on one. The lesson on <a href="/learn/where-each-dollar-goes">where each dollar should go</a> sets out the whole order, and <a href="/learn/mortgage-payoff">paying off the mortgage early</a> takes the low-rate end of the question further.</p>
+
+<h2 id="lower">Ways to lower the rate</h2>
+<p>Cutting the rate makes every payment go further. A few common ways, each with a catch:</p>
+<ul>
+<li>A balance transfer card offers 0% or a low rate for a set period, often 12 months or more. There's usually a fee of 3% to 5% of the amount moved, and the rate jumps when the promotion ends. It works if you can clear the balance before then and stop using the old card.</li>
+<li>A consolidation loan replaces several debts with one fixed-rate loan. The Federal Reserve's average for a 24-month personal loan was 11.86% in the second quarter of 2026, well under a typical card rate but far from free. It helps only if new charges don't refill the cards.</li>
+<li>Asking your card issuer for a lower rate costs nothing, and sometimes works, especially with a good payment record.</li>
+<li>Nonprofit credit counseling can set up a debt management plan, often with lower rates negotiated with the card companies. Counselors usually don't reduce what you owe.</li>
+<li>Debt settlement companies are riskier. They often tell you to stop paying your creditors while they negotiate, which brings late fees, collections and possibly lawsuits. The CFPB warns that charging fees before settling any of your debts may be illegal.</li>
+</ul>
+<p>Borrowing from a 401(k) to pay off cards is sometimes suggested too. It lowers the rate, but the money is out of the market while it's repaid, and if you leave your job the loan can come due quickly or be taxed as a withdrawal.</p>
+
+<h2 id="students">Student loans, briefly</h2>
+<p>Federal student loans play by different rules from other debt. For loans first paid out from July 1, 2026 to June 30, 2027, the fixed rate is 6.52% for undergraduates and 9.07% for Parent PLUS loans. Federal loans come with protections private loans don't, such as income-driven repayment, deferment and forgiveness programs, including Public Service Loan Forgiveness for people working for government or nonprofit employers.</p>
+<p>The rules are changing. The 2025 law known as the One Big Beautiful Bill Act created a new income-driven plan, the Repayment Assistance Plan, starting July 1, 2026. Borrowers in most of the older income-driven plans have to move to it, or to the existing income-based plan, by July 1, 2028. Check studentaid.gov for the plans open to your loans before making any decision.</p>
+<p>Two points hold whatever the plan. If you're on track for forgiveness, extra payments may only lower the amount that would have been forgiven. And refinancing federal loans into a private loan for a lower rate gives up those federal protections for good. Up to $2,500 per year of student loan interest is also deductible, below an income limit.</p>
+
+<h2 id="plan">Seeing it in your own numbers</h2>
+<p>List your debts in Debt Payoff with their balances, rates and minimums, then enter what you can add each month. It shows your debt-free date and total interest under the avalanche, the snowball and minimums alone, the order each method pays things off, and how much sooner another $100 per month would get you there.</p>
+<p>Budget helps find the extra amount. Look at the months each debt is cleared too: those are the points where the payment rolls over, and the dates to hold yourself to.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Should I use my emergency fund to pay off a credit card?</summary><p>Partly, maybe; all of it, usually not. Keeping a small cushion stops the next surprise from going back on the card at 20% or more. Once the card is gone, rebuild the fund with the payment you were making.</p></details>
+<details><summary>Should I close a card once it's paid off?</summary><p>Not necessarily. Closing a card lowers your total available credit, which can nudge your credit score down. If an open card tempts you to spend, though, closing it may be worth the small hit.</p></details>
+<details><summary>Should I stop retirement saving to pay off debt faster?</summary><p>Keep contributing at least enough to get the full employer match; nothing else returns as much. Beyond the match, putting extra toward cards above about 7% to 8% usually beats investing, for as long as the cards last.</p></details>
+<details><summary>Is the snowball a mistake, then?</summary><p>Not if it keeps you going. It costs a little more interest, often a few hundred dollars, against the avalanche. A plan you follow to the end beats a cheaper one you abandon.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Expensive debt grows fast; paying it off earns its interest rate, guaranteed.</li>
+<li>Avalanche, highest rate first, always costs the least. Snowball, smallest balance first, gives quicker wins.</li>
+<li>Research suggests those wins help people stick with a plan.</li>
+<li>The extra payment and rolling over each cleared payment matter far more than the order.</li>
+<li>Get the employer match and keep a small emergency fund while you pay debt down.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How avalanche and snowball differ, and by how much</li><li>Why the extra payment and rollover matter most</li><li>When to pay down debt and when to invest instead</li></ul>
+  <ul class="terms">
+    <li data-term="Avalanche">Paying the minimum on every debt and putting all extra money on the highest-rate debt first. It costs the least interest.</li>
+    <li data-term="Snowball">Paying the minimum on every debt and putting all extra money on the smallest balance first, for quicker wins.</li>
+    <li data-term="Rollover">When a debt is paid off, adding its whole payment to the payment on the next debt, so the amount aimed at each debt keeps growing.</li>
+    <li data-term="APR">Annual percentage rate: the yearly interest rate on a loan or card. A 22.9% APR charges about 1.9% of the balance each month.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.federalreserve.gov/releases/g19/current/default.htm">Consumer Credit, G.19 (interest rates on cards and loans)</a> <span>Federal Reserve</span></li>
+    <li><a href="https://insight.kellogg.northwestern.edu/article/to_beat_debt_consider_starting_small">To beat debt, consider starting small (Gal and McShane)</a> <span>Kellogg Insight</span></li>
+    <li><a href="https://ideas.repec.org/a/oup/jconrs/v43y2016i3p460-477..html">Repayment concentration and consumer motivation to get out of debt (Kettle, Trudel, Blanchard and Häubl)</a> <span>Journal of Consumer Research</span></li>
+    <li><a href="https://doi.org/10.1509/jmkr.48.SPL.S38">Winning the battle but losing the war: the psychology of debt management (Amar, Ariely, Ayal, Cryder and Rick)</a> <span>Journal of Marketing Research</span></li>
+    <li><a href="https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2026-06-04/interest-rates-federal-direct-loans-first-disbursed-between-july-1-2026-and-june-30-2027">Interest rates for Direct Loans first disbursed July 1, 2026 to June 30, 2027</a> <span>Federal Student Aid</span></li>
+  </ul>
+</footer>
+</article>

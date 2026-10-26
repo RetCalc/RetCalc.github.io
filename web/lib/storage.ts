@@ -55,9 +55,9 @@ export function writeSession(key: string, version: number, value: unknown): void
    nothing below does anything visible: writes go to this browser alone. */
 
 /** The keys synced to an account: the household, the Guide, Paycheck to
-    Retirement, saved scenarios, the Dashboard. */
+    Retirement, saved scenarios, the Dashboard, the lessons read. */
 export function isSynced(key: string): boolean {
-  return key === "household" || key === "guide" || key === "paycheck-plan" || key === "dashboard" || key.startsWith("scenarios-");
+  return key === "household" || key === "guide" || key === "paycheck-plan" || key === "dashboard" || key === "learn" || key.startsWith("scenarios-");
 }
 
 type WriteListener = (key: string, version: number, value: unknown) => void;

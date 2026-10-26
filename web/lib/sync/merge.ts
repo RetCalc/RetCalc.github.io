@@ -174,6 +174,16 @@ function mergePaycheckPlan(local: Copy, account: Copy, base: string | null, now:
   return merged;
 }
 
+/* ---------- Learn ---------- */
+type LearnLike = { read?: Record<string, string> };
+/** Lessons read on either device stay read; a lesson read on both keeps
+    the earlier date. */
+function mergeLearn(l: unknown, a: unknown): LearnLike {
+  const read: Record<string, string> = { ...((a as LearnLike | null)?.read ?? {}) };
+  for (const [slug, date] of Object.entries((l as LearnLike | null)?.read ?? {})) read[slug] = read[slug] && read[slug] < date ? read[slug] : date;
+  return { read };
+}
+
 /** One side wins outright. A saved-scenario list also sheds copies an
     earlier version made, which may mean both sides need the cleaned list. */
 function take(key: string, win: Copy, from: "local" | "account"): Merged {
@@ -205,6 +215,10 @@ export function mergeItem(key: string, local: Copy | null, account: Copy | null,
   if (key === "guide" && local.version === account.version) {
     const g = mergeGuide(local, account, base, now);
     if (g) return g;
+  }
+  if (key === "learn" && local.version === account.version) {
+    const value = mergeLearn(local.value, account.value);
+    return { version: local.version, value, toLocal: !same(value, local.value), toAccount: !same(value, account.value) };
   }
   if (key === "paycheck-plan" && local.version === account.version) {
     const g = mergePaycheckPlan(local, account, base, now);

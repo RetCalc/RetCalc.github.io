@@ -1,0 +1,156 @@
+<article class="lesson" data-slug="withdrawal-order" data-reviewed="2026-10-26"
+  data-title="Which account to draw from first"
+  data-idea="The same savings can cost very different tax depending on the order"
+  data-tool="optimizer" data-try="Try every withdrawal order, conversion level and claiming age against every market since 1926, with your plan already filled in.">
+
+<p class="lede">Most retirees hold money in more than one kind of account: a traditional 401(k) or IRA, a Roth, a regular brokerage account. Each one is taxed differently when you take money out, so the order you draw on them decides how much of your savings goes to tax. With the same balances and the same spending, two orders can differ by tens of thousands of dollars over a retirement.</p>
+
+<h2 id="buckets">Three kinds of account, three kinds of tax</h2>
+<!-- data: federal rules for 2026. Ordinary brackets and the 0%/15%/20% long-term gain bands from lib/engine/data/2026.js (fed, ltcg; Rev. Proc. 2025-32).
+     The 0% band ends at $98,900 of taxable income (married filing jointly) and $49,450 (single). Roth rules: qualified distributions after 59½ and five years (IRS, Roth IRAs). -->
+<figure>
+  <table>
+    <thead><tr><th>Account</th><th>What's taxed when you withdraw</th><th>At what rate</th><th>Required withdrawals</th></tr></thead>
+    <tbody>
+      <tr><td>Traditional 401(k), 403(b), IRA</td><td>Every dollar</td><td>Ordinary income rates, 10% to 37%</td><td>Yes, from 73 or 75</td></tr>
+      <tr><td>Roth 401(k), Roth IRA</td><td>Nothing, once you're 59½ and the account is five years old</td><td>0%</td><td>No, for the owner</td></tr>
+      <tr><td>Taxable brokerage</td><td>Only the gain on what you sell; the original cost comes back untaxed</td><td>0%, 15% or 20% on long-term gains</td><td>No</td></tr>
+      <tr><td>Cash, savings</td><td>Nothing on withdrawal; the interest was taxed as it was earned</td><td>None</td><td>No</td></tr>
+    </tbody>
+  </table>
+  <figcaption>How a withdrawal from each account is taxed, federal rules for 2026. Interest and dividends in a taxable account are taxed each year whether or not you withdraw them.</figcaption>
+</figure>
+
+<p>A dollar from a traditional account is the most expensive dollar you can spend, because all of it is income. A dollar from a brokerage account is often cheap: if you bought a fund for $60,000 and sell it for $100,000, only $40,000 is a gain, and for a married couple with taxable income under $98,900 in 2026, long-term gains are taxed at 0%.</p>
+<p>The cost of a traditional dollar also depends on when you take it. Income tax is progressive, so the first dollars of income each year are taxed lightly or not at all, thanks to the standard deduction and the 10% and 12% brackets. A traditional withdrawal taken in a year with little other income can be taxed at almost nothing. The same withdrawal stacked on top of Social Security and a required distribution can be taxed at 22% or more.</p>
+
+<h2 id="conventional">The conventional order, and where it goes wrong</h2>
+<p>The usual advice is simple: spend the taxable account first, then the traditional account, and the Roth last. The logic is sound as far as it goes. Spending the taxable account first leaves the tax-deferred and tax-free accounts growing untouched for longer, and the Roth, which never creates taxable income, is the best account to leave to grow or to heirs.</p>
+<p>The trouble is what it does to your taxable income over time. Picture a couple who retire at 65 and follow it. For the first few years they live on the brokerage account, so their taxable income is close to zero: the standard deduction and the low brackets go to waste. Once the brokerage money runs out, they start on the traditional account. At 70 Social Security starts, and up to 85% of it becomes taxable. At 75 required minimum distributions begin, from a traditional balance that has been growing untouched for ten years. Their income goes from almost nothing in their sixties to the highest it has been since they stopped working, in their eighties.</p>
+<p>A tax system with rising brackets rewards the opposite: income spread as evenly as possible across the years, so more of it is taxed at the lowest rates.</p>
+
+<h2 id="example">Two orders, thirty years</h2>
+<p>Sam and Jordan are both 65, married, and retire this year in Florida, which has no state income tax. They have $1.2 million in traditional IRAs, $400,000 in a brokerage account (of which $160,000 is gain) and $100,000 in Roth IRAs. They spend $100,000 per year after tax, and they'll claim Social Security at 70, for $70,000 per year between them. Their investments earn 4% per year after inflation, and everything is in today's dollars.</p>
+<p>The conventional order spends the brokerage account first, then the IRAs, then the Roth, taking RMDs from 75 and reinvesting any surplus. The second plan, bracket filling, takes enough from the IRAs every year to bring their taxable income to the top of the 12% bracket, $100,800 for a married couple in 2026. They spend what they need and move the rest into their Roth IRAs as a conversion. The brokerage account and the Roth cover anything more.</p>
+
+<!-- data: a year-by-year model run in the engine's own tax pieces (lib/engine/math.js ssTaxable, bracketTax; 2026 brackets, standard deduction $32,200 + $1,650 per spouse 65+,
+     the $6,000 senior deduction per spouse in 2026–2028 only, the 0%/15%/20% gain bands, NIIT), checked against computeRetireTax for 2026. Federal tax only, Florida.
+     Start at 65: $1,200,000 traditional, $400,000 brokerage with 60% basis, $100,000 Roth. $100,000 per year after-tax spending. Social Security $70,000 per year from 70.
+     4% per year real return on every account, withdrawals at the start of each year, 2026 rules held in today's dollars. RMDs from 75 by the Uniform Lifetime Table.
+     Conventional: brokerage, then traditional, then Roth; RMD surplus reinvested in the brokerage account. Bracket filling: traditional to $100,800 of taxable income each year, surplus to Roth.
+     Taxable income after deductions, by age 65–94:
+     conventional 0,0,0,11160,55649,22515,22515,22515,22515,22515,75317,79322,82923,87158,91518,95974,98081,100628,102793,105457,107656,109858,112052,113569,115707,117030,118227,119274,120142,119778
+     bracket filling 100800 for 65–79, then 1902,571,1255,1912,2544,3152,3737,4299,4839,5359,5859,6339,6801,7245,7672 (the IRAs are empty by 80; brokerage gains fall in the 0% band). -->
+<figure data-chart='{"type":"line","x":[65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94],"xLabel":"Age","y":"money","series":[{"name":"Brokerage, then IRA, then Roth","tone":"bad","values":[0,0,0,11160,55649,22515,22515,22515,22515,22515,75317,79322,82923,87158,91518,95974,98081,100628,102793,105457,107656,109858,112052,113569,115707,117030,118227,119274,120142,119778]},{"name":"Fill the 12% bracket each year","tone":"good","values":[100800,100800,100800,100800,100800,100800,100800,100800,100800,100800,100800,100800,100800,100800,100800,1902,571,1255,1912,2544,3152,3737,4299,4839,5359,5859,6339,6801,7245,7672]}],"marks":[{"x":70,"label":"Social Security"},{"x":75,"label":"RMDs begin"}]}'>
+  <figcaption>Sam and Jordan's federal taxable income each year, after deductions, under two withdrawal orders. Same savings, same spending, in today's dollars. A hypothetical example.</figcaption>
+</figure>
+
+<p>Following the conventional order, they pay no federal tax at all for four years, which feels like a win. But it leaves the IRAs growing, and from 75 the RMDs, on top of Social Security that is now 85% taxable, push their taxable income to about $75,000 at 75 and past $100,000 from 82 on. Bracket filling pays $11,600 in tax every year from 65 to 79, then almost nothing once the IRAs are empty.</p>
+
+<!-- data: the same model's totals over 30 years (ages 65–94), federal tax only, today's dollars. What's left is at the end of the 30th year.
+     Conventional: tax $269,872; left $846,676 traditional + $1,124,307 brokerage + $324,340 Roth = $2,295,323.
+     Fill 12%: tax $174,000; left $0 + $678,592 + $1,599,128 = $2,277,720.
+     Fill 22% (traditional to $211,400 of taxable income): tax $189,810; left $0 + $77,982 + $2,068,149 = $2,146,131. -->
+<figure>
+  <table>
+    <thead><tr><th>Order</th><th>Federal tax, 65 to 94</th><th>Left at 95</th><th>Of which still taxable in IRAs</th></tr></thead>
+    <tbody>
+      <tr><td>Brokerage, then IRA, then Roth</td><td>$269,872</td><td>$2,295,323</td><td>$846,676</td></tr>
+      <tr><td>Fill the 12% bracket each year</td><td>$174,000</td><td>$2,277,720</td><td>$0</td></tr>
+      <tr><td>Fill the 22% bracket each year</td><td>$189,810</td><td>$2,146,131</td><td>$0</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Thirty years of the same plan under three orders. In today's dollars, 2026 federal rules throughout. A hypothetical example, not a forecast.</figcaption>
+</figure>
+
+<p>Filling the 12% bracket cuts their lifetime federal tax by $95,872, more than a third. What's left at 95 looks about the same, but under the conventional order $846,676 of it is still in IRAs, and whoever inherits it will owe income tax on every dollar. Filling the 22% bracket instead goes too far for this couple: it pays 22% now on money that would have been taxed at 12% later, and ends with less.</p>
+<p>The best line for someone else could be higher or lower. It depends on how large the traditional balance is compared with your spending, when Social Security starts, and your state. A bigger IRA can justify filling the 22% or even the 24% bracket; a smaller one may need little more than the standard deduction filled.</p>
+
+<h2 id="torpedo">How Social Security bends the brackets</h2>
+<p>Social Security makes the tax on an extra traditional dollar higher than your bracket suggests. How much of your benefit is taxed depends on your "provisional income": your other income plus half your benefit. Above $25,000 for a single filer ($32,000 married), up to half of the benefit becomes taxable; above $34,000 ($44,000 married), up to 85%. These thresholds were set in 1983 and 1993 and have never been raised for inflation, so each year they catch more retirees.</p>
+<p>In the range where benefits are being phased in, each extra $1 of IRA income makes up to $0.85 of Social Security taxable as well, so $1.85 of income gets taxed. In the 12% bracket that's a real rate of 22.2%. In the 22% bracket it's 40.7%. Planners call this the tax torpedo.</p>
+
+<!-- data: lib/engine/math.js computeRetireTax, 2026, single, one person 65+, $40,000 of Social Security, no other income, Florida; the IRA withdrawal varied in $100 steps and the federal tax
+     on the next $10 measured. Boundaries rounded to the nearest $100. The 2026 senior deduction ($6,000, less 6% of income over $75,000) explains the 23.3% and 25.4% (22% or 24% × 1.06) and the 43.1% (22% × 1.85 × 1.06). It is gone once income passes $175,000 (IRA withdrawal about $141,000); the 32% bracket starts at about $186,000. -->
+<figure>
+  <table>
+    <thead><tr><th>IRA withdrawal for the year</th><th>Federal tax on the next $1,000</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Up to $17,100</td><td>$0</td><td>Covered by deductions; little of the benefit is taxable yet</td></tr>
+      <tr><td>$17,100 to $23,800</td><td>$185</td><td>10% bracket, with $0.85 of benefits pulled in per $1</td></tr>
+      <tr><td>$23,800 to $44,300</td><td>$222</td><td>12% bracket, same effect</td></tr>
+      <tr><td>$44,300 to $48,700</td><td>$407 to $431</td><td>22% bracket while benefits are still being pulled in</td></tr>
+      <tr><td>$48,700 to $92,800</td><td>$233</td><td>22% bracket; 85% of benefits already taxable</td></tr>
+      <tr><td>$92,800 to $141,000</td><td>$254</td><td>24% bracket</td></tr>
+      <tr><td>$141,000 to $186,000</td><td>$240</td><td>24% bracket; the senior deduction is fully phased out</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A single retiree, 65 or older, with $40,000 of Social Security and no other income, 2026 federal rules. Rates slightly above the bracket (23.3%, 25.4%) come from the temporary senior deduction phasing out, which ends after 2028.</figcaption>
+</figure>
+
+<p>Traditional money taken out before Social Security starts misses the torpedo entirely, which is one reason bracket filling and delayed claiming work well together. Once benefits are 85% taxable, the extra cost stops, and a traditional dollar costs just the bracket rate again. Michael Kitces described the phase-in in 2013 as, in effect, a surtax that falls mostly on retirees with fairly modest incomes.</p>
+
+<h2 id="tools">The moves that make up a withdrawal plan</h2>
+<h3>Fill the low brackets with traditional money</h3>
+<p>In any year with room in a low bracket, take traditional money up to the top of it, whether you need to spend it or not. Whatever you don't spend can be converted to a Roth, where it grows tax-free and never creates an RMD. This works best in the gap years: after the paycheck stops, before Social Security and RMDs start. <a href="/learn/roth-conversions">Roth conversions</a> covers the mechanics, including the five-year rule.</p>
+<h3>Harvest gains at 0%</h3>
+<p>If your taxable income stays under the 0% line for long-term gains ($98,900 married, $49,450 single in 2026), you can sell investments at a gain, pay nothing, and buy them straight back. Your cost basis resets higher, so those gains are never taxed. This competes for the same room as bracket filling: traditional income fills the brackets first and gains stack on top, so a conversion that fills the 12% bracket uses up the whole 0% band. Couples with large unrealized gains and smaller IRAs often do better harvesting gains than converting.</p>
+<h3>Draw proportionally</h3>
+<p>Some firms suggest taking a share from each account every year, in proportion to its size. It spreads taxable income more evenly than the conventional order without needing a bracket target. In Fidelity's illustration, a 62-year-old drawing this way paid about $34,000 of tax over retirement instead of just over $56,000, and the money lasted about one more year. It's a reasonable rule of thumb, but it doesn't respond to your actual brackets the way bracket filling does.</p>
+<h3>Use the Roth for spikes</h3>
+<p>A new roof, a car or a big medical bill in one year can push income across a bracket line or a Medicare surcharge line. Taking that money from the Roth, or from cash, keeps the year's income where you planned it. That's one reason not to empty the Roth early, and one reason the Roth usually comes last.</p>
+<h3>Keep some traditional money for late in life</h3>
+<p>Large medical and long-term care costs late in life can be deductible as itemized medical expenses. A traditional IRA is a good account to pay them from, because the deduction can cancel much of the tax on the withdrawal.</p>
+
+<h2 id="lines">Income lines to watch</h2>
+<p>Brackets aren't the only lines that matter. Several costs jump at particular incomes, and a withdrawal plan should usually stay just under them:</p>
+<ul>
+  <li>The ACA subsidy cliff, before 65. With the enhanced premium credits having ended after 2025, marketplace subsidies stop entirely above 400% of the poverty line. A big conversion before Medicare can cost thousands in premiums. See <a href="/learn/health-cover-before-65">Health cover before 65</a>.</li>
+  <li>IRMAA, from 65. Medicare charges more for Parts B and D once income passes $109,000 single or $218,000 married in 2026, based on your return two years earlier. One dollar over a line costs the whole surcharge for that tier. See <a href="/learn/irmaa">IRMAA</a>.</li>
+  <li>The senior deduction. From 2025 through 2028, each person 65 or older gets an extra deduction of up to $6,000, reduced by 6% of income over $75,000 single or $150,000 married.</li>
+  <li>The net investment income tax: 3.8% on investment income, including capital gains, above $200,000 single or $250,000 married.</li>
+  <li>State taxes. Some states don't tax Social Security or give retirees an exclusion for pension and IRA income. <a href="/learn/state-taxes">State taxes</a> covers the differences.</li>
+</ul>
+
+<h2 id="research">What the research says</h2>
+<p>A widely cited study is "Tax-Efficient Withdrawal Strategies" by Kirsten Cook, William Meyer and William Reichenstein, published in the Financial Analysts Journal in 2015. They tested the conventional order against strategies that draw traditional money to fill low brackets and convert to Roth in low-income years. In their examples, the better strategies made a portfolio last more than three years longer than the conventional order. The reason is the one in the example above: the conventional order leaves the low brackets empty early and piles taxable income into the later years.</p>
+<p>If you'd pay the same tax rate on every dollar in every year, as under a flat tax, it wouldn't matter whether you drew from a traditional account or a Roth first. Withdrawal order pays off only because rates differ between years. That's also why the gains are largest for people whose income would otherwise swing the most: early retirees with big traditional balances, and couples who delay Social Security.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>Withdrawal Order (the Optimizer) tries every combination of the moves in this lesson: the conventional order, or traditional money first each year up to the standard deduction or the top of the 10%, 12%, 22% or 24% bracket; Roth conversions until Social Security starts, until RMDs begin, or not at all; every Social Security claiming age from your retirement to 70 for each of you; and staying under the ACA cliff and Medicare's first IRMAA line. Each plan runs through every market since 1926 with 2026 federal and state tax, and the best one wins.</p>
+<p>Your roadmap shows the winning plan as stretches of years: where the money comes from, what's converted, and the tax and health premiums each year. Compare its lifetime tax and what's left after tax with the usual order. If the difference is small, the simple order is fine for you. If it's large, the stretch from retiring to Social Security is usually where it comes from.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Should I always spend my taxable account first?</summary><p>Often it makes sense to spend from it early, especially if the gains are small or fall in the 0% band. Spending only from it, while your traditional balance grows untouched, is what causes trouble later. Many good plans spend taxable money and fill a low bracket with traditional money in the same years.</p></details>
+<details><summary>Is it ever right to spend the Roth first?</summary><p>Rarely as a rule. The main exceptions are a single high-income year, where Roth money keeps you under a bracket or IRMAA line, and the years before 65 when you're managing income for ACA subsidies.</p></details>
+<details><summary>What about leaving money to heirs?</summary><p>Heirs pay income tax on inherited traditional money, usually within ten years. A Roth passes tax-free, and a taxable account gets a step-up in basis at death, so the gains up to then are never taxed. If your heirs earn a lot, converting at your lower rate can save the family tax. If they earn little, leaving traditional money can be cheaper.</p></details>
+<details><summary>Does this matter if all my savings are in a 401(k)?</summary><p>Less, but still some. You can't choose between accounts, but you can choose how much traditional money to take each year, and whether to convert some to a Roth in the low-income years before Social Security and RMDs.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>Traditional withdrawals are taxed as income, Roth withdrawals aren't, and taxable accounts are taxed only on gains, often at 0%.</li>
+  <li>The conventional order wastes low brackets early and piles income into later years, when Social Security and RMDs arrive.</li>
+  <li>Filling a low bracket with traditional money each year, and converting what you don't spend, evens out taxable income.</li>
+  <li>While Social Security is being phased into tax, an extra IRA dollar can cost 22.2% in the 12% bracket and 40.7% in the 22%.</li>
+  <li>The ACA cliff, IRMAA lines and the senior deduction set limits on how much to take in any year.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>How each kind of account is taxed on withdrawal</li>
+    <li>Why spending taxable money first can cost more</li>
+    <li>How to fill brackets and avoid the tax torpedo</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Bracket filling">Taking just enough traditional money each year to reach the top of a chosen tax bracket, spending it or converting it to a Roth.</li>
+    <li data-term="Provisional income">Your other income plus half your Social Security. It decides how much of the benefit is taxable: none, up to 50% or up to 85%.</li>
+    <li data-term="Tax torpedo">The range of income where each extra dollar also makes up to 85 cents of Social Security taxable, so the real rate is up to 1.85 times the bracket.</li>
+    <li data-term="Cost basis">What you paid for an investment. When you sell, only the amount above it is a taxable gain.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://rpc.cfainstitute.org/research/financial-analysts-journal/2015/tax-efficient-withdrawal-strategies">Tax-efficient withdrawal strategies (Cook, Meyer and Reichenstein, 2015)</a> <span>Financial Analysts Journal</span></li>
+    <li><a href="https://www.kitces.com/blog/the-taxation-of-social-security-benefits-as-a-marginal-tax-rate-increase/">The taxation of Social Security benefits as a marginal tax rate increase (2013)</a> <span>Kitces</span></li>
+    <li><a href="https://www.fidelity.com/viewpoints/retirement/tax-savvy-withdrawals">Tax-savvy withdrawals in retirement</a> <span>Fidelity</span></li>
+    <li><a href="https://www.irs.gov/publications/p915">Publication 915, Social Security and equivalent railroad retirement benefits</a> <span>IRS</span></li>
+  </ul>
+</footer>
+</article>

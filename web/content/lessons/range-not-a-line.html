@@ -1,0 +1,130 @@
+<article class="lesson" data-slug="range-not-a-line" data-reviewed="2026-10-26"
+  data-title="A range, not a line"
+  data-idea="Why a plan shows a band of outcomes, and how to read one"
+  data-tool="advanced" data-try="See your savings as a band of outcomes across every market since 1926, with your plan already filled in.">
+
+<p class="lede">A simple retirement calculator draws one line: your savings growing at a steady rate to one number at retirement. Markets don't grow at a steady rate, so that number is one guess among many. A range shows what the same plan did in better and worse markets, and it says much more about a plan than a single figure does.</p>
+
+<h2 id="line">What one line leaves out</h2>
+<p>Take a hypothetical saver, Jordan, who is 40, has $100,000 saved, adds $1,000 per month and plans to retire in 25 years, with 80% in stocks and 20% in bonds. Over 1926–2025 that mix earned 6.5% per year after inflation. Grow Jordan's savings at a steady 6.5% and they reach $1,215,000 in today's dollars. That's the line.</p>
+<p>Now run the same plan through real markets instead: every 25-year stretch since 1926, one starting each month, 901 in all. The best, starting in January 1975, caught the long rise of the 1980s and 1990s and ended at $2,327,000. The worst, starting in July 1957, ran into the inflation and flat stock prices of the 1970s and ended at $414,000. Jordan's savings and mix were identical in both; only the dates differed. More than half of those 901 stretches, 477 of them, ended below the steady line.</p>
+<p>None of the 901 grew at a steady 6.5%. The line is a useful summary of the average, but it describes no market anyone actually lived through, and on its own it can't tell Jordan whether $414,000 is a possibility worth planning for.</p>
+
+<h2 id="band">Reading the band</h2>
+<p>A band condenses all those results into a few lines. At each year, the tool sorts every market's balance from lowest to highest and marks a few points along the way, called percentiles. The 10th percentile is the balance that 1 in 10 markets fell below. The 50th, the median, is the middle one: half did worse, half did better. The 90th is the balance only 1 in 10 beat.</p>
+
+<!-- data: engine historicalRuns() (lib/engine/math.js): initial $100,000, $1,000 per month raised 3% per year, 25 years, 80% stocks / 20% 10-year Treasuries,
+     rebalanced monthly to the mix, no fee; 901 monthly starts, January 1926 to January 2001; bands p10, p50, p90 at each year end, in today's dollars, rounded to $1,000.
+     Steady line: $100,000 growing at 6.52% per year after inflation (backtest() realCagr for 80/20, 1926–2025), compounded monthly, plus $1,000 per month. -->
+<figure data-chart='{"type":"line","x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],"xLabel":"Years from now","y":"money","series":[{"name":"90th percentile","tone":"good","values":[100000,143000,179000,216000,254000,291000,334000,377000,426000,476000,534000,585000,657000,724000,817000,890000,944000,1058000,1102000,1218000,1276000,1369000,1452000,1540000,1622000,1701000]},{"name":"Median","tone":"accent","values":[100000,120000,141000,161000,182000,205000,229000,251000,291000,327000,352000,392000,426000,456000,484000,527000,550000,613000,670000,727000,780000,844000,913000,999000,1099000,1187000]},{"name":"10th percentile","tone":"bad","values":[100000,98000,105000,115000,128000,141000,152000,171000,169000,179000,191000,205000,225000,247000,271000,284000,296000,327000,343000,362000,412000,438000,465000,525000,600000,657000]},{"name":"Steady 6.5% after inflation","tone":"muted","dash":true,"values":[100000,119000,139000,160000,183000,208000,233000,261000,290000,322000,355000,390000,428000,469000,511000,557000,606000,658000,713000,772000,834000,901000,972000,1048000,1129000,1215000]}]}'>
+  <figcaption>Jordan's savings in today's dollars: $100,000 plus $1,000 per month (raised 3% per year, about the pace of inflation), 80% US stocks and 20% 10-year Treasuries, run through 901 starting months from 1926 to 2001. The dotted line grows at a steady 6.5% per year after inflation.</figcaption>
+</figure>
+
+<p>The space between the 10th and 90th percentiles is where 8 in 10 of the past markets landed. When a RetCalc chart labels a shaded band "8 in 10 markets", that's what it means. After 25 years, Jordan's band runs from $657,000 to $1,701,000, with the median at $1,187,000.</p>
+
+<!-- data: as the chart above, final year (year 25) of bands: p10 657,000, p25 855,000, p50 1,187,000, p75 1,534,000, p90 1,701,000;
+     worst and best of the 901 windows: 414,000 (start July 1957), 2,327,000 (start January 1975). -->
+<figure>
+  <table>
+    <thead><tr><th>After 25 years</th><th>Balance</th><th>What it means</th></tr></thead>
+    <tbody>
+      <tr><td>Worst start (July 1957)</td><td>$414,000</td><td>The lowest of all 901</td></tr>
+      <tr><td>10th percentile</td><td>$657,000</td><td>1 in 10 markets did worse</td></tr>
+      <tr><td>25th percentile</td><td>$855,000</td><td>1 in 4 did worse</td></tr>
+      <tr><td>Median</td><td>$1,187,000</td><td>Half did worse, half better</td></tr>
+      <tr><td>75th percentile</td><td>$1,534,000</td><td>1 in 4 did better</td></tr>
+      <tr><td>90th percentile</td><td>$1,701,000</td><td>1 in 10 did better</td></tr>
+      <tr><td>Best start (January 1975)</td><td>$2,327,000</td><td>The highest of all 901</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Jordan's balance after 25 years in today's dollars, across 901 starting months from 1926 to 2001.</figcaption>
+</figure>
+
+<p data-yours></p>
+
+<h3>Why the band fans out</h3>
+<p>Every band starts narrow and widens with time. After 5 years Jordan's range runs from $141,000 to $291,000; after 25 it runs from $657,000 to $1,701,000. A good or bad year early on gets compounded by every year after it, and each year adds its own surprise on top. The further out a plan looks, the less any single figure for that year can mean.</p>
+<h3>The lines aren't paths</h3>
+<p>It's tempting to read the 10th percentile line as "a bad market" and follow it across the chart. It isn't one market. At each year it's whichever market happened to be at that rank then, and markets move up and down the ranks over time. A stretch starting in January 1929 was near the very bottom of all the January starts four years in, after the crash, and ended 25 years later a little below the middle, at $1,158,000. One starting in January 1973 was the lowest of them all after two years, and ended at $1,344,000, above the median. A bad start for a saver often turns out fine, because the contributions made at low prices recover with everything else. (For a retiree drawing money out, it's the reverse, which is the subject of <a href="/learn/sequence-risk">Sequence-of-returns risk</a>.)</p>
+
+<!-- data: historicalRuns() traces (January starts only, 76 of them, 1926–2001), Jordan's plan as above. 1929: year 4 $110,000, lower than 99% of January starts at year 4;
+     year 25 $1,158,000, 43rd percentile. 1973: year 2 $73,000, lowest of all January starts at year 2; year 25 $1,344,000, 63rd percentile (median $1,187,000). -->
+
+<h2 id="plan-around">Which part to plan around</h2>
+<p>The median is the easiest figure to fix on, and the least useful for planning. Half the markets did worse. A plan that only works at the median is a coin flip.</p>
+<p>The bottom of the band is more useful. If the 10th percentile still covers what you need, the plan worked in 9 of every 10 past markets. If only the median does, it worked in about half. Jordan can compare the target with the band: needing $650,000 at retirement, the plan held up in about 9 of 10 markets; needing $1,200,000, in about half. The question to ask of a band is whether you could live with the bottom of it, and what you'd change if that's where you ended up: work a year or two longer, spend a little less, save a little more.</p>
+<p>The top of the band is pleasant to look at and worth very little as a plan. Treat a good market as a bonus if it arrives.</p>
+<p>The bottom edge isn't a floor either. One market in ten ended below it, and the worst ended at $414,000, well under Jordan's $657,000 bad case, and future markets aren't bound by past ones.</p>
+
+<h2 id="methods">Three ways to draw a range</h2>
+<p>Retirement tools draw their bands in three different ways, and the method changes what the band means.</p>
+<h3>A steady return, nudged up and down</h3>
+<p>The simplest band takes the steady line and redraws it at a better and a worse return, often a point or two either side. RetCalc's <a href="/calculator">Calculator</a> does this, at 1.5 points either side of the return you pick. It's a quick way to see how much the answer depends on the return, but every line in it is still steady, so it never shows a bad decade followed by a good one, and its low end can be too kind. For Jordan, 1.5 points below 6.5% gives $928,000, where the 10th percentile of real history was $657,000.</p>
+<h3>Every past market</h3>
+<p>A historical band runs the plan through every stretch of the record, as above. <a href="/advanced">Advanced</a> in historical mode, the <a href="/drawdown">Drawdown Simulator</a> and the Dashboard all do this, with the record from 1926. Its strength is that every result is something that actually happened, with real crashes, real recoveries and real inflation in the order they came.</p>
+<p>Its weakness is how little history there is. The 901 starting months overlap heavily: a 25-year stretch starting in March 1950 shares all but two months with one starting in January 1950. A century holds only four 25-year stretches that don't overlap at all. And it's one country's century, a good one. <a href="/learn/chance-of-success">What "chance of success" means</a> goes into what that does to the numbers.</p>
+<h3>Thousands of random markets</h3>
+<p>A Monte Carlo simulation makes up markets instead. It draws each year's return at random from a range set by an average return and a measure of how much returns swing (the volatility), runs the plan through thousands of these made-up sequences, and reads the band from the results. It can produce markets worse than any in history, and better ones, as often as the assumptions say they should occur.</p>
+
+<!-- data: Jordan's plan (initial $100,000, $1,000 per month raised 3% per year, 25 years), today's dollars, rounded to $1,000.
+     Steady ± 1.5 points: monthly compounding at 5.02%, 6.52% and 8.02% per year after inflation, plus $1,000 per month: 928,000; 1,215,000; 1,600,000.
+     History: historicalRuns() at 80% stocks, p10 / p50 / p90 at year 25: 657,000; 1,187,000; 1,701,000.
+     Monte Carlo: engine monteCarlo() (lib/engine/math.js), 5,000 trials, seed 1, nominal mean 10.76% and volatility 15.26%
+     (the arithmetic mean and standard deviation of the 80/20 mix's yearly returns, backtest() 1926–2025), inflation 2.94% (its compound average):
+     inputs unrounded (mean 0.107633, volatility 0.152594, inflation 0.029385): p10 640,000; p50 1,242,000; p90 2,494,000. Lowest trial 257,000; 64 of 5,000 below the historical worst of 414,000.
+     With Advanced's starting inputs instead (8.5% return, 15% volatility, 3% inflation): p10 443,000, p50 829,000, p90 1,625,000. -->
+<figure>
+  <table>
+    <thead><tr><th>Jordan after 25 years</th><th>Low (10th percentile)</th><th>Middle</th><th>High (90th percentile)</th></tr></thead>
+    <tbody>
+      <tr><td>Steady return, 1.5 points either side</td><td>$928,000</td><td>$1,215,000</td><td>$1,600,000</td></tr>
+      <tr><td>Every past market since 1926</td><td>$657,000</td><td>$1,187,000</td><td>$1,701,000</td></tr>
+      <tr><td>5,000 random markets, same average and swings</td><td>$640,000</td><td>$1,242,000</td><td>$2,494,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The same plan three ways, in today's dollars. The steady rows use 5.0%, 6.5% and 8.0% per year after inflation; the random markets use the 80/20 mix's average yearly return and volatility from 1926–2025. For the steady return, low and high are the two nudged returns.</figcaption>
+</figure>
+
+<p>Given the same average and the same swings as history, the random markets landed close to history at the bottom and in the middle, and much higher at the top. Their extremes went further in both directions: 64 of the 5,000 ended below the worst historical result. Derek Tharp found the same thing for retirees in a 2017 study published on Kitces.com: about 6.5% of Monte Carlo trials for a 60/40 retirement did worse than the worst historical sequence. The usual explanation is that Monte Carlo treats each year as independent, while real markets have tended to recover after deep falls, so history has fewer runs of bad year after bad year than chance alone would produce.</p>
+<p>A Monte Carlo band also depends entirely on the average and volatility you give it. Run Jordan's plan with the inputs Advanced opens with (an 8.5% return before inflation, 15% volatility and 3% inflation) and the median falls to $829,000 and the bad case to $443,000. That's useful if you want to test a plan against lower returns than the past, and a trap if you don't notice what's been assumed.</p>
+
+<h2 id="retirement">After you retire</h2>
+<p>Once withdrawals start, a band answers a slightly different question. While you're saving, the bottom of the band is a smaller balance. In retirement, the bottom of the band can be zero, so tools usually summarize it as a chance of success: the share of markets in which the money lasted. Order matters far more once money is coming out, since a fall in the first few years forces you to sell at low prices. <a href="/learn/sequence-risk">Sequence-of-returns risk</a> explains why, and <a href="/learn/chance-of-success">What "chance of success" means</a> covers how to read the percentage.</p>
+
+<h2 id="your-plan">Seeing it in your own plan</h2>
+<p>In <a href="/advanced">Advanced</a>, switch the chart from a steady return to historical markets or Monte Carlo. The shaded band shows the spread of results, the faint lines in historical mode are individual starting years, and the results give a bad case (10th percentile), a typical case (50th) and a good case (90th). Change the stock share and watch how the band moves at the bottom as well as in the middle. In Monte Carlo mode, lower the return a point or two to see how much margin your plan has if the next 25 years are weaker than the last hundred.</p>
+<p>The Dashboard shows the same kind of band on your net worth, labeled "8 in 10 markets", and the <a href="/drawdown">Drawdown Simulator</a> shows the range for your retirement years, with your spending coming out.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Why is the median below the steady line?</summary><p>A steady line at the average return assumes every year earns the average. Real returns swing, and swings cost compound growth: a 20% gain followed by a 20% loss leaves you 4% down, not even. The historical median for Jordan, $1,187,000, came in a little under the steady line's $1,215,000, and more than half the markets ended below it.</p></details>
+<details><summary>Is the band a forecast?</summary><p>No. A historical band shows what the same plan did in the past; a Monte Carlo band shows what it does under the assumptions you gave. Neither knows what the next 25 years will bring. Treat the band as a range of reasonable possibilities, not as odds.</p></details>
+<details><summary>Why use the 10th and 90th percentiles instead of the worst and best?</summary><p>A single worst or best result is one market, and with a different start date or a few more years of history it could be very different. The 10th and 90th percentiles move much less from one set of data to the next, so they make steadier planning figures. The worst case is still worth a look, as a reminder of how bad things have been.</p></details>
+<details><summary>My band is very wide. Is something wrong?</summary><p>Probably not. A wide band usually means a long time horizon, a high stock share, or both. Twenty-five years at 80% stocks gave Jordan a high case 2.6 times the low case. A band that seems too narrow for a long plan is the one to question.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>A steady return gives one line, but real markets gave the same 25-year plan anything from $414,000 to $2,327,000.</li>
+  <li>The 10th to 90th percentile band, "8 in 10 markets", shows where most past results landed; the median is the middle.</li>
+  <li>Check that you could live with the bottom of the band. A plan that only works at the median is a coin flip, and the bottom edge still isn't a floor.</li>
+  <li>Historical bands are real but few and overlapping; Monte Carlo bands depend on the return and volatility you assume.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>What the percentiles in a band mean</li>
+    <li>Which part of the range to plan around</li>
+    <li>How historical and Monte Carlo ranges differ</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Percentile">The point below which a given share of results fall. At the 10th percentile, 1 in 10 results were lower.</li>
+    <li data-term="Median">The middle result: half did worse and half did better.</li>
+    <li data-term="Monte Carlo simulation">Testing a plan against thousands of made-up market sequences drawn at random from an assumed average return and volatility.</li>
+    <li data-term="Volatility">How much returns swing from year to year, usually measured as their standard deviation.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.kitces.com/blog/monte-carlo-analysis-risk-fat-tails-vs-safe-withdrawal-rates-rolling-historical-returns/">Does Monte Carlo analysis actually overstate tail risk in retirement projections? (Tharp, 2017)</a> <span>Kitces</span></li>
+    <li><a href="https://www.kitces.com/blog/monte-carlo-simulation-historical-returns-sequence-risk-calculate-sustainable-spending-levels/">Evaluating retirement spending risk: Monte Carlo vs. historical simulations (Fitzpatrick and Tharp, 2022)</a> <span>Kitces</span></li>
+    <li><a href="https://earlyretirementnow.com/2016/12/07/the-ultimate-guide-to-safe-withdrawal-rates-part-1-intro/">Safe withdrawal rates, part 1</a> <span>Early Retirement Now</span></li>
+    <li><a href="https://shillerdata.com/">Online data: US stock prices, dividends, interest rates and CAPE</a> <span>Robert Shiller, Yale</span></li>
+  </ul>
+</footer>
+</article>

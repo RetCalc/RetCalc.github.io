@@ -1,0 +1,170 @@
+<article class="lesson" data-slug="choosing-a-strategy" data-reviewed="2026-10-26"
+  data-title="Choosing a strategy"
+  data-idea="Fifteen withdrawal rules compared, and how to match one to you"
+  data-tool="drawdown" data-try="Set every withdrawal strategy to the same risk and compare them side by side, with your plan already filled in.">
+
+<p class="lede">There are dozens of published rules for spending from savings, and the Drawdown Simulator tests fifteen of them. They all answer the same question, how much to take this year, in different ways, and each one wins on something: steadier income, more spending over a lifetime, or more left at the end. No rule wins on all three. Choosing one is mostly a matter of deciding which of those you care about most.</p>
+
+<h2 id="narrow">Three questions that narrow it down</h2>
+<p>Before comparing rules, it helps to know what you want from one. Three questions do most of the work.</p>
+<ul>
+  <li>How steady does your income need to be? If most of your spending is essential and not covered by Social Security or a pension, you need a rule that rarely cuts. If a good share is optional, you can accept a rule that moves.</li>
+  <li>Do you want anything left? Some rules are built to spend the portfolio to zero by a chosen age; others typically leave a large balance. Neither is better. One suits someone with no heirs and a long-lived family, the other someone who wants to leave money or keep a reserve for late-life care.</li>
+  <li>How far could you cut, and for how long? Every flexible rule eventually asks for a cut. What matters is the lowest spending you'd accept, which the simulator calls your comfort line.</li>
+</ul>
+<p>Two facts about your situation shape the answers: how much of your spending is covered by income that doesn't depend on markets, and how many years the money has to last. <a href="/learn/fixed-or-flexible">Fixed or flexible spending</a> covers the first trade in depth.</p>
+
+<h2 id="fifteen">The fifteen strategies</h2>
+<p>The simulator groups its strategies into five families by how they decide each year's spending.</p>
+
+<!-- data: the strategies and their rules as defined in lib/engine/drawdown.js (DD_STRAT) and named in tools/drawdown/text.ts (DD_UI, DD_FAMILY), with the simulator's default settings from ddOptsFromState(). -->
+<figure>
+  <table>
+    <thead><tr><th>Family</th><th>Strategy</th><th>How it sets each year's spending</th></tr></thead>
+    <tbody>
+      <tr><td>Steady income</td><td>Fixed amount, rising with inflation</td><td>The 4% rule's way: year one's amount, then the same plus inflation, whatever markets do.</td></tr>
+      <tr><td>Steady income</td><td>Kitces ratchet</td><td>A fixed amount that never falls, raised 10% for good whenever the portfolio is 50% above where it started after inflation, at most once every three years.</td></tr>
+      <tr><td>Share of the portfolio</td><td>Fixed % of portfolio</td><td>The same share of the balance every year.</td></tr>
+      <tr><td>Share of the portfolio</td><td>95% rule</td><td>A share of the balance, but never less than 95% of last year's spending in dollars.</td></tr>
+      <tr><td>Share of the portfolio</td><td>1/N</td><td>The balance divided by the years left: a tenth with ten to go, everything in the last.</td></tr>
+      <tr><td>Share of the portfolio</td><td>RMD method</td><td>The balance divided by the IRS life-expectancy divisor for your age, as required distributions work.</td></tr>
+      <tr><td>Share of the portfolio</td><td>Variable percentage withdrawal (VPW)</td><td>The Bogleheads method: the level payment that would spend the balance by the last year at the mix's expected real return, worked out again each year.</td></tr>
+      <tr><td>Guardrails</td><td>Guyton-Klinger guardrails</td><td>A fixed amount rising with inflation, cut 10% when the withdrawal rate climbs 20% above where it started and raised 10% when it falls 20% below.</td></tr>
+      <tr><td>Guardrails</td><td>Risk-based guardrails</td><td>Spending with a target chance of lasting (90%), held while history's odds stay between 70% and 99%, and reset to the target when they leave.</td></tr>
+      <tr><td>Smoothed</td><td>Floor &amp; ceiling</td><td>Aims at a share of the balance, but moves spending at most a set step from last year's, 10% each way by default.</td></tr>
+      <tr><td>Smoothed</td><td>Vanguard dynamic spending</td><td>Floor and ceiling with Vanguard's limits: up 5% or down 2.5% at most per year, after inflation.</td></tr>
+      <tr><td>Smoothed</td><td>Yale Endowment</td><td>70% of last year's spending raised for inflation, plus 30% of a target rate (5%) of today's balance.</td></tr>
+      <tr><td>Smoothed</td><td>Hebeler Autopilot II</td><td>75% of last year's spending raised for inflation, plus 25% of a VPW-style payment on what's left.</td></tr>
+      <tr><td>Smoothed</td><td>Sensible withdrawals</td><td>A steady base, the starting rate raised with inflation, plus 10% of each year's real investment gains.</td></tr>
+      <tr><td>Valuation</td><td>CAPE-based</td><td>A base rate (1.75%) plus half the stock market's earnings yield (1 ÷ CAPE), applied to the balance: more when stocks are cheap, less when they're dear.</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The Drawdown Simulator's fifteen withdrawal strategies, with their default settings. Each has a main setting, usually a starting or target rate, that decides how much it spends.</figcaption>
+</figure>
+
+<p>A quick tour of what each family is for:</p>
+<ul>
+  <li>Steady income rules never cut. The fixed amount is the 4% rule; the <a href="/learn/four-percent-rule">4% rule</a> lesson covers it. The ratchet, proposed by the planner Michael Kitces in 2015, adds permanent raises once the portfolio has grown enough to afford them, so it has the same failures as the 4% rule but gives most retirees more income.</li>
+  <li>Share of the portfolio rules can't run out before their final year, because they always take a slice of what's there. They differ in whether the slice stays put or grows with age. <a href="/learn/spending-a-percentage">Spending a percentage</a> covers them.</li>
+  <li>Guardrails start higher than the 4% rule and cut or raise in steps when a trigger is crossed: the withdrawal rate for the classic version, the odds of lasting for the risk-based one. <a href="/learn/guardrails">Guardrails</a> goes through both.</li>
+  <li>Smoothed rules aim at a share of the portfolio but move toward it only gradually, either by capping each year's change or by blending this year's target with last year's spending. Yale's is modeled on the rule Yale University uses to set its endowment's yearly spending, which today weights last year's spending at 80% and a 5.25% target rate at 20%.</li>
+  <li>Valuation rules spend more when stocks are cheap against their earnings and less when they're expensive. With today's CAPE at 41.0, the default CAPE rule would start at 2.97%. <a href="/learn/cape-valuations">Starting valuations and CAPE</a> explains the ratio.</li>
+</ul>
+
+<h2 id="fair">Comparing them fairly</h2>
+<p>Lining up the rules at their default settings tells you little, because the settings decide everything. A fixed amount at 3% looks safe and a percentage at 7% looks generous; neither comparison means much.</p>
+<p>The Compare strategies view sets every strategy to the same risk first. It finds, for each rule, the setting that spends as much as possible while never letting spending fall below your comfort line in any historical start. For the flexible rules, the comfort line is also held as a minimum spending level, so the only way they can miss it is by running out of money. Then it reports what each rule delivers at that setting.</p>
+<p>Here's the result for a common setup: $1,000,000 in 60% US stocks and 40% 10-year Treasuries, 30 years, no fees, tested against every January start from 1927 to 1996. The comfort line is $32,000 per year, 80% of the 4% rule's $40,000, which is the simulator's default.</p>
+
+<!-- data: ddShowdown(ddOptsFromState({initial: 1000000, years: 30, stock: 60, rate: 4, strategy: "fixed"}), {crit: "comfort", conf: 1, comfort: 32000}, all fifteen ids), lib/engine/drawdown.js. Setting: the dial found by ddCalibrate. Year one: the middle start's first-year spending (for CAPE-based this uses each start's own CAPE). Lifetime: median of each start's 30-year spending total (ddScorecard lifeMed). Left: median real ending balance. Cuts: average number of years spending fell, per start. All in today's dollars. -->
+<figure>
+  <table>
+    <thead><tr><th>Strategy</th><th>Setting found</th><th>Year one</th><th>Typical lifetime spending</th><th>Typically left at the end</th><th>Cuts per retirement, on average</th></tr></thead>
+    <tbody>
+      <tr><td>Fixed amount</td><td>3.80% start</td><td>$37,967</td><td>$1.14 million</td><td>$1.79 million</td><td>0</td></tr>
+      <tr><td>Kitces ratchet</td><td>3.80% start</td><td>$37,967</td><td>$1.36 million</td><td>$1.61 million</td><td>0</td></tr>
+      <tr><td>Fixed % of portfolio</td><td>6.35%</td><td>$63,466</td><td>$1.73 million</td><td>$716,000</td><td>12.0</td></tr>
+      <tr><td>95% rule</td><td>6.12%</td><td>$61,244</td><td>$1.74 million</td><td>$695,000</td><td>14.3</td></tr>
+      <tr><td>1/N</td><td>(none)</td><td>$33,333</td><td>$2.49 million</td><td>$0</td><td>7.5</td></tr>
+      <tr><td>RMD method</td><td>(none)</td><td>$32,000</td><td>$1.96 million</td><td>$910,000</td><td>7.1</td></tr>
+      <tr><td>VPW</td><td>4.23% real return</td><td>$57,037</td><td>$2.17 million</td><td>$0</td><td>10.9</td></tr>
+      <tr><td>Guyton-Klinger guardrails</td><td>5.42% start</td><td>$54,240</td><td>$1.69 million</td><td>$913,000</td><td>3.9</td></tr>
+      <tr><td>Risk-based guardrails</td><td>63.5% chance</td><td>$56,821</td><td>$2.17 million</td><td>$0</td><td>4.6</td></tr>
+      <tr><td>Floor &amp; ceiling</td><td>6.04% target</td><td>$60,391</td><td>$1.72 million</td><td>$760,000</td><td>13.4</td></tr>
+      <tr><td>Vanguard dynamic spending</td><td>4.94% target</td><td>$49,411</td><td>$1.69 million</td><td>$881,000</td><td>16.0</td></tr>
+      <tr><td>Yale Endowment</td><td>6.04% target</td><td>$48,301</td><td>$1.77 million</td><td>$769,000</td><td>12.4</td></tr>
+      <tr><td>Hebeler Autopilot II</td><td>1.76% real return</td><td>$42,419</td><td>$2.35 million</td><td>$59,000</td><td>6.1</td></tr>
+      <tr><td>Sensible withdrawals</td><td>3.55% base</td><td>$35,543</td><td>$1.35 million</td><td>$1.35 million</td><td>13.3</td></tr>
+      <tr><td>CAPE-based</td><td>3.35% + 0.5 × 1/CAPE</td><td>$67,029</td><td>$1.62 million</td><td>$571,000</td><td>15.7</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Each strategy set to spend as much as it could while never falling below $32,000 per year in any of the 70 historical starts, on $1,000,000 in a 60/40 mix over 30 years. Lifetime spending and what's left are the middle start's; a cut is any year spending fell from the year before, after inflation.</figcaption>
+</figure>
+
+<p>Read the table by columns, since each strategy is strong in one and weak in another.</p>
+<ul>
+  <li>The steady rules spend the least over a lifetime, $1.14 million for the fixed amount, but never cut and leave the most, $1.79 million. The ratchet keeps that steadiness and adds $220,000 of lifetime spending.</li>
+  <li>The rules that spend down, 1/N, VPW, risk-based guardrails and Hebeler's Autopilot II, have the highest lifetime spending, $2.17 million to $2.49 million, and leave little or nothing. 1/N gets there by starting very low and spending heavily at the end, which few people want.</li>
+  <li>The RMD method does well on both lifetime spending and what's left, $1.96 million and $910,000, because it starts at the floor and does most of its spending in the later years.</li>
+  <li>The percentage and smoothed rules, and classic guardrails, cluster around $1.7 million of lifetime spending and roughly $700,000 to $900,000 left. They differ mainly in how often spending changes: Vanguard's rule cut in 16 years of a typical retirement, but never more than 2.5% at a time; guardrails cut about 4 times, 10% each.</li>
+  <li>The year-one figure for the CAPE rule comes from each start's own valuation. At today's CAPE of 41.0, the same setting would start at about $45,700.</li>
+  <li>Sensible withdrawals, at this risk, starts low and leaves a lot, much like the fixed amount, with more year-to-year movement.</li>
+</ul>
+<p>At the same risk, flexibility adds a lot to what you can spend. Apart from Sensible withdrawals, every flexible rule spent at least $1.62 million over a typical lifetime, against $1.14 million for the fixed amount, while holding the same $32,000 floor.</p>
+
+<h2 id="1966">The same worst case, four ways</h2>
+<p>A table of typical outcomes hides how each rule behaves when things go wrong. The chart follows four of the tuned strategies through the 1966 start, the hardest in the record.</p>
+
+<!-- data: ddShowdown() spots for the 1966 start: realReg per year for fixed, guardrails, vpw and vanguard, each at the setting found above (comfort line $32,000 held as a minimum for the flexible ones). $1,000,000, 60/40, 30 years. -->
+<figure data-chart='{"type":"line","x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],"xLabel":"Year of retirement","y":"money","series":[{"name":"Fixed amount","tone":"neutral","values":[37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,37967,32030]},{"name":"Guardrails","tone":"accent","values":[54240,54240,54240,54240,48816,43935,43935,43935,39541,35587,32028,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000]},{"name":"VPW","tone":"bad","values":[57037,50924,53078,53685,44169,43596,45426,48195,38937,32000,32000,34487,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,33667,32000,34013,35887,37391,34015]},{"name":"Vanguard dynamic spending","tone":"good","values":[49411,48176,46972,45797,44652,43536,42448,41386,40352,39343,38359,37400,36465,35554,34665,33798,32953,32129,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000,32000]}]}'>
+  <figcaption>Spending each year, in today's dollars, retiring in January 1966 with $1,000,000 in a 60/40 mix, each strategy at the setting that never fell below $32,000 in any start. The fixed amount runs short in its final year.</figcaption>
+</figure>
+
+<p>All four come down to about $32,000, because 1966 is the start that sets the limit for each of them. The difference is the route. The fixed amount holds steady at $37,967 for 29 years. Guardrails spend more for the first decade and then sit on the floor for nearly 20 years. VPW swings from year to year on the way down. Vanguard's rule slides a little every year. Which of those you'd rather live through is a fair way to choose.</p>
+
+<h2 id="matching">Matching a strategy to your situation</h2>
+<p>With the trade-offs in view, a few common situations point toward particular families.</p>
+
+<!-- data: summary of the comparison above and the strategies' rules. -->
+<figure>
+  <table>
+    <thead><tr><th>If you want</th><th>Look at</th><th>What you give up</th></tr></thead>
+    <tbody>
+      <tr><td>The same income every year</td><td>Fixed amount; Kitces ratchet for raises after strong markets</td><td>A lower start, and a small chance of running out</td></tr>
+      <tr><td>To spend more early, with cuts if needed</td><td>Guyton-Klinger or risk-based guardrails</td><td>Deep cuts in the worst decades unless you set a floor</td></tr>
+      <tr><td>Income that changes slowly</td><td>Vanguard dynamic spending, floor &amp; ceiling, Yale</td><td>Many small cuts; can run out over long retirements</td></tr>
+      <tr><td>To use it all by a chosen age</td><td>VPW, risk-based guardrails, 1/N</td><td>Nothing left if you live past the plan</td></tr>
+      <tr><td>To leave money behind</td><td>Fixed amount, ratchet, RMD method</td><td>Less spending over your lifetime</td></tr>
+      <tr><td>Spending tied to market valuations</td><td>CAPE-based</td><td>A low start when stocks are expensive, as they are now</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A rough guide. Your own numbers, especially Social Security and the length of retirement, can change which fits best.</figcaption>
+</figure>
+
+<p>Guaranteed income changes the picture more than anything else. If Social Security and a pension cover your essentials, almost any flexible rule becomes livable, because its cuts fall only on optional spending, and the extra lifetime spending in the table is there for the taking. If the portfolio has to pay for essentials, a steady rule or a firm floor matters more. Delaying Social Security, which raises the benefit for life, is often described as the cheapest way to make more of your spending guaranteed; <a href="/learn/when-to-claim">When to claim</a> covers it.</p>
+<p>The length of retirement matters too. Over longer retirements, rules that limit cuts, such as Vanguard's, can run out where a pure percentage can't, and the fixed amount's safe start falls further. Rules that spend down by a chosen age need that age set past your likely lifespan.</p>
+<p>Spending that changes on purpose is another consideration. Many retirees expect to spend more in their active early years and less later, apart from health care. The steady strategies can follow a spending path like that in the simulator, easing spending down with age, because their spending is a plan you choose. The flexible ones decide their own spending from the portfolio, so a path would fight their rules; with those, the age-based percentage rules such as VPW already tilt spending toward the early years. <a href="/learn/spending-with-age">Spending changes with age</a> covers what retirees' spending tends to do.</p>
+<p>You can also combine strategies. One setup holds the essentials on guaranteed income and runs a flexible rule on the portfolio for everything else; another splits savings into a part spent by a fixed amount and a part spent by a percentage. The simulator tests one strategy at a time, so test each part on its share of the money.</p>
+<p data-yours></p>
+
+<h2 id="research">What the research agrees on</h2>
+<p>Researchers who compare these rules tend to reach the same conclusion: none is best on every measure. Morningstar's yearly retirement income research compares many of the same methods on lifetime spending, how much spending varies and what's left, and finds each one gives up something to gain something. Guyton and Klinger showed in 2006 that decision rules allow a higher start; Vanguard's work on dynamic spending was aimed at a middle road between a fixed amount and a straight percentage; the Bogleheads designed VPW to spend everything without running out early. Each was built to fix a weakness in what came before, and each has its own.</p>
+<p>That makes the choice personal. The useful test is which rule's worst path you'd be willing to follow, and whether you'd stick with it in a bad year. If you'd abandon a rule in a crash, a plainer one you'd keep is the better choice.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Drawdown Simulator's Compare strategies view runs the same search as the table above on your own plan: your savings, Social Security, mix and years. It shows which strategy spends the most at your chosen risk, which is the steadiest that never cuts, and charts each one through the hardest starts. Set your own comfort line first; the default is 80% of your first year's spending.</p>
+<p>The Safe spending view then shows, for any strategy, how much each historical start could have spent. Once you've picked one, Use sets it on your plan with the setting found, and the Your plan view shows the year-by-year detail. Try two or three that fit your answers to the questions at the top and compare their worst years, not just their averages.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Which strategy is best?</summary><p>None on every measure. At the same risk, the steady rules leave the most, the spend-down rules spend the most over a lifetime, and the percentage and smoothed rules sit in between. The best one for you is the one whose bad years you could live with and would stick to.</p></details>
+<details><summary>Can I switch strategies later?</summary><p>Yes, and many retirees do as their situation changes. Switching in the middle of a crash is the risky case: moving from a fixed amount to a percentage after a fall locks in a deep cut. Decide your rules while markets are calm.</p></details>
+<details><summary>Do I have to follow a rule exactly?</summary><p>No. Most retirees use a rule as a guide and adjust for real life. Its value is in deciding ahead of time what you'll do in a bad year, so the decision isn't made in a panic.</p></details>
+<details><summary>Why do some strategies leave nothing?</summary><p>VPW, 1/N and risk-based guardrails are designed to spend the portfolio by the last year of the plan, since money left unspent is spending you didn't do. If you want something left, set a final value or a maximum, or choose a rule that keeps a balance.</p></details>
+<details><summary>Do these include taxes?</summary><p>No. All the amounts are withdrawals before tax. Withdrawals from traditional accounts are taxed as income, and the order you draw from accounts matters; <a href="/learn/withdrawal-order">Which account to draw from first</a> covers that.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>The Drawdown Simulator tests fifteen strategies in five families: steady income, share of the portfolio, guardrails, smoothed and valuation.</li>
+  <li>Compare them at the same risk: each set to spend the most while never falling below the same comfort line.</li>
+  <li>Steady rules leave the most, spend-down rules spend the most, and percentage and smoothed rules sit in between.</li>
+  <li>Guaranteed income that covers your essentials makes flexible rules much easier to live with.</li>
+  <li>Choose by the worst path you'd accept and stick with.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>The fifteen withdrawal strategies and how each works</li><li>How to compare strategies at the same level of risk</li><li>Which strategies suit which retirement situations</li></ul>
+  <ul class="terms">
+    <li data-term="Withdrawal strategy">A rule for how much to take from savings each year: a fixed amount, a share of the balance, or something in between.</li>
+    <li data-term="Comfort line">The spending you'd hate to fall below. Comparing strategies by the most each can spend while never dipping under it puts them on equal footing.</li>
+    <li data-term="Spend-down strategy">A rule designed to use up the portfolio by the last year of the plan, such as VPW or 1/N. It can't run out early, and leaves nothing if you live longer.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.morningstar.com/business/insights/research/the-state-of-retirement-income">The State of Retirement Income</a> <span>Morningstar</span></li>
+    <li><a href="https://www.financialplanningassociation.org/article/journal/MAR06-decision-rules-and-maximum-initial-withdrawal-rates">Decision Rules and Maximum Initial Withdrawal Rates (Guyton and Klinger, 2006)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://www.kitces.com/blog/the-ratcheting-safe-withdrawal-rate-a-more-dominant-version-of-the-4-rule/">The Ratcheting Safe Withdrawal Rate (Kitces, 2015)</a> <span>Kitces.com</span></li>
+    <li><a href="https://www.kitces.com/blog/guyton-klinger-guardrails-retirement-income-rules-risk-based/">Why Guyton-Klinger Guardrails Are Too Risky for Most Retirees (Tharp and Fitzpatrick, 2024)</a> <span>Kitces.com</span></li>
+    <li><a href="https://your.yale.edu/policies-procedures/2202-endowment-spending-and-distributions">Endowment Spending and Distributions (Policy 2202)</a> <span>Yale University</span></li>
+    <li><a href="https://www.bogleheads.org/wiki/Variable_percentage_withdrawal">Variable percentage withdrawal</a> <span>Bogleheads wiki</span></li>
+    <li><a href="https://advisors.vanguard.com/insights/article/show-clients-that-yes-they-can-spend-more-in-retirement">Show clients that, yes, they can spend more in retirement</a> <span>Vanguard</span></li>
+  </ul>
+</footer>
+</article>

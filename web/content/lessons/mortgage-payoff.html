@@ -1,0 +1,155 @@
+<article class="lesson" data-slug="mortgage-payoff" data-reviewed="2026-10-26"
+  data-title="Pay off the mortgage early?"
+  data-idea="A sure return at your loan's rate, against what investing might earn"
+  data-tool="mortgage" data-try="See what extra payments, a lump sum, a recast or a refinance would do to your loan and the interest you pay.">
+
+<p class="lede">Every extra dollar you put on a mortgage earns exactly the loan's interest rate, guaranteed. Every dollar you invest instead might earn more or less. That trade is the core of the payoff question. Liquidity, taxes and what you'll need in retirement often matter as much.</p>
+
+<h2 id="extra">What extra payments do</h2>
+<p>Take the loan Mortgage opens with: $360,000 borrowed for 30 years at 7.25%, a payment of $2,456 per month for principal and interest. Paid as scheduled, it costs $524,100 in interest over the thirty years, more than the amount borrowed.</p>
+<p>An extra payment goes straight to principal. The required payment doesn't change, but every month after that the interest is figured on a smaller balance, so more of each regular payment goes to principal too. The effect compounds, which is why modest amounts cut years off the loan.</p>
+
+<!-- data: mortgage() in lib/engine/math.js with the Mortgage defaults (price 450,000, down 90,000, rate 7.25%, 30 years)
+     and extraMonthly set to each amount. Base total interest 524,100. payoffMonth: 317, 284, 221, 165.
+     Interest saved = base totalInterest − totalInterest: 76,309; 130,583; 230,870; 314,645. -->
+<figure>
+  <table>
+    <thead><tr><th>Extra each month</th><th>Paid off in</th><th>Total interest</th><th>Interest saved</th></tr></thead>
+    <tbody>
+      <tr><td>None</td><td>30 years</td><td>$524,100</td><td></td></tr>
+      <tr><td>$100</td><td>26 years 5 months</td><td>$447,791</td><td>$76,309</td></tr>
+      <tr><td>$200</td><td>23 years 8 months</td><td>$393,518</td><td>$130,583</td></tr>
+      <tr><td>$500</td><td>18 years 5 months</td><td>$293,231</td><td>$230,870</td></tr>
+      <tr><td>$1,000</td><td>13 years 9 months</td><td>$209,455</td><td>$314,645</td></tr>
+    </tbody>
+  </table>
+  <figcaption>$360,000 borrowed for 30 years at 7.25%, with the extra paid every month from the first.</figcaption>
+</figure>
+
+<p>Interest saved is the number lenders and calculators like to show. The saving is real, but the same dollars could have been invested instead, and a dollar saved on interest is certain in a way a dollar of investment return isn't.</p>
+
+<!-- data: mortgage() year-end balances, rounded to $1,000, with no extra and with extraMonthly 500. The extra-payment loan ends in month 221 (year 19). -->
+<figure data-chart='{"type":"line","x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],"xLabel":"Year of the loan","y":"money","series":[{"name":"As scheduled","tone":"neutral","values":[360000,357000,353000,349000,344000,340000,335000,329000,324000,317000,311000,304000,296000,288000,279000,269000,259000,248000,236000,223000,209000,194000,178000,161000,143000,123000,102000,79000,55000,28000,0]},{"name":"$500 extra per month","tone":"accent","values":[360000,350000,340000,329000,317000,304000,290000,275000,259000,242000,223000,203000,182000,158000,134000,107000,78000,48000,15000,0,0,0,0,0,0,0,0,0,0,0,0]}]}'>
+  <figcaption>The balance on the $360,000 loan, as scheduled and with $500 extra each month. Early on, most of each scheduled payment is interest and the balance barely moves; the extra payments are what bend the line.</figcaption>
+</figure>
+
+<h2 id="return">A sure return at the loan's rate</h2>
+<p>Paying $500 extra on a 7.25% mortgage is like buying an investment that pays 7.25% with no risk at all. The return is certain because the interest you'd otherwise owe is certain. Investing the same $500 in a stock-heavy portfolio might earn more over long periods, but it might not, and it can fall sharply along the way.</p>
+<p>To see where the two cross, compare two households with the same loan and the same $500 per month to spare. One puts it on the mortgage until the loan is gone in month 221, then invests the full $2,956 it was paying each month for the rest of the thirty years. The other invests the $500 from the start and pays the mortgage as scheduled. After thirty years, neither has a mortgage, and the only difference is the size of the investment account.</p>
+
+<!-- data: month by month for 360 months. Prepay: extraMonthly 500 (payoff month 221), then 2,455.83 + 500 invested each month from month 222.
+     Invest: 500 invested each month from month 1. Monthly growth (1 + annual return)^(1/12). No taxes on either side.
+     Ending balances (prepay, invest): 4% 519,236 / 342,635; 6% 585,350 / 487,256; 7.5% 641,089 / 641,444; 8% 660,948 / 704,275; 10% 747,373 / 1,031,422. -->
+<figure>
+  <table>
+    <thead><tr><th>Investments earn, per year</th><th>Pay down first, then invest</th><th>Invest from the start</th><th>Investing ahead by</th></tr></thead>
+    <tbody>
+      <tr><td>4%</td><td>$519,236</td><td>$342,635</td><td class="neg">−$176,601</td></tr>
+      <tr><td>6%</td><td>$585,350</td><td>$487,256</td><td class="neg">−$98,094</td></tr>
+      <tr><td>7.5%</td><td>$641,089</td><td>$641,444</td><td>$355</td></tr>
+      <tr><td>8%</td><td>$660,948</td><td>$704,275</td><td>$43,327</td></tr>
+      <tr><td>10%</td><td>$747,373</td><td>$1,031,422</td><td>$284,048</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The investment account after 30 years, with the $360,000 loan at 7.25% and $500 per month to spare. Before any tax on investment gains.</figcaption>
+</figure>
+
+<p>They come out even at about 7.5% per year, which is the loan's 7.25% once monthly compounding is counted. Earn less than the loan's rate and paying it down wins; earn more and investing wins. So the decision comes down to what you can reasonably expect to earn, and how much risk you're willing to take to earn it.</p>
+<p>That comparison still tilts toward investing. Paying down the loan is risk-free, so the honest comparison is with other risk-free investments, like Treasury bonds and high-yield savings, not with stocks. When those pay less than your mortgage rate, prepaying is the better safe investment. Investing the money instead means taking stock market risk with it. That may be perfectly reasonable, as long as it's a choice you make on purpose.</p>
+<p>The rate is what matters most. In 2020 and 2021 many people locked in 30-year mortgages below 3%. On a loan like that, safe investments can pay more than the loan costs, and paying it down early gives up return for very little in exchange. On a 7% loan, few safe investments beat prepaying.</p>
+
+<h3>Taxes shift the numbers</h3>
+<ul>
+<li>The mortgage interest deduction lowers a loan's real cost, but only if you itemize and only by the amount your itemized deductions exceed the standard deduction, $32,200 for a married couple in 2026. Most households take the standard deduction, so for them the deduction is worth nothing and the loan costs its full rate.</li>
+<li>Investment returns in a taxable account are taxed, which lowers what you keep. If a 7.5% return were taxed at 15% every year, you'd keep about 6.4%, below the mortgage's break-even.</li>
+<li>Retirement accounts tip the math toward investing. An employer match is an instant 50% or 100% return that nothing else matches. Pre-tax 401(k) and IRA contributions cut today's tax too. Prepaying a mortgage before taking the full match is almost never the better choice.</li>
+</ul>
+
+<h2 id="liquidity">Money in the house is hard to reach</h2>
+<p>A dollar on the mortgage is locked up in a way a dollar in an account isn't. Your required payment doesn't fall when you pay extra; it stays the same until the loan is gone. If you lose a job five years into an aggressive payoff plan, all that equity doesn't pay this month's bill.</p>
+<p>The only ways to reach home equity are to sell or to borrow against it, with a home equity loan, a line of credit or a cash-out refinance. Those cost money and need approval, and lenders tighten up exactly when you're most likely to need them. In 2008, as home prices fell, many lenders froze or cut existing home equity lines of credit.</p>
+<p>So the usual order is to get the full employer match first, then clear high-interest debt like credit cards and build an emergency fund, and only then think about extra mortgage payments. The lessons on <a href="/learn/emergency-fund">the emergency fund</a> and <a href="/learn/where-each-dollar-goes">where each dollar should go</a> cover that order.</p>
+
+<h3>A side fund keeps the choice open</h3>
+<p>Instead of sending the extra $500 to the lender, you can put it in a separate investment account earmarked for the mortgage. If the account earns about the loan's rate, it reaches the loan's remaining balance in month 221, the same month extra payments would have cleared it. At that point you can write one check and be done, or keep both.</p>
+<p>The side fund stays yours to use in an emergency. It may also grow faster than the loan's rate. The costs are that it can also fall, its gains may be taxed, and money set aside for a goal tends to get spent on something else.</p>
+
+<!-- data: side fund, 500 per month invested at 7.25% per year (monthly growth (1.0725)^(1/12)): 224,732 after 221 months.
+     At 7.5%: 230,628. Scheduled loan balance after 221 payments: 360,000 grown at 0.0725/12 less 2,455.83 each month = 230,519. -->
+
+<h2 id="retiring">Retiring with a mortgage</h2>
+<p>More people retire with one than used to. Harvard's Joint Center for Housing Studies found that between 1989 and 2022 the share of homeowners aged 65 to 79 with a mortgage rose from 24% to 41%, and their median mortgage debt rose from $21,000 to $110,000. Among owners 80 and over, more than 30% still had a mortgage, up from 3% three decades earlier.</p>
+<p>A mortgage in retirement works differently from one while you're working. Each payment has to come from savings, and withdrawals from traditional 401(k)s and IRAs are taxed as income. Covering a $2,000 payment takes about $2,270 of withdrawals at a 12% tax rate, and more in a higher bracket.</p>
+<h3>Paying it off with one big withdrawal</h3>
+<p>Some people plan to clear the balance on the day they retire with a lump sum from a retirement account. The tax bill is often the surprise. Take a couple who retire at 63 with $150,000 left on the mortgage, ten years to go at 7.25%, and $60,000 of other taxable income after the standard deduction.</p>
+
+<!-- data: 2026 federal brackets, married filing jointly (lib/engine/data/2026.js fed.m), standard deduction 32,200.
+     Base taxable income 60,000. Lump sum: W − (tax(60,000 + W) − tax(60,000)) = 150,000 → W = 188,016, tax 38,016; AGI 60,000 + 32,200 + 188,016 = 280,216.
+     2026 IRMAA (2026.js medicare.irmaa): joint MAGI above 274,000 and up to 342,000 → Part B 405.80 vs 202.90 standard, Part D +37.50; extra 240.40 per person per month,
+     × 2 × 12 = 5,769.60 for one year. Monthly payment on 150,000 over 120 months at 7.25%: 1,761.02 (21,132 per year), interest 61,322 over ten years.
+     Keep paying: W − (tax(60,000 + W) − tax(60,000)) = 21,132 → W = 24,014, tax 2,882 per year, all at 12%; 28,817 over ten years. -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>Pay it off at once</th><th>Keep paying for ten years</th></tr></thead>
+    <tbody>
+      <tr><td>Taken from the IRA</td><td>$188,016 in one year</td><td>$24,014 per year</td></tr>
+      <tr><td>Federal income tax on it</td><td>$38,016</td><td>$2,882 per year, $28,817 in all</td></tr>
+      <tr><td>Top tax bracket reached</td><td>24%</td><td>12%</td></tr>
+      <tr><td>Mortgage interest still to pay</td><td>None</td><td>$61,322 over ten years</td></tr>
+      <tr><td>Medicare at 65</td><td>Surcharge of about $5,770 for the couple, for one year</td><td>No surcharge</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A couple at 63 with $150,000 left at 7.25% and $60,000 of other taxable income, using 2026 federal brackets and Medicare surcharges. The money left in the IRA keeps growing in the second column. State tax not included.</figcaption>
+</figure>
+
+<p>The big withdrawal pushes most of it into the 22% and 24% brackets, and it lifts their income above the line where Medicare premiums rise. Medicare looks back two years, so income at 63 sets premiums at 65. The <a href="/learn/irmaa">IRMAA lesson</a> explains those surcharges. Neither column is simply right: paying monthly costs $61,322 in interest but keeps money invested. Spreading the payoff over two or three tax years, or paying from a taxable account or Roth, usually beats one large traditional withdrawal.</p>
+
+<h3>Why some retirees want it gone anyway</h3>
+<p>A paid-off home lowers your fixed costs for the rest of your life. Lower fixed costs mean smaller withdrawals, and smaller withdrawals make a plan less sensitive to a bad run of markets early in retirement, the risk explained in the <a href="/learn/sequence-risk">sequence-risk lesson</a>. Without a mortgage, a retiree in a down market has more room to cut back.</p>
+<p>The other side is that paying off the loan usually means a smaller portfolio on day one, and a fixed-rate payment gets easier to carry each year as inflation erodes it. At 3% inflation, a $2,456 payment twenty years from now is worth about $1,360 in today's dollars. With a low rate and a solid portfolio, carrying the mortgage can work well. With a high rate, little cushion, or a strong wish to sleep easily, paying it off is a perfectly reasonable use of money.</p>
+
+<p data-yours></p>
+
+<h2 id="options">Ways to go about it</h2>
+<ul>
+<li>Pay a set extra amount each month. It's simple, and you can stop any time. In the example, $390 per month extra pays off the 30-year loan in 20 years, which can line a payoff up with a retirement date.</li>
+<li>Make a lump-sum payment and ask for a recast. After a large extra payment, many lenders will re-figure your required payment on the lower balance for a small fee, keeping the rate and end date. Without a recast, the payment stays the same and the loan ends sooner. A recast gives you lower bills instead.</li>
+<li>Refinance to a shorter loan. A 15-year loan usually carries a lower rate than a 30-year one, so more of every payment goes to principal. The required payment is higher, though, and it can't be paused in a hard year.</li>
+<li>Build a side fund, as above, and decide later.</li>
+<li>Pay nothing extra. If your rate is low and you're investing steadily, keeping the scheduled payment is a sound choice too.</li>
+</ul>
+<p>Before any of these, check the loan for prepayment penalties. They're uncommon on today's standard mortgages, but some loans have them. Make sure extra payments are applied to principal, not held for next month's payment.</p>
+
+<h2 id="plan">Seeing it in your own numbers</h2>
+<p>In Mortgage, enter your current balance and the years left, then turn on extra payments. It shows how much sooner the loan ends and the interest saved, and it can model a one-time payment with or without a recast, or a refinance with its break-even month. If you're weighing a payoff at retirement, look at the year's taxable income it would create in Income Tax before you decide, and check whether it crosses a Medicare premium tier in Healthcare.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Should I stop 401(k) contributions to pay off my mortgage faster?</summary><p>Rarely. You'd lose any employer match, which is worth far more than the mortgage rate, and you can't make up missed contribution room later. Pre-tax contributions also cut today's tax. Prepaying usually makes sense only after the match is secured, high-interest debt is gone and an emergency fund is in place.</p></details>
+<details><summary>Is paying off the mortgage the same as earning that rate?</summary><p>Close, as long as you'd otherwise owe the interest. Every dollar of principal you pay early saves interest at the loan's rate for as long as the loan would have run. If you itemize and deduct mortgage interest, the saving after tax is a little lower.</p></details>
+<details><summary>Do I lose the mortgage interest deduction if I pay it off?</summary><p>Yes, but for most people it's worth little or nothing. It only helps if your itemized deductions exceed the standard deduction, $32,200 for a married couple in 2026. And it only gives back a share of the interest, so paying $1 of interest to save, say, 22 cents of tax is never a good trade on its own.</p></details>
+<details><summary>Can I pay the mortgage off with a home equity loan or a reverse mortgage?</summary><p>A reverse mortgage can be used to pay off an existing mortgage, from age 62, and it ends the monthly payment while you live in the home. It has costs and rules of its own, covered in the lesson on <a href="/learn/home-in-retirement">your home in retirement</a>. A home equity loan only swaps one monthly payment for another.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Extra mortgage payments earn the loan's rate, guaranteed. Investing might earn more, with risk.</li>
+<li>If investments earn about the loan's rate, the two choices come out even. Compare with safe investments, not stocks, for a fair test.</li>
+<li>Money in the house is hard to reach. Get the match, clear expensive debt and build an emergency fund first.</li>
+<li>A big retirement-account withdrawal to clear the loan can cost a lot in tax and Medicare surcharges.</li>
+<li>Retiring without a mortgage lowers fixed costs and withdrawals; carrying a low-rate one keeps more invested. Both are reasonable.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>What extra payments do to a loan and its interest</li><li>When paying down beats investing, and when it doesn't</li><li>The tax traps in paying off a mortgage at retirement</li></ul>
+  <ul class="terms">
+    <li data-term="Prepayment">Paying more than the required mortgage payment. The extra goes to principal, so later interest is figured on a smaller balance.</li>
+    <li data-term="Recast">Re-figuring the required payment on a lower balance after a large extra payment, keeping the same rate and end date. Lenders usually charge a small fee.</li>
+    <li data-term="Liquidity">How easily money can be turned into cash you can spend. Home equity is illiquid: you have to sell or borrow to use it.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.jchs.harvard.edu/housing-americas-older-adults-2023">Housing America's Older Adults 2023</a> <span>Harvard Joint Center for Housing Studies</span></li>
+    <li><a href="https://www.consumerfinance.gov/owning-a-home/">Buying a house</a> <span>Consumer Financial Protection Bureau</span></li>
+    <li><a href="https://www.irs.gov/publications/p936">Publication 936, Home mortgage interest deduction</a> <span>IRS</span></li>
+    <li><a href="https://www.freddiemac.com/pmms">Primary Mortgage Market Survey (30-year rates since 1971)</a> <span>Freddie Mac</span></li>
+    <li><a href="https://www.consumercomplianceoutlook.org/articles/2008/third-issue-2008/helocs-consumer-compliance-implications">HELOCs: consumer compliance implications (lines frozen or cut in 2008)</a> <span>Federal Reserve, Consumer Compliance Outlook</span></li>
+  </ul>
+</footer>
+</article>

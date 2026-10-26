@@ -1,0 +1,160 @@
+<article class="lesson" data-slug="employer-match" data-reviewed="2026-10-26"
+  data-title="The employer match"
+  data-idea="How match formulas, vesting and true-ups decide what you keep"
+  data-tool="budget" data-try="Enter your match formula and see what each paycheck needs to collect all of it.">
+
+<p class="lede">Most employers with a 401(k) or 403(b) add money to your account when you contribute. In most plans it's worth 3% to 7% of pay per year, and plenty of people miss part of it without knowing. How much you get depends on the plan's formula, how long you stay, and sometimes on when in the year you contribute.</p>
+
+<h2 id="formulas">How a match formula works</h2>
+<p>A match formula has two parts: how much the employer adds per dollar you put in, and how much of your pay it applies to. "50% of the first 6%" means the employer adds 50 cents for every dollar you contribute, on contributions up to 6% of your pay. Anything you put in beyond 6% isn't matched.</p>
+<p>Say Maya earns $60,000 per year and her plan matches 50% of the first 6%.</p>
+<ul>
+<li>She contributes 3%, or $1,800. The employer adds half of that, $900.</li>
+<li>She contributes 6%, or $3,600. The employer adds $1,800, the most the formula allows.</li>
+<li>She contributes 10%, or $6,000. The employer still adds $1,800. The extra 4% gets her own tax break but no more match.</li>
+</ul>
+<p>So the number that matters is the contribution rate that collects the full match, 6% in Maya's case. Below it, she leaves money behind. Above it, she's saving more, which may be a good idea, but the match has stopped growing.</p>
+<p>Formulas vary a lot. In Vanguard's 2026 report, covering 2025, the plans it administers used more than 100 different formulas, and no single one was used by more than 12% of plans. These were the most common:</p>
+
+<!-- data: formulas and shares from Vanguard, How America Saves 2026, Figure 6 (most frequently used match formulas, 2025). Dollar columns are arithmetic on a $60,000 salary: contribution to get the full match = cap x 60,000; match = sum of tier rate x tier width x 60,000 -->
+<figure>
+  <table>
+    <thead><tr><th>Formula</th><th>Share of plans</th><th>You put in to get it all</th><th>Employer adds</th></tr></thead>
+    <tbody>
+      <tr><td>50% of the first 6% of pay</td><td>12%</td><td>6%, $3,600</td><td>3%, $1,800</td></tr>
+      <tr><td>100% of the first 3%, then 50% of the next 2%</td><td>9%</td><td>5%, $3,000</td><td>4%, $2,400</td></tr>
+      <tr><td>100% of the first 6%</td><td>9%</td><td>6%, $3,600</td><td>6%, $3,600</td></tr>
+      <tr><td>100% of the first 5%</td><td>7%</td><td>5%, $3,000</td><td>5%, $3,000</td></tr>
+      <tr><td>100% of the first 4%</td><td>7%</td><td>4%, $2,400</td><td>4%, $2,400</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The five most common match formulas in Vanguard-administered plans in 2025, with what each means on a $60,000 salary.</figcaption>
+</figure>
+
+<p>Across all the formulas, the average match employers promised was 4.7% of pay and the median 4.0%. The contribution needed to get the whole match averaged 6.4% of pay, with a median of 6%. If you don't know your plan's formula, it's in the summary plan description, and most plan websites show it next to your contribution rate.</p>
+<p>Some formulas have extra pieces. About 5% of plans cap the match at a dollar amount, such as $2,000 per year. A few vary the match by age or years of service. Many plans also add a separate profit-sharing or "nonelective" contribution that you get whether or not you contribute.</p>
+<p data-yours></p>
+
+<h2 id="worth">What a missed match costs</h2>
+<p>A missed match looks small in a single year. In Maya's case, contributing 3% instead of 6% costs her $900 per year. But each year's missing $900 would have been invested for decades.</p>
+
+<!-- data: end-of-year deposits at 5% per year after inflation, salary held at $60,000 in today's dollars. Full match 3% x 60,000 = $1,800 per year; half 1.5% = $900. FV = pmt x ((1.05^n - 1)/0.05). Script: scratchpad/agents/saving/calc2.mjs -->
+<figure data-chart='{"type":"line","x":[0,5,10,15,20,25,30],"xLabel":"Years contributing","y":"money","series":[{"name":"Full match, contributing 6%","tone":"good","values":[0,9946,22640,38841,59519,85909,119590]},{"name":"Half the match, contributing 3%","tone":"bad","values":[0,4973,11320,19421,29759,42954,59795]}]}'>
+  <figcaption>Just the employer's money, on a $60,000 salary with a 50% match on the first 6%, growing 5% per year after inflation. In today's dollars.</figcaption>
+</figure>
+
+<p>After thirty years, the gap is about $60,000 in today's dollars, from contributing $1,800 per year less of her own money. The tax break makes the gap cheaper to close than it looks. In the 22% federal bracket, an extra $1,800 into a traditional 401(k) reduces take-home pay by about $1,400, because the rest would have gone to income tax.</p>
+
+<h2 id="vesting">Vesting: when the match becomes yours</h2>
+<p>Your own contributions are always 100% yours. The employer's match may not be. Vesting is the schedule on which it becomes yours, usually based on years of service. Leave before you're fully vested and the unvested part goes back to the plan.</p>
+<p>Federal law sets the slowest schedules a plan can use for matching contributions. A plan can choose either one, or anything faster:</p>
+
+<!-- data: minimum vesting schedules for matching contributions, IRC 411(a)(2)(B), per IRS Issue Snapshot: Vesting schedules for matching contributions -->
+<figure>
+  <table>
+    <thead><tr><th>Years of service</th><th>3-year cliff</th><th>6-year graded</th></tr></thead>
+    <tbody>
+      <tr><td>Less than 2</td><td>0%</td><td>0%</td></tr>
+      <tr><td>2</td><td>0%</td><td>20%</td></tr>
+      <tr><td>3</td><td>100%</td><td>40%</td></tr>
+      <tr><td>4</td><td>100%</td><td>60%</td></tr>
+      <tr><td>5</td><td>100%</td><td>80%</td></tr>
+      <tr><td>6</td><td>100%</td><td>100%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The slowest vesting a 401(k) or 403(b) can use for matching contributions. Many plans vest faster, and many vest the match immediately.</figcaption>
+</figure>
+
+<p>Nearly half of Vanguard plans vested the match immediately in 2025, and 22% used a five- or six-year graded schedule. A year of service is usually any plan year in which you work at least 1,000 hours, and the count normally starts when you're hired, not when you join the plan. You also become fully vested at the plan's normal retirement age, or if the employer ends the plan.</p>
+<p>Vesting matters most when you're thinking about changing jobs. Suppose you're three years and ten months into a job with a 3-year cliff: you're already fully vested, and leaving costs nothing. On a 6-year graded schedule, leaving with four years of service means giving up 40% of every match you've received; staying to complete a fifth year cuts that to 20%. It's worth checking your vested balance, which the plan's website shows, before you give notice.</p>
+
+<h2 id="timing">Matched by paycheck, and the true-up</h2>
+<p>Many plans figure the match each pay period, on that paycheck alone. That's fine if you contribute steadily all year. It causes trouble if you contribute heavily and reach the annual limit early, because once your contributions stop, so does the match.</p>
+<p>Take someone earning $150,000, paid every two weeks, contributing 25% of pay to a plan that matches 100% of the first 4%. Each paycheck is $5,769.23, so the match is $230.77 per check, and the full year's match should be $6,000. But at 25%, they reach the 2026 limit of $24,500 on the 17th paycheck. For the last nine paychecks of the year, they contribute nothing and get no match.</p>
+
+<!-- data: arithmetic. 150,000 / 26 = 5,769.23 per check; 25% = 1,442.31 per check; 24,500 / 1,442.31 = 16.99, so the limit is reached on check 17 (that check deposits the remaining 1,423.08). Match per check 4% x 5,769.23 = 230.77; 17 checks = 3,923.08; full year 4% x 150,000 = 6,000; missing 2,076.92. Script: scratchpad/agents/saving/calc2.mjs -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>Contributing 25%</th><th>Contributing 16%</th></tr></thead>
+    <tbody>
+      <tr><td>Paychecks with a contribution</td><td>17 of 26</td><td>26 of 26</td></tr>
+      <tr><td>Own contributions for the year</td><td>$24,500</td><td>$24,000</td></tr>
+      <tr><td>Match, no true-up</td><td>$3,923</td><td>$6,000</td></tr>
+      <tr><td>Match missed</td><td class="neg">−$2,077</td><td>$0</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A $150,000 salary paid every two weeks, with a 100% match on the first 4% figured per paycheck. A plan with a true-up would pay the missing $2,077 after the year ends.</figcaption>
+</figure>
+
+<p>Some plans fix this with a true-up: after the year ends, they compare the match you got with what the formula would have paid on your full year's pay and contribution, and deposit the difference. If your plan has one, front-loading costs nothing. If it doesn't, set your rate so the contributions last all year. $24,500 divided by $150,000 is about 16.3%; a plan that only takes whole percentages would need 16%, which leaves $500 of the limit unused but collects every dollar of match.</p>
+<p>Other timing rules can cost money too. Some plans pay the whole year's match in one deposit after the year ends, and only to employees still on the payroll on the last day of the year; leaving in December can cost the whole year's match. Plans also define which pay counts: some include bonuses and overtime, others only base salary. And high earners hit a cap: for 2026, a plan can only count the first $360,000 of pay, so a 4% match can't exceed $14,400.</p>
+
+<h2 id="safe-harbor">Safe harbor plans and automatic enrollment</h2>
+<p>Ordinary 401(k)s must pass yearly tests showing that higher-paid employees don't benefit much more than everyone else. Many employers skip the tests by using a safe harbor design, which sets a minimum employer contribution and requires it to vest quickly. If your plan is a safe harbor plan, its match follows one of these:</p>
+
+<!-- data: safe harbor and QACA formulas and vesting, IRS Issue Snapshot (vesting schedules for matching contributions) and IRS FAQs on automatic contribution arrangements -->
+<figure>
+  <table>
+    <thead><tr><th>Design</th><th>Employer puts in</th><th>Most it adds</th><th>Vesting</th></tr></thead>
+    <tbody>
+      <tr><td>Basic safe harbor match</td><td>100% of the first 3% of pay, plus 50% of the next 2%</td><td>4% of pay</td><td>Immediate</td></tr>
+      <tr><td>Enhanced safe harbor match</td><td>At least as much as the basic match; often 100% of the first 4%</td><td>Usually 4% or more</td><td>Immediate</td></tr>
+      <tr><td>Safe harbor nonelective</td><td>3% of pay to every eligible employee, whether or not they contribute</td><td>3% of pay</td><td>Immediate</td></tr>
+      <tr><td>Automatic enrollment safe harbor (QACA) match</td><td>100% of the first 1%, plus 50% of the next 5%</td><td>3.5% of pay</td><td>Up to 2 years</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Safe harbor 401(k) designs. A QACA can also use a 3% nonelective contribution in place of the match.</figcaption>
+</figure>
+
+<p>Automatic enrollment works alongside the match. In plans that use it, new employees are signed up at a default rate unless they opt out, and often raised by one point each year. SECURE 2.0, a retirement law passed in December 2022, requires most 401(k) and 403(b) plans set up after it passed to enroll new employees automatically from 2025, starting between 3% and 10% of pay and rising by one point per year to at least 10%. Businesses with ten or fewer employees, businesses under three years old, and church and government plans are exempt.</p>
+<p>A default rate of 3% can sit below what the match pays for. If your plan enrolled you automatically, check the rate against the formula. A plan matching 50% of the first 6% still leaves half the match unclaimed at 3%.</p>
+
+<h2 id="secure">Newer options from SECURE 2.0</h2>
+<h3>A Roth match</h3>
+<p>Matching contributions have always gone in pre-tax, landing in the traditional side of your account and taxed when you take them out. Since December 29, 2022, plans have been allowed to let you choose Roth treatment for the match instead. It's optional for employers, and many plans haven't added it yet.</p>
+<p>A Roth match counts as taxable income to you in the year it's deposited. Nothing is withheld for it, so the tax shows up when you file, and the plan reports it on a Form 1099-R rather than your W-2. In exchange, the match and its growth come out tax-free in retirement. Only matching money that's fully vested when it goes in can be Roth. Whether it's worth choosing is the same question as Roth versus traditional for your own contributions, covered in <a href="/learn/traditional-or-roth">Traditional or Roth</a>.</p>
+
+<h3>A match on student loan payments</h3>
+<p>From plan years starting in 2024, employers may treat your student loan payments as if they were 401(k), 403(b), SIMPLE IRA or governmental 457(b) contributions and match them. If you're paying down loans and can't afford to contribute as well, you can still collect the match. Your employer has to offer it, and you'll usually have to certify the payments each year.</p>
+
+<h3>The Saver's Match</h3>
+<p>Separate from your employer, a federal Saver's Match is scheduled to start in 2027 for workers with modest incomes: 50% of up to $2,000 of retirement contributions per year, deposited into the account. It replaces the Saver's Credit, which works as a tax credit until then.</p>
+
+<h2 id="limits">How the match fits with the limits</h2>
+<p>The match doesn't use up any of your own contribution limit. For 2026, you can contribute $24,500 yourself, plus catch-up contributions from age 50, and the employer's match comes on top. There is a separate ceiling on everything going into one employer's plan for you in one year: your contributions, the match and any profit-sharing together. For 2026 it's $72,000, or 100% of your pay if that's less, with catch-up contributions allowed on top. Few people get near it unless their employer is unusually generous or they use after-tax contributions. <a href="/learn/contribution-limits">This year's limits</a> has every figure.</p>
+<p>If you have two jobs in the same year, your own $24,500 is shared across both employers' plans, but each employer's match is figured on its own. Contributing at both up to each match, while staying under the combined $24,500, collects both.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Budget tool's Paycheck tab asks for your employer's match as a rate and the share of pay it applies to: 50% on the first 6%, say. Its first line, 401(k) up to the match, then fills to exactly the contribution that collects all of it, and the tool shows the match beside what you put in. For a two-tier formula, enter a single one with the same maximum: 100% of the first 3% plus 50% of the next 2% adds up to 4% of pay, the same as 80% on the first 5%.</p>
+<p>The Advanced calculator and Stages take an employer match too, paid into the traditional account and rising with your pay, so your projection counts it. If you're deciding whether to change jobs, compare the new offer with the match and the vesting you'd give up, not the salary alone.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Does the match count toward my $24,500 limit?</summary><p>No. The $24,500 for 2026 is your own contributions only. The match counts toward the much larger $72,000 limit on everything going into the plan.</p></details>
+<details><summary>Is my match Roth if I contribute to the Roth 401(k)?</summary><p>Not automatically. Traditionally the match goes in pre-tax whatever you choose for your own money. Some plans now let you elect a Roth match; the plan's website or summary plan description will say.</p></details>
+<details><summary>What happens to my match if I'm laid off?</summary><p>Anything vested is yours. Unvested money is usually forfeited, though if the employer lays off a large share of its workforce, a partial plan termination can make everyone affected fully vested. Ask the plan administrator.</p></details>
+<details><summary>Is a match better than a higher salary?</summary><p>Dollar for dollar, the match is worth a bit more, since it skips Social Security and Medicare tax and isn't taxed until you withdraw it. But it only reaches you if you contribute enough and stay long enough to vest.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>A match formula has a rate and a cap. Contribute at least up to the cap to collect all of it.</li>
+<li>The most common formula in Vanguard's plans is 50% of the first 6% of pay; the average match promised is 4.7% of pay.</li>
+<li>Vesting can take up to three years (cliff) or six (graded); check your vested balance before changing jobs.</li>
+<li>If the match is figured per paycheck with no true-up, reaching the limit early loses part of it.</li>
+<li>SECURE 2.0 allows a Roth match and a match on student loan payments, if your employer offers them.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How to read a match formula and collect all of it</li><li>How vesting schedules decide what you keep</li><li>Why front-loading can cost match without a true-up</li></ul>
+  <ul class="terms">
+    <li data-term="Vesting">The schedule on which employer contributions become yours to keep, usually by years of service. Your own contributions are always fully vested.</li>
+    <li data-term="True-up">A deposit after the year ends that makes up any match missed because it was figured paycheck by paycheck.</li>
+    <li data-term="Safe harbor plan">A 401(k) that skips some yearly testing by giving every eligible employee a set minimum contribution that vests immediately (or within two years for an automatic enrollment version).</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://workplace.vanguard.com/insights-and-research/report/how-america-saves-2026.html">How America Saves 2026</a> <span>Vanguard</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/issue-snapshot-vesting-schedules-for-matching-contributions">Issue snapshot: vesting schedules for matching contributions</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/faqs-auto-enrollment-are-there-different-types-of-automatic-contribution-arrangements-for-retirement-plans">Types of automatic contribution arrangements</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/pub/irs-drop/n-24-63.pdf">Notice 2024-63: matching contributions for student loan payments</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/newsroom/secure-2-point-0-act-impacts-how-businesses-complete-forms-w-2">SECURE 2.0 Act impacts how businesses complete Forms W-2</a> <span>IRS</span></li>
+  </ul>
+</footer>
+</article>

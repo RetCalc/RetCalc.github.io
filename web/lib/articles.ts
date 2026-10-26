@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { cache } from "react";
 import { CHEVRON } from "@/lib/collapse";
 import type { Slug } from "@/lib/site";
+import { lessonLinksTo, summaries } from "@/lib/learn/lessons";
 
 const DIR = join(process.cwd(), "content", "articles");
 
@@ -24,8 +25,9 @@ const raw = cache((slug: Slug): string | null => {
     get the same chevron. Null for a
     page without one. */
 export const articleHtml = cache((slug: Slug, open = false): string | null => {
-  const html = raw(slug);
-  if (!html) return null;
+  const base = raw(slug);
+  if (!base) return null;
+  const html = withLessons(slug, base);
   const reviewed = articleReviewed(slug);
   return split(html)
     // "Last reviewed" opens the article's body, from its data-reviewed date.
@@ -44,7 +46,18 @@ export const articleHtml = cache((slug: Slug, open = false): string | null => {
 /* Where an article's closing sections start, and the order they take in
    the side column: the questions first, then where to go next, then the
    sources. */
-const SIDE = ["Questions", "Related tools", "Go further", "Sources"];
+const SIDE = ["Questions", "Related tools", "Lessons", "Go further", "Sources"];
+
+/** The Learn lessons that teach what this page's tool does (the ones whose
+    Try it opens it, else the ones that link to it), as a "Lessons" list at
+    the end of its article, which the side column picks up. */
+function withLessons(slug: Slug, html: string): string {
+  const all = summaries(), by = all.filter((l) => l.tool === slug);
+  const list = (by.length ? by : all.filter((l) => lessonLinksTo(l.slug, slug))).slice(0, 4);
+  if (!list.length) return html;
+  const section = `<h3>Lessons</h3>\n    <ul>\n${list.map((l) => `      <li><a href="/learn/${l.slug}">${l.title}</a>: ${l.idea.replace(/^./, (c) => c.toLowerCase())}.</li>`).join("\n")}\n    </ul>\n    `;
+  return html.replace(/(<\/div>\s*<\/article>\s*)$/, `${section}$1`);
+}
 const SIDE_H3 = new RegExp(`<h3>(?:${SIDE.join("|")})</h3>`);
 
 /** Splits the body in two: the article itself, and its closing sections

@@ -1,0 +1,153 @@
+<article class="lesson" data-slug="saving-for-college" data-reviewed="2026-10-26"
+  data-title="Saving for college"
+  data-idea="How much to save, where to keep it, and how it fits beside retirement"
+  data-tool="college" data-try="Find the monthly saving that covers a public, private or custom school for one child or several, with costs growing until each one starts.">
+
+<p class="lede">College is one of the largest bills a family plans for, and it arrives on a fixed date. Saving early, in the right account, can cover a large share of it. How much to aim for, and how it sits next to your own retirement, matter as much as which account you use.</p>
+
+<h2 id="costs">What college costs now</h2>
+<p>The College Board's yearly survey, Trends in College Pricing, is the standard source. For the 2025–26 school year, its averages for full-time undergraduates look like this:</p>
+
+<!-- data: College Board, Trends in College Pricing and Student Aid 2025, Table CP-1 and Figure CP-1 (2025-26).
+     Tuition and fees: public two-year in-district 4,150; public four-year in-state 11,950; out-of-state 31,880; private nonprofit four-year 45,000.
+     Housing and food: 10,850; 13,900; 13,900; 15,920. Full student budgets (adds books, transportation, other): 21,320; 30,990; 50,920; 65,470.
+     Tuition plus housing and food: 15,000; 25,850; 45,780; 60,920. -->
+<figure>
+  <table>
+    <thead><tr><th>2025–26, per year</th><th>Tuition and fees</th><th>Plus housing and food</th><th>Full student budget</th></tr></thead>
+    <tbody>
+      <tr><td>Public two-year, in-district</td><td>$4,150</td><td>$15,000</td><td>$21,320</td></tr>
+      <tr><td>Public four-year, in-state</td><td>$11,950</td><td>$25,850</td><td>$30,990</td></tr>
+      <tr><td>Public four-year, out-of-state</td><td>$31,880</td><td>$45,780</td><td>$50,920</td></tr>
+      <tr><td>Private nonprofit four-year</td><td>$45,000</td><td>$60,920</td><td>$65,470</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Average published prices. The full budget adds books, supplies, transportation and personal costs as colleges estimate them. Source: College Board, Trends in College Pricing 2025.</figcaption>
+</figure>
+
+<p>Those are sticker prices. Most students pay less after grants and scholarships. The College Board estimates that the average first-time, full-time student at a public four-year college paid about $2,300 in tuition and fees in 2025–26 after grant aid, and at a private nonprofit college about $16,910. Housing and food are rarely discounted much, so they make up a large share of what families actually pay.</p>
+<p>Prices have risen faster than inflation over the long run. Between 1995–96 and 2025–26, average in-state tuition and fees at public four-year colleges roughly doubled after inflation, from $5,940 to $11,950 in today's dollars. The last decade has been calmer: adjusted for inflation, they fell 7% at public four-year colleges and rose 2% at private ones. Planners commonly assume college costs will grow 4% to 5% per year, a bit above general inflation.</p>
+
+<h2 id="howmuch">How much to save</h2>
+<p>College Savings opens with a public in-state school at $26,000 per year today, the College Board's $25,850 for tuition, fees, housing and food rounded, with costs rising 4% per year, savings earning 6% and a newborn with 18 years to go. Those numbers make the first year of college cost $52,671, about double today's price. All four years come to $223,666.</p>
+<p>You don't need all of it saved on the first day of college. The account keeps earning while the first years are paid, so it needs $204,797 at the start. Saving $538 per month from birth gets there, and those monthly deposits add up to only about $116,100. Growth covers the rest.</p>
+
+<!-- data: collegeSavingsCalc (lib/engine/calculators.js) with the College Savings defaults: annualCost 26,000, tuitionInfl 4%, investRet 6%,
+     saved 0, collegeYrs 4, yearsUntil 18. yearCosts 52,671 / 54,778 / 56,969 / 59,248, total 223,666; targetAtStart 204,797; monthly 537.58.
+     Deposits: the rows' contributions sum to 116,118. Other rows change annualCost (61,000, the private preset) and yearsUntil (10, 5). Half = monthly / 2. -->
+<figure>
+  <table>
+    <thead><tr><th>Start saving with</th><th>Public in-state, $26,000 today</th><th>Half of it</th><th>Private, $61,000 today</th><th>Half of it</th></tr></thead>
+    <tbody>
+      <tr><td>18 years to go</td><td>$538</td><td>$269</td><td>$1,261</td><td>$631</td></tr>
+      <tr><td>10 years to go</td><td>$921</td><td>$461</td><td>$2,161</td><td>$1,080</td></tr>
+      <tr><td>5 years to go</td><td>$1,770</td><td>$885</td><td>$4,153</td><td>$2,076</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Monthly saving to cover four years, with costs growing 4% per year and savings earning 6%, starting from nothing.</figcaption>
+</figure>
+
+<p>Starting at birth instead of five years out cuts the monthly amount by about 70%, because the money has longer to grow. And the monthly cost of a private college is more than double that of a public one, which is worth knowing before you set a target.</p>
+<p>Very few families save the full sticker price, and they don't have to. Covering half or two-thirds with savings and the rest from income during the college years, grants, scholarships, a student's earnings and modest loans is a common, workable plan. Saving something early does more than saving more later.</p>
+
+<!-- data: collegeSavingsCalc rows[].balance at each year's end, rounded to $1,000, with the default inputs. -->
+<figure data-chart='{"type":"area","x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],"xLabel":"Child age","y":"money","series":[{"name":"College account","tone":"accent","values":[7000,14000,21000,29000,37000,46000,56000,66000,76000,87000,99000,112000,125000,139000,154000,170000,187000,205000]}]}'>
+  <figcaption>The account balance with $538 saved each month from birth at 6%. About $116,100 of the $205,000 at 18 was deposited; the rest is growth.</figcaption>
+</figure>
+
+<p data-yours></p>
+
+<h2 id="plan529">The 529 plan</h2>
+<p>A 529 plan, named for the section of the tax code that created it, is the main account for college saving. States sponsor them, and you can generally use any state's plan for a college anywhere.</p>
+<h3>The tax breaks</h3>
+<ul>
+<li>Investments grow without yearly tax, and withdrawals are tax-free when they pay for qualified education expenses.</li>
+<li>There's no federal deduction for contributions, but many states give one, usually only for contributions to their own plan. Some states have no income tax and so no deduction. Check your state's rules before choosing a plan elsewhere.</li>
+<li>Contributions count as gifts to the child. In 2026 anyone can give $19,000 per person without using up their lifetime gift exemption, and a 529 allows five years of gifts at once, $95,000 per giver, spread over five years for gift-tax purposes.</li>
+</ul>
+<h3>What counts as a qualified expense</h3>
+<ul>
+<li>At colleges and other postsecondary schools: tuition and fees, books, supplies and required equipment, and a computer and internet access used mainly by the student. Housing and food count for students enrolled at least half-time, up to the school's own allowance in its cost of attendance, or the actual charge for college-run housing.</li>
+<li>For apprenticeships registered with the Department of Labor: fees, books, supplies and equipment.</li>
+<li>Student loans: up to $10,000 over a lifetime toward the beneficiary's loans, and another $10,000 for each of their siblings.</li>
+<li>The 2025 law known as the One Big Beautiful Bill Act added recognized postsecondary credential programs, such as many licensing and certification courses, and the testing and continuing education needed to keep those credentials.</li>
+<li>From kindergarten through 12th grade: tuition at public, private or religious schools, up to $10,000 per year per student through 2025 and $20,000 from 2026. The same law added, for withdrawals after July 4, 2025, curriculum and books, online materials, tutoring by a qualified tutor who isn't a relative, standardized and AP test fees, dual enrollment and educational therapies for students with disabilities. The $20,000 limit covers all of these together. Not every state follows the federal rules for K-12 withdrawals, so a state may tax them.</li>
+</ul>
+<p>Withdraw for anything else and the earnings part of the withdrawal is taxed as income, plus a 10% additional tax. Your contributions come back tax-free; only the growth is taxed. The 10% is waived to the extent the student gets a tax-free scholarship, attends a US military academy, becomes disabled or dies, though the income tax on earnings still applies in those cases.</p>
+<h3>Who controls it</h3>
+<p>The account owner, usually a parent, controls the money, not the child. You can change the beneficiary to another family member, including a sibling, a cousin or yourself, without tax. A 529 can also be rolled into an ABLE account, the tax-advantaged account for people with disabilities, within the ABLE yearly limit.</p>
+
+<h2 id="leftover">If the money isn't all needed</h2>
+<p>Maybe your child gets a scholarship, chooses a cheaper school or doesn't go. Leftover money has more options than it used to:</p>
+<ul>
+<li>Change the beneficiary to a younger sibling or another relative, or keep it for graduate school or the next generation. A 529 has no deadline.</li>
+<li>Take out the scholarship amount without the 10% additional tax. The earnings part is still taxed.</li>
+<li>Roll some into a Roth IRA for the beneficiary. Since 2024 the rules allow it, with limits: the 529 must have been open more than 15 years, money contributed in the last five years (and its earnings) can't be moved, the transfer must go directly to the beneficiary's Roth IRA, each year's rollover counts against that year's Roth IRA contribution limit, $7,500 in 2026, the beneficiary needs earned income at least equal to the amount moved, and the lifetime total is $35,000. Spread over several years, that's a meaningful head start on the child's retirement.</li>
+</ul>
+<p>The 15-year clock is one more reason to open an account early, even with a small amount, and to keep the same account instead of opening new ones.</p>
+
+<h2 id="aid">Financial aid basics</h2>
+<p>Most aid starts with the FAFSA, the federal form, which produces a <b>Student Aid Index</b>. Colleges use it to decide need-based grants and loans. Some private colleges also use the CSS Profile, which asks more questions and sets its own rules for the college's own aid.</p>
+<p>On the FAFSA, how money is held matters as much as how much there is:</p>
+<ul>
+<li>A parent-owned 529, or a 529 owned by a dependent student, counts as a parent asset. Parent assets reduce aid eligibility by at most about 5.64% of their value.</li>
+<li>Money in the student's own name, like a custodial account, counts at 20%, so it cuts aid much more.</li>
+<li>Retirement accounts and the family home aren't counted as assets on the FAFSA at all.</li>
+<li>A grandparent-owned 529 no longer hurts federal aid. Since the 2024–25 FAFSA, money paid on a student's behalf by someone else isn't reported, so withdrawals from a grandparent's 529 don't count. CSS Profile schools may still ask about it.</li>
+</ul>
+<p>Every college that takes federal aid has to post a net price calculator on its website, which estimates what your family would pay there after grants. Running it for a few colleges, including expensive private ones that give generous aid, gives a much better target than sticker prices.</p>
+<p>Loans fill much of the gap for many families. From July 1, 2026, federal loans to undergraduates carry a 6.52% fixed rate. Parent PLUS loans carry 9.07%, and from the same date parents can borrow at most $20,000 per year and $65,000 in total for each dependent student.</p>
+
+<h2 id="retirement">College or retirement first</h2>
+<p>The usual advice is to put your own retirement first, at least up to the full employer match, for three reasons:</p>
+<ul>
+<li>College can be borrowed for; retirement can't. Students can get loans, grants, scholarships and jobs. Nobody lends you money to live on at 75.</li>
+<li>Money in a 401(k) or IRA doesn't count against aid. Money in a 529 counts a little, and money in a savings account counts too.</li>
+<li>A retirement shortfall can land on your children later. Parents who reach retirement short may need help from the same children whose college they paid for.</li>
+</ul>
+<p>Retirement first still leaves room for college. Once you're saving enough for retirement, often 15% of pay or more counting any match, a 529 is an efficient place for the next dollars. Even $100 per month from birth grows to about $38,000 by 18 at 6%. A Roth IRA can serve as a backup college fund too: contributions, though not earnings, can be taken out at any time without tax or penalty. The catch is that a withdrawal counts as income on the FAFSA two years later.</p>
+
+<!-- data: $100 per month for 216 months at 6% per year, monthly growth 1.06^(1/12): 100 × ((1.004868)^216 − 1) / 0.004868 = 38,096. -->
+
+<h2 id="investing">How to invest a college account</h2>
+<p>Because the bill arrives on a fixed date, a college account should get safer as that date nears. A large fall in stocks when the student is 17 leaves no time to recover. Most 529 plans offer age-based or target-enrollment portfolios that do this for you, starting mostly in stocks and moving into bonds and cash through the high school years.</p>
+<p>College Savings assumes a 6% return throughout, a reasonable average for a mix that starts in stocks and ends in bonds. If you hold mostly cash or bonds the whole time, use a lower figure. At 3%, the $538 per month from birth becomes $751 per month.</p>
+
+<!-- data: collegeSavingsCalc with the defaults and investRet 3%: monthly 750.57. -->
+
+<h2 id="tool">Seeing it in your own numbers</h2>
+<p>College Savings takes each child's age, the school type or your own yearly cost, how many years of college, and what you've already saved. It shows the monthly amount, the cost when each child starts and the balance year by year. With more than one child, it works out one amount for a shared account, which can step down once the oldest starts college.</p>
+<p>Try setting the target at a share of the full cost, say half, and see what that does to the monthly figure. Then check that amount against your retirement saving in your plan before you commit to it.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Should I use my own state's 529 plan?</summary><p>Often, if your state gives a tax deduction or credit only for its own plan. If it doesn't, or if its plan has high fees, another state's plan may be better. Every state's plan can pay for colleges anywhere.</p></details>
+<details><summary>What if my child doesn't go to college?</summary><p>You can change the beneficiary to another family member, use the money for an apprenticeship, trade school or credential program, roll up to $35,000 over several years into the child's Roth IRA if the account is old enough, or keep it for later. If you simply take it out, you pay income tax and the 10% additional tax on the earnings only.</p></details>
+<details><summary>Does a 529 hurt financial aid?</summary><p>A little. A parent-owned 529 reduces federal aid eligibility by at most about 5.64% of its value, and grandparent-owned 529s no longer count on the FAFSA. Saving almost always leaves you better off than not saving.</p></details>
+<details><summary>Can I use a 529 for private elementary or high school?</summary><p>Yes, for tuition and, since July 2025, other costs like books, tutoring and test fees: up to $20,000 per year per student from 2026. Money spent on K-12 has less time to grow, though, and check whether your state taxes those withdrawals.</p></details>
+<details><summary>How fast does college cost rise?</summary><p>Over the last 30 years, public four-year tuition roughly doubled after inflation, though it has fallen slightly after inflation over the last decade. For 2025–26, published prices rose 2.9% at public four-year colleges and 4.0% at private ones before inflation. 4% to 5% per year is a common planning figure.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>A public in-state college costs about $25,850 per year in tuition, fees, housing and food (2025–26); a private one about $60,920. Most students pay less after grants.</li>
+<li>From birth, about $538 per month covers four years at a public school, assuming 4% cost growth and 6% returns; half that covers half.</li>
+<li>529 plans grow tax-free for college, K-12 tuition, apprenticeships, credentials and some student loans, and leftovers can partly move to a Roth IRA.</li>
+<li>Parent-owned 529s barely affect aid; retirement accounts and grandparent 529s don't count on the FAFSA.</li>
+<li>Retirement comes first, at least to the match. Loans exist for college, not for retirement.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>What college costs and how much to save each month</li><li>How 529 plans work, including the 2025 changes</li><li>How savings affect aid, and college versus retirement</li></ul>
+  <ul class="terms">
+    <li data-term="529 plan">A state-sponsored education savings account. Growth is tax-free when withdrawals pay for qualified education expenses.</li>
+    <li data-term="Student Aid Index">The figure the FAFSA produces from a family's income and assets, which colleges use to set need-based aid.</li>
+    <li data-term="Net price">What a student actually pays after grants and scholarships, as opposed to the published sticker price.</li>
+    <li data-term="Qualified education expenses">The costs a 529 can pay tax-free: tuition, fees, books, supplies, equipment and, for students enrolled at least half-time, housing and food, plus some K-12, apprenticeship, credential and student loan costs.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://research.collegeboard.org/trends/college-pricing">Trends in College Pricing</a> <span>College Board</span></li>
+    <li><a href="https://www.irs.gov/publications/p970">Publication 970, Tax benefits for education (chapter 7, qualified tuition programs)</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p590a">Publication 590-A, Contributions to IRAs (529 rollovers to a Roth IRA)</a> <span>IRS</span></li>
+    <li><a href="https://fsapartners.ed.gov/knowledge-center/library/dear-colleague-letters/2023-08-04/fafsa-simplification-act-changes-implementation-2024-25">FAFSA Simplification Act changes for 2024–25</a> <span>Federal Student Aid</span></li>
+    <li><a href="https://studentaid.gov/">Federal student aid</a> <span>US Department of Education</span></li>
+  </ul>
+</footer>
+</article>

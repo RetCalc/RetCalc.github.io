@@ -1,0 +1,164 @@
+<article class="lesson" data-slug="deductions" data-reviewed="2026-10-26"
+  data-title="Deductions and credits"
+  data-idea="What comes off your income, what comes off your tax, and at 65"
+  data-tool="incometax" data-try="Compare the standard deduction with your itemized total, and see the extra deductions at 65, with your plan already filled in.">
+
+<p class="lede">A deduction lowers the income you're taxed on; a credit lowers the tax itself. Most households now take the standard deduction, and at 65 it grows, by an extra amount that has been in the law for decades and, from 2025 through 2028, by a new $6,000 senior deduction. The 2025 tax law changed several of these rules, so figures you remember from a few years ago may no longer hold.</p>
+
+<h2 id="worth">What a deduction is worth</h2>
+<p>A deduction comes off your taxable income, the income the brackets apply to. So it saves tax at your marginal rate, the rate on your last dollars (<a href="/learn/tax-brackets">Brackets: marginal and effective</a> explains the difference). A $1,000 deduction saves $220 if you're in the 22% bracket, $120 in the 12% bracket, and nothing at all if your income is already below the standard deduction.</p>
+<p>A credit comes off the tax bill directly. A $1,000 credit saves $1,000 whatever your bracket, as long as you owe at least that much tax. A refundable credit goes further: if it's larger than your tax, the IRS pays you the difference.</p>
+<p>Deductions also come in two kinds, and in retirement the difference counts for a lot:</p>
+<ul>
+<li>Above-the-line deductions come off before your adjusted gross income (AGI) is figured. Traditional IRA and HSA contributions are the common ones.</li>
+<li>Below-the-line deductions come off after AGI: the standard deduction, itemized deductions, and the new senior deduction.</li>
+</ul>
+<p>Both lower your income tax. Only the first kind lowers AGI, and AGI (or a figure close to it) is what decides how much of your Social Security is taxable, your Medicare premiums, your ACA premium credit before 65, and several phase-outs.</p>
+
+<h2 id="standard">The standard deduction for 2026</h2>
+<p>Everyone can take the standard deduction, a flat amount set by filing status, without keeping a single receipt. For 2026 it's $16,100 for a single filer, $24,150 for a head of household and $32,200 for a married couple filing jointly. It rises with inflation each year.</p>
+<p>At 65, two more amounts can be added. The table shows how they combine.</p>
+
+<!-- data: lib/engine/data/2026.js fedStd, seniorAddl and seniorBonus; head of household from IRS Rev. Proc. 2025-32 (sec. 4.14: $24,150; the unmarried age-65 amount $2,050 applies).
+     Single: 16,100 + 2,050 = 18,150; + 6,000 = 24,150. Head of household: 24,150 + 2,050 = 26,200; + 6,000 = 32,200.
+     Joint, one 65+: 32,200 + 1,650 = 33,850; + 6,000 = 39,850. Both 65+: 32,200 + 3,300 = 35,500; + 12,000 = 47,500. -->
+<figure>
+  <table>
+    <thead><tr><th>Filing status</th><th>Under 65</th><th>With the extra amount at 65</th><th>Plus the senior deduction</th></tr></thead>
+    <tbody>
+      <tr><td>Single</td><td>$16,100</td><td>$18,150</td><td>$24,150</td></tr>
+      <tr><td>Head of household</td><td>$24,150</td><td>$26,200</td><td>$32,200</td></tr>
+      <tr><td>Married, one 65 or older</td><td>$32,200</td><td>$33,850</td><td>$39,850</td></tr>
+      <tr><td>Married, both 65 or older</td><td>$32,200</td><td>$35,500</td><td>$47,500</td></tr>
+    </tbody>
+  </table>
+  <figcaption>2026 standard deductions. The senior deduction column applies in full below $75,000 of modified AGI single or $150,000 joint, and shrinks above it. Being blind adds the same extra amount as turning 65, and the two stack.</figcaption>
+</figure>
+
+<p>So a married couple who are both 66 and have modest income can have $47,500 of income before any of it is taxed in 2026. For a single retiree the figure is $24,150.</p>
+
+<h2 id="at65">Two deductions at 65</h2>
+<h3>The extra standard deduction</h3>
+<p>The older of the two has been in the tax code for decades. For 2026 it adds $2,050 for a single filer or head of household, or $1,650 for each spouse 65 or older on a joint return. It only comes with the standard deduction: if you itemize, you lose it.</p>
+<p>The age rule has a quirk. The IRS treats you as 65 on the day before your 65th birthday, and you qualify for a year if you're 65 by its last day. Someone born on January 1, 1962 is treated as turning 65 on December 31, 2026, so they get the extra amount for 2026.</p>
+<h3>The senior deduction, 2025 through 2028</h3>
+<p>The 2025 tax law, the One Big Beautiful Bill Act, added a separate deduction of $6,000 for each person 65 or older, for the tax years 2025 through 2028. A married couple who both qualify get $12,000. It differs from the older extra amount in several ways:</p>
+<ul>
+<li>You can take it whether you itemize or not.</li>
+<li>It phases out with income. It shrinks by 6% of modified AGI over $75,000 for a single filer or $150,000 on a joint return. For most people modified AGI is simply AGI.</li>
+<li>A married couple must file jointly to claim it, and each person claiming it needs a valid Social Security number on the return.</li>
+<li>It's scheduled to end after 2028 unless Congress extends it.</li>
+</ul>
+<p>The phase-out is figured separately for each qualifying person, so it's gone completely at $175,000 for a single filer and at $250,000 on a joint return, whether one spouse qualifies or both.</p>
+
+<!-- data: total 2026 deduction by modified AGI, standard deduction filers, computed from lib/engine/data/2026.js:
+     couple both 65+: 32,200 + 2 × 1,650 + 2 × max(0, 6,000 − 6% × (MAGI − 150,000));
+     single 65+: 16,100 + 2,050 + max(0, 6,000 − 6% × (MAGI − 75,000)). Matches computeRetireTax fedDed at each point checked. -->
+<figure data-chart='{"type":"line","x":[50000,55000,60000,65000,70000,75000,80000,85000,90000,95000,100000,105000,110000,115000,120000,125000,130000,135000,140000,145000,150000,155000,160000,165000,170000,175000,180000,185000,190000,195000,200000,205000,210000,215000,220000,225000,230000,235000,240000,245000,250000,255000,260000,265000,270000,275000],"xLabel":"Modified AGI","xFormat":"money","y":"money","series":[{"name":"Married, both 65 or older","tone":"accent","values":[47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,47500,46900,46300,45700,45100,44500,43900,43300,42700,42100,41500,40900,40300,39700,39100,38500,37900,37300,36700,36100,35500,35500,35500,35500,35500,35500]},{"name":"Single, 65 or older","tone":"neutral","values":[24150,24150,24150,24150,24150,24150,23850,23550,23250,22950,22650,22350,22050,21750,21450,21150,20850,20550,20250,19950,19650,19350,19050,18750,18450,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150,18150]}]}'>
+  <figcaption>Total federal deduction in 2026 for standard-deduction filers 65 or older, by modified AGI. The slope is the senior deduction phasing out; the flat line underneath is the standard deduction plus the extra amount at 65.</figcaption>
+</figure>
+
+<p>While it phases out, the senior deduction raises your marginal rate. For a couple who both qualify, each extra dollar of income between $150,000 and $250,000 also removes 12 cents of deduction. In the 22% bracket that makes the tax on the next dollar 24.64 cents rather than 22.</p>
+<h3>What the senior deduction doesn't do</h3>
+<p>It has often been described as ending tax on Social Security, and it doesn't do that. The rules for how much of your Social Security is taxable haven't changed, and you get the deduction at 65 whether you collect benefits or not. It lowers your taxable income, which for many retirees cuts the tax they'd otherwise owe on their benefits, but because it comes off below the line it doesn't reduce AGI. Your Medicare premiums, your ACA premium credit and the share of Social Security that counts as income are all figured as if it weren't there. <a href="/learn/retirement-income-taxes">How retirement income is taxed</a> goes through the Social Security rules.</p>
+<p>Because it's temporary, it also changes the arithmetic for 2025 through 2028 specifically. A retiree who is 65 or older in those years and keeps modified AGI under the threshold has a larger untaxed band than they'll have in 2029, which can make those years good ones to take extra IRA income or convert to a Roth.</p>
+
+<h2 id="itemize">Itemizing</h2>
+<p>Instead of the standard deduction you can add up certain expenses and deduct their total. That's worth doing only when the total is larger. The main itemized deductions for 2026:</p>
+<ul>
+<li>State and local taxes (SALT): state income tax, or sales tax instead, plus property tax. The cap, $10,000 from 2018 through 2024, is $40,000 for 2025 and $40,400 for 2026, rising 1% per year through 2029. Above $505,000 of modified AGI in 2026 the cap shrinks by 30 cents per dollar, though never below $10,000. In 2030 it's scheduled to return to $10,000.</li>
+<li>Mortgage interest on up to $750,000 of debt used to buy or improve your home ($1 million for loans taken out before December 16, 2017). The 2025 law made that limit permanent and, from 2026, lets mortgage insurance premiums count again, with an income limit.</li>
+<li>Charitable gifts. From 2026, itemizers can deduct only the part of their gifts above 0.5% of AGI. With $160,000 of AGI, the first $800 of giving doesn't count.</li>
+<li>Medical and dental costs above 7.5% of AGI, including Medicare premiums and long-term care costs. This one can be large in the last years of life.</li>
+</ul>
+<p>From 2026 there's also a cap for the highest earners: in the 37% bracket, itemized deductions save at most 35 cents per dollar.</p>
+<p>When the Tax Cuts and Jobs Act roughly doubled the standard deduction in 2018 and capped SALT at $10,000, itemizing collapsed. About 31% of returns itemized in 2017 and 9.5% did in 2022, according to the Tax Policy Center. The higher SALT cap will bring some people back, mostly homeowners in high-tax states, but the standard deduction still wins for most households.</p>
+<h3>A worked example, and bunching</h3>
+<p>Take a hypothetical married couple under 65 with $160,000 of AGI, a mortgage and some regular giving.</p>
+
+<!-- data: hypothetical; all gifts in cash to public charities (not a donor-advised fund). Charity floor 0.5% × 160,000 = 800.
+     Every year: itemized 13,000 + 13,000 + (8,000 − 800) = 33,200; standard 32,200 plus the 2,000 non-itemizer cash gift deduction (no 0.5% floor) = 34,200, so they take the standard. Two years: 68,400.
+     Bunched: 16,000 given in year 1, nothing in year 2. Year 1: 13,000 + 13,000 + (16,000 − 800) = 41,200, beating 34,200; year 2 standard 32,200 (no gifts, so nothing extra). Two years: 73,400.
+     73,400 − 68,400 = 5,000 more deducted; taxable income stays in the 22% bracket (100,800–211,400 joint) in every year, so 5,000 × 22% = 1,100. -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>Giving every year</th><th>Bunched into one year</th></tr></thead>
+    <tbody>
+      <tr><td>Mortgage interest</td><td>$13,000</td><td>$13,000</td></tr>
+      <tr><td>State income and property tax</td><td>$13,000</td><td>$13,000</td></tr>
+      <tr><td>Charity, less 0.5% of AGI</td><td>$7,200</td><td>$15,200</td></tr>
+      <tr><td>Itemized total</td><td>$33,200</td><td>$41,200</td></tr>
+      <tr><td>Standard deduction, plus up to $2,000 for gifts</td><td>$34,200</td><td>$34,200</td></tr>
+      <tr><td>Better choice</td><td>Standard, plus $2,000 for gifts</td><td>Itemize, then standard next year</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A married couple with $160,000 of AGI in 2026, giving $8,000 per year in cash, or $16,000 every other year. Bunching deducts $5,000 more over two years, about $1,100 less tax in the 22% bracket.</figcaption>
+</figure>
+
+<p>Giving $8,000 every year, their itemized total falls short of the standard deduction plus the $2,000 that non-itemizers can deduct for cash gifts (below), so only $2,000 of their giving lowers their tax. Giving two years' worth in one year lets them itemize that year and take the standard deduction the next. A donor-advised fund lets them make the deduction in one year and send the money to charities over several.</p>
+<p>The extra $1,650 per spouse at 65 makes itemizing harder still for older couples, since it's lost when they itemize. The senior deduction isn't, so it doesn't tip the choice either way.</p>
+
+<h2 id="charity">Giving without itemizing</h2>
+<p>Two rules help people who take the standard deduction.</p>
+<p>From 2026, non-itemizers can deduct cash gifts to charity of up to $1,000, or $2,000 on a joint return, on top of the standard deduction. Gifts to donor-advised funds don't count.</p>
+<p>From age 70½, a qualified charitable distribution (QCD) sends money straight from a traditional IRA to a charity, up to $111,000 per person in 2026. The gift never counts as income at all, which beats a deduction: it lowers AGI, so it can also keep Social Security less taxable and Medicare premiums lower, and once required minimum distributions start, it counts toward them. For a retiree who gives anyway and takes the standard deduction, it's usually the cheapest way to give. <a href="/learn/rmds">Required minimum distributions</a> covers the rules.</p>
+
+<h2 id="above">Above-the-line deductions, and why AGI matters</h2>
+<p>A deduction above the line lowers your AGI as well as your taxable income. The common ones:</p>
+<ul>
+<li>Traditional IRA contributions, if you're eligible to deduct them (<a href="/learn/iras">IRAs</a> has the limits).</li>
+<li>HSA contributions made outside payroll. Those through payroll, like 401(k) deferrals, never show up in your wages to begin with, which has the same effect.</li>
+<li>Half of self-employment tax, and health insurance premiums if you're self-employed.</li>
+<li>Student loan interest, up to $2,500, phasing out between $85,000 and $100,000 of modified AGI single or $175,000 and $205,000 joint in 2026.</li>
+<li>Up to $350 of classroom supplies for teachers.</li>
+</ul>
+<p>Lower AGI pays off in places the brackets don't show: less of your Social Security taxable, a lower Medicare premium tier, a larger ACA premium credit before 65, more room before the senior deduction starts to phase out and the 3.8% investment income tax kicks in, and lower floors for the medical and charitable deductions. For a retiree, a dollar off AGI is often worth more than a dollar off taxable income.</p>
+<h3>The new deductions for workers, 2025 through 2028</h3>
+<p>The 2025 law also added three temporary deductions, available whether you itemize or not and, like the senior deduction, taken after AGI: up to $25,000 of qualified tips; up to $12,500 of the overtime premium ($25,000 on a joint return); and up to $10,000 of interest on a loan for a new car assembled in the US, for personal use. Each phases out at higher incomes: tips and overtime above $150,000 of modified AGI ($300,000 joint), car loan interest above $100,000 ($200,000 joint).</p>
+
+<h2 id="credits">Credits</h2>
+<p>Credits are fewer but larger per dollar. The ones that matter most to households planning for retirement:</p>
+<ul>
+<li>The child tax credit, $2,200 per child under 17 for 2026, of which up to $1,700 is refundable.</li>
+<li>The Saver's Credit, for workers with modest incomes who put money into a 401(k) or IRA: 10%, 20% or 50% of up to $2,000 contributed per person.</li>
+<li>The premium tax credit for ACA health insurance, which for early retirees can be worth more than every deduction put together. <a href="/learn/health-cover-before-65">Health cover before 65</a> covers it.</li>
+<li>The foreign tax credit, for tax withheld abroad on the dividends of international funds held in a taxable account.</li>
+</ul>
+<p>Most credits phase out as income rises, and like the senior deduction they push up the marginal rate while they do.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>Income Tax applies the 2026 standard deduction for your filing status. To compare, choose itemized and enter your total: the tool uses whichever you enter, so try both. In retirement mode, tell it who on the return is 65 or older and it adds the extra amount at 65 and the senior deduction, with its phase-out, and shows each in the breakdown of how the federal tax was figured.</p>
+<p>When you're near a phase-out, watch the rate on the next $1,000 rather than the bracket. It's where the senior deduction's 12 cents per dollar, or a credit running out, shows up.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Should I itemize?</summary><p>Only if your itemized total is larger than your standard deduction: $32,200 for a couple in 2026, $16,100 single, more at 65. Add up state and local taxes (up to the $40,400 cap), mortgage interest, charity above 0.5% of AGI and medical costs above 7.5% of AGI. If you're close, bunching two years of giving into one can tip one year over.</p></details>
+<details><summary>Does the senior deduction mean my Social Security isn't taxed?</summary><p>No. It's a $6,000 deduction per person 65 or older, for 2025 through 2028, whether or not you get Social Security. The rules for how much of your benefit is taxable are unchanged. For many retirees the deduction does cancel out most or all of the tax they'd have paid on their benefits, which is where the description came from.</p></details>
+<details><summary>I turn 65 on January 1. Do I get the extra deduction for the year before?</summary><p>Yes. The IRS treats you as 65 on the day before your birthday, so you're 65 on December 31 and qualify for that whole tax year. The same rule applies to the senior deduction.</p></details>
+<details><summary>Are 401(k) contributions a deduction?</summary><p>They work like one, but they're left out of your wages instead: your W-2 already shows pay minus the contribution. The effect is the same as an above-the-line deduction, lowering both AGI and taxable income. They don't lower Social Security and Medicare tax, though.</p></details>
+<details><summary>We file separately. Can one of us itemize and the other take the standard deduction?</summary><p>No. If one spouse itemizes on a separate return, the other must itemize too, even if their own standard deduction would be larger. Filing separately also rules out the senior deduction.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>A deduction saves tax at your marginal rate; a credit saves its full amount.</li>
+<li>For 2026 the standard deduction is $16,100 single and $32,200 joint, with $2,050 or $1,650 per person more at 65.</li>
+<li>From 2025 through 2028, each person 65 or older also gets a $6,000 senior deduction, phasing out above $75,000 or $150,000 of modified AGI.</li>
+<li>Itemize only when the total beats the standard deduction; the SALT cap is $40,400 for 2026, and bunching gifts can help.</li>
+<li>Deductions that lower AGI, and QCDs from 70½, help more in retirement because AGI drives Social Security tax, Medicare premiums and ACA credits.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>The difference between a deduction and a credit</li><li>What changes at 65, including the new senior deduction</li><li>When itemizing beats the standard deduction</li></ul>
+  <ul class="terms">
+    <li data-term="Standard deduction">A flat amount everyone can subtract from income instead of itemizing: $16,100 single and $32,200 joint for 2026.</li>
+    <li data-term="Adjusted gross income (AGI)">Your total income less above-the-line deductions. Many rules, from Social Security taxation to Medicare premiums, start from it.</li>
+    <li data-term="Senior deduction">A $6,000 deduction per person 65 or older for 2025 through 2028, phasing out above $75,000 of modified AGI single or $150,000 joint.</li>
+    <li data-term="Tax credit">An amount subtracted from your tax bill itself. A refundable credit can be paid to you even when you owe no tax.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/newsroom/working-families-tax-cuts-individuals-and-workers">Working Families Tax Cuts: individuals and workers</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/newsroom/check-your-eligibility-for-the-new-enhanced-deduction-for-seniors">Check your eligibility for the new enhanced deduction for seniors</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/taxtopics/tc551">Topic 551, Standard deduction</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill">IRS releases tax inflation adjustments for tax year 2026</a> <span>IRS</span></li>
+    <li><a href="https://taxpolicycenter.org/briefing-book/what-are-itemized-deductions-and-who-claims-them">What are itemized deductions and who claims them?</a> <span>Tax Policy Center</span></li>
+  </ul>
+</footer>
+</article>

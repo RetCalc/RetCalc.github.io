@@ -1,0 +1,191 @@
+<article class="lesson" data-slug="insurance" data-reviewed="2026-10-26"
+  data-title="Life and disability insurance"
+  data-idea="Protecting the income a plan depends on until savings can take over"
+  data-tool="calculator" data-try="See what your savings could be worth by the age you retire, the point where most insurance needs fall away, with your plan already filled in.">
+
+<p class="lede">Every retirement plan assumes years of paychecks still to come. Early in a career those future paychecks are worth far more than anything saved, and the plan has nothing to fall back on if they stop. Life insurance covers the paycheck if you die, and disability insurance covers it if you can't work. Both matter most while savings are still small and would run out quickly.</p>
+
+<h2 id="why">What insurance does for a plan</h2>
+<p>At 35, someone earning $95,000 who works to 65 still has thirty years of pay ahead of them, about $2.85 million before taxes in today's dollars. Their 401(k) might hold a tenth of that. Planners call the value of those future earnings <b>human capital</b>, and early on it's most of what a household owns. Saving for retirement is a way of turning that human capital into money you keep before the paychecks stop for good.</p>
+<p>Insurance makes sense for losses you couldn't absorb, and stays a poor deal for the ones you could. Insurers pay out less, on average, than they collect, because premiums also cover their costs and profit. So insuring a $500 car repair is expensive peace of mind, while insuring against losing nearly $3 million of future pay is the only practical option for most people. As savings grow and the years of pay left shrink, the loss you'd have to absorb gets smaller, until one day you can cover it yourself. Planners call that being <b>self-insured</b>.</p>
+<h3>Who needs life insurance</h3>
+<p>Life insurance is for the people who would be left short if you died. That usually means:</p>
+<ul>
+<li>Parents of children who aren't grown yet.</li>
+<li>A spouse or partner who couldn't keep the home or the plan going on one income.</li>
+<li>A parent who stays home. Their pay is zero, but replacing the childcare, driving and running of the house is not cheap.</li>
+<li>Anyone who has co-signed a loan, or supports a parent or a relative with a disability.</li>
+</ul>
+<p>Single people with no dependents, couples whose savings could already carry the survivor, and children usually don't need it. A small policy to cover a funeral is something savings can usually handle.</p>
+
+<h2 id="howmuch">How much life insurance: a worked example</h2>
+<p>Take a hypothetical family. Sam and Jordan are both 35 and their daughter Nora is 3. Sam earns $95,000 and Jordan $70,000. They owe $320,000 on the house, with 27 years left at 6.25%, and $18,000 on a car. Sam's employer gives Sam life insurance equal to one year's pay, $95,000. What would Jordan and Nora need if Sam died this year?</p>
+<p>The careful way to answer is the <b>needs approach</b>: add up what the family would have to pay for, then subtract what they'd still have coming in. Jordan works through it like this, with every figure in today's dollars.</p>
+<ul>
+<li>One-time costs: a funeral and settling the estate, about $15,000. Paying off the car, $18,000. Paying off the mortgage, $320,000, so the house is safe however things go.</li>
+<li>College: they'd like to have $100,000 put aside for Nora.</li>
+<li>Living costs: without the mortgage, Jordan figures the two of them would need about $85,000 per year. Jordan takes home $52,000 after taxes and Jordan's own retirement saving.</li>
+<li>Social Security: a child whose parent dies can receive 75% of the parent's full benefit until 18, or 19 if still in high school. Based on Sam's earnings so far, Sam's full benefit would be about $2,880 per month, so Nora would get about $2,160 per month, or $25,900 per year. That leaves a gap of about $7,100 per year until Nora turns 18.</li>
+<li>Retirement: Sam puts $9,500 per year into the 401(k), and the employer adds $4,750. Jordan alone wouldn't need as much in retirement as the two of them, so they plan to replace half of it, $7,125 per year, until Sam would have turned 65.</li>
+</ul>
+<p>Money paid out over many years doesn't all need to be there on day one; a lump sum invested carefully keeps earning while it's spent down. Jordan assumes 2% per year after inflation, a cautious rate for money that has to be there. On that basis the yearly gaps are worth about $93,000 and $163,000 today.</p>
+
+<!-- data: needs approach, all in today's dollars. Living-cost gap: $85,000 − $52,000 − Nora's survivor benefit.
+     Sam's PIA: died at 35, so 8 computation years (13 elapsed years from 22, less 5 dropout years, 42 U.S.C. 415(b)(2)(A)); assumed indexed earnings averaging $80,000 in those years.
+     AIME = 80,000 / 12 = 6,667; PIA = 0.9 × 1,286 + 0.32 × (6,667 − 1,286) = 2,879 (2026 bend points, lib/engine/data/2026.js). Child 75% = 2,159 per month = 25,908 per year.
+     Gap 85,000 − 52,000 − 25,908 = 7,092 per year for 15 years (Nora 3 to 18). Present value at 2% real, paid at the start of each year: 7,092 × 13.106 = 92,950.
+     Retirement: (9,500 + 4,750) / 2 = 7,125 per year for 30 years, same basis: 7,125 × 22.844 = 162,766.
+     Total 15,000 + 18,000 + 320,000 + 100,000 + 92,950 + 162,766 = 708,716. Less group life 95,000 = 613,716. Scratch script ins.mjs. -->
+<figure>
+  <table>
+    <thead><tr><th>What the family would need</th><th>Amount today</th></tr></thead>
+    <tbody>
+      <tr><td>Funeral and settling the estate</td><td>$15,000</td></tr>
+      <tr><td>Pay off the car loan</td><td>$18,000</td></tr>
+      <tr><td>Pay off the mortgage</td><td>$320,000</td></tr>
+      <tr><td>Nora's college</td><td>$100,000</td></tr>
+      <tr><td>Living costs not covered by Jordan's pay and Nora's Social Security, $7,100 per year until Nora is 18</td><td>$93,000</td></tr>
+      <tr><td>Half of Sam's retirement saving and match, $7,125 per year until 65</td><td>$163,000</td></tr>
+      <tr><td><b>Total need</b></td><td><b>$709,000</b></td></tr>
+      <tr><td>Less the life insurance through Sam's job</td><td class="neg">−$95,000</td></tr>
+      <tr><td><b>Coverage to buy</b></td><td><b>About $614,000</b></td></tr>
+    </tbody>
+  </table>
+  <figcaption>A hypothetical family, in today's dollars. Yearly amounts are turned into a lump sum assuming 2% per year after inflation. Nora's benefit assumes Sam's full Social Security benefit is about $2,880 per month.</figcaption>
+</figure>
+
+<p>So Sam needs roughly $600,000 to $650,000 of coverage beyond what work provides. Jordan should run the same sum the other way round. Sam's higher pay would cover more of the living costs, but Nora's benefit would be smaller, since it would be based on Jordan's record.</p>
+<h3>Social Security is part of the answer</h3>
+<p>Survivor benefits make a large difference to that sum. Nora's benefit alone covers nearly a third of the family's living costs until she's 18. A surviving parent caring for a child under 16 can also receive 75% of the worker's full benefit, but that benefit is subject to the earnings test, which holds back $1 for every $2 earned above $24,480 in 2026. On Jordan's $70,000, almost all of it would be withheld, so the example leaves it out. A surviving parent who doesn't work, or works part time, would get much more. And a family's total benefits are capped at roughly 150% to 180% of the worker's full benefit. Your own figures are on your Social Security statement at ssa.gov, and <a href="/learn/spouses-and-survivors">Spouses and survivors</a> covers how survivor benefits work later in life.</p>
+<h3>The rules of thumb, and why they differ</h3>
+<p>Two shortcuts are common. One says to buy ten times your income. The other, called <b>DIME</b>, adds up Debts, Income for the years your family needs it, the Mortgage and Education. For Sam they give very different answers.</p>
+
+<!-- data: 10 × 95,000 = 950,000. DIME: debts 18,000 + income 95,000 × 15 years until Nora is 18 = 1,425,000 + mortgage 320,000 + education 100,000 = 1,863,000. Needs approach from the table above. -->
+<figure>
+  <table>
+    <thead><tr><th>Method</th><th>How it's worked out</th><th>Sam's coverage</th></tr></thead>
+    <tbody>
+      <tr><td>Ten times income</td><td>$95,000 × 10</td><td>$950,000</td></tr>
+      <tr><td>DIME</td><td>$18,000 debts + $95,000 × 15 years + $320,000 mortgage + $100,000 college</td><td>$1,863,000</td></tr>
+      <tr><td>Needs approach</td><td>The table above</td><td>$709,000, or $614,000 beyond the coverage at work</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The same hypothetical family three ways. The shortcuts replace Sam's whole pay; the needs approach replaces only what the family would actually be missing.</figcaption>
+</figure>
+
+<p>The shortcuts come out high because they replace Sam's whole salary, including the part that goes to taxes, to Sam's own costs and to saving. They also ignore Jordan's income and Nora's Social Security, and count every future dollar as if it had to be in hand today. The needs approach depends on its assumptions instead: lower the 2% return or raise the living costs and the answer goes up. Since term coverage is inexpensive for young, healthy buyers, many families round their answer up rather than down.</p>
+
+<h2 id="overtime">The need shrinks every year</h2>
+<p>Sam's need isn't fixed. Each year the mortgage is smaller, Nora is closer to grown, and fewer years of saving are left to replace. The chart follows the same needs approach for every year from 35 to 65, with nothing else changed.</p>
+
+<!-- data: the needs table above recomputed at each of Sam's ages 35 to 65 (scratch ins.mjs). Each year: funeral 15,000; car loan falling straight to 0 by 40;
+     mortgage balance on 320,000 at 6.25% over 27 years, deflated at 2.5% inflation to today's dollars (paid off at 62); college 100,000 until Nora is 18, then 75,000, 50,000, 25,000, 0;
+     living-cost gap 7,092 per year for the years left until Nora is 18 and retirement 7,125 per year for the years left until 65, both at 2% real, start of year.
+     Coverage: two term policies bought at 35, 500,000 for 20 years and 150,000 for 30 years, plus 95,000 group life while working: 745,000 at 35–54, 245,000 at 55–64, 0 at 65. -->
+<figure data-chart='{"type":"line","x":[35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65],"xLabel":"Sam&apos;s age","y":"money","series":[{"name":"What the family would need","tone":"accent","values":[709000,683000,658000,632000,607000,581000,559000,537000,514000,491000,469000,446000,422000,399000,375000,351000,309000,267000,225000,183000,165000,147000,129000,111000,93000,74000,55000,36000,29000,22000,15000]},{"name":"Two term policies plus coverage at work","tone":"good","step":true,"values":[745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,745000,245000,245000,245000,245000,245000,245000,245000,245000,245000,245000,0]}],"marks":[{"x":50,"label":"Nora turns 18"},{"x":62,"label":"Mortgage paid off"}]}'>
+  <figcaption>What Sam's family would need at each age, in today's dollars, against two term policies bought at 35: $500,000 for 20 years and $150,000 for 30 years, plus $95,000 through work. Savings built along the way aren't counted, so the real need falls faster than shown.</figcaption>
+</figure>
+
+<p>The need falls by half in about fifteen years and to almost nothing by 65. A policy that pays the same amount for decades fits that shape poorly, which is why many planners suggest <b>laddering</b>: two or three term policies of different lengths instead of one. Sam's pair gives $745,000 of cover while Nora is young and $245,000 in Sam's late fifties, usually for less than one $650,000 policy lasting all thirty years would cost.</p>
+
+<h2 id="kinds">Term or permanent</h2>
+<p>Life insurance comes in two broad kinds.</p>
+<p><b>Term life</b> covers you for a set number of years, usually 10, 20 or 30, for a premium that's normally level for the whole term. If you die during the term, it pays; if you don't, it ends, with nothing back. Many term policies can be renewed after the term at a much higher price, and many can be converted to a permanent policy without a new medical exam, which is worth having in case your health changes.</p>
+<p><b>Permanent life</b>, which includes whole life and universal life, is meant to last your whole life and builds a <b>cash value</b> you can borrow against or withdraw. For the same death benefit it costs many times what term costs at first, because it's paying for a benefit that's nearly certain to be paid out eventually and building savings inside the policy.</p>
+<h3>Why most plans only need term</h3>
+<p>For most households the need is temporary: it lasts until the children are grown, the mortgage is gone and the savings are built. That's exactly what term covers. The usual alternative to permanent insurance is to "buy term and invest the difference": buy a term policy and put the money a permanent policy would have cost into a 401(k), IRA or other account. That keeps your savings in accounts you control, with low costs and full flexibility. It only works if you actually invest the difference, which automatic contributions handle.</p>
+<p>Cash value does grow tax-deferred. But permanent policies carry commissions and charges that are hard to see, and surrendering one in the first years can return much less than was paid in, so for anyone with room left in a workplace plan, IRA or HSA, those usually come first.</p>
+<h3>When permanent insurance can make sense</h3>
+<ul>
+<li>A lifelong dependent, such as a child with a disability who will need support after both parents are gone.</li>
+<li>An estate large enough to owe estate tax, or one tied up in a business or land that heirs would otherwise have to sell. <a href="/learn/beneficiaries-and-estate">Beneficiaries and estate basics</a> covers when estate tax applies.</li>
+<li>Someone who has already filled every tax-favored account and wants a permanent death benefit for heirs.</li>
+</ul>
+<p>These are specialized cases. If a permanent policy is being suggested to you for any other reason, ask how the person suggesting it is paid.</p>
+<h3>Coverage through work</h3>
+<p>Employers that offer life insurance often give a basic amount free, commonly one or two times pay, and let you buy more. In March 2026, 59% of private-industry workers had access to it, according to the Bureau of Labor Statistics. It usually ends or gets much more expensive when you leave the job, which can be when you'd have most trouble buying a policy on your own, so most planners treat it as a top-up. Coverage your employer pays for above $50,000 adds a small amount to your taxable wages each year.</p>
+<p>The death benefit itself isn't taxable income to the beneficiary, though interest earned on it while the insurer holds the money is.</p>
+
+<h2 id="disability">Disability insurance: the bigger risk</h2>
+<p>For a young worker, losing years of pay to a disability is more likely than dying before retirement. Social Security's actuaries estimate that a worker covered by Social Security who turned 20 in 2026 has a 24% chance of becoming disabled before reaching normal retirement age, 67, and a 13% chance of dying before then. A disability can also cost more than a death: the family loses the income, still has the person's living costs, often has medical costs on top, and the retirement saving stops along with the pay.</p>
+<p>Even so, far fewer workers are offered disability coverage than life insurance. In March 2026, 37% of private-industry workers had access to long-term disability insurance through work, and 44% to short-term disability, the Bureau of Labor Statistics found.</p>
+<h3>What Social Security covers, and what it doesn't</h3>
+<p>Social Security Disability Insurance (SSDI) pays a monthly benefit if you can't work, but its definition is strict. You must be unable to do substantial work of any kind, not just your own job, because of a condition expected to last at least 12 months or end in death. In 2026, earning more than $1,690 per month generally counts as substantial work. There's no benefit for partial or short-term disability. Benefits start with the sixth full month of disability, and you need enough work history: generally 40 credits, 20 of them in the ten years before you became disabled, with fewer for younger workers.</p>
+<p>The benefit equals your full retirement benefit, unreduced, and children and some spouses can get benefits on top. Social Security estimated the average disabled worker's benefit at $1,630 per month in January 2026. After two years of benefits, you also qualify for Medicare. It's a real safety net, but it's hard to qualify for and modest for a middle or higher earner, so a plan that counts on it is taking a chance.</p>
+<h3>What to look for in a policy</h3>
+<ul>
+<li><b>Definition of disability.</b> <i>Own-occupation</i> coverage pays if you can't do your own job, even if you could do another. <i>Any-occupation</i> coverage pays only if you can't do any job you're reasonably suited for by education and experience. Many group policies use own-occupation for the first two years and any-occupation after. For a surgeon, a pilot or anyone with specialized skills, the difference is large.</li>
+<li><b>Elimination period.</b> The wait before benefits start, commonly 90 days for long-term coverage. A longer wait lowers the premium; your emergency fund or short-term disability coverage carries you until then. <a href="/learn/emergency-fund">An emergency fund comes first</a> covers how large it should be.</li>
+<li><b>Benefit period.</b> How long payments can last: two or five years, or to 65 or 67. Coverage to retirement age is what protects a plan, since a career-ending disability is the expensive one.</li>
+<li><b>Renewal terms and riders.</b> A <i>non-cancelable</i> policy can't be canceled and its premium can't rise; a <i>guaranteed renewable</i> one can't be canceled, but premiums can rise for a whole class of policyholders. Riders can add a partial benefit if you return to work at reduced hours, or raise benefits with inflation during a long claim.</li>
+</ul>
+<h3>Group or individual</h3>
+<p>Group long-term disability through work is usually cheap or free and needs no medical exam, but it often replaces only 60% of base salary, leaves out bonuses and commissions, has a monthly cap, and ends when you leave the job. Group policies also commonly subtract any Social Security disability benefit from what they pay. An individual policy costs more but stays with you, can be written on an own-occupation basis, and can cover pay a group policy leaves out. Insurers limit how much of your income they'll cover in total, so the two are often combined.</p>
+<h3>How benefits are taxed</h3>
+<p>It depends on who paid the premiums. If your employer paid them, or you paid through a cafeteria plan with pre-tax pay, the benefits are taxable income. If you paid with after-tax money, they're tax-free. So a group benefit of 60% of pay buys less than it sounds when the employer pays the premium, which is why some employers let you pay it with after-tax pay instead. Social Security disability benefits are taxed like retirement benefits: up to 85% can be taxable, depending on your other income (<a href="/learn/retirement-income-taxes">How retirement income is taxed</a> explains how).</p>
+
+<!-- data: Sam's pay 95,000 / 12 = 7,917. Group LTD 60% = 4,750. SSDI: Sam's PIA 2,879 (as above; a disability at 35 uses 11 computation years, 13 elapsed less 2 dropout years, with the same assumed $80,000 average); Nora as child of a disabled worker 50% of PIA = 1,440.
+     Disability family maximum = lesser of 85% of AIME (5,667) and 150% of PIA (4,319): 2,879 + 1,440 = 4,319, at the cap. Group policy with a family Social Security offset pays 4,750 − 4,319 = 431. Taxation per IRS Publication 525. -->
+<figure>
+  <table>
+    <thead><tr><th>If Sam couldn't work for a long time</th><th>Per month, before tax</th><th>When it starts</th><th>Taxed?</th></tr></thead>
+    <tbody>
+      <tr><td>Sam's pay today</td><td>$7,917</td><td></td><td>Yes</td></tr>
+      <tr><td>Group long-term disability, 60% of pay</td><td>$4,750</td><td>After a 90-day wait</td><td>Yes, since the employer pays the premium</td></tr>
+      <tr><td>Social Security disability, if approved</td><td>About $2,880 for Sam and $1,440 for Nora</td><td>Sixth full month of disability, often later while the claim is decided</td><td>Up to 85%, depending on other income</td></tr>
+      <tr><td>Group policy once Social Security pays, if it subtracts family benefits</td><td>About $430</td><td></td><td>Yes</td></tr>
+      <tr><td><b>Total either way</b></td><td><b>$4,750</b></td><td></td><td></td></tr>
+      <tr><td>401(k) saving and match</td><td class="neg">−$1,188</td><td>Stops with the pay</td><td></td></tr>
+    </tbody>
+  </table>
+  <figcaption>A hypothetical worker earning $95,000. Group policies differ in what they subtract; this one subtracts benefits paid to the family as well as to Sam. An individual policy paid with after-tax money would add a tax-free benefit on top.</figcaption>
+</figure>
+
+<p>With Jordan's pay still coming in, the group benefit is a solid floor, and many households could manage on it with some belt-tightening. But Sam's share of the income would drop to 60% of Sam's pay before tax, less after it, with nothing going toward Sam's retirement. An individual policy paying a further $1,500 or $2,000 per month would close much of that gap.</p>
+
+<h2 id="umbrella">Liability: the umbrella policy</h2>
+<p>A lawsuit can also reach a plan. If you cause a serious car accident or someone is badly hurt at your home, the damages can exceed the liability limits on your auto and home policies, and the rest can come from your savings or future pay. An <b>umbrella policy</b> adds coverage above those limits, usually in million-dollar steps, at a modest price for the amount covered. It's worth a look once your savings or income are substantial, or if you have a teenage driver or a pool. Money in 401(k)s and similar employer plans is broadly protected from creditors under federal law and IRAs to varying degrees, but taxable accounts and home equity often are not.</p>
+
+<h2 id="ending">When coverage can end</h2>
+<p>Insurance needs are highest in the years with young children and a new mortgage, and they fall from there.</p>
+<ul>
+<li><b>Disability insurance</b> ends naturally at retirement. Its job is to replace pay, and once you're living on savings, Social Security and any pension, there's no pay to replace. Most policies stop at 65 or 67 anyway.</li>
+<li><b>Life insurance</b> can end once your savings could support the survivor for life. For most households that's around retirement, when the children are grown and the mortgage is paid or nearly so.</li>
+</ul>
+<p>Check the survivor's income before letting the last policy go. When one spouse dies, the household keeps only the larger of the two Social Security benefits, and a pension may shrink or stop, depending on the option chosen. A couple relying on a single-life pension, or with most of their income from one person's benefit, may still have a gap in retirement that a smaller policy can fill. Long-term care is a separate risk with its own options, covered in <a href="/learn/long-term-care">Long-term care</a>.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>Start with your own needs approach: list what your family would have to pay for, subtract what would keep coming in, and compare the result with the coverage you have now, including anything through work. Your Social Security statement shows survivor and disability benefits for your family.</p>
+<p>Then use the Calculator to see what your savings could be worth by the age you'd like to retire. Comparing the policy lengths you're considering with that path shows roughly when your savings could take over. If children are part of the plan, <a href="/learn/children-and-the-plan">Children and the plan</a> shows what they cost year by year.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Does a parent who stays home need life insurance?</summary><p>Yes, if the family would have to pay for what that parent does. Childcare alone can run well over $10,000 per year, and the working parent may need to cut hours. Add up what it would cost to replace for the years the children need it.</p></details>
+<details><summary>What about mortgage life insurance?</summary><p>These policies pay off the mortgage if you die. In many of them the payout shrinks as the loan does, and it goes to the lender. A term policy for the same amount pays your family, who can decide whether paying off the house is the best use of the money. Compare prices before buying one.</p></details>
+<details><summary>When should I buy?</summary><p>When someone starts depending on your income, usually marriage, a home or a first child. Premiums are set by your age and health when you apply, so waiting rarely gets a better price, and a health problem later can make coverage expensive or unavailable.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Insurance protects the paychecks a plan still depends on, until savings can take over.</li>
+<li>Size life insurance from your family's real needs, after Social Security and the other income that would continue.</li>
+<li>The need falls every year, so term insurance, sometimes in a ladder of policies, fits most plans.</li>
+<li>For a young worker, a long disability is more likely than an early death, and SSDI is hard to qualify for.</li>
+<li>By retirement, most households are self-insured; check the survivor's income before dropping the last policy.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How to size life insurance with the needs approach</li><li>Why term fits most plans, and when it doesn't</li><li>What disability insurance covers, and how it's taxed</li></ul>
+  <ul class="terms">
+    <li data-term="Needs approach">A way to size life insurance: add up what your family would have to pay for, then subtract the income and savings they'd still have.</li>
+    <li data-term="Term life insurance">Coverage for a set number of years at a fixed premium. It pays only if you die during the term and has no cash value.</li>
+    <li data-term="Elimination period">The wait between becoming disabled and the first benefit payment, often 90 days for long-term disability coverage.</li>
+    <li data-term="Self-insured">Having enough savings to absorb a loss yourself, so insurance against it is no longer needed.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.ssa.gov/oact/NOTES/ran6/an2026-6.pdf">Disability and death probability tables for insured workers who attain age 20 in 2026</a> <span>Social Security Administration, Office of the Chief Actuary</span></li>
+    <li><a href="https://www.ssa.gov/pubs/EN-05-10029.pdf">Disability benefits</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/pubs/EN-05-10084.pdf">Survivors benefits</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.irs.gov/publications/p525">Publication 525, Taxable and nontaxable income</a> <span>IRS</span></li>
+    <li><a href="https://www.bls.gov/news.release/ebs2.nr0.htm">Employee benefits in the United States, March 2026</a> <span>Bureau of Labor Statistics</span></li>
+    <li><a href="https://content.naic.org/sites/default/files/publication-lig-lp-consumer-life.pdf">Life insurance buyer's guide</a> <span>National Association of Insurance Commissioners</span></li>
+  </ul>
+</footer>
+</article>

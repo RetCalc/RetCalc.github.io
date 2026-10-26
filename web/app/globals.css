@@ -11,6 +11,7 @@
    so setup's larger fields can step up from the components' own sizes;
    nothing in it reaches a page without .dsh. */
 @import "../styles/19-dashboard.css";
+@import "../styles/21-learn.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 

@@ -1,0 +1,130 @@
+<article class="lesson" data-slug="spending-with-age" data-reviewed="2026-10-26"
+  data-title="Spending changes with age"
+  data-idea="Retirees tend to spend less each year, until health costs rise late"
+  data-tool="drawdown" data-try="Set spending to follow the retirement spending smile, or your own stages, and see how long the money lasts, with your plan already filled in.">
+
+<p class="lede">Most retirement plans assume you'll spend the same amount every year, raised with inflation, from the day you retire until the day the plan ends. Real retirees mostly don't. On average their spending drifts down through their seventies and early eighties, then turns up again late in life as health costs grow. How much that matters depends on how you plan for it, and on not counting on a decline you might not get.</p>
+
+<h2 id="assumption">The flat-spending assumption</h2>
+<p>A plan that says "$60,000 per year in today's dollars" means you'll buy the same basket of things at 90 as at 65. That's what the 4% rule assumes, what most calculators assume, and what this site assumes unless you tell it otherwise. It's a cautious choice, and it's easy to understand.</p>
+<p>It's also a strong assumption. Suppose instead your spending fell by 1% per year after inflation. At 85 you'd be spending $49,074 instead of $60,000, and over thirty years you'd spend $1,561,798 in today's dollars instead of $1,800,000, about 13% less. A plan built for the flat line would be holding money for spending that never happens.</p>
+<p>The opposite mistake is just as easy. A plan that assumes a steep decline can leave you short in your late eighties, exactly when large medical or care bills are most likely and when you're least able to go back to work or cut back further.</p>
+
+<h2 id="smile">What the research found: the spending smile</h2>
+<p>The study planners cite most is David Blanchett's "Exploring the Retirement Consumption Puzzle," published in the Journal of Financial Planning in May 2014. Blanchett used the RAND version of the Health and Retirement Study, matched to its Consumption and Activities Mail Survey, which asked the same households about their spending every two years from 2001 to 2009. He kept 591 households that considered themselves retired and whose reported spending was consistent from survey to survey, and followed how their spending changed with age.</p>
+<p>He found three things:</p>
+<ul>
+  <li>Real spending fell. From 60 to 90 the average change was −0.96% per year after inflation, roughly 1% per year.</li>
+  <li>The decline wasn't even. Spending fell least in the early and late years of retirement and fastest in between, around the late seventies. Plotted as the yearly change by age, that pattern looks like a smile, which gave the finding its name. Blanchett attributed the early pattern to younger retirees traveling and enjoying retirement, and the late one to rising medical costs.</li>
+  <li>How much you spend mattered. Households that spent more fell further. Households that were well funded but spending little tended to raise their spending from 65 to 75, while those spending more than their savings could support cut sharply.</li>
+</ul>
+<p>He turned the results into a formula for the yearly change in real spending, based on age and the level of spending. It's the formula behind the spending smile option in the Drawdown Simulator. The chart shows what it implies for three retirees who start at 65 with different budgets.</p>
+
+<!-- data: lib/engine/drawdown.js ddPath with path "smile", retireAge 65, 36 years, for first-year spending of $40,000, $60,000 and $100,000.
+     Each year's change is Blanchett's 2014 equation 0.00008 × age² − 0.0125 × age − 0.0066 × ln(spending) + 0.546 (ddBlanchett), held within ±5%.
+     Blanchett notes he set the equation to allow somewhat larger increases than his data showed, for future medical cost growth.
+     Lowest points: $40,000 at 90 (83.0%), $60,000 at 91 (77.8%), $100,000 at 92–93 (71.5%). Values are shares of age-65 spending, in today's dollars. -->
+<figure data-chart='{"type":"line","x":[65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100],"xLabel":"Age","y":"pct","series":[{"name":"Starting at $40,000","tone":"accent","values":[1,1.002,1.001,0.999,0.995,0.989,0.982,0.975,0.966,0.956,0.946,0.936,0.925,0.914,0.904,0.893,0.883,0.874,0.865,0.857,0.85,0.843,0.838,0.834,0.831,0.83,0.83,0.832,0.836,0.842,0.849,0.859,0.871,0.886,0.904,0.925]},{"name":"Starting at $60,000","tone":"neutral","values":[1,0.999,0.996,0.991,0.984,0.976,0.967,0.957,0.946,0.934,0.922,0.909,0.897,0.884,0.871,0.859,0.848,0.836,0.826,0.816,0.808,0.8,0.793,0.787,0.783,0.78,0.778,0.778,0.78,0.784,0.789,0.796,0.806,0.818,0.833,0.851]},{"name":"Starting at $100,000","tone":"muted","values":[1,0.996,0.989,0.981,0.971,0.96,0.948,0.935,0.921,0.906,0.892,0.877,0.862,0.847,0.833,0.818,0.805,0.792,0.779,0.768,0.757,0.748,0.739,0.732,0.726,0.721,0.717,0.715,0.715,0.716,0.719,0.724,0.731,0.74,0.751,0.765]}]}'>
+  <figcaption>Real spending as a share of spending at 65, following Blanchett's 2014 formula, for three starting budgets. Averages from survey data, not a forecast for any one person.</figcaption>
+</figure>
+
+<p>A retiree starting at $60,000 would, on this curve, spend about $55,300 at 75 and $48,450 at 85 in today's dollars, bottoming out near $46,700 around 91 before rising again. The higher the starting budget, the deeper and later the dip, since more of a large budget is discretionary.</p>
+
+<h2 id="phases">Go-go, slow-go, no-go</h2>
+<p>Planners often describe the same pattern as three phases of retirement:</p>
+<ul>
+  <li>The go-go years, roughly the first decade: travel, hobbies, helping family, the projects put off while working. Spending is often as high as it was before retiring, sometimes higher.</li>
+  <li>The slow-go years, often the mid-seventies into the mid-eighties: less travel, fewer big purchases, more time at home. This is where most of the decline happens.</li>
+  <li>The no-go years: health limits what you do. Discretionary spending falls further, but health care, help at home and possibly long-term care can more than make up for it.</li>
+</ul>
+<p>The ages are rough, and they depend far more on health than on birthdays. Some people are still traveling hard at 85; others slow down at 70. The categories that change also matter as much as the totals. Housing costs tend to stay put, or fall when a mortgage is paid off. Transport falls as people drive less and replace cars less often. Health care rises steadily.</p>
+
+<h2 id="health">Health costs late in life</h2>
+<p>The upturn at the right of the smile comes mostly from health care. In Blanchett's data, medical care was about 10% of a household's spending at 65 and about 20% by 85. A 2016 study by Mariacristina De Nardi, Eric French, John Bailey Jones and Jeremy McCauley, using Medicare's own survey of beneficiaries, found that average medical spending more than doubles between 70 and 90, and that it's highly concentrated: in any year the top 10% of spenders account for 52% of the total. Government programs pay about 65% of older Americans' medical costs. The rest falls to private insurance and to households.</p>
+<p>Medical prices have also tended to rise faster than prices in general. The Bureau of Labor Statistics' experimental index for older Americans, CPI-E, which gives more weight to health care and housing, rose 3.07% per year from December 1982 to December 2012, against 2.92% for the regular CPI-U, according to Blanchett's paper. The gap is small in any one year but adds up over a long retirement.</p>
+<p>For a sense of the total, Fidelity's 2026 estimate is that a single person retiring at 65 in 2026 may need about $185,500 after tax to cover health care in retirement, counting Medicare premiums and out-of-pocket costs but not long-term care. Long-term care is a separate and much more uneven risk: many people need little or none, while a few need years of it. <a href="/learn/long-term-care">Long-term care</a> covers the odds, the costs and the ways to pay.</p>
+
+<h2 id="caveats">Why the average may not describe you</h2>
+<p>The smile is an average across many households, and there are good reasons to be careful about building it into your plan as a certainty:</p>
+<ul>
+  <li>Some of the decline is forced. In Blanchett's data, the households that cut most were those spending more than they could afford. A drop that happens because money ran short isn't one you want to plan on.</li>
+  <li>Averages hide the spread. The household whose spending falls 30% and the one whose spending rises because of a long illness average out to a gentle decline, but neither of them lives the average.</li>
+  <li>Couples change. When one spouse dies, spending falls, but by much less than half: housing, insurance and utilities mostly stay.</li>
+  <li>The data come from people who retired decades ago. Health care, housing costs and how long people live and stay active have all changed since.</li>
+</ul>
+<p>The safest way to use the research is to treat the decline as something that lowers how much you must hold for discretionary spending, while keeping essential costs and late-life health care at full strength.</p>
+
+<h2 id="effect">What it does to a plan</h2>
+<p>A spending path that falls over time lets you spend more at the start for the same risk. The table shows what a $1,000,000 portfolio, 60% in stocks, could have paid over thirty years in the worst US retirements since 1926, under four different spending paths.</p>
+
+<!-- data: lib/engine/drawdown.js historicalBacktest with ddOptsFromState: $1,000,000, 60% stocks / 40% bonds, rebalanced yearly, no fees, 30 years, fixed strategy, retirement at 65,
+     starts every January from 1927 to 1996 (70 starts; the record begins in July 1926, so the first January start is 1927). For each path, the highest starting rate in 0.05% steps that lasted in all 70 starts.
+     Paths: flat; ease 1% per year; smile (Blanchett, ddPath); stages at 90% from year 11 and 80% from year 21 (the simulator's default stages).
+     Spending at 75, 85 and 94 = first year × the path's multiplier. Totals: flat $1,125,000; ease $1,106,273; smile $1,113,942; stages $1,107,000.
+     At a 4% start: flat 94.3% of starts lasted (median $1,616,418 left); the other three paths 100%. -->
+<figure>
+  <table>
+    <thead><tr><th>Spending path</th><th>Highest start that lasted in every period</th><th>Spending at 75</th><th>At 85</th><th>At 94</th></tr></thead>
+    <tbody>
+      <tr><td>Flat, rising with inflation</td><td>$37,500 (3.75%)</td><td>$37,500</td><td>$37,500</td><td>$37,500</td></tr>
+      <tr><td>Easing 1% per year</td><td>$42,500 (4.25%)</td><td>$38,436</td><td>$34,761</td><td>$31,755</td></tr>
+      <tr><td>The spending smile</td><td>$41,000 (4.1%)</td><td>$38,729</td><td>$34,724</td><td>$34,353</td></tr>
+      <tr><td>Stages: 90% from 75, 80% from 85</td><td>$41,000 (4.1%)</td><td>$36,900</td><td>$32,800</td><td>$32,800</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A $1,000,000 portfolio, 60% stocks and 40% bonds, thirty-year retirements starting each January from 1927 to 1996. Spending in today's dollars, before tax.</figcaption>
+</figure>
+
+<p>Following the smile, the starting withdrawal rises from $37,500 to $41,000, about 9% more in the go-go years. The total spent over thirty years barely changes, between $1.11 million and $1.13 million on every path. What the falling path does is move spending from your eighties and nineties, when you may want it less, to your sixties and seventies, when you may want it more.</p>
+<p>Seen the other way, a plan that starts at a flat $40,000 survived 94.3% of these historical periods. With the same $40,000 start following the smile, it survived all of them.</p>
+
+<h2 id="options">Ways to plan for it</h2>
+<h3>Model a gentle decline</h3>
+<p>If you use a falling path, a modest one is easier to defend than a steep one. Easing by around 1% per year, or the smile itself, matches what the research found for typical households. Steeper assumptions rest on spending cuts you might not want to make.</p>
+<h3>Split essential from discretionary</h3>
+<p>Housing, food, insurance, utilities and health care don't fall much with age. Travel, dining out, gifts and hobbies do. Some retirees plan the essentials as flat for life and only let the discretionary part decline, which keeps the plan safe if the decline doesn't show up.</p>
+<h3>Plan in stages</h3>
+<p>Instead of a formula, set your own steps: full spending until 75, 90% to 85, then 80%. Stages are easy to picture and to revisit every few years as you see how your own spending is moving.</p>
+<h3>Keep a reserve for late-life care</h3>
+<p>If you let spending fall in your plan, set aside something for the upturn. Home equity, a long-term care policy, a deferred income annuity that starts at 80 or 85, or simply part of the portfolio earmarked for care can cover the right-hand side of the smile without holding the whole plan back. <a href="/learn/annuities-and-pensions">Annuities and pensions</a> and <a href="/learn/home-in-retirement">Your home in retirement</a> cover two of these.</p>
+<h3>Add the lumpy costs separately</h3>
+<p>A new car every ten years, a roof, help for a child or grandchild: these come in chunks and don't follow a smooth path. Listing them as one-time expenses at the ages you expect them is more accurate than raising your yearly spending to cover them.</p>
+<h3>Use a flexible strategy</h3>
+<p>Guardrails and percentage-based strategies let spending follow the portfolio, which tends to produce the same front-loaded shape when markets cooperate. <a href="/learn/fixed-or-flexible">Fixed or flexible spending</a> covers how they compare.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>In the Drawdown Simulator, Spending through retirement sets the shape of your spending in today's dollars. Steady keeps it level. Easing a little each year lowers it by a percentage you choose. The retirement spending smile follows Blanchett's formula from your retirement age and spending level. In stages lets you set your own steps from given ages. Set your age at retirement first, since the smile depends on it.</p>
+<p>Run your plan with the steady path, then with the smile or your own stages, and compare the success rate and the lowest spending along the way. Then add your one-time costs as future expenses, and check the Healthcare tool for what premiums before and after Medicare would add to your budget. A plan that works on the steady path has room to spare if your spending does fall. A plan that only works with a steep decline is relying on it.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Does spending really fall, or do people just run out of money?</summary><p>Both happen. Blanchett found that households spending more than they could afford cut the most, which is the running-short story. But spending fell for well-funded households too, and some of them chose to spend more in their late sixties and early seventies. Less travel and fewer big purchases with age explain much of the decline.</p></details>
+<details><summary>What about the first year or two of retirement?</summary><p>Many people spend more at first: travel, projects at home, a new car. That's part of the go-go years. If you expect it, add a one-time expense or a higher first stage rather than raising the whole plan.</p></details>
+<details><summary>Should I plan for a decline if I'm retiring early?</summary><p>Be more careful. The research covers people from about 60 on, and a 45-year-old retiree has decades before the slow-go years. A steady path for the early years with a decline later, set as stages, fits that better than a formula built from older retirees.</p></details>
+<details><summary>Does Social Security change this?</summary><p>Social Security rises with inflation every year, so it covers the same real spending at 90 as at 70. If spending falls, a growing share of it comes from Social Security and less from your portfolio, which is one more reason the decline helps a plan.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>Most plans assume flat real spending for life. On average, real retirees spend about 1% less each year after inflation.</li>
+  <li>Blanchett's 2014 study found the decline is slowest early and late and fastest around the late seventies: the spending smile.</li>
+  <li>Health costs drive the late upturn: average medical spending more than doubles between 70 and 90.</li>
+  <li>A falling path lets you spend more early for the same risk: about $41,000 instead of $37,500 from $1 million in the worst historical periods.</li>
+  <li>Plan essentials and late-life care at full strength, and let only the discretionary part decline.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>How retirees' spending changes with age</li>
+    <li>What the spending smile does to a plan's risk</li>
+    <li>How to plan for a decline without counting on it</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Retirement spending smile">David Blanchett's 2014 finding that retirees' real spending falls slowly at first, fastest in the late seventies, and slowly again late in life as health costs rise.</li>
+    <li data-term="Real spending">Spending measured in today's dollars, after inflation. Flat real spending means buying the same things every year.</li>
+    <li data-term="Go-go, slow-go, no-go">A planner's shorthand for three phases of retirement: active, slowing down, and limited by health.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.financialplanningassociation.org/article/journal/MAY14-exploring-retirement-consumption-puzzle">Exploring the retirement consumption puzzle (Blanchett, 2014)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://www.nber.org/papers/w21270">Medical spending of the US elderly (De Nardi, French, Jones and McCauley)</a> <span>NBER</span></li>
+    <li><a href="https://www.fidelity.com/viewpoints/personal-finance/plan-for-rising-health-care-costs">How to plan for rising health care costs</a> <span>Fidelity</span></li>
+  </ul>
+</footer>
+</article>

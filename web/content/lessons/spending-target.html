@@ -1,0 +1,151 @@
+<article class="lesson" data-slug="spending-target" data-reviewed="2026-10-26"
+  data-title="From spending to a target"
+  data-idea="Why spending sets your number, and how 25 times works"
+  data-tool="calculator" data-try="See what your savings could pay at 4% per year and how it compares with your target, with your plan already filled in.">
+
+<p class="lede">Your retirement target, the amount you'll want saved on the day you stop working, comes from one figure more than any other: what you'll spend. Start from spending, take away what Social Security and any pension will pay, add the tax on what's left, and multiply. This lesson walks through each step and the rules of thumb behind them.</p>
+
+<h2 id="spending">Why spending sets the number</h2>
+<p>Retirement savings have one job: to pay for the life you live once your paycheck stops. So the size of the job is set by spending, and income matters only indirectly, through taxes and Social Security.</p>
+<p>Two households earning the same $100,000 can need very different amounts. One spends $90,000 of it and saves little. The other lives on $60,000 and saves the rest. The second household has more saved and needs less, because it has shown it can live on $60,000. That's why the first step in any plan is an honest spending figure, and why two months of bank and card statements, or a budget built line by line, beat a guess. <a href="/budget">Budget</a> helps with the line by line version.</p>
+
+<h2 id="replacement">Replacement rates, and why they vary so much</h2>
+<p>The common shortcut is a replacement rate: plan to spend 70% to 80% of your income before retirement. It works as a first guess because several large costs end when work does.</p>
+<ul>
+<li>Saving for retirement stops. Someone saving 15% of pay was never spending that 15%.</li>
+<li>Social Security and Medicare payroll taxes stop, 7.65% of wages for most employees.</li>
+<li>Work costs end: commuting, work clothes, lunches out.</li>
+<li>For many people, the mortgage is paid off.</li>
+</ul>
+<p>The rate that fits a real household varies widely. In a 2013 study, David Blanchett of Morningstar used household spending data and found that the replacement rate a household actually needs is likely to range from under 54% to over 87% of income. A household that saved heavily and paid off its home sits at the low end; one that saved little and still rents sits at the high end.</p>
+<p>Here's a worked example of where the figure comes from. A hypothetical couple earns $120,000 between them, $70,000 and $50,000, and lives in a state with no income tax.</p>
+
+<!-- data: 2026 rules from the Income Tax engine, computeTax({status:"m", gross:70000, gross2:50000, pre:18000, state:"TX"}): federal income tax $7,880, FICA $9,180, take-home $84,940 after the $18,000 of pre-tax 401(k) saving. Retirement adjustments are the example's own hypothetical figures. -->
+<figure>
+  <table>
+    <thead><tr><th>From pay to retirement spending</th><th>Per year</th></tr></thead>
+    <tbody>
+      <tr><td>Gross pay, two earners</td><td>$120,000</td></tr>
+      <tr><td>Pre-tax 401(k) saving (15%)</td><td class="neg">−$18,000</td></tr>
+      <tr><td>Social Security and Medicare payroll tax</td><td class="neg">−$9,180</td></tr>
+      <tr><td>Federal income tax, 2026</td><td class="neg">−$7,880</td></tr>
+      <tr><td>Spending today, all of take-home pay</td><td>$84,940</td></tr>
+      <tr><td>Mortgage, paid off before retirement</td><td class="neg">−$18,000</td></tr>
+      <tr><td>Commuting and other work costs</td><td class="neg">−$3,000</td></tr>
+      <tr><td>More travel and hobbies</td><td>+$8,000</td></tr>
+      <tr><td>Spending in retirement</td><td>$71,940</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A hypothetical couple, in today's dollars. Retirement spending comes to 60% of gross pay, below the usual 70% to 80%, because they were saving 15% and the mortgage ends.</figcaption>
+</figure>
+
+<p>Had this couple been saving 5% and planning to keep renting, the same arithmetic would land near 80%. Neither figure is wrong; each fits its household. That's why RetCalc asks for retirement spending directly and treats a replacement rate only as a starting suggestion.</p>
+<p>A few costs tend to rise in retirement and are easy to miss: health insurance before Medicare starts at 65, Medicare premiums after it, travel in the early years, home repairs that a working budget put off, and help for children or parents. Some costs fall gradually later on, a pattern covered in <a href="/learn/spending-with-age">Spending changes with age</a>. Most plans, RetCalc's included, start by holding spending level in today's dollars, which leaves a margin if it does fall.</p>
+
+<h2 id="multiply">Multiplying by 25</h2>
+<p>Once you know what savings must pay each year, the simplest way to turn it into a target is to multiply by 25. That's the 4% rule turned around: 4% of 25 times your yearly need is one year of it.</p>
+<p>The 4% figure comes from William Bengen's 1994 study in the <i>Journal of Financial Planning</i>. He tested withdrawals against every 30-year period in the US record since 1926, taking a fixed share of the starting balance in year one and raising the dollar amount with inflation each year after. Starting at 4% of the balance, the money lasted at least 30 years in every period he tested, including retirements that began just before the inflation of the 1970s. A 1998 follow-up by three professors at Trinity University, Philip Cooley, Carl Hubbard and Daniel Walz, reached similar results, and it's often called the Trinity study.</p>
+<p>The multiple changes with the withdrawal rate you plan to use:</p>
+
+<!-- data: target multiple = 1 ÷ withdrawal rate. 1 ÷ 0.05 = 20; 0.045 = 22.2; 0.04 = 25; 0.035 = 28.6; 0.03 = 33.3. Dollar column = multiple × $40,000. -->
+<figure>
+  <table>
+    <thead><tr><th>Withdrawal rate</th><th>Multiple of yearly need</th><th>Target if savings must pay $40,000 per year</th></tr></thead>
+    <tbody>
+      <tr><td>5%</td><td>20 times</td><td>$800,000</td></tr>
+      <tr><td>4.5%</td><td>22.2 times</td><td>$888,889</td></tr>
+      <tr><td>4%</td><td>25 times</td><td>$1,000,000</td></tr>
+      <tr><td>3.5%</td><td>28.6 times</td><td>$1,142,857</td></tr>
+      <tr><td>3%</td><td>33.3 times</td><td>$1,333,333</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Lower withdrawal rates suit longer retirements and less flexible spending; higher ones suit shorter retirements or spending that can bend.</figcaption>
+</figure>
+
+<p>Twenty-five times is a sensible default for a retirement of about 30 years with a mix of stocks and bonds. Retiring in your 50s, or wanting more margin, points toward 28 to 33 times. Being willing to cut spending after bad markets points the other way. <a href="/learn/four-percent-rule">The 4% rule</a> goes through what it assumes and when it's too high or too low.</p>
+
+<h2 id="income">How Social Security and pensions shrink the target</h2>
+<p>Savings only have to cover the part of spending that other income doesn't. Every $1,000 per year of income that arrives for life and rises with prices takes about $25,000 off the target at 4%. Social Security is the largest such income for most retirees, so it usually makes the biggest difference to the number.</p>
+<p>Social Security replaces a larger share of pay for lower earners, because its formula weights the first dollars of average earnings most heavily. Here's RetCalc's estimate of the benefit at 67 for a single worker with a steady 35-year career at each level of pay, under the 2026 formula.</p>
+
+<!-- data: ssEstimate(income, 35, 67) from lib/engine/math.js, using the 2026 bend points and wage base in lib/engine/data/2026.js. Pay is treated as steady in today's dollars across the career; benefit at full retirement age (67). Share = benefit ÷ pay. -->
+<figure>
+  <table>
+    <thead><tr><th>Pay, steady career</th><th>Benefit at 67, per year</th><th>Share of pay replaced</th></tr></thead>
+    <tbody>
+      <tr><td>$30,000</td><td>$18,551</td><td>62%</td></tr>
+      <tr><td>$50,000</td><td>$24,951</td><td>50%</td></tr>
+      <tr><td>$70,000</td><td>$31,351</td><td>45%</td></tr>
+      <tr><td>$100,000</td><td>$39,759</td><td>40%</td></tr>
+      <tr><td>$150,000</td><td>$47,259</td><td>32%</td></tr>
+      <tr><td>$184,500 (the 2026 wage cap)</td><td>$52,434</td><td>28%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Estimated retirement benefit for one worker claiming at full retirement age, in today's dollars. Your own statement at ssa.gov is more exact.</figcaption>
+</figure>
+
+<p>The Social Security Administration's own rule of thumb is that benefits replace about 40% of an average worker's pre-retirement earnings, which matches the middle of this table. Claiming earlier lowers the share; waiting to 70 raises it by 24%.</p>
+<p>Back to the couple. Round their retirement spending to $72,000. Claiming at 67, their two benefits come to about $56,300 per year, so savings only have to cover about $15,700. At 25 times, that's about $392,000. Without Social Security, the same spending would need $1.8 million. For many households, Social Security is worth more than everything they've saved.</p>
+<h3>Pensions</h3>
+<p>A pension that rises with inflation counts the same way as Social Security. Most private pensions don't rise, and a fixed pension shrinks in today's dollars: at 3% inflation, $20,000 per year buys what about $14,900 buys today after ten years, and about $11,100 after twenty. A rough fix is to count only part of a fixed pension against spending, or to treat it as covering spending that will fall over time. <a href="/learn/annuities-and-pensions">Annuities and pensions</a> covers the choice between a lump sum and monthly payments.</p>
+
+<p data-yours></p>
+
+<h2 id="taxes">Adding the tax</h2>
+<p>Spending is what you live on after tax, but withdrawals from a traditional 401(k) or IRA are taxed as income, and up to 85% of Social Security can be taxable too. So savings have to cover the spending gap plus the tax on the withdrawals. Roth withdrawals in retirement are tax-free, and money from a taxable brokerage account is taxed only on the gain, often at a lower rate.</p>
+<p>How much tax that adds depends on your income, your state and which accounts the money comes from. For the couple, it's less than many people expect, because the standard deduction is larger after 65 and only part of Social Security is taxable at their income.</p>
+
+<!-- data: computeRetireTax (lib/engine/math.js), 2026 federal rules, married filing jointly, both 65 or older (extra standard deduction and the senior deduction in the 2026 rules), no state income tax. Social Security $56,301 (ssEstimate at 67 for $70,000 and $50,000 careers). All savings in traditional accounts; the withdrawal is solved so that withdrawal + Social Security − tax = spending. Target = 25 × the withdrawal as shown, rounded to the dollar. -->
+<figure>
+  <table>
+    <thead><tr><th>Spending in retirement</th><th>Gap after Social Security</th><th>Federal tax</th><th>Withdrawal needed</th><th>Target at 25 times</th></tr></thead>
+    <tbody>
+      <tr><td>$72,000</td><td>$15,699</td><td>$0</td><td>$15,699</td><td>$392,475</td></tr>
+      <tr><td>$90,000</td><td>$33,699</td><td>$904</td><td>$34,603</td><td>$865,075</td></tr>
+      <tr><td>$100,000</td><td>$43,699</td><td>$3,353</td><td>$47,052</td><td>$1,176,300</td></tr>
+      <tr><td>$120,000</td><td>$63,699</td><td>$8,171</td><td>$71,870</td><td>$1,796,750</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The example couple at four levels of spending, with about $56,300 of Social Security. Today's dollars, 2026 federal tax rules, no state income tax, all savings in traditional accounts.</figcaption>
+</figure>
+
+<p>Each step up in spending raises the target by more than 25 times the step, because the tax grows too. And the target is very sensitive to spending: going from $72,000 to $90,000 per year, 25% more, more than doubles it, because Social Security covers the first $56,300 either way. Your own figure will differ with your state's tax and how much you hold in Roth or taxable accounts. <a href="/learn/retirement-income-taxes">How retirement income is taxed</a> covers the rules.</p>
+
+<h2 id="gaps">Years before Social Security starts</h2>
+<p>Multiplying by 25 assumes Social Security is paying from the day you retire. If you stop work before you claim, savings must cover the whole of your spending for those years. For the couple, retiring at 62 and claiming at 67 means about five years of $56,300 that Social Security would otherwise have paid: roughly $281,500 more, on top of the $392,000, before counting any growth on it.</p>
+<p>Retiring before 65 also means paying for health insurance until Medicare starts, often one of the largest costs of an early retirement. <a href="/learn/health-cover-before-65">Health cover before 65</a> covers the options, and <a href="/learn/when-to-claim">When to claim</a> covers the trade-off between claiming early and bridging to a larger benefit.</p>
+<p>Large one-off costs belong in the target too: a car every eight or ten years, a roof, a wedding, help with a grandchild's college. Add them up and include them, or keep them as a separate amount on top of the 25 times figure.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Calculator shows what your savings could pay each year at 4%, which you can set against your own gap after Social Security. Its worked example is Sam, 30, saving $500 per month, who reaches $537,803 by 65 in today's dollars. If Sam expects to spend $50,000 per year and Social Security covers $24,000, savings must cover $26,000: a target of about $650,000. The $500 per month plan falls short; raising it to $750 per month reaches $783,368 and clears it.</p>
+<p>The Retirement Readiness Guide works the target out in full. You enter retirement spending after tax in today's dollars, and the plan adds each year's income tax itself, from where the money comes from, along with health coverage before 65. It then tests the result through every retirement since 1926 instead of relying on 25 times alone.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Should I just use 80% of my income?</summary><p>It's a fair first guess if you haven't tracked your spending, but your own spending is better. Households that save a lot, or will have paid off their home, often need less than 70%; households that save little or rent often need more than 80%.</p></details>
+<details><summary>Does 25 times include taxes?</summary><p>Only if you include them in the figure you multiply. Multiplying spending alone leaves out the tax on traditional withdrawals. Multiply the withdrawal you'll need, spending gap plus tax, as in the table above.</p></details>
+<details><summary>My target is in today's dollars. How much will I actually need?</summary><p>More in nominal dollars, because prices will rise. A target of $1,000,000 in today's dollars is about $1.8 million twenty years from now at 3% inflation. Your savings projections are in today's dollars too, so the comparison holds; just don't compare a today's-dollar target with a future statement balance.</p></details>
+<details><summary>Should I count on Social Security being cut?</summary><p>The 2026 Trustees Report projects that the retirement trust fund can pay full benefits until 2032 and about 78% of them after that if Congress does nothing. Some people plan with a reduced benefit as a margin of safety. <a href="/learn/social-security-future">Will Social Security be there?</a> covers the numbers.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Your target starts from what you'll spend in retirement, not what you earn.</li>
+<li>Replacement rates of 70% to 80% are a rough guide; real households range from about 54% to 87%.</li>
+<li>Multiply what savings must pay each year by 25 for a 4% withdrawal rate, or by about 28 to 33 for more margin.</li>
+<li>Social Security and inflation-linked pensions come off first: each $1,000 per year of them saves about $25,000 of savings.</li>
+<li>Add the tax on withdrawals, the years before benefits start, and large one-off costs.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>Why spending, not income, sets your retirement number</li><li>Where 25 times comes from, and when to use more</li><li>How Social Security and taxes change the target</li></ul>
+  <ul class="terms">
+    <li data-term="Replacement rate">Retirement spending as a share of pre-retirement income. The common rule of thumb is 70% to 80%.</li>
+    <li data-term="Withdrawal rate">The share of savings taken out in the first year of retirement. At 4%, the target is 25 times what savings must pay each year.</li>
+    <li data-term="Retirement target">The amount you want saved when you stop working: what savings must pay each year, after Social Security and pensions and including tax, times a multiple such as 25.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.financialplanningassociation.org/sites/default/files/2021-04/MAR04%20Determining%20Withdrawal%20Rates%20Using%20Historical%20Data.pdf">Determining withdrawal rates using historical data</a> <span>William Bengen, Journal of Financial Planning, 1994</span></li>
+    <li><a href="https://www.aaii.com/files/pdf/6794_retirement-savings-choosing-a-withdrawal-rate-that-is-sustainable.pdf">Retirement savings: choosing a withdrawal rate that is sustainable</a> <span>Cooley, Hubbard and Walz, AAII Journal, 1998</span></li>
+    <li><a href="https://www.soa.org/globalassets/assets/files/resources/essays-monographs/2014-living-to-100/mono-li14-1a-blanchett.pdf">Estimating the true cost of retirement</a> <span>David Blanchett, Morningstar, 2013; published by the Society of Actuaries, 2014</span></li>
+    <li><a href="https://www.ssa.gov/myaccount/">my Social Security</a> <span>Social Security Administration</span></li>
+  </ul>
+</footer>
+</article>

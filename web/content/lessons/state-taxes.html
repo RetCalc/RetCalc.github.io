@@ -1,0 +1,132 @@
+<article class="lesson" data-slug="state-taxes" data-reviewed="2026-10-26"
+  data-title="State taxes in retirement"
+  data-idea="Where you live can matter more than your bracket"
+  data-tool="incometax" data-try="Pick a state and see how it taxes each source of retirement income, with your plan already filled in.">
+
+<p class="lede">Federal tax rules are the same wherever you live; state rules aren't. Nine states don't tax wages or retirement income at all, several that do have income taxes leave nearly all retirement income alone, and a handful tax pensions, IRA withdrawals and even part of Social Security much as they tax a salary. For the same retirement income, a couple's state bill can run from nothing to several thousand dollars per year.</p>
+
+<h2 id="none">The states without an income tax</h2>
+<p>Nine states have no tax on wages or retirement income: Alaska, Florida, Nevada, New Hampshire, South Dakota, Tennessee, Texas, Washington and Wyoming. Two of them had narrower taxes until recently. Tennessee's tax on interest and dividends ended in 2021, and New Hampshire's ended from 2025.</p>
+<p>Washington is the partial exception. It taxes long-term capital gains above a large annual deduction ($278,000 for 2025), at 7%, and at 9.9% on the part above $1 million. In 2026 the state also passed a 9.9% tax on income above $1 million, set to begin in 2028, which is being challenged in court. Neither touches a typical retiree's pension or IRA withdrawals.</p>
+<p>These states still have to raise money, and they lean harder on sales and property taxes, which fall on retirees as much as on workers.</p>
+
+<h2 id="how">What decides a retiree's state bill</h2>
+<p>Most states with an income tax start from your federal adjusted gross income and then add or subtract their own adjustments before applying their own deductions and rates. For wages, the result is usually close to what you'd expect from the state's rates. For retirement income, three state rules matter more than the rate:</p>
+<ul>
+<li>whether Social Security is taxed at all;</li>
+<li>whether pensions and withdrawals from 401(k)s and IRAs are excluded, in full or up to a limit;</li>
+<li>what extra deduction, exemption or credit comes at 62, 65 or some other age.</li>
+</ul>
+<p>The chart shows how much difference that makes. It runs two hypothetical retired couples, both spouses 67, through the 2026 rules of twelve states. The first has $40,000 of IRA withdrawals, a $20,000 private pension and $45,000 of Social Security. The second has $120,000 of IRA withdrawals and $55,000 of Social Security. In both, the retirement income is split evenly between the spouses, which matters in states whose exclusions are per person. Their federal income tax, the same everywhere, is $5,594 and $16,101.</p>
+
+<!-- data: computeRetireTax() (lib/engine/math.js) with 2026 state rules (lib/engine/data/2026.js states.tax and states.retire), status "m", seniors 2, standard deduction, no local tax.
+     Couple A: trad 40,000, pension 20,000 (private), ss 45,000. Couple B: trad 120,000, ss 55,000.
+     State tax A / B: OR 3,416 / 8,666; MN 1,573 / 8,552; VT 2,424 / 6,615; MT 2,559 / 6,044; VA 2,036 / 5,529; NC 1,377 / 3,771; NY 154 / 3,121; CA 145 / 2,993; GA 0 / 0; IL 0 / 0; PA 0 / 0; TX 0 / 0 (NV, not charted, 0 / 0).
+     Federal: A 5,594, B 16,101. Ten years of Oregon's 8,666 for couple B: 86,660, about 87,000 in today's dollars. -->
+<figure data-chart='{"type":"bar","x":["OR","MN","VT","MT","VA","NC","NY","CA","GA","IL","PA","TX"],"xLabel":"State","y":"money","series":[{"name":"$60,000 from IRA and pension, $45,000 Social Security","tone":"neutral","values":[3416,1573,2424,2559,2036,1377,154,145,0,0,0,0]},{"name":"$120,000 from IRA, $55,000 Social Security","tone":"accent","values":[8666,8552,6615,6044,5529,3771,3121,2993,0,0,0,0]}]}'>
+  <figcaption>2026 state income tax for two hypothetical married couples, both 67, by state: Oregon, Minnesota, Vermont, Montana, Virginia, North Carolina, New York, California, Georgia, Illinois, Pennsylvania and Texas. Local income taxes are not included.</figcaption>
+</figure>
+
+<p>Some of the results run against reputation. California, with the highest top rate in the country, takes only $145 from the first couple: it doesn't tax Social Security, and its rates on the first tens of thousands of income are low. Oregon takes $3,416 from the same couple, because it taxes pensions and IRA withdrawals at rates that start at 4.75% and reach 8.75% quickly. Georgia, Illinois and Pennsylvania all have income taxes and take nothing from either couple, because they exclude this kind of income. Minnesota exempts the first couple's Social Security but not the second's, which is why its bill jumps.</p>
+
+<h2 id="social-security">Social Security</h2>
+<p>Forty-two states and the District of Columbia don't tax Social Security at all for 2026: the nine without an income tax plus every other state but eight. West Virginia finished phasing out its tax this year, after Kansas, Missouri and Nebraska dropped theirs in the years before. Most of the eight that still tax some benefits exempt them below an income line or offset the tax some other way:</p>
+
+<!-- data: lib/engine/data/2026.js states.ssTaxed (CO, CT, MN, MT, NM, RI, UT, VT) and each state's states.retire rule and note, 2026; the list of eight checked against current 2026 state summaries (Kiplinger, Bankrate).
+     Checked 2026-10-26 against the states: Colorado DOR (Social Security, Pensions and Annuities, Jan 2025: full Social Security subtraction at 65, counted against the $24,000 cap); Minnesota DOR 2026 inflation-adjusted amounts ($86,410 / $110,780); Rhode Island PUB 2026-01 ($107,000 / $133,500 for 2025); Vermont Department of Taxes, Social Security Exemption (2025: full to $55,000 / $70,000, gone at $65,000 / $80,000); Montana DOR tax simplification hub ($5,500 from 2024, indexed); Utah Tax Commission 2026 webinar (SB 71: $54,000 / $90,000). -->
+<figure>
+  <table>
+    <thead><tr><th>State</th><th>How it treats Social Security in 2026</th></tr></thead>
+    <tbody>
+      <tr><td>Colorado</td><td>Each person 65 or older can subtract all of their federally taxable benefits (from 55, below $75,000 of AGI single or $95,000 joint). The benefits subtracted count against the $24,000 allowed for other retirement income at 65.</td></tr>
+      <tr><td>Connecticut</td><td>Exempt below $75,000 of AGI single or $100,000 joint; above that, a quarter of the federally taxable amount is taxed.</td></tr>
+      <tr><td>Minnesota</td><td>Exempt below $86,410 of AGI single or $110,780 joint; the exemption falls 10% for each $4,000 above, and is gone $40,000 over the line.</td></tr>
+      <tr><td>Montana</td><td>Taxes the federally taxable amount, with an extra subtraction per person at 65 ($5,500 when it began in 2024, raised for inflation each year).</td></tr>
+      <tr><td>New Mexico</td><td>Exempt below $100,000 of AGI single or $150,000 joint; taxed above.</td></tr>
+      <tr><td>Rhode Island</td><td>Exempt from full retirement age up to $107,000 of AGI single or $133,500 joint (the 2025 limits, raised for inflation each year).</td></tr>
+      <tr><td>Utah</td><td>Taxed, but offset by a credit that phases out at 2.5 cents per dollar of income above $54,000 single or $90,000 joint.</td></tr>
+      <tr><td>Vermont</td><td>Exempt up to $55,000 of AGI single or $70,000 joint (2025), phasing out over the next $10,000.</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The eight states that still tax any Social Security in 2026. Even in these, most retirees with modest incomes pay little or nothing on their benefits.</figcaption>
+</figure>
+
+<p>The list has been shrinking for years, and it may shrink again. States change these rules often, so check yours before relying on it.</p>
+
+<h2 id="pensions">Pensions and IRA withdrawals</h2>
+<p>This is where states differ most, and where a retiree with a large IRA has the most at stake. Broadly, states fall into a few groups.</p>
+
+<!-- data: lib/engine/data/2026.js states.retire rules and notes, 2026. Michigan's 2026 maximum from michigan.gov (ORS, Public Act 4 of 2023 FAQ): $67,610 single, $135,220 joint. New Mexico's capital gain deduction is the greater of $2,500 or 40% of gain on selling a New Mexico business, from 2025 (NMSA 7-2-34). -->
+<figure>
+  <table>
+    <thead><tr><th>Treatment</th><th>Examples, 2026</th></tr></thead>
+    <tbody>
+      <tr><td>Exempt in full</td><td>Illinois, Mississippi and Pennsylvania exempt pensions, 401(k) and IRA withdrawals (Pennsylvania once you've retired, Mississippi once you reach the plan's retirement age). Iowa exempts them from 55.</td></tr>
+      <tr><td>A large exclusion</td><td>Georgia: $65,000 per person from 65 ($35,000 from 62), covering investment income too. Michigan: $67,610 single or $135,220 joint. New Jersey: $75,000 single or $100,000 joint from 62, but only below $150,000 of income. Kentucky: $31,110 per person at any age.</td></tr>
+      <tr><td>A smaller exclusion or age deduction</td><td>New York: $20,000 per person of private pension and IRA income from 59½, government pensions in full. Delaware: $12,500 per person from 60. Oklahoma: $10,000 per person. South Carolina: a $15,000 deduction per person at 65.</td></tr>
+      <tr><td>Taxed like wages</td><td>California, Oregon, Minnesota, North Carolina, Vermont and others tax pensions and IRA withdrawals in full, with at most a small credit or deduction at 65.</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A sample of how states treat pension and retirement-account income. Many states also exempt government or military pensions that they otherwise tax; the rules turn on the details.</figcaption>
+</figure>
+
+<p>Some exclusions come with conditions that are easy to miss. Maryland's $40,600 pension exclusion at 65 covers employer plans but not IRAs, and is reduced by the Social Security you receive. Maine's deduction is also cut dollar for dollar by Social Security. Several apply per person, so a couple gets twice the amount only if both spouses have retirement income of their own. And many states treat a public pension, from a state, city or the federal government, more generously than a private one.</p>
+<h3>Roth money and capital gains</h3>
+<p>Qualified Roth withdrawals are tax-free in practically every state, since most states start from federal income and Roth money isn't in it. A Roth conversion, on the other hand, is income in the year you convert, and states that tax IRA withdrawals generally tax conversions too.</p>
+<p>Most states tax capital gains as ordinary income, with no special rate. A few give a break: Arkansas excludes 50% of long-term gains, South Carolina 44%, North Dakota 40%, Wisconsin 30%, New Mexico the first $2,500, and Hawaii caps the rate at 7.25%. Pennsylvania, which exempts retirement income, still taxes interest, dividends and gains at its flat 3.07%.</p>
+
+<h2 id="moving">Moving in retirement</h2>
+<p>Moving to a lower-tax state is one of the larger tax decisions a retiree can make. A few rules decide how well it works.</p>
+<h3>Your old state can't tax your retirement income once you've left</h3>
+<p>A federal law from 1996 (4 U.S.C. § 114) bars a state from taxing the retirement income of someone who isn't its resident or domiciliary. That covers pensions, 401(k), 403(b) and 457 plans, IRAs and some long-running deferred compensation payments. A pension earned over thirty years in California is taxable only by the state you live in when you receive it.</p>
+<h3>Leaving has to be real</h3>
+<p>States with high taxes check departures, especially of people with high incomes. Your domicile is the place you intend to make your permanent home, and changing it means more than buying a house elsewhere: a new driver's license, voter registration and vehicle registration, a homestead filing, doctors and a place of worship in the new state, and fewer days in the old one. Some states also count you as a resident for the year if you keep a home there and spend more than 183 days there; New York is the best-known example. Keep records of where you spent your days.</p>
+<h3>What a move is worth</h3>
+<p>The couples in the chart show how much the answer depends on where you start. If the second couple moved from Oregon to Nevada, their state income tax would fall from $8,666 per year to nothing, about $87,000 over ten years in today's dollars, before any difference in property tax, sales tax, insurance or the cost of living. The same couple moving from Illinois to Texas would save nothing on income tax at all, because Illinois already leaves their IRA withdrawals and Social Security out. A move that looks like a tax decision from a high-tax state can be a pure lifestyle decision from a state that already exempts retirement income.</p>
+<p>It also depends on what you'll be living on. A retiree drawing mostly from a Roth account or from the cost basis of a taxable account reports little income in any state, so the state's income tax matters less to them than its property and sales taxes. One with a large pension and a large IRA facing required distributions has much more at stake.</p>
+<h3>Timing income around the move</h3>
+<p>In the year you move you'll usually file part-year returns in both states, each taxing the income received while you lived there. Large one-time income, such as Roth conversions, a big capital gain or an IRA withdrawal, is often cheaper after the move to a lower-tax state than before it. The reverse holds if you're moving to a higher-tax state.</p>
+
+<h2 id="other">Property, sales and other state taxes</h2>
+<p>For many retirees, income tax isn't the biggest state tax. With modest taxable income and a paid-off house, property tax and sales tax can easily cost more.</p>
+<ul>
+<li>Property tax is set mostly by counties, cities and school districts, and varies widely even within a state. Many states offer relief for older homeowners: larger homestead exemptions, a freeze on the assessed value, or the option to defer the tax until the home is sold. They're usually not automatic; you have to apply. <a href="/learn/home-in-retirement">Your home in retirement</a> covers this in more detail.</li>
+<li>Sales tax is charged in every state except Alaska (where local governments may levy one), Delaware, Montana, New Hampshire and Oregon. States without an income tax tend to rely on it more.</li>
+<li>Twelve states and DC have their own estate tax, often with an exemption far below the federal $15 million for 2026, and five states charge an inheritance tax on what heirs receive (as of 2026). These matter more to your heirs than to your own spending.</li>
+<li>Maryland's counties, New York City, Yonkers, Indiana's counties, many cities and school districts in Ohio and Pennsylvania, and localities in a few other states add their own income tax. Some only tax wages, so they don't reach retirement income; others do.</li>
+</ul>
+<p>So comparing states on income tax alone can mislead. A state with no income tax and high property taxes can cost a homeowner more than a state with a modest income tax that exempts retirement income.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>Income Tax has each state's 2026 rules for retirement income: whether it taxes Social Security, its pension and IRA exclusions, its extra deductions at 65 and its treatment of capital gains. In retirement mode, enter your income by source, pick your state, and the breakdown shows what the state taxes from each source, with a note on that state's rules. Change the state to compare places you're considering, and add a local income tax if yours has one. Roth Conversions uses the same state rules year by year, so you can see whether converting before or after a move costs less.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Will my old state tax my pension after I move?</summary><p>No. Federal law stops a state from taxing pensions, IRA and 401(k) withdrawals of anyone who no longer lives there, however long they worked there. You owe tax on them only to your new state, if it taxes them.</p></details>
+<details><summary>Which states tax Social Security?</summary><p>For 2026: Colorado, Connecticut, Minnesota, Montana, New Mexico, Rhode Island, Utah and Vermont, most with their own exemption or credit, so many retirees there still pay nothing on their benefits. Every other state and DC leaves benefits untaxed.</p></details>
+<details><summary>Is a state with no income tax always cheaper?</summary><p>Not always. Those states lean on sales and property taxes instead, and a homeowner with modest income can pay more there than in a state whose income tax exempts most retirement income. Compare the whole bill: income, property and sales taxes together.</p></details>
+<details><summary>Do states tax Roth conversions?</summary><p>States that tax IRA withdrawals generally tax conversions the same way, as income in the year you convert. A state that exempts retirement income may exempt conversions too, which can make a planned move a reason to convert before or after it.</p></details>
+<details><summary>Are state rules likely to change?</summary><p>Yes. States change their retirement rules more often than Congress changes federal ones, usually toward exempting more. Treat any state's rules as current for this year, and check them again before a move or a large conversion.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>Nine states don't tax wages or retirement income; Washington taxes only large capital gains.</li>
+<li>For 2026, only eight states tax any Social Security, and most exempt it below an income line or offset it.</li>
+<li>Pensions and IRA withdrawals range from fully exempt (Illinois, Mississippi, Pennsylvania, Iowa from 55) to taxed like wages (California, Oregon and others).</li>
+<li>Once you move, your old state can't tax your retirement income, but the move has to be a real change of home.</li>
+<li>Property and sales taxes can outweigh income tax in retirement, so compare the whole bill.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>Which states tax retirement income, and how much</li><li>The eight states that still tax Social Security</li><li>What to know before moving in retirement</li></ul>
+  <ul class="terms">
+    <li data-term="Domicile">The place you intend as your permanent home. A state can tax all your income while it's your domicile, wherever the income comes from.</li>
+    <li data-term="Retirement income exclusion">A state rule that leaves some or all pension and retirement-account income out of the state's taxable income.</li>
+    <li data-term="Statutory residency">A rule in some states that makes you a resident for tax purposes if you keep a home there and spend more than 183 days there.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://taxfoundation.org/data/all/state/state-income-tax-rates-2026/">State individual income tax rates and brackets, 2026</a> <span>Tax Foundation</span></li>
+    <li><a href="https://www.law.cornell.edu/uscode/text/4/114">4 U.S. Code § 114, Limitation on state income taxation of certain pension income</a> <span>Cornell Law School</span></li>
+    <li><a href="https://taxfoundation.org/data/all/state/estate-inheritance-tax/">Estate and inheritance taxes by state</a> <span>Tax Foundation</span></li>
+    <li><a href="https://www.kiplinger.com/slideshow/retirement/T051-S001-states-that-tax-social-security-benefits/index.html">States that tax Social Security benefits in 2026</a> <span>Kiplinger</span></li>
+  </ul>
+</footer>
+</article>

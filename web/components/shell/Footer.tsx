@@ -14,6 +14,7 @@ const LINKS = [
   { label: "Guide", foot: "guide", href: "/guide" },
   { label: "Calculator", foot: "calc", href: "/calculator" },
   { label: "Tools", foot: "tools", href: "/tools" },
+  { label: "Learn", foot: "learn", href: "/learn" },
   { label: "About", foot: "about", href: "/about" },
   { label: "Privacy", foot: "privacy", href: "/privacy" },
 ];

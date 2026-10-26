@@ -1,0 +1,166 @@
+<article class="lesson" data-slug="sequence-risk" data-reviewed="2026-10-26"
+  data-title="Sequence-of-returns risk"
+  data-idea="Same average return, different order, different outcome"
+  data-tool="drawdown" data-try="Run your plan through every retirement since 1926, starting in each year in turn, with your plan already filled in.">
+
+<p class="lede">Two retirees can earn the same average return over thirty years and end up in very different places. One runs out of money in their eighties; the other dies with more than they started with. The difference is the order the returns arrive in, and it matters most in the first years of retirement.</p>
+
+<h2 id="order">Why withdrawals make the order matter</h2>
+<p>If you invest a lump sum and never add to it or take from it, the order of returns makes no difference at all. Each year's return multiplies the balance, and multiplying gives the same answer in any order. Three years of −20%, +10% and +20% turn $100,000 into $105,600 whichever way round they come.</p>
+<p>Take money out each year and that stops being true. The table below starts with the same $100,000 and the same three returns, but $5,000 comes out at the start of each year, the way a retiree's spending would.</p>
+
+<!-- data: $5,000 withdrawn at the start of each year, then the year's return applied.
+     Bad year first: (100,000 − 5,000) × 0.80 = 76,000; (76,000 − 5,000) × 1.10 = 78,100; (78,100 − 5,000) × 1.20 = 87,720.
+     Good year first: (100,000 − 5,000) × 1.20 = 114,000; (114,000 − 5,000) × 1.10 = 119,900; (119,900 − 5,000) × 0.80 = 91,920.
+     Gap 91,920 − 87,720 = 4,200. No withdrawals: 100,000 × 0.8 × 1.1 × 1.2 = 105,600. -->
+<figure>
+  <table>
+    <thead>
+      <tr><th></th><th colspan="2">Bad year first</th><th colspan="2">Good year first</th></tr>
+      <tr><th></th><th>Return</th><th>Balance</th><th>Return</th><th>Balance</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Start</td><td></td><td>$100,000</td><td></td><td>$100,000</td></tr>
+      <tr><td>Year 1</td><td class="neg">−20%</td><td>$76,000</td><td>+20%</td><td>$114,000</td></tr>
+      <tr><td>Year 2</td><td>+10%</td><td>$78,100</td><td>+10%</td><td>$119,900</td></tr>
+      <tr><td>Year 3</td><td>+20%</td><td>$87,720</td><td class="neg">−20%</td><td>$91,920</td></tr>
+    </tbody>
+  </table>
+  <figcaption>$5,000 is withdrawn at the start of each year. Same three returns, $4,200 apart after three years. With no withdrawals, both would end at $105,600.</figcaption>
+</figure>
+
+<p>With the bad year first, the second and third withdrawals come out of a balance that has already shrunk. Each $5,000 is a bigger share of what's left, and the dollars sold after the fall are no longer invested when prices recover. With the good year first, the withdrawals come out of a growing balance and the fall arrives once there's more cushion to absorb it. After three years the gap is $4,200; over a thirty-year retirement, the same effect can decide whether the money lasts.</p>
+
+<h2 id="thirty">Thirty years of withdrawals</h2>
+<p>The chart follows one retirement three ways. Each starts with $1.48 million and takes out $62,000 per year, raised with inflation, so it spends the same in today's dollars every year. All three earn exactly the same average return over the thirty years, 3.7% per year after inflation; only the order changes.</p>
+
+<!-- data: the sequence widget. Thirty yearly returns after inflation (the approved mock's set: −14, −11, −9, 3, 6, −4, 9, 7, 11, 5, 8, 10, 6, 12, 4, 9, 7, 11, 5, 13, 6, 8, 10, 9, 7, 12, 8, 11, 9, 10, each less 2.2 points), simple average 3.73%.
+     $1,480,000 at the start, $62,000 withdrawn at the start of each year, then the year's return applied, floored at zero.
+     In that order the money runs out in year 21; reversed it ends near $1,735,000; the average every year ends near $994,000. -->
+<figure data-widget="sequence">
+  <figcaption>Thirty years of returns, after inflation, averaging 3.7% per year in every case. The red line takes five weak years first; the green line takes them last.</figcaption>
+</figure>
+
+<p>With the five weak years first, the money runs out in year 21. With the same five years at the end, there's more left after thirty years than there was at the start. The dotted line, which earns the average every single year, ends in between. It's what a simple calculator with one fixed growth rate shows you, and it describes neither of the real outcomes.</p>
+<p>So a plan tested against one average return can look safer than it is, because it never sees a bad stretch arrive early.</p>
+
+<p data-yours></p>
+
+<h2 id="zone">When the risk is highest</h2>
+<p>Sequence risk isn't the same at every age. Early in a career, a crash hits a small balance, and every contribution for years afterwards buys shares at lower prices; a bad decade in your thirties can even help. Late in retirement, a crash hits a balance that only needs to last a few more years. The danger is greatest in between.</p>
+
+<!-- data: an illustration of the shape only, not a calculation (as in the approved mock). Peak at 100 at age 62;
+     before 62: 100 × exp(−((62 − age) / 10)²); from 62: 100 × exp(−((age − 62) / 14)²), rounded. -->
+<figure data-chart='{"type":"area","x":[35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95],"xLabel":"Age","y":"num","series":[{"name":"Cost of a bad five years","tone":"accent","values":[0,0,0,0,1,1,1,2,3,4,6,8,11,14,18,24,30,37,44,53,61,70,78,85,91,96,99,100,99,98,96,92,88,83,78,72,66,60,54,48,42,37,32,27,23,19,16,13,11,8,7,5,4,3,2,2,1,1,1,1,0]}],"marks":[{"x":62,"label":"Retire at 62"}],"band":{"from":57,"to":72,"label":"Most exposed"}}'>
+  <figcaption>How much a bad five years would cost, depending on when it arrives. An illustration of the shape, not a calculation.</figcaption>
+</figure>
+
+<p>The most exposed years are the last few before you stop working and the first ten or so after. Your balance is the largest it will ever be, so a given percentage fall costs the most dollars, and you're about to start, or have just started, selling to pay for living. Some planners call this stretch the retirement red zone.</p>
+<p>Bad years just before retirement count too. A large fall the year before you leave work means retiring on a smaller balance or working longer. Several of the defenses below therefore begin a few years before the retirement date.</p>
+
+<h2 id="history">What history shows</h2>
+<p>When William Bengen tested withdrawal rates against every retirement start year in the US record for his 1994 paper, the source of the 4% rule, the worst cases came from the years with the worst starts rather than the lowest thirty-year returns.</p>
+
+<!-- data: Bengen (1994), Journal of Financial Planning: 50/50 stocks and intermediate Treasuries, 1966 the worst start.
+     Checked on the site's own history (lib/engine/data/history.js, January starts, 60/40 S&P 500 and 10-year Treasuries, fixed real withdrawals, rebalanced yearly):
+     highest fixed withdrawal that lasted 30 years: 1966 3.79% (lowest of 1927–1995), 1973 4.28%, 1982 10.46%. The lowest 30-year returns (1952–56 starts) still supported 5–7%.
+     1966: stocks lost about a fifth of their value after inflation over 1966–75 (about −2.5% per year, dividends included); CPI inflation 12.3% in 1974 and 13.3% in 1979.
+     1973: S&P 500 price fell 48% from January 1973 to October 1974.
+     2000: S&P 500 price fell 49% (March 2000 to October 2002) and 57% (October 2007 to March 2009, the tenth year).
+     At 4%, 60/40, after 26 years a 2000 start still held 69% of its starting value after inflation, the fifth-lowest of the 1967–2000 starts (1966 held 1%, 1973 48%).
+     1982 at 8% per year still ended with 2.2 times its starting value after inflation. -->
+<figure>
+  <table>
+    <thead><tr><th>Retired in</th><th>What came first</th><th>How it went</th></tr></thead>
+    <tbody>
+      <tr><td><b>1966</b></td><td>A decade in which stocks lost ground after inflation, and inflation that reached double digits in the 1970s</td><td>The worst start in Bengen's study, and the case that set the rule at about 4%</td></tr>
+      <tr><td><b>1973</b></td><td>A fall of almost half in 1973–74, with high inflation alongside</td><td>Among the ten hardest starts, though less hard than 1966</td></tr>
+      <tr><td><b>2000</b></td><td>Two falls of about half, in 2000–02 and 2007–09, in the first ten years</td><td>Among the weakest starts since 1966 so far, with its thirty years not yet finished</td></tr>
+      <tr><td><b>1982</b></td><td>The start of an eighteen-year rise in stocks</td><td>Could have spent well over 4% and still ended with more than it started with</td></tr>
+    </tbody>
+  </table>
+  <figcaption>US stocks and bonds, thirty-year retirements spending a fixed amount after inflation.</figcaption>
+</figure>
+
+<p>In 2008, the planner and researcher Michael Kitces looked at every thirty-year retirement since the 1870s and found that the real return over the first fifteen years explained most of the difference in how much each retiree could safely spend. What happened in the second half mattered far less, because by then the balance was smaller and fewer years were left to pay for.</p>
+<p>For your own plan, that means the early years of retirement are where flexibility does the most good.</p>
+
+<h2 id="manage">Ways to manage it</h2>
+<p>You can't choose the order your returns arrive in, but you can make a plan less sensitive to it. None of the approaches below needs you to predict the market, and most can be combined.</p>
+
+<h3>Be ready to spend less after a fall</h3>
+<p>Take out less in the years after a large fall. Every dollar you don't sell at a low price is still invested for the recovery. The cut doesn't need to be large or long. Guardrail rules, first published by Jonathan Guyton and William Klinger in 2006, trim spending by 10% when withdrawals have grown well above their starting share of the balance, and raise it again after strong years.</p>
+<p>This only works if you can actually cut. If your spending is mostly fixed costs, a plan that depends on cutting 10% in a bad year is a plan that depends on something you can't do. It helps to know which parts of your budget could flex: travel, gifts, a new car pushed back a year.</p>
+
+<h3>Hold a few years of spending outside stocks</h3>
+<p>Money in bonds or cash can pay for living after a fall, so you aren't forced to sell stocks at their lows. Some retirees keep two to five years of spending this way and refill it after good years. The cost is lower expected growth in the good years, and too much cash slowly loses ground to inflation.</p>
+
+<h3>Hold less in stocks around the retirement date</h3>
+<p>Since the risk peaks around the retirement date, one approach is to hold the least in stocks right then and raise the share over the following years. Research by Michael Kitces and Wade Pfau, published in 2014, found that starting retirement with less in stocks and adding a little each year could cut both the chance of running out and how far short the money fell when it did. In their simulations, a mix that started at 30% stocks and rose to 60% did better than one held at 60% the whole way. It feels backwards, holding more stocks at 80 than at 65, but it puts the most stocks in place after the dangerous years have passed.</p>
+
+<h3>Cover part of your spending with income markets can't touch</h3>
+<p>Every dollar of spending covered by Social Security, a pension or an annuity is a dollar you don't have to withdraw. Smaller withdrawals mean less to sell in a bad year. Waiting to claim Social Security raises the benefit by 8% for each year past full retirement age, up to 70, and it rises with inflation for life.</p>
+<p>Delaying Social Security has a cost here. It usually means drawing more from savings in the first years to bridge the gap, and those are exactly the riskiest years. In return you get a larger, inflation-adjusted income for the rest of your life, which protects against a bad sequence later and against living a long time. Whether it's worth it depends on your health, your other income and how much you've saved.</p>
+
+<h3>Keep some flexibility in the date</h3>
+<p>Working one more year does three things at once: another year of saving, another year of growth, and one less year of withdrawals. Part-time work in the first years of retirement has a similar effect, since even modest earnings shrink the withdrawals that matter most. If markets fall sharply just before your planned date, it helps a great deal to be able to wait.</p>
+
+<!-- data: a summary of the five defenses described above; no figures. -->
+<figure>
+  <table>
+    <thead><tr><th>Defense</th><th>What it does</th><th>What it costs</th><th>Try it in</th></tr></thead>
+    <tbody>
+      <tr><td><b>Spend less after a fall</b></td><td>Fewer shares sold at low prices</td><td>Less income in some years</td><td><a href="/guardrails">Guardrails</a></td></tr>
+      <tr><td><b>Years of spending outside stocks</b></td><td>No forced selling after a fall</td><td>Lower growth in good years</td><td><a href="/drawdown">Drawdown Simulator</a></td></tr>
+      <tr><td><b>Fewer stocks around the date</b></td><td>Smaller falls when they hurt most</td><td>Lower growth early on</td><td><a href="/advanced">Advanced</a></td></tr>
+      <tr><td><b>Income markets can't touch</b></td><td>Smaller withdrawals</td><td>Larger early withdrawals while delaying</td><td><a href="/social-security">Social Security</a></td></tr>
+      <tr><td><b>Flexibility in the date</b></td><td>More saved, fewer years to fund</td><td>Working longer</td><td><a href="/calculator">Calculator</a></td></tr>
+    </tbody>
+  </table>
+  <figcaption>Each defense, what it buys and what it gives up.</figcaption>
+</figure>
+
+<h3>What doesn't help</h3>
+<ul>
+  <li>Selling after a fall to wait it out turns a temporary fall into a permanent loss and usually means missing the first, largest part of the recovery.</li>
+  <li>Assuming a lower average return makes the plan more cautious overall, but it still assumes the same return every year, so it doesn't show the risk this lesson is about.</li>
+  <li>Picking a retirement date by guessing the market doesn't work, because nobody knows the next decade's returns. Starting valuations give some hint, which is the subject of <a href="/learn/cape-valuations">the next lesson</a>, but not a forecast you can time.</li>
+</ul>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The <a href="/drawdown">Drawdown Simulator</a> runs your plan through every stretch of market history since 1926, starting in each year in turn. Each start year is a different sequence. Your chance of success is the share of those starts in which the money lasted, and the gap between the best and worst starts is sequence risk, measured on your own numbers.</p>
+<p>To see how much a defense helps, change one thing and run it again. Switch your withdrawals to guardrails, lower your stock share in the first years, or try retiring a year later, and compare the worst starts before and after. Watch the worst starts, since that's where these changes show most.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Isn't this just volatility?</summary><p>Related, but not the same. Volatility is how much returns swing from year to year. Sequence risk is what those swings do once money is coming out. A volatile portfolio that nobody withdraws from ends in the same place whatever the order.</p></details>
+<details><summary>I'm 20 years from retiring. Does this matter yet?</summary><p>It matters less for your balance today than for decisions you can make now. It's easier to build flexibility in now, in how you'd cut spending, how you'd hold some money outside stocks and how firm your date is, than to find it in a bad year.</p></details>
+<details><summary>Does an annuity remove the risk?</summary><p>For the part of your spending it covers, largely yes: the insurer takes on the market risk and pays the same amount whatever happens. The costs are giving up access to that money and, unless you pay extra for it, protection from inflation.</p></details>
+<details><summary>Is 4% safe, then?</summary><p>It held up through the worst sequences in US history over thirty years, which is what it was built to do. Whether it suits you depends on how long your retirement could last, how much you hold in stocks and how flexible your spending is. <a href="/learn/four-percent-rule">The 4% rule lesson</a> covers it in detail.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>Without withdrawals, the order of returns doesn't matter. With them, it can decide whether the money lasts.</li>
+  <li>The risk is highest in the few years before retiring and the first decade after.</li>
+  <li>Historically, the worst retirements came from bad starts, not low long-run averages.</li>
+  <li>Flexible spending, a buffer outside stocks, steady income and some give in the date all make a plan less sensitive to a bad start.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>Why the order of returns matters once you withdraw</li>
+    <li>What a weak first decade would do to your plan</li>
+    <li>Five ways to make a plan less sensitive to it</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Real return">A return after inflation. 7% growth with 3% inflation is about a 4% real return.</li>
+    <li data-term="Withdrawal rate">What you take out in the first year of retirement as a share of your savings. $40,000 from $1 million is 4%.</li>
+    <li data-term="Guardrails">Spending rules that cut withdrawals after a fall and raise them after a strong run, within set limits.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.financialplanningassociation.org/sites/default/files/2021-04/MAR04%20Determining%20Withdrawal%20Rates%20Using%20Historical%20Data.pdf">Determining withdrawal rates using historical data (Bengen, 1994)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://www.kitces.com/wp-content/uploads/2014/11/Kitces-Report-May-2008.pdf">Resolving the paradox: is the safe withdrawal rate sometimes too safe? (2008)</a> <span>Kitces</span></li>
+    <li><a href="https://www.financialplanningassociation.org/article/journal/MAR06-decision-rules-and-maximum-initial-withdrawal-rates">Decision rules and maximum initial withdrawal rates (Guyton and Klinger, 2006)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://www.financialplanningassociation.org/article/journal/JAN14-reducing-retirement-risk-rising-equity-glide-path">Reducing retirement risk with a rising equity glide path (Pfau and Kitces, 2014)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://earlyretirementnow.com/2017/05/17/the-ultimate-guide-to-safe-withdrawal-rates-part-14-sequence-of-return-risk/">Safe withdrawal rates, part 14: sequence of return risk</a> <span>Early Retirement Now</span></li>
+  </ul>
+</footer>
+</article>

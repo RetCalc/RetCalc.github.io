@@ -1,0 +1,134 @@
+<article class="lesson" data-slug="spouses-and-survivors" data-reviewed="2026-10-26"
+  data-title="Spouses and survivors"
+  data-idea="Why a couple's best claiming ages depend on the higher earner"
+  data-tool="social-security" data-try="Try every pair of claiming ages for the two of you and see the survivor benefit, with your plan already filled in.">
+
+<p class="lede">Married people can collect Social Security on their own record, on their spouse's, or as a widow or widower, and the rules connect the three. For a couple, the most important figure is usually the survivor benefit: what the one left behind will live on. It's set mostly by when the higher earner claims, which is why couples often should not make the decision one person at a time.</p>
+
+<h2 id="spousal">The spousal benefit</h2>
+<p>A husband or wife can receive a benefit based on their spouse's work record. At the receiving spouse's own full retirement age, it's worth up to 50% of the worker's <b>primary insurance amount</b> (PIA), the worker's benefit at full retirement age (see <a href="/learn/social-security-benefit">how your benefit is figured</a>). It doesn't come out of the worker's check. Both are paid in full.</p>
+<p>Three conditions apply. The worker has to have filed for their own benefit first. The spouse has to be at least 62, or caring for the worker's child who is under 16 or disabled. And the couple must usually have been married for at least a year.</p>
+<h3>It tops up your own benefit</h3>
+<p>Most spouses today have a work record of their own. Social Security always pays your own benefit first, then adds a spousal top-up only if half the other spouse's PIA is larger than your own PIA. You end up with the larger of the two amounts, never both added together.</p>
+<p>Take Sam and Jordan, both born in 1964, so both have a full retirement age of 67. Sam's PIA is $2,800 per month. Jordan worked fewer years and has a PIA of $1,000. Half of Sam's PIA is $1,400, so Jordan's top-up is $400. At 67, with Sam already collecting, Jordan gets $1,000 on Jordan's own record plus $400 on Sam's: $1,400 in all.</p>
+<p>Had Jordan's own PIA been $1,500, more than half of Sam's, there'd be no top-up at all. That's the common case now that most couples both work, and it's why a two-earner couple's decisions turn mostly on the survivor benefit, covered below.</p>
+<h3>Claiming it early</h3>
+<p>A spousal benefit is cut more steeply for an early claim than a worker's own: 25/36 of 1% for each of the first 36 months before full retirement age, and 5/12 of 1% for each month beyond. At 62 with a full retirement age of 67, it's 65% of the full spousal amount, or 32.5% of the worker's PIA instead of 50%.</p>
+<p>And unlike your own benefit, a spousal benefit earns no delayed credits. It reaches its maximum at your full retirement age, so a spouse who's collecting only a spousal amount gains nothing by waiting past it.</p>
+
+<!-- data: Sam PIA $2,800, Jordan PIA $1,000, both full retirement age 67, Sam already claimed. Jordan's own: $1,000 × ssClaimFactor(age, 67); top-up: (0.5 × $2,800 − $1,000) × ssSpousalFactor(age, 67), lib/engine/math.js. 62: $700 + $400 × 0.65 = $960; 63: $750 + $400 × 0.70 = $1,030; 64: $800 + $400 × 0.75 = $1,100; 65: $866.67 + $400 × 0.8333 = $1,200; 66: $933.33 + $400 × 0.9167 = $1,300; 67: $1,000 + $400 = $1,400; 70: $1,240 + $400 = $1,640 (own benefit gets credits, top-up does not). -->
+<figure>
+  <table>
+    <thead><tr><th>Jordan claims at</th><th>Own benefit</th><th>Spousal top-up</th><th>Jordan's check per month</th></tr></thead>
+    <tbody>
+      <tr><td>62</td><td>$700</td><td>$260</td><td>$960</td></tr>
+      <tr><td>63</td><td>$750</td><td>$280</td><td>$1,030</td></tr>
+      <tr><td>64</td><td>$800</td><td>$300</td><td>$1,100</td></tr>
+      <tr><td>65</td><td>$867</td><td>$333</td><td>$1,200</td></tr>
+      <tr><td>66</td><td>$933</td><td>$367</td><td>$1,300</td></tr>
+      <tr><td>67</td><td>$1,000</td><td>$400</td><td>$1,400</td></tr>
+      <tr><td>70</td><td>$1,240</td><td>$400</td><td>$1,640</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A hypothetical couple in today's dollars: Sam's PIA is $2,800 and Jordan's is $1,000, both with a full retirement age of 67, and Sam has already claimed. Jordan's own benefit keeps growing to 70; the top-up stops growing at 67.</figcaption>
+</figure>
+
+<h3>You can't pick one and save the other</h3>
+<p>Until 2016, some couples used "file and suspend" or a "restricted application" to collect a spousal benefit while letting their own grow. The Bipartisan Budget Act of 2015 closed both. For anyone born on or after January 2, 1954, applying for either your own or a spousal benefit counts as applying for both, which Social Security calls <b>deemed filing</b>. You get whatever combination you're due at that age, with the reductions for that age. One consequence: the spousal top-up can't start until the worker files, so if Jordan claims at 62 while Sam waits until 70, Jordan gets $700 until Sam files and the top-up only then.</p>
+
+<h2 id="survivors">The survivor benefit</h2>
+<p>When a worker dies, a widow or widower can receive the worker's benefit in place of their own. In effect the larger of the couple's two checks outlives the first death, and for most couples that's worth far more over a lifetime than any spousal benefit.</p>
+<p>At the survivor's full retirement age, the survivor benefit is 100% of what the deceased was receiving, or was due. That includes any delayed credits they earned by waiting. If the deceased died before claiming, it's based on their PIA, plus any credits for months they had waited past full retirement age.</p>
+<p>The survivor gets the larger of the two checks, never both, so the household loses the smaller one when the first spouse dies.</p>
+<h3>The age rules for survivors</h3>
+<p>A survivor can claim as early as 60, or 50 if disabled, or at any age while caring for the deceased's child under 16. Claimed at 60, the benefit is 71.5% of the full survivor amount, and the reduction shrinks evenly to zero at the survivor's full retirement age. That age runs on its own schedule, two years behind the retirement one: 66 for survivors born from 1945 to 1956, rising by two months per birth year to 67 for those born in 1962 or later.</p>
+<p>Survivor benefits aren't covered by deemed filing, which gives a widow or widower a real choice. You can take a reduced survivor benefit early and switch to your own benefit, grown with delayed credits, at 70. Or take your own reduced benefit early and switch to an unreduced survivor benefit at your survivor full retirement age. Which works better depends on which of the two would be larger in the end.</p>
+<h3>If the deceased claimed early</h3>
+<p>A survivor's benefit is cut when the deceased claimed early, but there's a floor, sometimes called the widow's limit. The survivor gets the larger of the reduced amount the deceased was receiving and 82.5% of the deceased's PIA. So the cost of an early claim to the survivor is smaller than the cost to the worker: it can't take the survivor below 82.5%.</p>
+<h3>Other rules worth knowing</h3>
+<ul>
+<li>The marriage generally must have lasted at least nine months, with exceptions such as an accidental death.</li>
+<li>Remarrying before 60 ends a survivor's eligibility while the new marriage lasts. Remarrying at 60 or later doesn't.</li>
+<li>Social Security also pays a one-time death payment of $255 to a surviving spouse or child, an amount capped there since 1954.</li>
+</ul>
+
+<h2 id="higher">Why the higher earner's claim matters most</h2>
+<p>The lower earner's own check stops at the first death, whichever spouse dies first. The higher earner's check carries on until the second death. So the higher earner's claiming age sets the income of whichever spouse lives longer, possibly for decades.</p>
+<p>Here's what Sam's choice means for Jordan as a widow or widower, assuming Jordan has reached survivor full retirement age when Sam dies.</p>
+
+<!-- data: survivor benefit = max(Sam's actual benefit, 82.5% × PIA) when Sam claimed early; Sam's actual benefit = $2,800 × ssClaimFactor(age, 67). 62: $1,960 vs $2,310 → $2,310; 63: $2,100 → $2,310; 64: $2,240 → $2,310; 65: $2,426.67; 66: $2,613.33; 67: $2,800; 68: $3,024; 69: $3,248; 70: $3,472. 82.5% floor per SSA (POMS widow's limit; RIB-LIM). -->
+<figure>
+  <table>
+    <thead><tr><th>Sam claims at</th><th>Sam's own check per month</th><th>Jordan's survivor check per month</th></tr></thead>
+    <tbody>
+      <tr><td>62</td><td>$1,960</td><td>$2,310</td></tr>
+      <tr><td>64</td><td>$2,240</td><td>$2,310</td></tr>
+      <tr><td>65</td><td>$2,427</td><td>$2,427</td></tr>
+      <tr><td>67</td><td>$2,800</td><td>$2,800</td></tr>
+      <tr><td>68</td><td>$3,024</td><td>$3,024</td></tr>
+      <tr><td>70</td><td>$3,472</td><td>$3,472</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Sam's PIA is $2,800, full retirement age 67. If Sam claims before about 64 and 5 months, the 82.5% floor sets Jordan's survivor check; from then on Jordan keeps exactly what Sam was getting.</figcaption>
+</figure>
+
+<p>The chart follows the whole household. Sam and Jordan are the same age; Jordan claims at 62 every time; Sam dies at 80 and Jordan lives to 92. Only Sam's claiming age changes.</p>
+
+<!-- data: household Social Security per month by age, both the same age, today's dollars. Jordan claims own benefit at 62 ($700); spousal top-up once Sam files, reduced for Jordan's age then ($400 × 0.65 = $260 at 62, $400 at 67 or later). Sam claims at 62: $1,960 + $960 = $2,920 to 79; at 62: survivor $2,310 from 80. Sam at 67: $700 to 66; $2,800 + $1,100 = $3,900 to 79; $2,800 from 80. Sam at 70: $700 to 69; $3,472 + $1,100 = $4,572 to 79; $3,472 from 80. Lifetime totals to 92: $963,360, $1,053,600, $1,115,808. Cross-checked with ssHousehold in lib/engine/math.js, which matches except that it leaves out the 82.5% floor (gives $1,960 and $912,960 for the claim at 62). -->
+<figure data-chart='{"type":"line","x":[62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91],"xLabel":"Age","y":"money","series":[{"name":"Sam claims at 62","tone":"bad","values":[2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2310,2310,2310,2310,2310,2310,2310,2310,2310,2310,2310,2310]},{"name":"Sam claims at 67","tone":"neutral","values":[700,700,700,700,700,3900,3900,3900,3900,3900,3900,3900,3900,3900,3900,3900,3900,3900,2800,2800,2800,2800,2800,2800,2800,2800,2800,2800,2800,2800]},{"name":"Sam claims at 70","tone":"good","values":[700,700,700,700,700,700,700,700,4572,4572,4572,4572,4572,4572,4572,4572,4572,4572,3472,3472,3472,3472,3472,3472,3472,3472,3472,3472,3472,3472]}],"marks":[{"x":80,"label":"Sam dies"}]}'>
+  <figcaption>The household's monthly Social Security, in today's dollars. Waiting means living on Jordan's $700 and savings for a few years; after 80, Jordan keeps $3,472 per month instead of $2,310. Over both lives, the claim at 70 collects $1,115,808, against $963,360 for the claim at 62.</figcaption>
+</figure>
+
+<p>In this example Sam's claim at 70 means $1,162 more per month for Jordan for 12 years as a widow or widower, about $167,000. In return, the household lives on much less Social Security in its sixties and has to draw more from savings. That's the usual trade in the <a href="/learn/when-to-claim">claiming decision</a>, but for a couple the payoff from waiting lasts until the second death, so it's both larger and more likely.</p>
+
+<p data-yours></p>
+
+<h3>How couples usually split it</h3>
+<p>The common pattern for a couple with unequal records is for the higher earner to wait, often to 70, and the lower earner to claim earlier. The lower earner's own check stops at the first death however long they waited, so taking it earlier costs less and pays for some of the years while the higher earner waits. If the lower earner's own PIA is well under half the higher earner's, there's even less reason for them to wait past full retirement age, since the spousal part stops growing there.</p>
+<p>The pattern bends with the details. A large age gap, with a much younger spouse, strengthens the case for the higher earner to wait. Two similar records make the choice closer, because the survivor benefit adds little over the survivor's own. And if the higher earner is in poor health, waiting still protects the spouse, since the survivor gets the larger check however short the higher earner's own life turns out to be.</p>
+
+<h2 id="divorced">Divorced spouses</h2>
+<p>A marriage that lasted at least 10 years keeps counting after a divorce. A divorced spouse can collect on an ex-spouse's record if they are 62 or older and unmarried, and the ex is 62 or older. If the divorce was at least two years ago, the ex doesn't have to have filed yet. The benefits are figured the same way as for a current spouse: up to 50% of the ex's PIA at full retirement age, as a top-up to your own.</p>
+<p>Collecting on an ex's record doesn't reduce the ex's benefit or the benefit of the ex's current spouse. Several former spouses can each collect on the same record if each marriage lasted 10 years.</p>
+<p>Survivor benefits follow the same 10-year rule. A surviving divorced spouse can get the full survivor benefit on the same terms as a widow or widower, and remarrying at 60 or later doesn't end it.</p>
+
+<h2 id="fairness">Government pensions and the Social Security Fairness Act</h2>
+<p>Until recently, two rules cut Social Security for people with a pension from work that didn't pay Social Security tax, such as many teachers, police officers and firefighters in some states, and federal workers hired before 1984. The Windfall Elimination Provision reduced their own benefit. The Government Pension Offset reduced spousal and survivor benefits by two-thirds of the government pension, which often wiped them out entirely: a retired teacher with a $3,000 monthly pension lost $2,000 of any spousal or survivor benefit.</p>
+<p>The Social Security Fairness Act, signed on January 5, 2025, repealed both. They no longer apply to benefits payable for January 2024 and later, and Social Security paid back benefits for the months from January 2024. By July 2025 it had made more than 3.1 million of those payments, totaling $17 billion.</p>
+<p>If you or your spouse have a non-covered pension, two things follow. Spousal and survivor benefits that used to be zero may now be worth a lot, so the couple's claiming decision may look quite different from what it did a few years ago. And anyone who never applied for a spousal or survivor benefit because the offset would have erased it has to apply now, since a benefit only starts once someone files for it.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The <a href="/social-security">Social Security Calculator</a> handles couples. Fill in both of you, from pay or from your statements, and the ages you each expect to live to. <b>Best ages for the two of you</b> tries all 81 pairs of claiming ages and shows which collects the most; the survivor benefit is shown alongside. Try changing only the age the shorter-lived spouse expects to reach and watch how little the best age for the higher earner moves, since the survivor benefit carries on.</p>
+<p>Then take the pair into the <a href="/drawdown">Drawdown Simulator</a> or the <a href="/optimizer">Withdrawal Order</a> tool to see what waiting costs your savings in the early years. A widow or widower also usually files taxes as a single person from the year after the death, so the same income is taxed more heavily, another reason a larger survivor check helps.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Can I collect a spousal benefit while my own benefit grows?</summary><p>Not if you were born on or after January 2, 1954. Deemed filing means applying for one is applying for both. The exception is survivor benefits: a widow or widower can take one and switch to the other later.</p></details>
+<details><summary>My spouse died before claiming. What do I get?</summary><p>The survivor benefit is based on what your spouse was due. If they died before full retirement age, that's their full PIA. If they died after it without claiming, it includes the delayed credits they had earned up to the month they died.</p></details>
+<details><summary>Does my spousal benefit go up if I wait until 70?</summary><p>No. The spousal part reaches its maximum at your full retirement age. Only your own benefit earns delayed credits after that.</p></details>
+<details><summary>I'm divorced and remarried. Can I collect on my first spouse's record?</summary><p>Not while you're remarried, for a spousal benefit. For a survivor benefit, remarrying at 60 or later doesn't stop it; remarrying before 60 does, unless that later marriage ends.</p></details>
+<details><summary>We both earned about the same. Does any of this matter?</summary><p>Less. With similar records there's no spousal top-up, and the survivor benefit is only a little larger than the survivor's own. Each of you can treat the decision much as a single person would, though the longer of your two lives is still the one that counts for the larger check.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>A spousal benefit tops up your own to as much as 50% of your spouse's PIA at your full retirement age, and it earns no delayed credits.</li>
+<li>A survivor keeps the larger of the two checks, including any delayed credits the deceased earned, and loses the smaller.</li>
+<li>So the higher earner's claiming age sets the survivor's income, which is why the higher earner often waits.</li>
+<li>Marriages of 10 years or more count after a divorce, for both spousal and survivor benefits.</li>
+<li>The Social Security Fairness Act ended the WEP and GPO from January 2024, so people with government pensions may now be due spousal or survivor benefits they were denied before.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How spousal and survivor benefits are worked out</li><li>Why the higher earner's claiming age matters most</li><li>What changed for government pensions in 2025</li></ul>
+  <ul class="terms">
+    <li data-term="Spousal benefit">A benefit on your husband's or wife's record, worth up to 50% of their PIA at your full retirement age, paid as a top-up to your own.</li>
+    <li data-term="Survivor benefit">What a widow or widower receives: up to 100% of the deceased spouse's benefit, in place of their own if it's larger.</li>
+    <li data-term="Deemed filing">The rule that applying for your own or a spousal benefit counts as applying for both, for anyone born on or after January 2, 1954.</li>
+    <li data-term="Government Pension Offset">A rule, repealed from January 2024, that cut spousal and survivor benefits by two-thirds of a pension from work that didn't pay Social Security tax.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.ssa.gov/blog/en/posts/2024-07-11.html">Do you qualify for Social Security spouse's benefits?</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/pubs/EN-05-10084.pdf">Survivors benefits</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/benefits/retirement/social-security-fairness-act.html">Social Security Fairness Act: WEP and GPO update</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/blog/en/posts/2025-07-10.html">Celebrating our recent Social Security Fairness Act milestone</a> <span>Social Security Administration</span></li>
+  </ul>
+</footer>
+</article>

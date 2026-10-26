@@ -82,7 +82,7 @@ function Tool({ sub }: { sub: ToolSub }) {
   const apply = college && !sameCollege(data.profile, college) ? applyCollege(data.profile, college) : null;
   const mismatch = sub === "college" && college != null && apply == null && !sameCollege(data.profile, college);
   const back = useSyncExternalStore(noop, fromNow, () => "/dashboard/tools");
-  const backName = back === "/dashboard" ? "Dashboard" : SECTIONS.find((s) => back === "/dashboard/" + s.id)?.name ?? "Tools";
+  const backName = back === "/dashboard" ? "Dashboard" : back.startsWith("/dashboard/learn/") ? "the lesson" : SECTIONS.find((s) => back === "/dashboard/" + s.id)?.name ?? "Tools";
   // The profile as the tool opens; later changes to the profile don't reach
   // a tool already open, and the tool's own changes never reach the profile.
   const seed = useMemo(() => seedFor(data.profile, data.entries), [data.profile, data.entries]);

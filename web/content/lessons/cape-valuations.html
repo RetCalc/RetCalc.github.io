@@ -1,0 +1,146 @@
+<article class="lesson" data-slug="cape-valuations" data-reviewed="2026-10-26"
+  data-title="Starting valuations and CAPE"
+  data-idea="Why the market's price when you retire matters"
+  data-tool="cape-withdrawal" data-try="Spend a share of your savings that rises when stocks are cheap and falls when they're expensive, tested through every retirement since 1926.">
+
+<p class="lede">How expensive stocks are on the day you retire has said a lot about how much you could safely spend over the next thirty years. The usual yardstick is Shiller's CAPE, and right now it's near the highest reading on record. This lesson covers what it measures, what it has and hasn't predicted, and how some withdrawal plans use it.</p>
+
+<h2 id="what">What CAPE measures</h2>
+<p>A price-to-earnings ratio, or P/E, compares what you pay for a share of a company with the profit that share earns. Pay $100 for a share that earns $5 per year and the P/E is 20. Turn it upside down and you get the earnings yield: $5 on $100 is 5%. A low P/E means you're buying a lot of profit for your money; a high one means you're buying little.</p>
+<p>The trouble with an ordinary P/E is that one year's profits jump around. In a recession earnings collapse, so the P/E shoots up just when prices are low, and in a boom it looks cheap just when profits are at their peak. CAPE, the cyclically adjusted price-to-earnings ratio, fixes this by using the average of the last ten years of earnings, each adjusted for inflation, instead of last year's. Ten years usually spans a full business cycle, so the good and bad years roughly cancel out.</p>
+<p>The economists Robert Shiller and John Campbell made the measure well known in the late 1980s and 1990s, showing that it said something about the stock market's returns over the following decade. Shiller publishes the figures for the S&amp;P 500 and its predecessors back to 1871, which gives CAPE readings from 1881 on (the first ten years go into the first average). RetCalc's tools use his figures from 1926.</p>
+<h3>A worked example</h3>
+<p>Say an index fund's shares cost $100, and over the past ten years each share's earnings, in today's dollars, averaged $4 per year. CAPE is 100 ÷ 4 = 25. The cyclically adjusted earnings yield is 4 ÷ 100 = 4%. If the price rose to $160 with the same earnings history, CAPE would be 40 and the yield 2.5%. Nothing about the companies changed; you'd just be paying more for the same profits.</p>
+
+<h2 id="today">Where it stands today</h2>
+<p>At the end of September 2026, Shiller's CAPE for the S&amp;P 500 was 41.0. Since 1926, its median has been 17.8 and its average 19.1. In the record, it has been higher only in 1999 and 2000, when it peaked at 44.2 in December 1999. Before that, the highest reading was 32.6 in September 1929, a month before the crash. The lowest, 5.6, came in June 1932, near the bottom of the Depression, and it spent much of the late 1970s and early 1980s under 10.</p>
+
+<!-- data: HIST_M_CAPE in lib/engine/data/history.js (Shiller via multpl), the January reading of each year 1926–2025.
+     Median of all 1,200 monthly readings 1926–2025: 17.8 (mean 19.1). Today: CAPE_NOW = 41.0, CAPE_NOW_ASOF 30 September 2026. -->
+<figure data-chart='{"type":"line","x":[1926,1927,1928,1929,1930,1931,1932,1933,1934,1935,1936,1937,1938,1939,1940,1941,1942,1943,1944,1945,1946,1947,1948,1949,1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025],"xLabel":"Year","y":"num","series":[{"name":"CAPE each January","tone":"accent","values":[11.3,13.2,18.8,27.1,22.3,16.7,9.3,8.7,13,11.5,17.1,21.6,13.5,15.6,16.4,13.9,10.1,10.2,11.1,12,15.6,11.5,10.4,10.3,10.8,11.9,12.5,13,12,16,18.3,16.7,13.8,18,18.3,18.5,21.2,19.3,21.6,23.3,24.1,20.4,21.5,21.2,17.1,16.5,17.3,18.7,13.5,8.9,11.2,11.4,9.2,9.3,8.9,9.3,7.4,8.8,9.9,10,11.7,14.9,13.9,15.1,17.1,15.6,19.8,20.3,21.4,20.2,24.8,28.3,32.9,40.6,43.8,37,30.3,22.9,27.7,26.6,26.5,27.2,24,15.2,20.5,23,21.2,21.9,24.9,26.5,24.2,28.1,33.3,28.4,31,34.5,36.9,28.3,32,37.1]},{"name":"Median since 1926","tone":"muted","dash":true,"values":[17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8,17.8]}],"marks":[{"x":1929,"label":"1929"},{"x":1966,"label":"1966"},{"x":1982,"label":"1982"},{"x":2000,"label":"2000"}]}'>
+  <figcaption>Shiller's CAPE for the S&amp;P 500 each January, 1926–2025, against its median since 1926. At the end of September 2026 it was 41.0.</figcaption>
+</figure>
+
+<p>For most of the century CAPE moved back and forth around the high teens. Since the mid-1990s it has rarely been back there: it fell to 13.3 in March 2009, after the financial crisis, and has been above 25 for most of the years since 2013.</p>
+
+<h2 id="returns">What it has said about the next ten years</h2>
+<p>CAPE matters because of its record against the returns that followed. When stocks were cheap, the next decade usually went well; when they were expensive, it usually didn't. The chart groups every month since 1926 by its CAPE and shows the stock market's return over the following ten years, after inflation.</p>
+
+<!-- data: every monthly start from January 1926 to January 2016 (1,081 starts with ten full years after them), grouped by that month's CAPE (HIST_M_CAPE).
+     Return: S&P 500 with dividends (HIST_M_STOCK) less CPI inflation (HIST_M_INFL), compounded over the next 120 months, per year.
+     Starts per band: below 10, 127; 10–15, 314; 15–20, 265; 20–25, 218; 25–30, 100; above 30, 57 (almost all 1997–2002). Correlation of CAPE with the ten-year return: −0.56. -->
+<figure data-chart='{"type":"bar","x":["Below 10","10–15","15–20","20–25","25–30","Above 30"],"xLabel":"CAPE at the start","y":"pct","series":[{"name":"Average","tone":"accent","values":[0.105,0.100,0.063,0.045,0.054,-0.009]},{"name":"Worst","tone":"bad","values":[0.038,-0.016,-0.040,-0.040,-0.014,-0.059]}]}'>
+  <figcaption>US stocks' return per year over the next ten years, after inflation, by the CAPE they started at. Every month from January 1926 to January 2016.</figcaption>
+</figure>
+
+<p>Starts below a CAPE of 15 averaged about 10% per year after inflation over the next ten years. Starts between 20 and 25 averaged 4.5%. Starts above 30, which are nearly all from 1997 to 2002, lost a little ground on average. Someone who retired in January 1982, at a CAPE of 7.4, saw stocks return 12.2% per year after inflation for the next decade. Someone who retired in January 2000, at 43.8, saw them lose 3.2% per year.</p>
+<p>The worst outcomes also tended to get worse as CAPE rose. Even the cheapest starts had some bad decades, but no start below 10 lost money after inflation over the next ten years.</p>
+
+<h2 id="withdrawals">What it means for withdrawal rates</h2>
+<p>A retirement lives or dies on its first ten to fifteen years (the <a href="/learn/sequence-risk">sequence-of-returns lesson</a> explains why), and CAPE has said something about exactly that stretch. So it isn't surprising that it has also tracked how much a retiree could safely spend.</p>
+<p>In 2008, the planner and researcher Michael Kitces ran a 60/40 portfolio through every thirty-year retirement that began from the 1880s to the 1970s and compared the starting CAPE with the safe withdrawal rate, the highest first-year withdrawal, raised with inflation, that lasted the thirty years. The correlation was −0.74: the higher the CAPE, the lower the safe rate. He found CAPE was even more closely tied to the safe rate than it was to the portfolio's own returns over the first fifteen years.</p>
+<p>RetCalc's record, from 1926, shows the same pattern.</p>
+
+<!-- data: lib/engine drawdown history (HIST_Y12_STOCK, HIST_Y12_BOND, HIST_Y12_INFL), January starts 1927–1996 (70 retirements with 30 full years of data).
+     60% S&P 500 and 40% 10-year Treasuries, rebalanced yearly, a fixed withdrawal taken at the start of each year and raised with inflation.
+     Safe rate: the highest first-year rate that lasted 30 years, found by bisection; 1966 gives 3.79%, matching the 4% rule article. Grouped by that January's CAPE.
+     Below 10: 10 starts (middle: the average of the fifth and sixth, 7.94% and 8.68%); 10–15: 25; 15–20: 21; 20–25: 13; above 25: 1929 only (CAPE 27.1). -->
+<figure>
+  <table>
+    <thead><tr><th>CAPE at the start</th><th>Retirements</th><th>Lowest safe rate</th><th>Middle safe rate</th></tr></thead>
+    <tbody>
+      <tr><td>Below 10</td><td>10</td><td>7.14%</td><td>8.31%</td></tr>
+      <tr><td>10–15</td><td>25</td><td>5.26%</td><td>7.11%</td></tr>
+      <tr><td>15–20</td><td>21</td><td>4.28%</td><td>5.18%</td></tr>
+      <tr><td>20–25</td><td>13</td><td>3.79%</td><td>4.21%</td></tr>
+      <tr><td>Above 25</td><td>1 (1929)</td><td>4.97%</td><td>4.97%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Thirty-year retirements starting each January from 1927 to 1996, 60% stocks and 40% bonds, spending a fixed amount after inflation. The safe rate is the highest first-year withdrawal that lasted.</figcaption>
+</figure>
+
+<p>Every retirement that couldn't have sustained 4% began with a CAPE between 21 and 25: the starts of 1965, 1966, 1968 and 1969. Every retirement that began with a CAPE below 15 could have sustained at least 5.26%. Karsten Jeske, who writes as Early Retirement Now, found the same on Shiller's longer record from 1871: for portfolios more than 40% in stocks, every thirty-year failure of the 4% rule began with a CAPE above 15.</p>
+<p>Two things in the table matter for today. First, only one January start, 1929, had a CAPE above 25 and a full thirty years of history after it, and the highest reading at the start of any finished thirty-year retirement, in any month, was 32.6, in September 1929. Today's 41.0 is outside everything the full record has tested. Second, 1929 itself did better than its CAPE suggested, because prices fell sharply in the early 1930s and bonds gained ground after inflation while stocks crashed. A high CAPE raises the odds of a weak start, but what actually happens depends on inflation, interest rates and luck as well.</p>
+
+<h2 id="limits">The limits of CAPE</h2>
+<p>CAPE is useful, and it's also easy to lean on too hard.</p>
+<ul>
+  <li>The link is loose. Across all the monthly starts since 1926, CAPE explains roughly a third of the differences in the next ten years' returns. That leaves a lot to everything else. In January 2015 the CAPE was 26.5, well above its median, and stocks returned 10.0% per year after inflation over the following ten years.</li>
+  <li>It can stay high for a long time. The CAPE was above 25 in 135 of the 156 months from 2013 through 2025. Anyone who waited for it to return to the high teens before investing or retiring would still be waiting.</li>
+  <li>Earnings aren't measured the way they used to be. In 2016 the economist Jeremy Siegel argued that changes in accounting rules, such as making companies write down assets that have lost value, have dragged down reported earnings and so pushed CAPE up. On his alternative measure of profits, the market looks less expensive.</li>
+  <li>Interest rates, how much companies pay out as dividends rather than buying back shares, and the mix of businesses in the index have all shifted. A CAPE of 25 in 2020 doesn't necessarily mean what it meant in 1960.</li>
+  <li>A high CAPE has said little about the next year or two. The CAPE passed 28 in early 1997, and stocks kept rising for three more years before falling.</li>
+</ul>
+<p>Read fairly, a high CAPE shifts the odds toward lower returns over the next decade or so. It doesn't say when or by how much, and it's no reason to sell everything.</p>
+
+<h2 id="rules">Withdrawals that follow CAPE</h2>
+<p>If expensive markets tend to support less spending, one answer is to let the market's price set the spending. A CAPE-based rule does this each year: it takes a fixed base rate plus a share of the earnings yield, 1 ÷ CAPE, and applies the result to that year's balance. Karsten Jeske tested several versions and popularized the approach. The one RetCalc opens with is 1.75% plus half the earnings yield.</p>
+
+<!-- data: withdrawal rate = 1.75% + 0.5 × (100 ÷ CAPE), the formula on the CAPE withdrawal page.
+     10: 1.75 + 5.00 = 6.75%; 15: 1.75 + 3.33 = 5.08%; 20: 1.75 + 2.50 = 4.25%; 25: 1.75 + 2.00 = 3.75%; 30: 1.75 + 1.67 = 3.42%; 41.0: 1.75 + 1.22 = 2.97% ($29,695 on $1,000,000, as on that page). -->
+<figure>
+  <table>
+    <thead><tr><th>CAPE</th><th>Withdrawal rate</th><th>On $1,000,000</th></tr></thead>
+    <tbody>
+      <tr><td>10</td><td>6.75%</td><td>$67,500</td></tr>
+      <tr><td>15</td><td>5.08%</td><td>$50,833</td></tr>
+      <tr><td>20</td><td>4.25%</td><td>$42,500</td></tr>
+      <tr><td>25</td><td>3.75%</td><td>$37,500</td></tr>
+      <tr><td>30</td><td>3.42%</td><td>$34,167</td></tr>
+      <tr><td>41.0 (September 2026)</td><td>2.97%</td><td>$29,695</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The first year's withdrawal under a rule of 1.75% plus half of 1 ÷ CAPE. Each later year applies the rate from that year's CAPE to that year's balance.</figcaption>
+</figure>
+
+<p>Because it always takes a share of what's left, this kind of rule can't run out of money. What it does instead is let your income move. On RetCalc's CAPE withdrawal page, which starts with $1,000,000 in a 60/40 mix over 30 years, the first year's withdrawal across history ranged from $35,964 for someone retiring in 1929 to $85,159 for someone retiring in 1982, at a CAPE of 7.4. The typical retiree spent $51,102 per year in today's dollars. The worst case was 1966: by year 30, spending had fallen to $21,502 per year.</p>
+<p>Kitces's 2008 report suggested a simpler version: start at 4.5% when the CAPE is above 20, 5% when it's between 12 and 20, and 5.5% below 12, then raise the amount with inflation like the classic rule. Both approaches take the same lesson from history, that the market's price at the start deserves a say in how much you spend. They differ in how much your income moves afterwards.</p>
+
+<h2 id="act">What you can do with it</h2>
+<p>You can't pick the CAPE you retire into, any more than you can pick the returns that follow. You can decide how much weight to give it.</p>
+<h3>Start a little lower</h3>
+<p>The simplest response to a high CAPE is a lower first-year withdrawal. The 4% rule was set by 1966, which started at a CAPE of 24. Starting at a reading well above that argues for some margin below 4% if your spending can't adjust later. The <a href="/learn/four-percent-rule">4% rule lesson</a> goes through the rate in detail.</p>
+<h3>Plan to adjust</h3>
+<p>If you'd rather start at a normal rate, build in the means to cut. A CAPE-based rule adjusts automatically. <a href="/learn/guardrails">Guardrails</a> cut spending when the withdrawal rate climbs too far and raise it after strong years.</p>
+<h3>Protect the first decade</h3>
+<p>Expensive markets raise the chance of a weak first decade, so the defenses against sequence risk matter more: a few years of spending outside stocks, fewer stocks around the retirement date and a later Social Security claim. They're covered in the <a href="/learn/sequence-risk">sequence-of-returns lesson</a>.</p>
+<h3>Test with lower returns</h3>
+<p>A plan tested only against the past century assumes the future will look like it. You can also test it against returns shifted lower than history's, which is one way to account for today's prices without trying to predict them.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The <a href="/cape-withdrawal">CAPE withdrawal</a> page opens the Drawdown Simulator set up with a CAPE-based rule, starting from today's reading. Change the base rate and the share of the earnings yield to see how your first year's spending and its swings change. In the simulator, the Safe spending view plots each historical start's CAPE against the most it could have spent, so you can see how loose the link is. Monte Carlo mode can shift returns down to your own assumptions, to see how much margin a lower withdrawal rate buys if the next decade is weaker than history's average.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Does a high CAPE mean a crash is coming?</summary><p>No. CAPE has said little about the next year or two; it passed 28 in early 1997, three years before stocks peaked in 2000. What it has done is shift the odds toward lower returns over a decade or more, whether that comes as a crash, a long flat stretch or slower growth.</p></details>
+<details><summary>Should I wait to retire until CAPE comes down?</summary><p>Not on CAPE alone. It has been above its long-run median for most of the last thirty years, and nobody knows when or whether it returns there. Working longer helps any plan, but it's a decision about your savings, health and job, and the market's price is only one input.</p></details>
+<details><summary>Should I hold fewer stocks when CAPE is high?</summary><p>A smaller stock share around the retirement date is one of the defenses against sequence risk, whatever the valuation. Selling most of your stocks because of CAPE is a bet on timing that CAPE has never been good at.</p></details>
+<details><summary>Why do different websites show different CAPE figures?</summary><p>They measure slightly differently. Shiller's figure uses each month's average price and the S&amp;P 500's reported earnings; others use the latest day's price, a different earnings measure or a different index. The readings in this lesson are Shiller's.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>CAPE is the stock market's price over ten years of its earnings after inflation; at the end of September 2026 it was 41.0, against a median of 17.8 since 1926.</li>
+  <li>High readings have come before lower returns over the next decade, and before lower safe withdrawal rates, but the link is loose.</li>
+  <li>No finished thirty-year retirement in the record started as expensive as today's market.</li>
+  <li>The usual responses are a slightly lower starting rate, a rule that adjusts with markets, and defenses for the first decade.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>What CAPE measures and where it stands today</li>
+    <li>How starting valuations relate to safe spending</li>
+    <li>How CAPE-based withdrawal rules work</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="CAPE">The stock market's price over the average of ten years of its earnings, after inflation. Higher readings have come before lower returns.</li>
+    <li data-term="Earnings yield">Earnings divided by price, the inverse of a P/E. A CAPE of 25 is an earnings yield of 4%.</li>
+    <li data-term="Safe withdrawal rate">The highest first-year withdrawal, raised with inflation after, that lasted through a given stretch of history.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="http://www.econ.yale.edu/~shiller/data.htm">Online data: stock prices, earnings and CAPE since 1871</a> <span>Robert Shiller, Yale</span></li>
+    <li><a href="https://www.nber.org/papers/w8221">Valuation ratios and the long-run stock market outlook: an update (Campbell and Shiller)</a> <span>NBER</span></li>
+    <li><a href="https://www.kitces.com/wp-content/uploads/2014/11/Kitces-Report-May-2008.pdf">Resolving the paradox: is the safe withdrawal rate sometimes too safe? (2008)</a> <span>Kitces</span></li>
+    <li><a href="https://earlyretirementnow.com/2016/12/21/the-ultimate-guide-to-safe-withdrawal-rates-part-3-equity-valuation/">Safe withdrawal rates, part 3: equity valuation</a> <span>Early Retirement Now</span></li>
+    <li><a href="https://earlyretirementnow.com/2017/08/30/the-ultimate-guide-to-safe-withdrawal-rates-part-18-flexibility-cape-based-rules/">Safe withdrawal rates, part 18: flexibility and the mechanics of CAPE-based rules</a> <span>Early Retirement Now</span></li>
+    <li><a href="https://rpc.cfainstitute.org/research/financial-analysts-journal/2016/the-shiller-cape-ratio-a-new-look">The Shiller CAPE ratio: a new look (Siegel, 2016)</a> <span>Financial Analysts Journal</span></li>
+  </ul>
+</footer>
+</article>
