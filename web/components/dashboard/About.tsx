@@ -862,7 +862,7 @@ export function About() {
                   <p>In your dashboard the <b>Taxes</b> tab runs it on your pay, and what it leaves is your pay after taxes everywhere on the dashboard.</p>
                   <p>Two modes, switched at the top of the input panel. <b>Normal income</b>{" "}
                   estimates what you keep from a salary after federal income tax, state income
-                  tax and FICA. <b>Retirement income</b> answers a different question: you are
+                  tax and FICA, and a local income tax if you give one. <b>Retirement income</b> answers a different question: you are
                   no longer earning a paycheck, you are drawing one down, and what a
                   withdrawal costs depends entirely on which account it comes out of.</p>
                   <p><b>The numbers are tax year 2026.</b> Federal brackets, the standard
@@ -895,6 +895,19 @@ export function About() {
                     <dd>You take whichever is larger. Most people take the standard deduction;
                     itemizing wins mainly with a big mortgage, large charitable giving, or high
                     state and local taxes.</dd>
+                    <dt>Local income tax (optional)</dt>
+                    <dd>Some cities, counties and school districts tax income too. The field
+                    appears only in the states where that happens: Alabama, Colorado, Delaware,
+                    Indiana, Iowa, Kentucky, Maryland, Michigan, Missouri, New York, Ohio, Oregon,
+                    Pennsylvania and West Virginia. You give the rate, and choose what it&apos;s on:
+                    wages (most cities and school districts, on the same wages as Medicare) or your
+                    state taxable income (Maryland and Indiana counties, New York City), each
+                    state starting on its usual one. Each state&apos;s note says how it works there
+                    and, where there is one, links its official lookup. It counts only once it has
+                    a rate, it&apos;s an estimate (a place&apos;s own rules and credits aren&apos;t modeled),
+                    and a rate set for one state doesn&apos;t carry to a state without local taxes.
+                    California&apos;s and New Jersey&apos;s local payroll taxes are paid by employers, so
+                    they aren&apos;t asked for.</dd>
                     <dt>Effective vs marginal rate</dt>
                     <dd>Marginal is the rate on your <i>next</i> dollar. Effective is what you
                     actually paid across all your income, and it&apos;s always lower. A single filer
@@ -902,7 +915,9 @@ export function About() {
                     tax.</dd>
                   </dl>
                   <p><b>What Normal income mode leaves out:</b> tax credits (child tax credit,
-                  earned income credit), local and city income taxes, the Alternative Minimum
+                  earned income credit), local taxes beyond the one rate you give (each place&apos;s
+                  own rules, credits between where you live and where you work, flat local fees),
+                  the Alternative Minimum
                   Tax, capital gains and investment income, self-employment tax,
                   head-of-household and married-filing-separately status, state credits and
                   phase-outs, and the extra deductions available at 65 and over. Most states
@@ -918,7 +933,8 @@ export function About() {
                   each source separately; the tool totals them for reference and then taxes
                   each one on its own terms. There is no FICA, because none of it is wages, and
                   no net pay vs. take-home switch, because you are no longer contributing to
-                  anything.</p>
+                  anything. A local income tax on state taxable income (Maryland, New York City)
+                  still applies; one on wages doesn&apos;t, since there are none.</p>
                   <dl className="gloss">
                     <dt>Traditional 401(k) / IRA withdrawal</dt>
                     <dd>You deducted it going in, so all of it comes out as ordinary income at
@@ -1093,7 +1109,8 @@ export function About() {
                   what lands in your bank, your budget, and what&apos;s left to save. The facts sit on
                   the left and the decisions on the right. Every change reruns the 2026 federal,
                   state and payroll taxes the Income Tax tool uses, so the effect of pre-tax saving
-                  shows up in the same paycheck.</p>
+                  shows up in the same paycheck. A local income tax set in Income Tax comes out of
+                  it too, as its own line.</p>
                   <dl className="gloss">
                     <dt>Your paycheck</dt>
                     <dd>Filing status first: single, married with one income, or married with two
