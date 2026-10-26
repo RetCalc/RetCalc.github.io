@@ -36,6 +36,8 @@ export const CARDS: Partial<Record<Slug | "dashboard", Card>> = {
     text: "Answer a few questions and get a score out of 100, with a plan for what to do next." },
   dashboard: { title: "Financial Dashboard", art: "dashboard", foot: "Free with an account",
     text: "Net worth, pay, taxes, spending, saving and your retirement plan, all in one place." },
+  "financial-dashboard": { title: "Financial Dashboard", art: "dashboard", foot: "Free with an account",
+    text: "Net worth, pay, taxes, spending, saving and your retirement plan, all in one place." },
   tools: { title: "Free Financial Planning Tools", art: "tools",
     text: "Calculators for retirement, taxes, Roth conversions, healthcare, mortgages, budgets and debt." },
 

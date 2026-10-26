@@ -4,7 +4,9 @@
    to someone signed in who hasn't started setup: what it does, with real
    screenshots of the sample household (Sam and Jordan, never real people),
    and a way in. Signed out, the way in is an account; signed in, setup.
-   The site's own top bar and footer stay around it. */
+   The site's own top bar and footer stay around it. The same page is also
+   at /financial-dashboard (`standalone`), sent whole from the server for
+   search engines: there the way in follows whoever is looking. */
 
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "@/components/account/AccountProvider";
+import { unstarted, useDashboard } from "./store";
 
 /** A screenshot in the site's light and dark themes; only the one showing loads. */
 function Shot({ name, w, h, alt, sizes }: { name: string; w: number; h: number; alt: string; sizes: string }) {
@@ -61,13 +64,17 @@ const PAGES: { icon: LucideIcon; name: string; what: string }[] = [
   { icon: ListChecksIcon, name: "Next steps", what: "Changes ranked by how much they help" },
 ];
 
-/** The way in: an account when signed out, setup when signed in. */
-function Ways({ signedIn }: { signedIn: boolean }) {
+/** Who's looking: signed out, signed in with setup still to do, or set up. */
+type Who = "out" | "new" | "set";
+
+/** The way in: an account when signed out, setup when it's still to do,
+    and the Dashboard itself once it's set up. */
+function Ways({ who }: { who: Who }) {
   const { configured, setStep } = useAccount();
-  if (signedIn) {
+  if (who !== "out") {
     return (
       <div className="dl-ctas">
-        <Button size="xl" nativeButton={false} render={<Link href="/dashboard/setup" />}>Set up my Dashboard<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Button>
+        <Button size="xl" nativeButton={false} render={<Link href={who === "new" ? "/dashboard/setup" : "/dashboard"} />}>{who === "new" ? "Set up my Dashboard" : "Open my Dashboard"}<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Button>
       </div>
     );
   }
@@ -80,15 +87,20 @@ function Ways({ signedIn }: { signedIn: boolean }) {
   );
 }
 
-export function Landing({ signedIn }: { signedIn: boolean }) {
+export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; standalone?: boolean }) {
+  const { ready, account } = useAccount();
+  const { data } = useDashboard();
+  // At /dashboard the page knows; at its public address it asks the account
+  // (signed out until it has loaded, as the server sends it).
+  const who: Who = standalone ? (ready && account ? (unstarted(data) ? "new" : "set") : "out") : signedIn ? "new" : "out";
   return (
     <div className="dl">
       <div className="dl-hero">
         <div className="dl-eyebrow">My Dashboard <Badge variant="highlight">Beta</Badge></div>
         <h1 className="dl-display">One place for your money and <em>your retirement plan.</em></h1>
         <p className="dl-lede">Net worth, pay, taxes, spending, saving and retirement, all worked out from <b>one profile</b>. Come back each month or quarter, update your balances, and see where you stand.</p>
-        <Ways signedIn={signedIn} />
-        {signedIn ? (
+        <Ways who={who} />
+        {who === "new" ? (
           <p className="dl-started"><ClockIcon aria-hidden="true" /><span><b>Eight short steps.</b> Skip anything you don&apos;t know yet; each answer is saved as you go, so you can stop and finish later.</span></p>
         ) : null}
         <div className="dl-fine">
@@ -181,9 +193,9 @@ export function Landing({ signedIn }: { signedIn: boolean }) {
       </section>
 
       <section className="dl-final">
-        <h2 className="dl-h2">Set up your Dashboard</h2>
-        <p className="dl-sub">{signedIn ? "Eight short steps. You can skip any of them and come back later." : "Create a free account and go through eight short steps. You can skip any of them and come back later."}</p>
-        <Ways signedIn={signedIn} />
+        <h2 className="dl-h2">{who === "set" ? "Your Dashboard" : "Set up your Dashboard"}</h2>
+        <p className="dl-sub">{who === "set" ? "Pick up where you left off, and update your balances while you're there." : who === "new" ? "Eight short steps. You can skip any of them and come back later." : "Create a free account and go through eight short steps. You can skip any of them and come back later."}</p>
+        <Ways who={who} />
       </section>
     </div>
   );

@@ -31,6 +31,11 @@
 "title": "Paycheck to Retirement: Take-Home Pay, Budget and Savings Plan | RetCalc",
 "desc": "Work out your take-home pay after taxes, build your budget, decide where each paycheck goes (401(k), HSA, IRA, brokerage), and see where it gets you by retirement, kids included."
 },
+"financial-dashboard": {
+"h1": "Financial Dashboard",
+"title": "Free Financial Dashboard: Net Worth, Budget and Retirement Plan | RetCalc",
+"desc": "Free financial dashboard: track your net worth, see where each paycheck goes, and test your retirement plan against every market since 1926."
+},
 "tools": {
 "h1": "Financial Planning Calculators",
 "title": "Free Financial Planning Calculators | RetCalc",

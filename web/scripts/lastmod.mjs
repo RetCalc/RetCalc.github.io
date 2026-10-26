@@ -27,6 +27,7 @@ const slugs = Object.keys(JSON.parse(readFileSync(join(WEB, "lib", "page-meta.js
 const TOOL_DIR = {
   home: "components/home", calculator: "tools/basic", incometax: "tools/tax", tools: "components/tools",
   "72t": "tools/bridge", rmd: "tools/roth", privacy: "app/privacy", "guide/paycheck": "tools/plan",
+  "financial-dashboard": "components/dashboard/Landing.tsx",
   "4-percent-rule": "tools/drawdown", guardrails: "tools/drawdown", vpw: "tools/drawdown",
   "vanguard-dynamic-spending": "tools/drawdown", "risk-based-guardrails": "tools/drawdown",
   "rmd-withdrawal-strategy": "tools/drawdown", "ratcheting-withdrawal": "tools/drawdown", "cape-withdrawal": "tools/drawdown",
