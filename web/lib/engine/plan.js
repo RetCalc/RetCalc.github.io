@@ -9,7 +9,7 @@
 import {
   SS_PROV, computeRetireTax, ultDivisor,
   rmdStartAge, irmaaAnnual, HIST_STOCK, HIST_BOND, HIST_INFL, pmtStart,
-  ssEstimate, ssSpousalAdj, hcFPL, hcAgeMultiplier, hcGrossPremium, hcCalcACA
+  ssEstimate, ssSpousalAdj, hcFPL, hcMedicaidFPL, hcAgeFactor, hcGrossPremium, hcCalcACA
 } from "./math.js";
 import { yearData, HIST_START } from "./data/index.js";
 
@@ -165,7 +165,7 @@ export function plHealth(C, y, magi){
   var gross = C.acaGross[y];
   if (!(gross > 0)) return 0;
   var pct = magi / C.fpl;
-  if (pct < 1.38 && !yearData().states.noExpansion[C.state]) return 0;
+  if (magi < 1.38 * C.mfpl && !yearData().states.noExpansion[C.state]) return 0;
   if (pct < 1) return gross * 12;
   return hcCalcACA(magi, gross, pct, false).net * 12;
 }
@@ -196,6 +196,7 @@ export function plPrep(P){
   C.pensionAge = P.pensionAge == null ? C.age1 : Math.round(P.pensionAge);
   C.rmdAge = P.rmdAge || 75;
   C.fpl = hcFPL(Math.max(P.household || (C.married ? 2 : 1), C.married ? 2 : 1));
+  C.mfpl = hcMedicaidFPL(Math.max(P.household || (C.married ? 2 : 1), C.married ? 2 : 1));
   C.total0 = C.trad + C.roth + C.brok;
   C.rate = C.total0 > 0 ? C.spend / C.total0 : 0;
   C.early = new Uint8Array(n); C.seniors = new Uint8Array(n);
@@ -207,8 +208,8 @@ export function plPrep(P){
   // later years scale by each person's own step on the age curve.
   var m0 = 0, MED = yearData().medicare;
   if (P.premium > 0){
-    if (C.age1 < 65) m0 += hcAgeMultiplier(C.age1);
-    if (C.age2 != null && C.age2 < 65) m0 += hcAgeMultiplier(C.age2);
+    if (C.age1 < 65) m0 += hcAgeFactor(C.state, C.age1);
+    if (C.age2 != null && C.age2 < 65) m0 += hcAgeFactor(C.state, C.age2);
   }
   for (var y = 0; y < n; y++){
     var a1 = C.age1 + y, a2 = C.age2 == null ? null : C.age2 + y;
@@ -218,8 +219,8 @@ export function plPrep(P){
     if (P.aca){
       var g = 0;
       if (P.premium > 0 && m0 > 0){
-        if (a1 < 65) g += P.premium * hcAgeMultiplier(a1) / m0;
-        if (a2 != null && a2 < 65) g += P.premium * hcAgeMultiplier(a2) / m0;
+        if (a1 < 65) g += P.premium * hcAgeFactor(C.state, a1) / m0;
+        if (a2 != null && a2 < 65) g += P.premium * hcAgeFactor(C.state, a2) / m0;
       } else {
         if (a1 < 65) g += hcGrossPremium(C.state, a1, 0);
         if (a2 != null && a2 < 65) g += hcGrossPremium(C.state, a2, 0);

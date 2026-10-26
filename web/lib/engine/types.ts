@@ -241,7 +241,7 @@ export interface YearData {
     /** Pre-tax deductions a state keeps in its base, by kind. */
     preTaxed: Record<string, Partial<Record<"k401" | "ira" | "hsa" | "health", 1>>>; noExpansion: Record<string, 1> };
   medicare: { irmaa: { partB: number; tiers: IrmaaTier[] }; partD: number; medigap: { low: number; high: number } };
-  aca: { fplBase: number[]; fplPerAddl: number; premium40: Record<string, number>; cliff: number; contrib: [number, number, number, number][] };
+  aca: { fplBase: number[]; fplPerAddl: number; medicaidFplBase?: number[]; medicaidFplPerAddl?: number; premium40: Record<string, number>; cliff: number; contrib: [number, number, number, number][] };
 }
 
 /* ---- Social Security claiming (math.js, ssHousehold and ssInvestEarly) ---- */

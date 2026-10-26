@@ -964,9 +964,10 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>The survivor benefit</dt>
               <dd>When one spouse dies the survivor keeps the larger of the two checks, the
               deceased&apos;s delayed credits included, and the smaller one stops. The figure
-              shown is that larger check. Survivor claims before the survivor&apos;s own full
-              retirement age, the floor on a survivor benefit when the deceased claimed early,
-              and the family maximum aren&apos;t modeled.</dd>
+              shown is that larger check, and when the deceased claimed early it is never
+              less than 82.5% of the deceased&apos;s full benefit (Social Security&apos;s floor). Survivor
+              claims before the survivor&apos;s own full retirement age and the family maximum
+              aren&apos;t modeled.</dd>
 
               <dt>The earnings test</dt>
               <dd>Claiming before full retirement age while still working, $1 of benefit is
@@ -974,7 +975,8 @@ export function About({ states }: { states: StateOption[] }) {
               full retirement age is reached runs on a higher limit and $1 in $3; the tool
               treats it like the earlier years, which overstates the withholding a little for
               that one year. At full retirement age the benefit is refigured as if claimed
-              later by the months withheld, which the tool counts as the higher benefit from
+              later by the months withheld (every month with any benefit held back counts, as
+              Social Security counts them), which the tool counts as the higher benefit from
               then on.</dd>
 
               <dt>Break-even and the best age by lifespan</dt>
@@ -1029,7 +1031,7 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>State and age adjustment</dt>
               <dd>The benchmark Silver premium is KFF&apos;s 2026 average for each state for a 40-year-old,
-              scaled to your retirement age via the HHS multiplier table. Enter your own
+              scaled to your retirement age via the HHS multiplier table (except in New York and Vermont, where every adult pays the same rate). Enter your own
               quote from healthcare.gov in the sidebar for a precise number.</dd>
             </dl>
 

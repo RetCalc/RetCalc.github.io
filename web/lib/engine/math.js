@@ -2153,16 +2153,36 @@ export function hcFPL(size){
   return A.fplBase[8] + (size - 8) * A.fplPerAddl;
 }
 
+/* The poverty line Medicaid tests against: the current year's guidelines,
+   where the marketplace credit uses the year before (hcFPL). */
+export function hcMedicaidFPL(size){
+  var A = yearData().aca;
+  if (!A.medicaidFplBase) return hcFPL(size);
+  size = Math.max(1, Math.round(size));
+  if (size <= 8) return A.medicaidFplBase[size];
+  return A.medicaidFplBase[8] + (size - 8) * A.medicaidFplPerAddl;
+}
+
 export function hcAgeMultiplier(age){
   age = Math.max(21, Math.min(64, Math.round(age)));
   return HC_AGE_MULT[age - 21];
 }
 
 // Gross monthly benchmark Silver premium for given state & age
+/* States whose marketplace rates don't vary with an adult's age (community
+   rating): every adult pays the same premium, so the age-40 price is everyone's. */
+export const HC_COMMUNITY_RATED = {NY:1, VT:1};
+
+/* An adult's step on the premium age curve in `state`: flat (the age-40
+   step) where rates are community rated, else the federal curve. */
+export function hcAgeFactor(state, age){
+  return HC_COMMUNITY_RATED[state] && age >= 21 ? HC_AGE40_MULT : hcAgeMultiplier(age);
+}
+
 export function hcGrossPremium(state, age, manualOverride){
   if (manualOverride > 0) return manualOverride;
   var base = yearData().aca.premium40[state] || 500;
-  return base / HC_AGE40_MULT * hcAgeMultiplier(age);
+  return base / HC_AGE40_MULT * hcAgeFactor(state, age);
 }
 
 // Standard ACA contribution % of income: the newest year's applicable
@@ -2294,8 +2314,12 @@ export function ssPerson(p) {
     if (w > 0) {
       out.withheld = w;
       out.earlyAnnual = annual - w;
-      // Whole months of benefit withheld each year, credited back at FRA.
-      var yrs = fra - claim, months = Math.round(Math.min(annual, w) / monthly * yrs);
+      // Months withheld each year, credited back at FRA. Social Security
+      // holds back whole checks until the amount is covered (refunding any
+      // excess later), so every month with a deduction counts: a part of a
+      // check rounds up to a whole month.
+      var perYear = Math.min(12, Math.ceil(Math.min(annual, w) / monthly - 1e-9));
+      var yrs = fra - claim, months = Math.round(perYear * yrs);
       out.monthsBack = months;
       var later = Math.min(fra, claim + months / 12);
       out.laterMonthly = p.pia * ssClaimFactor(later, fra);
@@ -2348,8 +2372,11 @@ export function ssHousehold(o) {
     }
     if (sp) {
       // The survivor keeps the larger check: own benefit including any
-      // credits, or the one the other had (or would have had).
-      var own1 = you.laterMonthly * 12, own2 = sp.laterMonthly * 12;
+      // credits, or the one the other had (or would have had). A survivor's
+      // benefit is never less than 82.5% of the deceased's full benefit
+      // when the deceased claimed early (the widow(er)'s limit).
+      var own1 = Math.max(you.laterMonthly, o.claim1 < o.fra1 ? .825 * o.pia1 : 0) * 12;
+      var own2 = Math.max(sp.laterMonthly, o.claim2 < o.fra2 ? .825 * o.pia2 : 0) * 12;
       if (alive1 && !alive2 && age >= o.claim1) { b1 = Math.max(b1, own2); if (survivorAt === null) { survivorAt = age; survivor = b1 / 12; } }
       if (alive2 && !alive1 && age + gap >= o.claim2) { b2 = Math.max(b2, own1); if (survivorAt === null) { survivorAt = age; survivor = b2 / 12; } }
     }

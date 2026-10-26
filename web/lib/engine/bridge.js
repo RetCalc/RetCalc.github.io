@@ -5,7 +5,7 @@
    from src/js/app/36-bridge.js without changes to the math: the exports and
    imports are added, and brMCSeqs takes its random seed as an argument. */
 import { money } from "../format";
-import { computeRetireTax, hcAgeMultiplier, hcCalcACA, hcFPL, hcGrossPremium, mulberry32 } from "./math.js";
+import { computeRetireTax, hcAgeFactor, hcCalcACA, hcFPL, hcGrossPremium, hcMedicaidFPL, mulberry32 } from "./math.js";
 import { plMix } from "./plan.js";
 import { BR_SLT, HIST_START, yearData } from "./data/index.js";
 
@@ -94,10 +94,10 @@ export function brTax(ctx, ord, gain, w){
 export function brHealth(ctx, age, magi){
   if (!ctx.aca) return {cost:0, kind:""};
   var gross = ctx.premium > 0
-    ? ctx.premium * hcAgeMultiplier(age) / hcAgeMultiplier(ctx.age)
+    ? ctx.premium * hcAgeFactor(ctx.state, age) / hcAgeFactor(ctx.state, ctx.age)
     : hcGrossPremium(ctx.state, age, 0) * ctx.adults;
   var pct = magi / ctx.fpl;
-  if (pct < 1.38 && !yearData().states.noExpansion[ctx.state]) return {cost:0, kind:"medicaid", pct:pct};
+  if (magi < 1.38 * ctx.mfpl && !yearData().states.noExpansion[ctx.state]) return {cost:0, kind:"medicaid", pct:pct};
   if (pct < 1) return {cost:gross * 12, kind:"gap", pct:pct};
   var r = hcCalcACA(magi, gross, pct, false);
   return {cost:r.net * 12, kind:r.eligible ? "aca" : "cliff", pct:pct};
@@ -106,7 +106,7 @@ export function brHealth(ctx, age, magi){
 export function brCtx(inp){
   var mix = brMix(inp.stock), adults = inp.status === "m" ? 2 : 1;
   return Object.assign({}, inp, {mix:mix, real:mix.real, infl:mix.infl, adults:adults,
-    fpl:hcFPL(Math.max(inp.household, adults)),
+    fpl:hcFPL(Math.max(inp.household, adults)), mfpl:hcMedicaidFPL(Math.max(inp.household, adults)),
     nB:Math.max(1, Math.ceil(BR_UNLOCK - inp.age)),
     r55Age:55, r55:inp.k401 > 0 && inp.age >= 55,
     stateCA:inp.state === "CA", cache:brTaxCacheFor(inp.status, inp.state), rungMemo:{}});
