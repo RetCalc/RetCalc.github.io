@@ -22,9 +22,10 @@ import { holdings, mortgage, results } from "./model";
 import { Note } from "./ui";
 
 /** The tab that holds a tool's figures for the plan itself. */
-const PLAN_TAB: Partial<Record<ToolSub, { id: string; name: string }>> = {
+const PLAN_TAB: Partial<Record<ToolSub, { id: string; name: string; hash?: string }>> = {
   budget: { id: "spending", name: "Spending" }, drawdown: { id: "retirement", name: "Retirement" },
   tax: { id: "taxes", name: "Taxes" }, social: { id: "income", name: "Income" },
+  college: { id: "profile", name: "Profile", hash: "#college" },
 };
 
 /** A line of your own figures for each tool's card. */
@@ -87,7 +88,8 @@ function Tool({ sub }: { sub: ToolSub }) {
       actions={<Button variant="outline" nativeButton={false} render={<Link href={back} />}><ChevronLeftIcon aria-hidden="true" />Back to {backName}</Button>}>
       {tab ? (
         <div>
-          <Note>Filled in from your plan, to try things on: changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id} />}>{tab.name}</Button>.</Note>
+          <Note>Filled in from your plan, to try things on: changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id + (tab.hash ?? "")} />}>{tab.name}</Button>.
+            {sub === "college" && data.profile.college.help === "part" ? <> You plan to pay part of college, so each year&apos;s cost here is half the school&apos;s {money(data.profile.college.cost)}.</> : null}</Note>
         </div>
       ) : null}
       <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={seed} household={household}><View /></Hosted></div>

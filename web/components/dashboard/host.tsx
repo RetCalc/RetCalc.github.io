@@ -18,7 +18,8 @@ import { MORTGAGE_DEFAULTS } from "@/tools/mortgage/model";
 import { RENTBUY_DEFAULTS } from "@/tools/rentbuy/model";
 import { groupDigits } from "@/lib/format";
 import { budgetFor, drawdownFor, flow, socialFor, taxFor, taxState } from "./flows";
-import { advancedFor, collegeFor, stagesFor } from "./calc";
+import { advancedFor, stagesFor } from "./calc";
+import { collegeInputsOf } from "./college";
 import { ageOf, contribMonth, couple, drawdownPlan, grossYear, holdings, results, spendMonth } from "./model";
 import type { Entry, Profile } from "./store";
 
@@ -86,7 +87,7 @@ export function seedFor(pr: Profile, entries: Entry[]): (id: string) => ToolInpu
         downPct: String(Math.round(((H.home - H.mortgage) / H.home) * 1000) / 10),
         ...(pr.mortRate != null ? { rate: String(Math.round(pr.mortRate * 10000) / 100) } : {}),
       } : undefined;
-      case "college": return collegeFor(pr);
+      case "college": return collegeInputsOf(pr) ?? undefined;
       case "advanced": return advancedFor(pr, entries);
       case "stages": return stagesFor(pr, entries);
       default: return undefined;

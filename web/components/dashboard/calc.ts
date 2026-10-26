@@ -8,11 +8,10 @@ import { groupDigits } from "@/lib/format";
 import { ADVANCED_DEF, type AdvancedInputs } from "@/tools/advanced/model";
 import { STAGES_DEF, stageFields, stagesCompute, type StageInputs, type StagesInputs } from "@/tools/stages/model";
 import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
-import { COLLEGE_DEFAULTS } from "@/tools/college/model";
 import { flow, growthLines, taxState } from "./flows";
 import { shiftCover } from "./cover";
 import { KID_BASE } from "@/tools/stages/kids";
-import { ageOf, collegeStarts, couple, holdings, realGrowth, results, spendMonth, type Results } from "./model";
+import { ageOf, couple, holdings, realGrowth, results, spendMonth, type Results } from "./model";
 import { OUTSIDE_US, sum, type Entry, type Profile } from "./store";
 
 const g = (n: number) => groupDigits(Math.round(n), true);
@@ -174,13 +173,5 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
     out.push(stage(n, first, (lo + hi) / 2, exact(gi), gi > 0));
   });
   return withKids({ ...base, stages: out });
-}
-
-/** College Savings with each child's years to go and the school chosen. */
-export function collegeFor(pr: Profile) {
-  const starts = collegeStarts(pr).filter((y) => y >= 0);
-  if (!starts.length) return undefined;
-  const cost = pr.college.cost, preset = ["27000", "59000", "82000"].includes(String(cost)) ? String(cost) : "0";
-  return { ...COLLEGE_DEFAULTS, kids: starts.map((y) => ({ preset, cost: g(cost), years: String(Math.min(25, y)), collegeYrs: "4" })) };
 }
 

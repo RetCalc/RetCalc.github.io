@@ -6,6 +6,7 @@
    your spending everywhere. The emergency fund is sized here, on the
    budget or on the emergency budget beside it. */
 
+import Link from "next/link";
 import { useState } from "react";
 import { ReceiptIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { Frame } from "./Frame";
 import { budgetFor, flow, fromBudget, taxFor, withCollegeLine } from "./flows";
 import { collegeNeedOf } from "./college";
 import { money } from "./format";
-import { Hosted, TOOL_VIEWS } from "./host";
+import { Hosted, TOOL_VIEWS, toolHref } from "./host";
 import { otherMonth } from "./model";
 import { useDashboard } from "./store";
 import { Note, Tile, TipLabel } from "./ui";
@@ -46,7 +47,8 @@ export function Spending() {
         {need > 0 && short > 25 ? (
           <div className="dsh-mt dsh-tip">
             <span>{F.college > 0 ? <>Saving for college: <b>{money(F.college)}</b> of the <b>{money(need)}</b> per month your plan for it takes. Raise it, and college won&apos;t come out of your saving later.</>
-              : <>You&apos;re planning to help with college: saving about <b>{money(need)}</b> per month starting now covers it. Add it to your budget, and it won&apos;t come out of your saving later.</>}</span>
+              : <>You&apos;re planning to help with college: saving about <b>{money(need)}</b> per month starting now covers it. Add it to your budget, and it won&apos;t come out of your saving later.</>}
+              {" "}<Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("college", "/dashboard/spending")} />}>See how it&apos;s worked out</Button></span>
             <Button size="sm" onClick={addCollege}>{F.college > 0 ? "Raise it to " + money(need) : "Add it to my budget"}</Button>
           </div>
         ) : null}
