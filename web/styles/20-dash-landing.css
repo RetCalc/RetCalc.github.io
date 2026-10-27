@@ -30,11 +30,12 @@
 .dl-fine span{display:inline-flex;align-items:center;gap:7px}
 .dl-fine svg{width:16px;height:16px;color:var(--ds-brand-jade)}
 
+/* The product window and the framed pictures below sit flat on the page:
+   a tone up and a 1px Rule edge, no glow behind and no shadow at rest
+   (DESIGN.md's No Wash and Flat Rest rules). */
 .dl-stage{position:relative;margin-top:56px}
-.dl-stage::before{content:"";position:absolute;inset:120px 0 -20px;border-radius:32px;z-index:0;filter:blur(24px);
-  background:radial-gradient(60% 60% at 50% 40%,color-mix(in srgb,var(--ds-brand-gold) 22%,transparent),transparent 70%)}
 .dl-window{position:relative;z-index:1;overflow:hidden;border:1px solid var(--ds-rule);border-radius:16px;
-  background:var(--ds-surface);box-shadow:var(--ds-float)}
+  background:var(--ds-surface)}
 .dl-chrome{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-bottom:1px solid var(--ds-rule);background:var(--ds-raised)}
 .dl-chrome i{width:10px;height:10px;border-radius:50%;background:var(--ds-rule-strong)}
 .dl-chrome span{margin:0 auto;padding:3px 14px;border:1px solid var(--ds-rule);border-radius:7px;background:var(--ds-surface);
@@ -60,9 +61,9 @@
 .dl-step p{font-size:15px;line-height:1.55;color:var(--ds-muted)}
 .dl-pic{display:flex;justify-content:center;height:230px;margin-top:auto;padding:22px 22px 0;overflow:hidden;
   border-top:1px solid var(--ds-rule);background:color-mix(in srgb,var(--ds-brand-gold) 9%,var(--ds-ground))}
-.dl-sum{width:100%;max-width:340px;align-self:flex-start;overflow:hidden;border-radius:12px 12px 0 0;box-shadow:var(--ds-float)}
+.dl-sum{width:100%;max-width:340px;align-self:flex-start;overflow:hidden;border:1px solid var(--ds-rule);border-bottom:0;border-radius:12px 12px 0 0}
 .dl-snip{width:100%;align-self:flex-start;padding:16px 18px;border:1px solid var(--ds-rule);border-bottom:0;border-radius:12px 12px 0 0;
-  background:var(--ds-surface);box-shadow:var(--ds-float);text-align:left;font-size:13.5px;line-height:1.45;color:var(--ds-text)}
+  background:var(--ds-surface);text-align:left;font-size:13.5px;line-height:1.45;color:var(--ds-text)}
 .dl-snip p{color:var(--ds-text)}
 .dl-snrow{display:flex;gap:28px;margin-top:14px;padding-top:12px;border-top:1px solid var(--ds-rule)}
 .dl-snrow small{display:block;font-size:12px;color:var(--ds-muted)}
@@ -82,7 +83,7 @@
 .dl-points{list-style:none;display:grid;gap:12px;margin:22px 0 0;padding:0;font-size:15.5px;color:var(--ds-text)}
 .dl-points li{display:flex;gap:10px}
 .dl-points svg{flex:none;width:18px;height:18px;margin-top:3px;color:var(--ds-brand-jade)}
-.dl-shot{overflow:hidden;border:1px solid var(--ds-rule);border-radius:16px;background:var(--ds-surface);box-shadow:var(--ds-float)}
+.dl-shot{overflow:hidden;border:1px solid var(--ds-rule);border-radius:16px;background:var(--ds-surface)}
 .dl-wide{margin-top:40px}
 
 .dl-pages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin-top:44px;overflow:hidden;text-align:left;
@@ -116,11 +117,10 @@
 @media (max-width:640px){
   .dl-ctas > *{width:100%}
   .dl-stage .dl-window{display:none}
-  .dl-stage::before{display:none}
   /* An iPhone: a black bezel inside a thin titanium edge, side buttons, and
      the Dynamic Island over the screen, all to an iPhone's proportions. */
   .dl-phone{display:block;position:relative;width:min(288px,78%);margin:0 auto;padding:10px;border-radius:50px;background:#0b0c0e;
-    box-shadow:inset 0 0 0 1.5px #26282c,0 0 0 1.5px #85878c,0 0 0 3px #3b3d42,0 28px 56px -16px rgb(0 0 0/.4),0 10px 20px -10px rgb(0 0 0/.3)}
+    box-shadow:inset 0 0 0 1.5px #26282c,0 0 0 1.5px #85878c,0 0 0 3px #3b3d42}
   .dl-ph-screen{position:relative;overflow:hidden;border-radius:40px;background:var(--ds-ground)}
   .dl-ph-screen img{width:100%;height:auto;vertical-align:top}
   .dl-ph-island{position:absolute;top:1.4%;left:50%;width:32%;height:4.3%;transform:translateX(-50%);border-radius:999px;background:#000}
