@@ -9,8 +9,8 @@
    laid out first, each in a line, to learn them before choosing. */
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
-import { ArrowDownToLineIcon, BookOpenIcon, ChevronDownIcon, SunsetIcon } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { ArrowDownToLineIcon, BookOpenIcon, ChevronDownIcon, MilestoneIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { CardHeadingLevel } from "@/components/ui/card-heading";
@@ -26,7 +26,10 @@ import { money } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { ClaimField } from "./Income";
 import { results, spendMonth } from "./model";
-import { useDashboard } from "./store";
+import { today, useDashboard } from "./store";
+import { bridgeChoices, bridgeFor, bridgeSummary, earlyRetirees } from "./bridge";
+import type { BridgeInputs } from "@/tools/bridge/model";
+import { longDate } from "./format";
 import { useLandedOn } from "./land";
 import { Note, Tile, TipLabel } from "./ui";
 
@@ -82,6 +85,8 @@ export function Retirement() {
         {!R.abroad ? <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3"><ClaimField pr={pr} set={set} />{pr.who === "couple" ? <ClaimField pr={pr} set={set} i={1} /> : <div />}<div className="dsh-hint dsh-self-end">The same ages as on Income: change them in either place.</div></div></div> : null}
       </Tile>
 
+      <BridgeTile />
+
       <div className="dsh-r4" id="compare"><Collapsible open={stratsOpen} onOpenChange={openStrats}><Tile id="strategies" icon={BookOpenIcon} title="The withdrawal strategies"
         right={<>{plan ? <Button variant="link" size="inline" onClick={() => setGuide(true)}>How the withdrawal strategies compare</Button> : null}
           <CollapsibleTrigger>{stratsOpen ? "Hide" : "Show all " + Object.keys(DD_UI).length}<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></>}>
@@ -128,5 +133,52 @@ export function Retirement() {
       </div>
       {guide && view ? <DrawdownDialogs v={view} dialog={{ kind: "guide" }} close={() => setGuide(false)} /> : null}
     </Frame>
+  );
+}
+
+/** Retiring before 59½: the years until retirement accounts open, planned
+    in the Early Retirement Bridge on the plan's own figures. "Use this
+    bridge plan" makes it the plan's (its choices are saved; later changes
+    follow), and lifts the points the readiness score holds back. */
+function BridgeTile() {
+  const { data, setProfile: set } = useDashboard();
+  const pr = data.profile, entries = data.entries;
+  const R = useMemo(() => results(pr, entries), [pr, entries]);
+  const early = earlyRetirees(pr)[0];
+  const B = useMemo(() => (early && pr.bridge ? bridgeSummary(pr, entries, R) : null), [early, pr, entries, R]);
+  // The Bridge's choices as they stand, for "Use this bridge plan".
+  const latest = useRef<BridgeInputs | null>(null);
+  const BridgeView = TOOL_VIEWS.bridge;
+  if (!early) return null;
+  const yrs = early.years % 1 ? early.years.toFixed(1) : String(early.years);
+  const who = early.name === "You" ? "You retire" : early.name + " retires";
+  const use = () => set((p) => ({ ...p, bridge: { inputs: bridgeChoices(latest.current ?? bridgeFor(p, entries)), at: today() } }));
+  return (
+    <div className="dsh-r4">
+      <Tile id="bridge" icon={MilestoneIcon} title="Bridge to 59½" right={<span className="dsh-cap">{early.from} to {Math.floor(early.to)}</span>}>
+        {pr.bridge && B ? (
+          <p className="dsh-cap dsh-mt6">Your bridge plan, saved {longDate(pr.bridge.at)}: <b>{B.plan}</b>. It lasted to 59½ in <b>{Math.round(B.hold * 100)}%</b> of past markets, costs about <b>{money(B.tax + B.pen + B.health)}</b> in taxes, penalties and health cover over the {yrs} years, and leaves <b>{money(Math.round(B.left / 1000) * 1000)}</b> at 59½. Changes below are saved to it.{" "}
+            <Button variant="link" size="inline" onClick={() => set((p) => ({ ...p, bridge: undefined }))}>Remove it</Button></p>
+        ) : (
+          <div className="dsh-mt6 dsh-tip">
+            <span>{who} at {early.retire}, {yrs} years before 401(k)s and IRAs open without the 10% penalty. Plan how you&apos;ll pay for those years below{R.bridgeDock > 0 ? <>; until you do, <b>{R.bridgeDock} points</b> are held back from your readiness score</> : null}.</span>
+            <Button size="sm" onClick={use}>Use this bridge plan</Button>
+          </div>
+        )}
+        <p className="dsh-cap dsh-mt6">The ages, spending and balances come from your plan: what each account holds when you retire. How you fill the bridge, 72(t), health cover and any part-time work are your choices.</p>
+        <div className="dsh-mt">
+          <Hosted key={JSON.stringify(R.S?.P ? [R.S.P.trad, R.S.P.roth, R.S.P.brok, R.spend, early.retire] : null)} household={null}
+            seed={(id) => (id === "bridge" ? (bridgeFor(pr, entries, R) as unknown as ToolInputs) : undefined)}
+            keep={(id, d) => {
+              if (id !== "bridge") return;
+              latest.current = d as unknown as BridgeInputs;
+              const c = bridgeChoices(d as unknown as BridgeInputs);
+              set((p) => (p.bridge && JSON.stringify(p.bridge.inputs) !== JSON.stringify(c) ? { ...p, bridge: { ...p.bridge, inputs: c } } : p));
+            }}>
+            <CardHeadingLevel value={3}><BridgeView /></CardHeadingLevel>
+          </Hosted>
+        </div>
+      </Tile>
+    </div>
   );
 }

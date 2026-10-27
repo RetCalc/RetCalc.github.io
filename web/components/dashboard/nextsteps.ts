@@ -10,6 +10,7 @@ import { detailed, flow } from "./flows";
 import { collegeChildren, collegeNeedOf, collegeYears } from "./college";
 import { toolHref } from "./host";
 import { room } from "./readiness";
+import { earlyRetirees } from "./bridge";
 
 /** A stage's words without the yearly growth in them ("after the raise"
     once for each year saving has grown). */
@@ -36,6 +37,9 @@ export function allSteps(d: DashData, R: Results): Step[] {
   if (R.success != null && R.success < 0.9) {
     add({ id: "outlook", title: `Raise your chance of success from ${Math.round(R.success * 100)}%`, why: "Your readiness score shows what would get you there", action: "See how", href: "/dashboard#readiness-outlook", done: false, gain: room(R, "outlook", 40) });
   }
+  // Retiring before 59½: the years until retirement accounts open, planned.
+  const early = earlyRetirees(pr)[0];
+  if (early) add({ id: "bridge", title: `Plan your bridge to 59½`, why: `${early.name === "You" ? "You retire" : early.name + " retires"} at ${early.retire}, ${early.years % 1 ? early.years.toFixed(1) : early.years} years before retirement accounts open without a penalty`, action: "Plan it", href: "/dashboard/retirement#bridge", done: !!pr.bridge, gain: R.bridgeDock + 6 });
   if (F.fullMatch === false) {
     add({ id: "match", title: "Get the full employer match", why: "It's money you'd otherwise leave behind", action: "Fix it", href: "/dashboard/savings#rest", done: false, gain: room(R, "rate", 20) + 4 });
   }

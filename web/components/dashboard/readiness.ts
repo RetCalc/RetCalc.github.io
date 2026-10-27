@@ -7,6 +7,7 @@ import { fixes, target, type FactorId } from "@/tools/guide/calc";
 import { drawdownFor, drawdownSuccess, flow } from "./flows";
 import { money, money10 } from "./format";
 import { answers, drawdownPlan, holdings, spendMonth, type Results } from "./model";
+import { earlyRetirees } from "./bridge";
 import type { Entry, Profile } from "./store";
 
 export interface Why { why: string; how: string[]; href: string; action: string }
@@ -30,11 +31,14 @@ export function explain(id: FactorId, pr: Profile, entries: Entry[], R: Results)
       if (fx && fx.spend != null) how.push(`Plan to spend ${money10(fx.spend / 12)} per month in retirement`);
       const g = guardrailsChance(pr, R);
       if (g != null && R.success != null && g > R.success + 0.02) how.push(`Use a strategy that adapts, like guardrails: ${pct(g)} lasted`);
+      // Retiring before 59½ with no bridge plan holds back part of this area.
+      const early = earlyRetirees(pr)[0];
+      if (R.bridgeDock > 0 && early) how.unshift(`Plan the ${early.years % 1 ? early.years.toFixed(1) : early.years} years before 59½ with the Early Retirement Bridge: ${R.bridgeDock} points are held back until you do`);
       return {
         why: R.success == null ? R.gap ?? "Needs your ages, savings, retirement age and spending."
           : `${pct(R.success)} of historical retirements lasted to 95${R.strategy ? ` with ${R.strategy.name}` : ", spending a fixed amount"}. Full marks take about 95%; the plan aims for ${pct(goal)}.`,
         how: how.length ? how : R.success != null && R.success >= goal ? ["You're at the plan's target already."] : [],
-        href: "/dashboard/retirement#strategies", action: "Open Retirement",
+        href: R.bridgeDock > 0 ? "/dashboard/retirement#bridge" : "/dashboard/retirement#strategies", action: "Open Retirement",
       };
     }
     case "rate": return {

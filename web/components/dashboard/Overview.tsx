@@ -103,10 +103,13 @@ export function timeline(d: DashData, R: Results): { lanes: Lane[]; from: number
     const ret = p.retire ? yearAt(p, p.retire) : null;
     const claim = (i ? R.claim2 : R.claim1) ?? 67;
     const events = [{ at: yearAt(p, 65), label: "Medicare " + yearAt(p, 65) }];
+    // Retiring before 59½: the bridge years until retirement accounts open.
+    const early = ret && p.retire! < 59.5 ? p.by + 59.5 : null;
+    if (early) events.push({ at: early, label: "59½ " + Math.floor(early) });
     if (!R.abroad) events.push({ at: yearAt(p, claim), label: "Social Security " + yearAt(p, claim) });
     lanes.push({
       name: nameOf(pr, i ? 1 : 0), lead: "Age " + ageOf(p),
-      spans: ret ? [{ from, to: ret, kind: "dsh-work" }, { from: ret, to: yearAt(p, 95), kind: "dsh-ret" }] : [],
+      spans: ret ? [{ from, to: ret, kind: "dsh-work" }, ...(early ? [{ from: ret, to: early, kind: "dsh-k2" as const, label: pr.bridge ? "Bridge plan" : "Bridge, not planned" }] : []), { from: early ?? ret, to: yearAt(p, 95), kind: "dsh-ret" }] : [],
       events, note: ret ? { at: ret, label: `Retires ${ret}, age ${p.retire}` } : undefined,
     });
   });

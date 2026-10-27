@@ -13,6 +13,7 @@ import { paycheckInput } from "@/tools/budget/paycheck-math";
 import { collegeKid, collegeNeedOf, collegeYears } from "./college";
 import { yearlySaving } from "./cover";
 import { calcFvOf } from "./calc";
+import { BRIDGE_DOCK, hasBridgePlan, needsBridge } from "./bridge";
 import { drawdownSetup } from "@/tools/drawdown/model";
 import { DD_STRAT_NAMES } from "@/tools/drawdown/text";
 import { OUTSIDE_US, PER_YEAR, hasAccounts, netWorth, sum, type Entry, type Person, type Profile } from "./store";
@@ -215,6 +216,8 @@ export interface Results {
       plan spends (the same, unless a starting rate is set on Retirement). */
   goal: number | null; spend: number | null;
   abroad: boolean;
+  /** Points held back from the score while retiring before 59½ has no bridge plan. */
+  bridgeDock: number;
 }
 
 /** What the plan still needs before it can run, in a sentence, or null. */
@@ -270,6 +273,15 @@ export function results(pr: Profile, entries: Entry[]): Results {
   }
   const S = S0 && chosen ? { ...S0, success: chosen.success } : S0;
   const sc = score(a, S), H = holdings(entries, pr);
+  // Retiring before 59½ with no plan for the years until then: part of the
+  // retirement outlook is held back until the bridge is planned.
+  const docked = !!(needsBridge(pr) && !hasBridgePlan(pr) && sc.P.outlook);
+  if (docked) {
+    const o = sc.P.outlook!;
+    sc.P.outlook = { ...o, p: o.p * (1 - BRIDGE_DOCK) };
+    const have = FACTORS.filter((f) => sc.P[f.id]), w = have.reduce((s, f) => s + f.w, 0);
+    sc.score = have.length >= 2 ? Math.round((have.reduce((s, f) => s + f.w * sc.P[f.id]!.p, 0) / w) * 100) : null;
+  }
   const equity = H.equity + H.other + (H.cash ?? 0) - H.debts;
   const path: Point[] = [];
   let retireYear: number | null = null;
@@ -295,6 +307,7 @@ export function results(pr: Profile, entries: Entry[]): Results {
     // Months of the spending the emergency fund is sized on (the budget, or the emergency budget).
     cushion: H.cash != null && efMonth > 0 ? H.cash / efMonth : null,
     strategy: chosen, ddPlan, goal: G ? G.spend / 12 : null, spend: S ? S.spend / 12 : null, abroad,
+    bridgeDock: docked && sc.score != null ? Math.max(1, Math.round(40 * (sc.P.outlook!.p / (1 - BRIDGE_DOCK)) * BRIDGE_DOCK * 100 / (FACTORS.filter((f) => sc.P[f.id]).reduce((s, f) => s + f.w, 0)))) : 0,
   };
 }
 

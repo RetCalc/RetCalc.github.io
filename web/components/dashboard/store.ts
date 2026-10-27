@@ -92,6 +92,10 @@ export interface Profile {
       When its result differs from the plan's own, that result is the
       plan's savings at retirement (calc.ts, calcFvOf). Unset: the plan's. */
   calcOwn?: Record<string, unknown>;
+  /** Retiring before 59½: the Early Retirement Bridge's choices once you've
+      made it your plan (bridge.ts), and the day you did. Its figures always
+      come from the plan. Unset: no bridge plan yet. */
+  bridge?: { inputs: ToolInputs; at: string };
   /** The tools behind the tabs, as their own inputs: budget (pay, the
       budget and the saving sliders), tax, social (pay history), drawdown. */
   tools: { budget?: ToolInputs; tax?: ToolInputs; social?: ToolInputs; drawdown?: ToolInputs };

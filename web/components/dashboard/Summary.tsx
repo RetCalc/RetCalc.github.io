@@ -8,7 +8,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { CalendarDaysIcon, ChartBarIcon, ListChecksIcon, ReceiptIcon, SunsetIcon } from "lucide-react";
+import { CalendarDaysIcon, ChartBarIcon, ListChecksIcon, MilestoneIcon, ReceiptIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShareBar } from "@/components/charts/Legend";
 import { SERIES } from "@/lib/hues";
@@ -19,11 +19,12 @@ import { Accounts as PlanAccounts, ChildrenCost, Climb, PayCard, StageLine } fro
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { Legend, TodayBars } from "./Accounts";
 import { Frame } from "./Frame";
-import { advancedFor, planKidsOf, stagesFor } from "./calc";
+import { advancedFor, calcInputs, planKidsOf } from "./calc";
+import { bridgeSummary, earlyRetirees } from "./bridge";
 import { yearlySaving } from "./cover";
 import { budgetFor, flow } from "./flows";
 import { money } from "./format";
-import { ageOf, answers, holdings, nowYear, results, spendMonth } from "./model";
+import { ageOf, answers, holdings, nowYear, results, spendMonth, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
 import { Readiness, timeline } from "./Overview";
 import { Timeline } from "./charts";
@@ -90,7 +91,7 @@ export function Summary() {
     const plan: PlanState = {
       ...PLAN_DEFAULTS, step: "summary" as PlanState["step"], reached: "summary" as PlanState["reached"],
       age: String(age), retire: String(pr.p1.retire), freq: F.b.pcFreq,
-      tools: { budget: { ...budgetFor(pr), view: "paycheck" } as unknown as ToolInputs, advanced: advancedFor(pr, data.entries) as unknown as ToolInputs, stages: stagesFor(pr, data.entries) as unknown as ToolInputs },
+      tools: { budget: { ...budgetFor(pr), view: "paycheck" } as unknown as ToolInputs, advanced: advancedFor(pr, data.entries) as unknown as ToolInputs, stages: calcInputs(pr, data.entries) as unknown as ToolInputs },
       stagesOn: true, kids: planKidsOf(pr), cover: (pr.kidCover ?? {}) as PlanState["cover"],
     };
     const out = planSummary(plan, null);
@@ -111,6 +112,8 @@ export function Summary() {
           <PayCard S={S} />
         </div>
       ) : <Note>The summary fills in once your profile has your age, retirement age and pay.</Note>}
+
+      <EarlyRetirement pr={pr} entries={data.entries} R={R} />
 
       <div className="dsh-grid dsh-two">
         <Tile icon={ReceiptIcon} title="Your budget" right={<span className="dsh-cap">{money(F.spend)} per month</span>}>
@@ -164,5 +167,30 @@ export function Summary() {
         </Tile>
       </div>
     </Frame>
+  );
+}
+
+/** Retiring before 59½: the years until retirement accounts open, and the
+    bridge plan that pays for them (or that there isn't one yet). */
+function EarlyRetirement({ pr, entries, R }: { pr: Profile; entries: Entry[]; R: Results }) {
+  const early = earlyRetirees(pr)[0];
+  const B = useMemo(() => (early && pr.bridge ? bridgeSummary(pr, entries, R) : null), [early, pr, entries, R]);
+  if (!early) return null;
+  const yrs = early.years % 1 ? early.years.toFixed(1) : String(early.years);
+  return (
+    <div className="dsh-r4">
+      <Tile icon={MilestoneIcon} title="Early retirement" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement#bridge" />}>{B ? "See the bridge" : "Plan the bridge"}</Button>}>
+        <div className="dsh-stats">
+          <div className="dsh-stat"><div className="dsh-label">{early.name === "You" ? "You retire" : early.name + " retires"}</div><div className="dsh-fig dsh-md">{early.from}<small>age {early.retire}</small></div></div>
+          <div className="dsh-stat"><div className="dsh-label">Years before 59½</div><div className="dsh-fig dsh-md">{yrs}</div><div className="dsh-cap dsh-mt6">to {Math.floor(early.to)}</div></div>
+          {B ? <>
+            <div className="dsh-stat"><div className="dsh-label">Bridge plan</div><div className="dsh-fig dsh-md">{B.plan}</div></div>
+            <div className="dsh-stat"><div className="dsh-label">Lasted to 59½</div><div className="dsh-fig dsh-md">{Math.round(B.hold * 100)}%</div><div className="dsh-cap dsh-mt6">of past markets</div></div>
+            <div className="dsh-stat"><div className="dsh-label">Taxes, penalties and health cover</div><div className="dsh-fig dsh-md">{money(B.tax + B.pen + B.health)}</div><div className="dsh-cap dsh-mt6">over the bridge</div></div>
+            <div className="dsh-stat"><div className="dsh-label">Left at 59½</div><div className="dsh-fig dsh-md">{money(Math.round(B.left / 1000) * 1000)}</div></div>
+          </> : <div className="dsh-stat"><div className="dsh-label">Bridge plan</div><div className="dsh-fig dsh-md">Not planned yet</div><div className="dsh-cap dsh-mt6">{R.bridgeDock > 0 ? `${R.bridgeDock} points held back from your readiness score` : "Plan it on Retirement"}</div></div>}
+        </div>
+      </Tile>
+    </div>
   );
 }
