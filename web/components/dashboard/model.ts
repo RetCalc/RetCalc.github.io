@@ -244,6 +244,9 @@ export interface Results {
   S: Sim | null;
   /** Share of historical retirements that lasted, 0 to 1. */
   success: number | null;
+  /** The retirements behind it, when the run counts them (the plan's own
+      run; a chosen strategy's quick run gives only the share). */
+  runs: { ok: number; of: number } | null;
   score: number | null;
   /** Each scored area, by the Guide's ids; an area missing isn't scored yet. */
   parts: Partial<Record<FactorId, Part>>;
@@ -355,7 +358,7 @@ export function results(pr: Profile, entries: Entry[]): Results {
   // The first year Social Security starts, for either of you.
   const claimYears = S && !abroad ? [pr.p1.by && S.ss.a1 > 0 ? pr.p1.by + S.ss.claim : null, couple(pr) && pr.p2.by && S.ss.a2 > 0 ? pr.p2.by + S.ss.claim2 : null].filter((y): y is number => y != null) : [];
   return {
-    S, success: S ? S.success : null, score: sc.score, parts: sc.P,
+    S, success: S ? S.success : null, runs: S && !chosen && S.H.total > 0 ? { ok: S.H.survived, of: S.H.total } : null, score: sc.score, parts: sc.P,
     partial: FACTORS.some((f) => !sc.P[f.id]),
     savingsIncome: S ? S.portIncome / 12 : null, ss: S && !abroad ? S.ss.total / 12 : null,
     ss1: S && !abroad ? S.ss.a1 / 12 : null, ss2: S && !abroad && couple(pr) ? S.ss.a2 / 12 : null,

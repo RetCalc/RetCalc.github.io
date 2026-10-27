@@ -23,7 +23,7 @@ import { advancedFor, calcInputs, planKidsOf } from "./calc";
 import { bridgeSummary, earlyRetirees } from "./bridge";
 import { yearlySaving } from "./cover";
 import { budgetFor, flow } from "./flows";
-import { money } from "./format";
+import { lastedWords, money, pctDown } from "./format";
 import { ageOf, answers, holdings, nowYear, results, spendMonth, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
 import { Readiness, timeline } from "./Overview";
@@ -49,10 +49,10 @@ function PlanHero() {
         <div className="dsh-stat"><div className="dsh-label">{ownRate ? <TipLabel text="Your strategy spends" id="stratSpend" /> : <TipLabel text="You plan to spend" id="retSpend" />}</div><div className="dsh-fig dsh-md">{money(R.spend ?? goal)}<small>per month</small></div>{ownRate && R.goal != null ? <div className="dsh-cap dsh-mt6">Your goal: {money(R.goal)}</div> : null}</div>
         {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Taxes, on top" id="taxes" /></div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div></div> : null}
         {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text={"Social Security" + (R.ssYear ? ", from " + R.ssYear : "")} id="ssTotal" /></div><div className="dsh-fig dsh-md">{money(ss)}<small>per month</small></div></div> : null}
-        <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div></div>
+        <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? pctDown(R.success) + "%" : "—"}</div></div>
       </div>
       <p className="dsh-cap dsh-mt">
-        {R.success != null ? <>Your plan lasted to 95 in <b>{Math.round(R.success * 100)}%</b> of past markets since 1926, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of your spending and taxes once it starts; savings pay the rest. In today&apos;s dollars{tax}.</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}
+        {R.success != null ? <>Your plan lasted to 95 in <b>{lastedWords(R.success, R.runs)}</b>, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of your spending and taxes once it starts; savings pay the rest. In today&apos;s dollars{tax}.</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}
       </p>
     </Tile>
   );

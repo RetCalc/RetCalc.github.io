@@ -15,7 +15,7 @@ import { Field, MoneyField, NumberField, SelectField } from "@/components/fields
 import { NetWorthChart } from "./charts";
 import { Note } from "./ui";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, txt, type PKey } from "./fields";
-import { money, shortMoney } from "./format";
+import { money, pctDown, shortMoney } from "./format";
 import { ageOf, couple, nowYear, payYear, people, results } from "./model";
 import { OUTSIDE_US, entryFrom, hasAccounts, useDashboard, withEntry, type DashData, type Person, type Profile } from "./store";
 
@@ -260,7 +260,7 @@ export function Setup() {
         <div className="dsh-ready">
           <div className="dsh-tile"><div className="dsh-label">Net worth today</div><div className="dsh-fig dsh-key dsh-mt6">{shortMoney(nw)}</div></div>
           <div className="dsh-tile"><div className="dsh-label">At retirement{R.retireYear ? ", " + R.retireYear : ""}</div><div className="dsh-fig dsh-mt6">{R.atRetire != null ? shortMoney(R.atRetire + R.equity) : "—"}</div></div>
-          <div className="dsh-tile"><div className="dsh-label">Chance of success</div><div className="dsh-fig dsh-mt6">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div></div>
+          <div className="dsh-tile"><div className="dsh-label">Chance of success</div><div className="dsh-fig dsh-mt6">{R.success != null ? pctDown(R.success) + "%" : "—"}</div></div>
         </div>
         {R.S ? <p className="dsh-cap dsh-mt">Your plan pays about <b>{money(R.S.spend / 12)}</b> per month to spend in retirement, with taxes on top, in today&apos;s dollars.</p> : null}
         <div className="dsh-navbtns">

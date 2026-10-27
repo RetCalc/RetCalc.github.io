@@ -28,3 +28,17 @@ export function daysSince(iso: string): number {
   const then = new Date(y, m - 1, d), now = new Date();
   return Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() - then.getTime()) / 864e5);
 }
+
+/** A chance of success as a whole percent, rounded down so 99.7% never
+    reads as 100%: only a plan that lasted every time shows 100. */
+export const pctDown = (v: number) => Math.floor(Math.round(v * 10000) / 100);
+
+/** How often the plan lasted, in words: "every past market since 1926"
+    only when it truly did; otherwise the count of retirements when the
+    run gives it ("773 of 775 past retirements since 1926"), or the share
+    rounded down. */
+export function lastedWords(success: number, runs?: { ok: number; of: number } | null): string {
+  if (success >= 1) return "every past market since 1926";
+  if (runs && runs.of > 0) return `${runs.ok} of ${runs.of} past retirements since 1926`;
+  return `${pctDown(success)}% of past markets since 1926`;
+}

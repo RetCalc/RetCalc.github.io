@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { Frame } from "./Frame";
 import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./charts";
-import { daysSince, longDate, money, shortMoney } from "./format";
+import { daysSince, lastedWords, longDate, money, pctDown, shortMoney } from "./format";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
 import { FACTORS, areaPoints, ageOf, answers, couple, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
@@ -74,7 +74,7 @@ function Answer({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entri
   const goal = useMemo(() => target(answers(pr, entries)), [pr, entries]);
   const how = useMemo(() => (R.success != null && R.success < goal ? explain("outlook", pr, entries, R).how[0] ?? null : null), [R, goal, pr, entries]);
   if (R.success == null || R.atRetire == null) return null;
-  const pct = Math.round(R.success * 100), lasted = pct >= 100 ? "every past market since 1926" : `${pct}% of past markets since 1926`;
+  const lasted = lastedWords(R.success, R.runs);
   const at = `${money(Math.round(R.atRetire / 1000) * 1000)} at ${pr.p1.retire}`;
   return (
     <p className="dsh-answer">
@@ -87,8 +87,8 @@ function Answer({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entri
 function Chance({ R, accounts }: { R: Results; accounts: boolean }) {
   return (
     <Tile icon={ShieldCheckIcon} title="Chance of success" tip="chance">
-      <div className="dsh-fig dsh-mt">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div>
-      <div className="dsh-cap dsh-mt6">{R.success != null ? "of historical retirements lasted to age 95" : R.gap ?? "Needs your age, savings, retirement age and spending"}</div>
+      <div className="dsh-fig dsh-mt">{R.success != null ? pctDown(R.success) + "%" : "—"}</div>
+      <div className="dsh-cap dsh-mt6">{R.success != null ? (R.runs && R.success < 1 ? `${R.runs.ok} of ${R.runs.of} historical retirements lasted to age 95` : "of historical retirements lasted to age 95") : R.gap ?? "Needs your age, savings, retirement age and spending"}</div>
       <div className="dsh-foot"><span className="dsh-cap">{R.strategy ? `With your chosen strategy: ${R.strategy.name}` : accounts ? "Spending a fixed amount that rises with prices" : "Add your accounts for a sharper number"}</span></div>
     </Tile>
   );
@@ -238,7 +238,7 @@ export function Overview() {
         {R.strategy ? (
           <Tile icon={ArrowDownToLineIcon} title="Withdrawal strategy" tip="strategy">
             <div className="dsh-fig dsh-name dsh-mt">{R.strategy.name}</div>
-            <div className="dsh-cap dsh-mt6">Lasted in <b>{Math.round(R.strategy.success * 100)}%</b> of past markets, spending what you plan to with taxes on top</div>
+            <div className="dsh-cap dsh-mt6">Lasted in <b>{pctDown(R.strategy.success)}%</b> of past markets, spending what you plan to with taxes on top</div>
             <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement#compare" />}>Compare strategies →</Button></div>
           </Tile>
         ) : <Empty icon={ArrowDownToLineIcon} title="Withdrawal strategy" ghost="—" text="Pick how you'll draw money in retirement. We'll test it against every past market." action="Choose a strategy" href="/dashboard/retirement#strategies" />}

@@ -5,7 +5,7 @@
 
 import { couple, holdings, mortgage, nowYear, type Results } from "./model";
 import { DEFAULT_ASSUMPTIONS, hasAccounts, type DashData } from "./store";
-import { daysSince, money10 } from "./format";
+import { daysSince, money10, pctDown } from "./format";
 import { detailed, flow } from "./flows";
 import { collegeChildren, collegeNeedOf, collegeYears } from "./college";
 import { toolHref } from "./host";
@@ -36,7 +36,7 @@ export function allSteps(d: DashData, R: Results): Step[] {
 
   // The plan itself: lasting, saving, the match, money left unassigned.
   if (R.success != null && R.success < 0.9) {
-    add({ id: "outlook", title: `Raise your chance of success from ${Math.round(R.success * 100)}%`, why: "Your readiness score shows what would get you there", action: "See how", href: "/dashboard#readiness-outlook", done: false, gain: room(R, "outlook", 40) });
+    add({ id: "outlook", title: `Raise your chance of success from ${pctDown(R.success)}%`, why: "Your readiness score shows what would get you there", action: "See how", href: "/dashboard#readiness-outlook", done: false, gain: room(R, "outlook", 40) });
   }
   // Retiring before 59½: the years until retirement accounts open, planned.
   const early = earlyRetirees(pr)[0];

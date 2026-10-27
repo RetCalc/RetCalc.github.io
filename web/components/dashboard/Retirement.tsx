@@ -26,7 +26,7 @@ import type { BridgeInputs } from "@/tools/bridge/model";
 import type { HealthcareInputs } from "@/tools/healthcare/model";
 import { Frame } from "./Frame";
 import { DD_LOCKED, DD_OWN, drawdownFor, fromDrawdown, mixWords, retireMix } from "./flows";
-import { longDate, money } from "./format";
+import { longDate, money, pctDown } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { couple, holdings, nameOf, people, results, spendMonth, type Results } from "./model";
 import { today, useDashboard, type Entry, type Profile } from "./store";
@@ -87,7 +87,7 @@ export function Retirement() {
       <Tile id="at-retirement" icon={SunsetIcon} title="At retirement" right={<To href="/dashboard/profile#plan-retirement">Ages, spending and assumptions</To>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Savings, {R.retireYear ?? "—"}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
-          <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div><div className="dsh-cap dsh-mt6">{R.strategy ? R.strategy.name : "Spending a fixed amount"}</div></div>
+          <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? pctDown(R.success) + "%" : "—"}</div><div className="dsh-cap dsh-mt6">{R.strategy ? R.strategy.name : "Spending a fixed amount"}</div></div>
           <div className="dsh-stat"><div className="dsh-label">{ownRate ? <TipLabel text={"Your strategy spends" + tax} id="stratSpend" /> : <TipLabel text={"You plan to spend" + tax} id="retSpend" />}</div><div className="dsh-fig dsh-md">{money(R.spend ?? pr.retSpend ?? spendMonth(pr) ?? 0)}<small>per month</small></div>{ownRate && R.goal != null ? <div className="dsh-cap dsh-mt6">Your goal: {money(R.goal)}</div> : null}</div>
           {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Taxes, on top" id="taxes" /></div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div></div> : null}
           {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text={"Social Security" + (R.ssYear ? ", from " + R.ssYear : "")} id="ssTotal" /></div><div className="dsh-fig dsh-md">{R.ss != null ? money(R.ss) : "—"}<small>per month</small></div></div> : null}

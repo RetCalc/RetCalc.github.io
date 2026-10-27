@@ -20,7 +20,7 @@ import { RISKS } from "@/lib/engine/typed";
 import { Frame } from "./Frame";
 import { toolHref } from "./host";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt, useTyped, type PKey } from "./fields";
-import { MONTHS, money } from "./format";
+import { MONTHS, money, pctDown } from "./format";
 import { flow, mixWords, retireMix } from "./flows";
 import { couple, holdings, mortgage, nameOf, nowYear, realGrowth, results, spendMonth } from "./model";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
@@ -181,7 +181,7 @@ function ChangeBar() {
   const list = changesOf(base.profile, data.profile);
   const words = list.length ? list.slice(0, 3).map(([l, x, y]) => `${l} ${x} → ${y}`).join("; ") + (list.length > 3 ? `; and ${list.length - 3} more` : "") : "Your answers changed";
   const effects: string[] = [];
-  const chance = (r: typeof R0) => (r.success != null ? Math.round(r.success * 100) : null);
+  const chance = (r: typeof R0) => (r.success != null ? pctDown(r.success) : null);
   if (chance(R0) !== chance(R1)) effects.push(`chance of success ${chance(R0) ?? "—"}% → ${chance(R1) ?? "—"}%`);
   const atR = (r: typeof R0) => (r.atRetire != null ? Math.round(r.atRetire / 1000) * 1000 : null);
   if (atR(R0) !== atR(R1)) effects.push(`savings at retirement ${atR(R0) != null ? money(atR(R0)!) : "—"} → ${atR(R1) != null ? money(atR(R1)!) : "—"}`);
