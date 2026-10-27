@@ -16,7 +16,6 @@ import {
   LayoutGridIcon, ListChecksIcon, LockIcon, MessageCircleIcon, PiggyBankIcon, ReceiptIcon, SunsetIcon, WalletIcon,
   WrenchIcon, CircleDollarSignIcon, type LucideIcon,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "@/components/account/AccountProvider";
 import { unstarted, useDashboard } from "./store";
@@ -96,7 +95,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
   return (
     <div className="dl">
       <div className="dl-hero">
-        <div className="dl-eyebrow">My Dashboard <Badge variant="highlight">Beta</Badge></div>
+        <div className="dl-eyebrow">My Dashboard</div>
         <h1 className="dl-display">One place for your money and <em>your retirement plan.</em></h1>
         <p className="dl-lede">Net worth, pay, taxes, spending, saving and retirement, all worked out from <b>one profile</b>. Come back each month or quarter, update your balances, and see where you stand.</p>
         <Ways who={who} />
@@ -111,7 +110,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
         <div className="dl-stage">
           <div className="dl-window">
             <div className="dl-chrome" aria-hidden="true"><i /><i /><i /><span>retcalc.app/dashboard</span></div>
-            <Shot name="dashboard" w={2880} h={1800} sizes="(max-width: 1330px) 100vw, 1290px"
+            <Shot name="dash" w={2880} h={1800} sizes="(max-width: 1330px) 100vw, 1290px"
               alt="The Dashboard: a one-line answer, net worth today and projected, readiness score, chance of success, retirement income and Social Security" />
           </div>
           {/* On a phone, the same page in an iPhone: its titanium edge, side
@@ -121,7 +120,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
             <i className="dl-ph-btn dl-ph-act" aria-hidden="true" /><i className="dl-ph-btn dl-ph-up" aria-hidden="true" />
             <i className="dl-ph-btn dl-ph-dn" aria-hidden="true" /><i className="dl-ph-btn dl-ph-pwr" aria-hidden="true" />
             <div className="dl-ph-screen">
-              <Shot name="iphone" w={1170} h={2532} sizes="300px" alt="The Dashboard on a phone: the one-line answer, Update balances, net worth, and the tabs along the bottom" />
+              <Shot name="mobile" w={1170} h={2532} sizes="300px" alt="The Dashboard on a phone: the one-line answer, Update balances, net worth, and the tabs along the bottom" />
               <span className="dl-ph-island" aria-hidden="true" />
             </div>
           </div>
@@ -201,7 +200,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
       <section className="dl-sec dl-trust">
         <div><span className="dl-ic dl-ic-gold"><CircleDollarSignIcon aria-hidden="true" /></span><h3>Free</h3><p>The Dashboard and every tool are free. The account only keeps your numbers so they&apos;re there when you come back.</p></div>
         <div><span className="dl-ic dl-ic-jade"><LockIcon aria-hidden="true" /></span><h3>No bank logins</h3><p>You type your balances yourself. Nothing connects to your bank, and your numbers are never sold or used for ads.</p></div>
-        <div><span className="dl-ic dl-ic-steel"><MessageCircleIcon aria-hidden="true" /></span><h3>In Beta</h3><p>The Dashboard is new and we&apos;re still adding to it. Send feedback to <a href="mailto:contact@retcalc.app">contact@retcalc.app</a>.</p></div>
+        <div><span className="dl-ic dl-ic-steel"><MessageCircleIcon aria-hidden="true" /></span><h3>Tell us what you think</h3><p>We&apos;re still adding to the Dashboard. Send ideas and feedback to <a href="mailto:contact@retcalc.app">contact@retcalc.app</a>.</p></div>
       </section>
 
       <section className="dl-final">

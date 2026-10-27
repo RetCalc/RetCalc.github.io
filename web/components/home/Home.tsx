@@ -19,7 +19,6 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import type { HomeData } from "./data";
 import {
   BridgeChart, BudgetChart, CloudChart, FanChart, FireChart, GrowthChart, HealthChart, MortgageChart, RothChart, ScoreRing, TaxChart,
@@ -143,7 +142,7 @@ export function Home({ data }: { data: HomeData }) {
           <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>With a free account, the Dashboard keeps your accounts, pay, spending and retirement together, all worked out from one profile.</p>
         </div>
         <Link href="/dashboard" className="hm-tile hm-amber" data-draw="" data-rv="">
-          <span className="hm-kick hm-c-amber hm-kick-row">My Dashboard<Badge variant="highlight">Beta</Badge></span>
+          <span className="hm-kick hm-c-amber">My Dashboard</span>
           <div className="hm-split hm-dash">
             <div>
               <h3 className="hm-h3">Net worth, readiness and what to do next, on one screen.</h3>
@@ -155,8 +154,8 @@ export function Home({ data }: { data: HomeData }) {
               </ul>
             </div>
             <div className="hm-shot">
-              <Image className="dl-lt" src="/dashboard-landing/v2/dashboard-light.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 760px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
-              <Image className="dl-dk" src="/dashboard-landing/v2/dashboard-dark.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 760px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
+              <Image className="dl-lt" src="/dashboard-landing/v2/dash-light.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 760px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
+              <Image className="dl-dk" src="/dashboard-landing/v2/dash-dark.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 760px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
             </div>
           </div>
           <Go>Open My Dashboard</Go>
@@ -215,7 +214,7 @@ export function Home({ data }: { data: HomeData }) {
 /** First of the three, for everyone: signed out (or not set up yet),
     /dashboard is its front page, which explains it. */
 function DashboardButton() {
-  return <Link href="/dashboard" className={buttonVariants({ size: "xl" })}>My Dashboard<Badge variant="highlight">Beta</Badge><ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>;
+  return <Link href="/dashboard" className={buttonVariants({ size: "xl" })}>My Dashboard<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>;
 }
 
 const ROWS = ["", "hm-r1", "hm-r2", "hm-r3", "hm-r4", "hm-r5", "hm-r6", "hm-r7", "hm-r8", "hm-r9", "hm-r10"] as const;

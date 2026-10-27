@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { useAccount } from "@/components/account/AccountProvider";
 import { AccountButton } from "@/components/account/AccountButton";
@@ -129,7 +128,6 @@ function TabBar({ current, dots }: { current: Section; dots: Partial<Record<Sect
         <DialogContent size="household" aria-labelledby="dshMenuTitle">
           <div className="dsh-menu-h">
             <h2 id="dshMenuTitle" className="dsh-dlg-h">Your dashboard</h2>
-            <Badge variant="highlight">Beta</Badge>
             <DialogClose render={<Button variant="ghost" size="icon" aria-label="Close the menu" />}><XIcon aria-hidden="true" /></DialogClose>
           </div>
           <nav className="dsh-menu" aria-label="Dashboard">
@@ -182,8 +180,6 @@ export function Frame({ current, title, sub, actions, help, children }: { curren
         <header className="dsh-top">
           <div className="dsh-title">
             <h1>{title}</h1>
-            {/* New, with kinks still to work out. */}
-            <Badge variant="highlight">Beta</Badge>
           </div>
           {sub ? <span className="dsh-sub">{sub}</span> : null}
           {/* On a phone these wrappers let Help and the account stay beside
