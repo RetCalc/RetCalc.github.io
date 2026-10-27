@@ -12,7 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  ArrowRightIcon, BanknoteIcon, CalculatorIcon, CheckIcon, ClipboardListIcon, ClockIcon, HouseIcon, LandmarkIcon,
+  ArrowRightIcon, BanknoteIcon, CalculatorIcon, CheckIcon, ClipboardListIcon, ClockIcon, GraduationCapIcon, HouseIcon,
   LayoutGridIcon, ListChecksIcon, LockIcon, MessageCircleIcon, PiggyBankIcon, ReceiptIcon, SunsetIcon, WalletIcon,
   WrenchIcon, CircleDollarSignIcon, type LucideIcon,
 } from "lucide-react";
@@ -56,12 +56,12 @@ const PAGES: { icon: LucideIcon; name: string; what: string }[] = [
   { icon: HouseIcon, name: "Home", what: "Your mortgage and what owning costs, or your rent" },
   { icon: BanknoteIcon, name: "Income", what: "Pay, the employer match and Social Security" },
   { icon: ReceiptIcon, name: "Spending", what: "Your budget and emergency fund" },
-  { icon: LandmarkIcon, name: "Taxes", what: "This year's taxes on your pay, worked out for you" },
-  { icon: PiggyBankIcon, name: "Savings", what: "Where each paycheck goes, account by account" },
+  { icon: PiggyBankIcon, name: "Taxes & Savings", what: "This year's taxes on your pay, and where each paycheck goes" },
   { icon: CalculatorIcon, name: "Calculator", what: "Your saving, stage by stage" },
   { icon: SunsetIcon, name: "Retirement", what: "Withdrawal strategies, early retirement and health cover" },
   { icon: WrenchIcon, name: "Tools", what: "All 14, opened with your numbers" },
   { icon: ListChecksIcon, name: "Next steps", what: "Changes ranked by how much they help" },
+  { icon: GraduationCapIcon, name: "Learn", what: "56 lessons on the ideas behind your plan" },
 ];
 
 /** Who's looking: signed out, signed in with setup still to do, or set up. */
@@ -111,7 +111,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
         <div className="dl-stage">
           <div className="dl-window">
             <div className="dl-chrome" aria-hidden="true"><i /><i /><i /><span>retcalc.app/dashboard</span></div>
-            <Shot name="overview" w={2880} h={1800} sizes="(max-width: 1330px) 100vw, 1290px"
+            <Shot name="dashboard" w={2880} h={1800} sizes="(max-width: 1330px) 100vw, 1290px"
               alt="The Dashboard: a one-line answer, net worth today and projected, readiness score, chance of success, retirement income and Social Security" />
           </div>
           {/* On a phone, the same page in an iPhone: its titanium edge, side
@@ -164,7 +164,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
 
       <Feature kicker="Net worth" title="Your net worth now, and where it's heading." sub="Your accounts, home and debts added up, then projected through retirement."
         points={["Your own entries over time, then the projection", "The range of 8 in 10 past markets, not one guess", "All in today's dollars, so it compares with what things cost now"]}>
-        <Shot name="networth" w={1734} h={982} sizes="(max-width: 900px) 100vw, 760px" alt="Net worth chart with entries, the projection and the range of past markets" />
+        <Shot name="networth-tile" w={1734} h={982} sizes="(max-width: 900px) 100vw, 760px" alt="Net worth chart with entries, the projection and the range of past markets" />
       </Feature>
       <Feature flip kicker="Income, taxes, spending and savings" title="See where each paycheck goes." sub="Pay, taxes, your budget and your saving are worked out together, so the numbers match on every page."
         points={["Federal, state, Social Security and Medicare taxes worked out for you", "Saving split across your 401(k), HSA, IRA and brokerage", "Shows whether you're getting your full employer match"]}>
@@ -176,6 +176,10 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
       </Feature>
       <Feature flip kicker="Next steps" title="Know what to work on next." sub="A short list of changes, ranked by how much each one improves your plan, with a link to make each one.">
         <Shot name="next" w={1734} h={778} sizes="(max-width: 900px) 100vw, 760px" alt="What to do next: four changes, ranked" />
+      </Feature>
+      <Feature kicker="Learn" title="Learn the ideas behind your plan." sub="56 short lessons in 8 tracks, from saving and taxes to Social Security and drawing your savings down."
+        points={["A lesson picked for what your plan needs next", "Lessons that show the idea with your own numbers", "Each one links to the page or tool where you act on it"]}>
+        <Shot name="learn" w={1752} h={572} sizes="(max-width: 900px) 100vw, 760px" alt="Next for you: a lesson on the emergency fund, picked because cash covers 2.9 months of spending" />
       </Feature>
 
       <section className="dl-sec dl-center">
