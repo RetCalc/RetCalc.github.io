@@ -8,7 +8,7 @@
 import { FACTORS, STRATS, retPath, score, sim, strats, type FactorId, type Part, type Sim, type StratResult } from "@/tools/guide/calc";
 import type { Answers } from "@/tools/guide/store";
 import { parseNum } from "@/lib/format";
-import { budgetFor, drawdownFor, drawdownSuccess, flow, personSaving, retireMix, savingAt, stocksOf, taxState } from "./flows";
+import { budgetFor, drawdownFor, drawdownRuns, flow, personSaving, retireMix, savingAt, stocksOf, taxState } from "./flows";
 import { paycheckInput } from "@/tools/budget/paycheck-math";
 import { collegeKid, collegeNeedOf, collegeYears } from "./college";
 import { yearlySaving } from "./cover";
@@ -326,14 +326,20 @@ export function results(pr: Profile, entries: Entry[]): Results {
     a = { ...a, retSpend: Math.max(0, x1) };
     S0 = S1 ?? G;
   }
-  // A strategy chosen on the Retirement tab is the plan's: its chance across
-  // history stands in for spending a fixed amount, in the score too.
-  let chosen: Results["strategy"] = null;
-  if (S0 && pr.strategy) {
-    const d = drawdownFor(pr, ddPlan), set = drawdownSetup(d);
-    chosen = { id: pr.strategy, name: DD_STRAT_NAMES[pr.strategy] ?? pr.strategy, success: drawdownSuccess(d), first: set.firstW / 12 };
+  // The plan's chance across history is the Retirement tab's simulator's:
+  // every starting month since 1926, with the strategy chosen there (spending
+  // a fixed amount until one is), in the score too. One run, so the headline
+  // and the simulator always say the same.
+  let chosen: Results["strategy"] = null, runs: Results["runs"] = null;
+  let S = S0;
+  if (S0 && ddPlan) {
+    const d = drawdownFor(pr, ddPlan), dr = drawdownRuns(d);
+    if (dr.of > 0) {
+      runs = { ok: dr.ok, of: dr.of };
+      S = { ...S0, success: dr.rate };
+    }
+    if (pr.strategy) chosen = { id: pr.strategy, name: DD_STRAT_NAMES[pr.strategy] ?? pr.strategy, success: dr.rate, first: drawdownSetup(d).firstW / 12 };
   }
-  const S = S0 && chosen ? { ...S0, success: chosen.success } : S0;
   const sc = score(a, S), H = holdings(entries, pr);
   // Retiring before 59½ with no plan for the years until then: part of the
   // retirement outlook is held back until the bridge is planned.
@@ -358,7 +364,7 @@ export function results(pr: Profile, entries: Entry[]): Results {
   // The first year Social Security starts, for either of you.
   const claimYears = S && !abroad ? [pr.p1.by && S.ss.a1 > 0 ? pr.p1.by + S.ss.claim : null, couple(pr) && pr.p2.by && S.ss.a2 > 0 ? pr.p2.by + S.ss.claim2 : null].filter((y): y is number => y != null) : [];
   return {
-    S, success: S ? S.success : null, runs: S && !chosen && S.H.total > 0 ? { ok: S.H.survived, of: S.H.total } : null, score: sc.score, parts: sc.P,
+    S, success: S ? S.success : null, runs, score: sc.score, parts: sc.P,
     partial: FACTORS.some((f) => !sc.P[f.id]),
     savingsIncome: S ? S.portIncome / 12 : null, ss: S && !abroad ? S.ss.total / 12 : null,
     ss1: S && !abroad ? S.ss.a1 / 12 : null, ss2: S && !abroad && couple(pr) ? S.ss.a2 / 12 : null,

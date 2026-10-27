@@ -31,7 +31,12 @@ export function daysSince(iso: string): number {
 
 /** A chance of success as a whole percent, rounded down so 99.7% never
     reads as 100%: only a plan that lasted every time shows 100. */
-export const pctDown = (v: number) => Math.floor(Math.round(v * 10000) / 100);
+export const pctDown = (v: number) => {
+  const p = Math.round(v * 10000) / 100;
+  // Between 99% and 100% a tenth is kept (99.7%, as the simulator shows it),
+  // so a near miss never reads as a whole 99 or rounds up to 100.
+  return p >= 99 && p < 100 ? Math.floor(p * 10) / 10 : Math.floor(p);
+};
 
 /** How often the plan lasted, in words: "every past market since 1926"
     only when it truly did; otherwise the count of retirements when the

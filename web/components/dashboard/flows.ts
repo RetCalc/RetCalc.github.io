@@ -15,7 +15,7 @@ import { taxFromPaycheck } from "@/tools/budget/to-calculator";
 import { TAX_DEF, type TaxInputs } from "@/tools/tax/model";
 import { SOCIAL_DEF, social, type SocialInputs } from "@/tools/social/model";
 import { DRAWDOWN_DEF, ddWrite, drawdownSetup, type DdItem, type DrawdownState } from "@/tools/drawdown/model";
-import { ddQuick } from "@/lib/engine/drawdown";
+import { ddQuick, ddWindows } from "@/lib/engine/drawdown";
 import { OUTSIDE_US, PER_YEAR, type Per, type Person, type Profile } from "./store";
 import { housingLines } from "./housing";
 
@@ -332,6 +332,13 @@ export function fromDrawdown(pr: Profile, d: DrawdownState, opened?: string, pla
 /** The chosen strategy's chance across history, with its saved settings. */
 export function drawdownSuccess(d: DrawdownState): number {
   return ddQuick(drawdownSetup(d).o).successRate;
+}
+
+/** The same run with its counts: how many of history's starting months
+    lasted, of how many (what the Retirement tab's simulator shows). */
+export function drawdownRuns(d: DrawdownState): { rate: number; ok: number; of: number } {
+  const o = drawdownSetup(d).o, of = ddWindows(o).length, rate = ddQuick(o).successRate;
+  return { rate, ok: Math.round(rate * of), of };
 }
 
 /* ---------- Saving that grows ---------- */

@@ -267,8 +267,9 @@ export function About() {
                     <li><b>College</b> comes out of saving in the college years, unless you&apos;re
                     saving for it ahead in your budget, in the same order.</li>
                     <li><b>Your chance of success</b> is how often the plan lasted through past
-                    markets, starting in each year since 1926, with the withdrawal strategy you
-                    choose on Retirement.</li>
+                    markets, starting in each month since 1926, with the withdrawal strategy you
+                    choose on Retirement (spending a fixed amount until you choose one). It&apos;s
+                    the same run the simulator on Retirement shows.</li>
                   </ul>
                 </Section>
                 <Section id="tools">
