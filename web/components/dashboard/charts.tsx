@@ -6,6 +6,7 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { useScrub } from "@/components/charts/ChartFrame";
+import { useNarrow } from "@/components/charts/useNarrow";
 import { shortMoney } from "./format";
 import type { Point } from "./model";
 
@@ -153,9 +154,9 @@ function rowsFor(items: { x: number; w: number; end?: boolean }[]): number[] {
     and the lane grows to fit. */
 export function Timeline({ lanes, from, to, now }: { lanes: Lane[]; from: number; to: number; now: number }) {
   const [ref, fit] = useWidth(1100);
-  // A phone's width: each lane's name goes above its line instead of
-  // beside it, so the years get the whole width and nothing scrolls.
-  const narrow = fit < 600;
+  // A phone: each lane's name goes above its line instead of beside it, so
+  // the years get the whole width and nothing scrolls.
+  const narrow = useNarrow();
   const W = narrow ? fit : Math.max(640, fit);
   const L = narrow ? 2 : 110, R = narrow ? 4 : 20, ROW = 15;
   // Words that would run past the right edge end at it instead.

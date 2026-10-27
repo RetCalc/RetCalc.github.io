@@ -17,6 +17,7 @@ import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { groupDigits, parseNum } from "@/lib/format";
+import { useNarrow } from "@/components/charts/useNarrow";
 import { useWidth } from "./charts";
 import { Frame } from "./Frame";
 import { longDate, money, shortMoney } from "./format";
@@ -48,8 +49,9 @@ export function TodayBars({ items }: { items: Item[] }) {
   const [ref, W] = useWidth(800);
   const [hover, setHover] = useState<string | null>(null);
   const have = sum(items, "asset"), owe = sum(items, "debt"), max = Math.max(have, owe, 1);
-  // A phone's narrow tile gives the bars the room the names don't need.
-  const L = W < 480 ? 64 : 120, R = W < 480 ? 64 : 90, bh = 34, gap = 22, H = bh * 2 + gap + 8;
+  // A phone gives the bars the room the names don't need.
+  const phone = useNarrow();
+  const L = phone ? 64 : 120, R = phone ? 64 : 90, bh = 34, gap = 22, H = bh * 2 + gap + 8;
   const row = (side: Item["side"], groups: { id: Group; name: string }[], y: number) => {
     const g = byGroup(items, side), total = side === "asset" ? have : owe;
     const shown = groups.filter((gr) => (g[gr.id] ?? 0) > 0);
