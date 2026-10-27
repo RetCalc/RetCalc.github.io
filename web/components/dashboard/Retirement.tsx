@@ -9,10 +9,11 @@
    laid out first, each in a line, to learn them before choosing. */
 
 import Link from "next/link";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ArrowDownToLineIcon, BookOpenIcon, ChevronDownIcon, MilestoneIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { CardHeadingLevel } from "@/components/ui/card-heading";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { DD_UI } from "@/tools/drawdown/text";
@@ -44,9 +45,18 @@ const OWN_WORDS: Record<string, string> = {
 /** "starting rate, years and starting balance". */
 const ownWords = (keys: string[]) => { const w = keys.map((k) => OWN_WORDS[k] ?? k); return w.length > 1 ? w.slice(0, -1).join(", ") + " and " + w[w.length - 1] : w[0]; };
 
+/* The address's part ("#bridge"), as it changes. */
+const onHash = (f: () => void) => { window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); };
+
 export function Retirement() {
   const { data, setProfile: set } = useDashboard();
   const pr = data.profile;
+  // Retiring before 59½: the page shows either the drawdown or the bridge,
+  // switched in the title bar; a link to the bridge opens on it.
+  const early = earlyRetirees(pr).length > 0;
+  const hash = useSyncExternalStore(onHash, () => window.location.hash, () => "");
+  const [picked, setPicked] = useState<"drawdown" | "early" | null>(null);
+  const side = !early ? "drawdown" : picked ?? (hash === "#bridge" ? "early" : "drawdown");
   const R = useMemo(() => results(pr, data.entries), [pr, data.entries]);
   const tax = R.abroad ? ", before taxes" : "";
   // Bumped when a strategy is chosen out here, so the simulator opens on it.
@@ -73,7 +83,13 @@ export function Retirement() {
   }, [pr, plan, set, setGuide]);
 
   return (
-    <Frame current="retirement" title="Retirement" sub={R.retireYear ? `Starting ${R.retireYear}` : R.gap ?? "Needs your ages and retirement age"}>
+    <Frame current="retirement" title="Retirement" sub={R.retireYear ? `Starting ${R.retireYear}` : R.gap ?? "Needs your ages and retirement age"} help={early ? "dsh-retirement-early" : undefined}
+      actions={early ? (
+        <Segmented role="group" aria-label="Show" id="retSide">
+          <SegmentedItem pressed={side === "drawdown"} onClick={() => setPicked("drawdown")}>Drawdown</SegmentedItem>
+          <SegmentedItem pressed={side === "early"} onClick={() => setPicked("early")}>Early retirement</SegmentedItem>
+        </Segmented>
+      ) : undefined}>
       <Tile id="at-retirement" icon={SunsetIcon} title="At retirement" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#plan-retirement" />}>Ages, spending and assumptions</Button>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Savings, {R.retireYear ?? "—"}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
@@ -85,8 +101,9 @@ export function Retirement() {
         {!R.abroad ? <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3"><ClaimField pr={pr} set={set} />{pr.who === "couple" ? <ClaimField pr={pr} set={set} i={1} /> : <div />}<div className="dsh-hint dsh-self-end">The same ages as on Income: change them in either place.</div></div></div> : null}
       </Tile>
 
-      <BridgeTile />
+      {side === "early" ? <BridgeTile /> : null}
 
+      {side === "drawdown" ? <>
       <div className="dsh-r4" id="compare"><Collapsible open={stratsOpen} onOpenChange={openStrats}><Tile id="strategies" icon={BookOpenIcon} title="The withdrawal strategies"
         right={<>{plan ? <Button variant="link" size="inline" onClick={() => setGuide(true)}>How the withdrawal strategies compare</Button> : null}
           <CollapsibleTrigger>{stratsOpen ? "Hide" : "Show all " + Object.keys(DD_UI).length}<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></>}>
@@ -131,6 +148,7 @@ export function Retirement() {
           </Tile>
         ) : <Note>The simulator opens once your profile has your ages, savings, retirement age and spending.</Note>}
       </div>
+      </> : null}
       {guide && view ? <DrawdownDialogs v={view} dialog={{ kind: "guide" }} close={() => setGuide(false)} /> : null}
     </Frame>
   );

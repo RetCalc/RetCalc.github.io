@@ -158,12 +158,12 @@ export function Timeline({ lanes, from, to, now }: { lanes: Lane[]; from: number
 
 /** The readiness score's five areas side by side, each as wide as its
     weight, filled as far as it scores; an area not scored yet is hatched. */
-export function SplitBar({ areas }: { areas: { w: number; p: number | null; name: string }[] }) {
+export function SplitBar({ areas }: { areas: { w: number; p: number | null; name: string; pts?: number | null }[] }) {
   const total = areas.reduce((s, a) => s + a.w, 0), gap = 0.8;
   const widths = areas.map((a) => (a.w / total) * (100 + gap) - gap);
   const starts = widths.map((_, i) => widths.slice(0, i).reduce((s, w) => s + w + gap, 0));
   return (
-    <svg className="dsh-splitbar" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label={areas.map((a) => a.name + (a.p == null ? ": not scored yet" : `: ${Math.round(a.p * a.w)} of ${a.w}`)).join(", ")}>
+    <svg className="dsh-splitbar" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label={areas.map((a) => a.name + (a.p == null ? ": not scored yet" : `: ${a.pts ?? Math.round(a.p * a.w)} of ${a.w}`)).join(", ")}>
       {areas.map((a, i) => {
         const w = widths[i], at = starts[i];
         return (

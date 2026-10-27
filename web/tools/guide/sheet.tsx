@@ -10,7 +10,7 @@ import { SheetPage, SheetSection, type SheetRows } from "@/components/shell/Shee
 import { Html } from "@/components/common/Html";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { opTacticsLine } from "@/tools/optimizer/words";
-import { FACTORS, minSpend, ok, pos, rating, riskLabel, stratName, withGuess } from "./calc";
+import { FACTORS, areaPoints, minSpend, ok, pos, rating, riskLabel, stratName, withGuess } from "./calc";
 import { PlanDrawing, series } from "./chart";
 import { factsHere, planLists } from "./moves";
 import { planSources } from "./score";
@@ -52,7 +52,7 @@ export function GuideSheet({ a, src }: { a: Answers; src: Sources }) {
       <div className="sh-cols">
         <SheetSection t="Your plan" rows={plan} />
         <SheetSection t="Your numbers" rows={nums} />
-        <SheetSection t="Score by area" rows={FACTORS.filter((f) => R.P[f.id]).map((f) => [f.name, Math.round(R.P[f.id]!.p * f.w) + " / " + f.w])} />
+        <SheetSection t="Score by area" rows={FACTORS.filter((f) => R.P[f.id]).map((f) => [f.name, areaPoints(R.P, R.score)[f.id] + " / " + f.w])} />
       </div>
       {list.length ? <div className="sh-moves"><div className="sh-t">Your next moves, in order</div><ol>{list.map((x) => <li key={x.id}><b>{x.t}.</b> <Html as="span" html={x.d} /> <i>{x.when}</i></li>)}</ol></div> : null}
       {kit.length ? <div className="sh-moves"><div className="sh-t">Your toolkit</div><ol>{kit.map((k) => <li key={k.id}><b>{k.name}.</b> {k.why}: {k.q}{/[?.!]$/.test(k.q) ? "" : "."}</li>)}</ol></div> : null}

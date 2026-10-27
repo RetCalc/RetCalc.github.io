@@ -388,6 +388,26 @@ export function score(a: Answers, S?: Sim | null) {
   const sc = have.length >= 2 ? Math.round((have.reduce((s, f) => s + f.w * P[f.id]!.p, 0) / w) * 100) : null;
   return { score: sc, P, n: have.length };
 }
+/** Each area's points as shown, whole numbers that add up to the score:
+    rounded together (largest remainder) when all five are scored, so the
+    rows never sum to one more or less than the total. With an area still
+    unscored the score is scaled to the areas there are, so each is just
+    rounded. */
+export function areaPoints(P: Partial<Record<FactorId, Part>>, total: number | null): Partial<Record<FactorId, number>> {
+  const have = FACTORS.filter((f) => P[f.id]);
+  const raw = have.map((f) => ({ id: f.id, v: Math.max(0, Math.min(1, P[f.id]!.p)) * f.w }));
+  const out: Partial<Record<FactorId, number>> = {};
+  if (total == null || have.length < FACTORS.length) { raw.forEach((r) => (out[r.id] = Math.round(r.v))); return out; }
+  raw.forEach((r) => (out[r.id] = Math.floor(r.v)));
+  let left = total - raw.reduce((s, r) => s + out[r.id]!, 0);
+  for (const r of raw.slice().sort((a, b) => (b.v - Math.floor(b.v)) - (a.v - Math.floor(a.v)))) {
+    if (left <= 0) break;
+    const w = FACTORS.find((f) => f.id === r.id)!.w;
+    if (out[r.id]! < w) { out[r.id]! += 1; left--; }
+  }
+  return out;
+}
+
 /** The score's word and color. `partial`: the retirement outlook isn't
     scored yet, so the number rests on the smaller areas alone and says
     neither on track nor off it. */

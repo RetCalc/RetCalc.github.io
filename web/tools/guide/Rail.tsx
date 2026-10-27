@@ -6,7 +6,7 @@
    button opens the score and the route as a sheet. */
 
 import { useState } from "react";
-import { FACTORS, barColor, guessing, ok, rating, retPath, type Part, type Sim } from "./calc";
+import { FACTORS, areaPoints, barColor, guessing, ok, rating, retPath, type Part, type Sim } from "./calc";
 import { Ring } from "./Ring";
 import { CHAPTERS, STEPS, applies, deeper, type RouteFacts, type StepDecl } from "./route";
 import { RULES, confidence, confidenceLine, headroom } from "./score";
@@ -94,17 +94,17 @@ export function ScoreCard({ g, plan, go, ring }: { g: GuideState; plan: RailPlan
       <div className="gd-score-top" hidden={!ring}><Ring score={R.score} partial={partial} /><div className="gd-score-t"><div className="r text-(color:--ink)" style={{ "--ink": rt.color } as React.CSSProperties}>{rt.label}</div>
         <div className="n">{R.score == null ? (R.n ? "Your score appears once two areas are answered." : "Your score appears as you answer.") : R.n < FACTORS.length ? "From " + R.n + " of " + FACTORS.length + " areas so far" : "All five areas answered"}</div>
         {R.score != null ? <div className="n gd-conf">{confidenceLine(confidence(g.a, g.src, have))}</div> : null}</div></div>
-      <div className="gd-facs">{FACTORS.map((f) => {
+      <div className="gd-facs">{(() => { const pts = areaPoints(R.P, R.score); return FACTORS.map((f) => {
         const p = R.P[f.id], h = headroom(f.id, p, g.a), to = p?.bad ?? f.step;
         return (
           <button key={f.id} type="button" className={"gd-fac" + (p ? "" : " na") + (p?.bad ? " bad" : "")} data-go={to} onClick={() => go(to)}>
-            <div className="top"><span>{f.name}</span><em>{p ? Math.round(p.p * f.w) + " / " + f.w : "—"}</em></div>
+            <div className="top"><span>{f.name}</span><em>{p ? pts[f.id] + " / " + f.w : "—"}</em></div>
             <div className="bar"><i className="bg-(--swatch)" style={{ "--f": (p ? Math.max(0, Math.min(1, p.p)) : 0).toFixed(3), "--swatch": p ? barColor(p.p) : "transparent" } as React.CSSProperties}></i></div>
             <div className="sub">{p ? p.txt : "Not answered yet"}</div>
             <div className="rule">{RULES[f.id]}</div>
             {h ? <div className="head">Up to {h.pts} more: {h.line}.</div> : null}</button>
         );
-      })}</div>
+      }); })()}</div>
     </>
   );
 }

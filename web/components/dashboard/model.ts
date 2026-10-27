@@ -338,3 +338,4 @@ export function allStrategies(pr: Profile, entries: Entry[]): StratResult[] {
 }
 
 export { FACTORS, STRATS };
+export { areaPoints } from "@/tools/guide/calc";

@@ -18,7 +18,7 @@ import { Frame } from "./Frame";
 import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./charts";
 import { daysSince, longDate, money, shortMoney } from "./format";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
-import { FACTORS, ageOf, answers, couple, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
+import { FACTORS, areaPoints, ageOf, answers, couple, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
 import { explain } from "./readiness";
 import { target, type FactorId } from "@/tools/guide/calc";
@@ -30,7 +30,8 @@ import { Empty, Tile, Tip } from "./ui";
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
 
 export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entries: DashData["entries"] }) {
-  const areas = FACTORS.map((f) => ({ name: f.name, w: f.w, p: R.parts[f.id]?.p ?? null }));
+  const pts = areaPoints(R.parts, R.score);
+  const areas = FACTORS.map((f) => ({ name: f.name, w: f.w, p: R.parts[f.id]?.p ?? null, pts: pts[f.id] ?? null }));
   const word = R.score == null ? "Not scored yet" : R.partial ? "Partial score" : R.score >= 85 ? "On track" : R.score >= 70 ? "Nearly there" : R.score >= 50 ? "Getting there" : "Needs work";
   // One area open at a time: why it scored what it did, and what would raise it.
   const [open, setOpen] = useState<FactorId | null>(null);
@@ -49,7 +50,7 @@ export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profil
           <div key={f.id} className="dsh-area" id={"readiness-" + f.id}>
             <button type="button" className="dsh-arow" aria-expanded={open === f.id} onClick={() => setOpen(open === f.id ? null : f.id)}>
               <span className="dsh-n">{f.name}</span>
-              <span className="dsh-v">{areas[i].p == null ? "Not scored yet" : `${Math.round(areas[i].p! * f.w)} of ${f.w}`}</span>
+              <span className="dsh-v">{areas[i].p == null ? "Not scored yet" : `${areas[i].pts} of ${f.w}`}</span>
               <ChevronDownIcon aria-hidden="true" />
             </button>
             {open === f.id && why ? (

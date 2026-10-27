@@ -127,14 +127,14 @@ const calculator: Tour<DashData> = { name: "Calculator", title: "How your saving
     { title: "Your stages", focus: "#gStages", tasks: () => [
       { h: "The Calculator follows your saving year by year until you retire. Each <b>stage</b> is a stretch of years when you save about the same: a child arriving, college, or a line reaching its limit each start a new one." },
       { h: "<b>Edit stages</b> opens them one by one: what goes in each month, how fast it grows and for how many years. They come from your plan, so they already match Income, Spending and Savings." },
-      { h: "Children's costs, and which accounts give up the money for them, are your plan's own: changing them here changes them everywhere. Anything else you try here stays in the Calculator." },
+      { h: "Everything you change here is saved to your plan: fees, returns, the stages themselves. Children's costs, and which accounts give up the money for them, change everywhere they're used. <b>Use the plan's figures</b>, at the top, puts the rest back." },
     ] },
     { title: "Your accounts", focus: "#saFields", tasks: () => [
       { h: "Today's balances by account, from your latest entry on Net worth: <b>Traditional</b> (taxed when it comes out), <b>Roth</b> (tax-free), <b>Brokerage</b> and <b>HSA</b>." },
       { h: "<b>Salary</b> and the <b>match</b> come from Income. With them the Calculator splits each stage's saving between accounts, the way your paycheck does." },
     ] },
     { title: "What you'll have", focus: "#xFVreal", tasks: () => [
-      { h: "This is what you'll have saved when you retire, in today's dollars: the same figure your Retirement tab starts from." },
+      { h: "This is what you'll have saved when you retire, in today's dollars. It's your plan's savings at retirement everywhere: Retirement, the chance of success and the overview all start from it." },
       { h: "<b>In today's dollars</b> takes inflation out, so it compares with what things cost now. The larger figure beside it is the same money in future dollars." },
     ] },
   ],
@@ -154,7 +154,7 @@ const retirement: Tour<DashData> = { name: "Retirement", title: "Make your savin
       { h: "<b>How the withdrawal strategies compare</b> lays them side by side on your own numbers." },
     ] },
     { title: "Try it in the simulator", focus: "#ddRate", tasks: ({ s }) => [
-      { h: "The simulator runs your plan through every market since 1926. Everything you change here is saved to your plan." },
+      { h: "The simulator runs your plan through every market since 1926. Its <b>Portfolio value</b> is your savings at retirement from the Calculator; change that there. Everything else you change here is saved to your plan." },
       { h: "<b>Starting withdrawal rate</b> is the share of your savings the first year takes, taxes included. Change it and your plan spends what that rate gives; Profile's spending stays as your goal.", ok: done(s.profile.ddOwn?.rate != null) },
       { h: "Around 4% has lasted through almost every market in history for a 30-year retirement. A longer retirement, or a strategy that never cuts, needs a lower rate." },
       { h: "Changed your mind? <b>Use the plan's figures</b>, above the simulator, puts them all back." },
@@ -162,6 +162,26 @@ const retirement: Tour<DashData> = { name: "Retirement", title: "Make your savin
   ],
   chip: () => "" };
 
-registerTours({ "dsh-accounts": accounts, "dsh-income": income, "dsh-taxes": taxes, "dsh-spending": spending, "dsh-savings": savings, "dsh-calculator": calculator, "dsh-retirement": retirement } as Record<string, Tour<DashData>>);
+/* Retiring before 59½: the same walk-through, with the switch at the top
+   and the bridge to 59½ first. */
+const retirementEarly: Tour<DashData> = { name: "Retirement", title: "Retire early and make your savings last", read: plan,
+  start: ({ s }) => ({ strategy: s.profile.strategy, bridge: !!s.profile.bridge }),
+  pages: [
+    retirement.pages[0],
+    { title: "Drawdown or early retirement", focus: "#retSide", tasks: () => [
+      { h: "You retire before 59½, so this tab has two sides. <b>Early retirement</b> plans the years until 401(k)s and IRAs open without the 10% penalty; <b>Drawdown</b> plans the rest of retirement, from your savings at retirement." },
+      { h: "Switch between them here at the top. The next pages are on the <b>Drawdown</b> side: choosing a strategy and the simulator. Each side is saved to your plan as you change it." },
+    ] },
+    { title: "Your bridge to 59½", focus: "#bridge || #retSide", tasks: ({ s }) => [
+      { h: "On the <b>Early retirement</b> side, the Early Retirement Bridge runs on your plan: the age you retire, what you'll spend, and what each account holds when you get there." },
+      { h: "It tries each way to pay for the bridge years (brokerage first, Roth contributions, the rule of 55, 72(t) payments, a Roth conversion ladder) and shows how often each lasted to 59½ in past markets, and what it costs in taxes, penalties and health cover." },
+      { h: "When it looks right, <b>Use this bridge plan</b> makes it your plan's. Until then, part of your readiness score is held back.", ok: done(!!s.profile.bridge) },
+    ] },
+    { ...retirement.pages[1], focus: "#strategies || #retSide" },
+    { ...retirement.pages[2], focus: "#ddRate || #retSide" },
+  ],
+  chip: () => "" };
+
+registerTours({ "dsh-retirement-early": retirementEarly, "dsh-accounts": accounts, "dsh-income": income, "dsh-taxes": taxes, "dsh-spending": spending, "dsh-savings": savings, "dsh-calculator": calculator, "dsh-retirement": retirement } as Record<string, Tour<DashData>>);
 export const TAB_TOURS = { accounts: "dsh-accounts", income: "dsh-income", taxes: "dsh-taxes", spending: "dsh-spending", savings: "dsh-savings", calculator: "dsh-calculator", retirement: "dsh-retirement" } as Record<string, string>;
 
