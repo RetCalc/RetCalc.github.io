@@ -533,6 +533,10 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
     background: var(--ds-surface); border-top: 1px solid var(--ds-rule); }
   /* Wider screens keep the tabs together in the middle. */
   @media (min-width: 600px) { .dsh-tabbar { grid-template-columns: repeat(5, 120px); justify-content: center; } }
+  /* A Help guide has its own Back and Next along the bottom: the bar
+     steps aside while it's open, and the page scrolls clear of it. */
+  body.gd-on .dsh-tabbar { display: none; }
+  body.gd-on .dsh-page { padding-bottom: calc(var(--gdh, 140px) + 40px); }
   /* While typing, the keyboard's room matters more than the bar. */
   .dsh-app:has(:is(input:not([type="checkbox"], [type="radio"], [type="range"]), textarea):focus) .dsh-tabbar { display: none; }
   /* Setup's own bar, clear of the notch too. */
