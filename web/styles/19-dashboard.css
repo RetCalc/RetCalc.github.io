@@ -46,14 +46,17 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-page { padding: 24px 28px 96px; }
 
 /* ---------- Phones and touch screens ----------
-   No rail (hover means nothing to a finger, and a phone held sideways puts
-   its notch over it): a title bar that stays at the top, with a menu
-   button that opens every tab, and the page kept clear of the notch, the
-   island and the home bar. A mouse never sees any of this. */
-.dsh-burger { display: none; }
+   No rail on a phone or an upright tablet (hover means nothing to a
+   finger, and a phone held sideways puts its notch over it): a bar along
+   the bottom instead, with the tabs used most and More, and the page kept
+   clear of the notch, the island and the home bar. A mouse never sees any
+   of this. */
+.dsh-tabbar { display: none; }
+/* The title bar's wrappers lay nothing out until a phone needs them to. */
+.dsh-help, .dsh-acts, .dsh-acct { display: contents; }
 .dsh-more { display: none; }
 .dsh-scrollx { overflow-x: auto; }
-/* The menu: every tab as a tap target, two across (three with room). */
+/* More: every tab as a tap target, two across (three with room). */
 .dsh-menu-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .dsh-menu-h > :last-child { margin-left: auto; }
 .dsh-menu, .dsh-menu-foot { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -67,6 +70,16 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-mi[aria-current] { border-color: var(--ds-amber); box-shadow: inset 0 0 0 1px var(--ds-amber); font-weight: 600; }
 .dsh-mi[aria-current] svg { color: var(--ds-amber); }
 .dsh-mi .dsh-dot { margin-left: auto; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ds-series-sky); }
+/* The bottom bar's tabs: an icon over its name, the current one in amber. */
+.dsh-tb { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 0; min-height: 56px; padding: 7px 2px 6px; border: 0; background: none; color: var(--ds-muted); font: inherit; font-size: 11px; font-weight: 500; line-height: 1.2; text-align: center; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; }
+.dsh-tb > span:not(.sr-only):not(.dsh-tb-i) { max-width: 100%; overflow-wrap: anywhere; }
+.dsh-tb-i { position: relative; display: grid; }
+.dsh-tb svg { width: 22px; height: 22px; }
+.dsh-tb[aria-current] { color: var(--ds-text); }
+.dsh-tb[aria-current] svg { color: var(--ds-amber); }
+.dsh-tb:active { color: var(--ds-text); }
+.dsh-tb:focus-visible { outline: 2px solid var(--ds-focus); outline-offset: -3px; border-radius: 12px; }
+.dsh-tb .dsh-dot { position: absolute; top: -1px; right: -4px; width: 7px; height: 7px; border-radius: 50%; background: var(--ds-series-sky); box-shadow: 0 0 0 2px var(--ds-surface); }
 
 /* ---------- Tiles ---------- */
 .dsh-grid { display: grid; gap: 16px; }
@@ -491,29 +504,45 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
   .dsh-page { max-width: 1372px; }
 }
 
-/* Phones and touch screens (see the frame's note near the top). */
-@media (max-width: 760px), (hover: none) and (pointer: coarse) {
+/* Phones and upright tablets (see the frame's note near the top): the
+   bottom bar; the title bar scrolls away with the page, the title free to
+   take two lines, Help and the account beside it, then what the page is
+   and its own buttons on rows of their own. */
+@media (max-width: 760px), (hover: none) and (pointer: coarse) and (max-width: 1023px), (hover: none) and (pointer: coarse) and (max-height: 500px) {
   .dsh-app { grid-template-columns: minmax(0, 1fr); }
   .dsh-rail { display: none; }
-  .dsh-burger { display: block; flex: none; }
-  .dsh-top { position: sticky; top: 0; z-index: 40; height: auto; min-height: 56px; gap: 10px; background: var(--ds-ground);
-    padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left)); }
-  .dsh-top h1 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 17px; }
-  .dsh-top .dsh-sub { display: none; }
-  .dsh-page { padding: 16px max(16px, env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
-  /* A tool's pinned answer sits under the title bar, not behind it. */
-  .dsh { --pin-top: calc(64px + env(safe-area-inset-top)); }
+  .dsh-top { flex-wrap: wrap; height: auto; gap: 8px 10px; background: var(--ds-ground);
+    padding: calc(12px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left)); }
+  .dsh-top h1 { min-width: 0; font-size: 19px; line-height: 1.25; }
+  .dsh-top .dsh-sub { order: 3; flex-basis: 100%; font-size: 13px; line-height: 1.45; }
+  .dsh-top .dsh-r { display: contents; }
+  .dsh-help { display: block; order: 1; margin-left: auto; }
+  .dsh-acct { display: block; order: 2; }
+  .dsh-r > .dsh-acct:first-child, .dsh-r > .dsh-acts:first-child + .dsh-acct { margin-left: auto; }
+  .dsh-acts { order: 4; flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 8px; }
+  .dsh-page { padding: 16px max(16px, env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  /* A tool's pinned answer sits at the top of the screen. */
+  .dsh { --pin-top: calc(8px + env(safe-area-inset-top)); }
+  .dsh-tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 0 max(4px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(4px, env(safe-area-inset-left));
+    background: var(--ds-surface); border-top: 1px solid var(--ds-rule); }
+  /* Wider screens keep the tabs together in the middle. */
+  @media (min-width: 600px) { .dsh-tabbar { grid-template-columns: repeat(5, 120px); justify-content: center; } }
+  /* While typing, the keyboard's room matters more than the bar. */
+  .dsh-app:has(:is(input:not([type="checkbox"], [type="radio"], [type="range"]), textarea):focus) .dsh-tabbar { display: none; }
   /* Setup's own bar, clear of the notch too. */
   .dsh-setup-top { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
   .dsh-sbody { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
   /* The timeline keeps its size and scrolls sideways, so its words stay readable. */
   .dsh-tl svg { width: auto; }
 }
-/* A phone on its side has little height: the title bar scrolls away
-   (scrolling back up brings the menu), and pinned answers sit at the top. */
-@media (max-height: 500px) and (hover: none) and (pointer: coarse) {
-  .dsh-top { position: static; }
-  .dsh { --pin-top: 8px; }
+/* A tablet on its side: the rail, its labels always showing, since a
+   finger can't hover to open it. */
+@media (hover: none) and (pointer: coarse) and (min-width: 1024px) and (min-height: 501px) {
+  .dsh-app { grid-template-columns: 236px minmax(0, 1fr); }
+  .dsh-rail-in, .dsh-rail:hover .dsh-rail-in, .dsh-rail:focus-within .dsh-rail-in { width: 236px; box-shadow: none; overflow-y: auto; padding-left: max(10px, env(safe-area-inset-left)); }
+  .dsh-rail .dsh-brand span, .dsh-ri span { opacity: 1; }
+  .dsh-skip:focus { left: 248px; }
 }
 /* Narrow screens: figures two to a row, steps with their button under
    them, short fields side by side, and nothing wider than the screen. */

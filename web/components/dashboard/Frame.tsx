@@ -1,9 +1,10 @@
 "use client";
 
 /* The Dashboard's frame: signed in only, with the icon rail on the left
-   (labels on hover) and the page's title bar. On a phone or any touch
-   screen the rail gives way to a menu button in the title bar, which opens
-   every tab at once. */
+   (labels on hover) and the page's title bar. On a phone, or a tablet held
+   upright, the rail gives way to a bar along the bottom: the tabs used most
+   and More, which opens every tab at once. A tablet on its side keeps the
+   rail, its labels always showing. */
 
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
@@ -79,13 +80,33 @@ function Rail({ current, dots }: { current: Section; dots: Partial<Record<Sectio
   );
 }
 
-/** Phones and touch screens: every tab in one menu, opened from the title
-    bar, with the theme switch and the way back to the site. */
-function MobileMenu({ current, dots }: { current: Section; dots: Partial<Record<Section, boolean>> }) {
+/* The tabs a phone keeps at hand in its bottom bar; the rest are under More. */
+const BAR: Section[] = ["overview", "accounts", "retirement", "next"];
+
+/** Phones and touch screens: a bar along the bottom with the tabs used
+    most, and More, which opens every tab at once with the theme switch and
+    the way back to the site. */
+function TabBar({ current, dots }: { current: Section; dots: Partial<Record<Section, boolean>> }) {
   const [open, setOpen] = useState(false);
+  const elsewhere = !BAR.includes(current), moreDot = SECTIONS.some((s) => !BAR.includes(s.id) && dots[s.id]);
   return (
-    <div className="dsh-burger">
-      <Button variant="outline" size="icon" aria-label="Open the dashboard menu" aria-expanded={open} onClick={() => setOpen(true)}><MenuIcon aria-hidden="true" /></Button>
+    <>
+      <nav className="dsh-tabbar" aria-label="Dashboard tabs">
+        {BAR.map((id) => {
+          const { name, icon: Icon } = SECTIONS.find((s) => s.id === id)!;
+          return (
+            <Link key={id} href={hrefFor(id)} className="dsh-tb" aria-current={id === current ? "page" : undefined}>
+              <span className="dsh-tb-i"><Icon aria-hidden="true" />{dots[id] ? <i className="dsh-dot" aria-hidden="true" /> : null}</span>
+              <span>{name}</span>{dots[id] ? <span className="sr-only">, something to fill in</span> : null}
+            </Link>
+          );
+        })}
+        <button type="button" className="dsh-tb" aria-current={elsewhere ? "page" : undefined} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(true)}>
+          <span className="dsh-tb-i"><MenuIcon aria-hidden="true" />{moreDot ? <i className="dsh-dot" aria-hidden="true" /> : null}</span>
+          <span>{elsewhere ? SECTIONS.find((s) => s.id === current)?.name ?? "More" : "More"}</span>
+          <span className="sr-only">: every tab</span>
+        </button>
+      </nav>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent size="household" aria-labelledby="dshMenuTitle">
           <div className="dsh-menu-h">
@@ -107,7 +128,7 @@ function MobileMenu({ current, dots }: { current: Section; dots: Partial<Record<
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
 
@@ -141,15 +162,21 @@ export function Frame({ current, title, sub, actions, help, children }: { curren
       <Rail current={current} dots={dots} />
       <div className="dsh-main">
         <header className="dsh-top">
-          <MobileMenu current={current} dots={dots} />
           <h1>{title}</h1>
           {/* New, with kinks still to work out. */}
           <Badge variant="highlight">Beta</Badge>
           {sub ? <span className="dsh-sub">{sub}</span> : null}
-          <div className="dsh-r">{help ? <HelpButton tool={help} /> : TAB_TOURS[current] ? <HelpButton tool={TAB_TOURS[current]} /> : null}{actions}<AccountButton inDashboard /></div>
+          {/* On a phone these wrappers let Help and the account stay beside
+              the title, and the page's own buttons take a row of their own. */}
+          <div className="dsh-r">
+            {help || TAB_TOURS[current] ? <span className="dsh-help"><HelpButton tool={help ?? TAB_TOURS[current]!} /></span> : null}
+            {actions ? <span className="dsh-acts">{actions}</span> : null}
+            <span className="dsh-acct"><AccountButton inDashboard /></span>
+          </div>
         </header>
         <div className="dsh-page" id="dsh-page" tabIndex={-1}>{fresh ? null : children}</div>
       </div>
+      <TabBar current={current} dots={dots} />
     </div>
   );
 }
