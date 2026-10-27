@@ -327,6 +327,8 @@ Gently rounded, consistent by role. Controls (buttons, inputs, selects, segmente
 
 Two marks look like accent edges but aren't, and are allowed: the inline select's 2px underline (a blank in a sentence, as on the Social Security Calculator, in the input's own border color with no radius), and a timeline segment's colored left edge (the Guide summary's "What the children cost" and the Optimizer's timeline), which marks where that stretch of years starts on a chart.
 
+One owner-approved exception (Learn mock C, 2026-10-26): the 3px Signal Amber left edge on a lesson's "applied to your plan" line (`.lrn-yours-line`, `web/styles/21-learn.css`), which ties the sentence in the text to the Your numbers panel beside it. It's for that line only. Learn also uses Eyebrow labels above its headings (the page, each lesson's number and track, the route's track, "Next for you"); that use is approved there and doesn't extend elsewhere.
+
 ## Components
 
 Firm and tactile: controls read as keys you press, with clear fills, real hit areas and a small physical response, but without bevels or glow.
