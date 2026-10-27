@@ -53,7 +53,7 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
    of this. */
 .dsh-tabbar { display: none; }
 /* The title bar's wrappers lay nothing out until a phone needs them to. */
-.dsh-help, .dsh-acts, .dsh-acct { display: contents; }
+.dsh-title, .dsh-help, .dsh-acts, .dsh-acct { display: contents; }
 .dsh-more { display: none; }
 .dsh-scrollx { overflow-x: auto; }
 /* More: every tab as a tap target, two across (three with room). */
@@ -518,12 +518,12 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
   .dsh-rail { display: none; }
   .dsh-top { flex-wrap: wrap; height: auto; gap: 8px 10px; background: var(--ds-ground);
     padding: calc(12px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left)); }
+  .dsh-title { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; flex: 1 1 0; min-width: 0; }
   .dsh-top h1 { min-width: 0; font-size: 19px; line-height: 1.25; }
   .dsh-top .dsh-sub { order: 3; flex-basis: 100%; font-size: 13px; line-height: 1.45; }
   .dsh-top .dsh-r { display: contents; }
-  .dsh-help { display: block; order: 1; margin-left: auto; }
+  .dsh-help { display: block; order: 1; }
   .dsh-acct { display: block; order: 2; }
-  .dsh-r > .dsh-acct:first-child, .dsh-r > .dsh-acts:first-child + .dsh-acct { margin-left: auto; }
   .dsh-acts { order: 4; flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 8px; }
   .dsh-page { padding: 16px max(16px, env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
   /* A tool's pinned answer sits at the top of the screen. */

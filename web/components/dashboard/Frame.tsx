@@ -162,9 +162,11 @@ export function Frame({ current, title, sub, actions, help, children }: { curren
       <Rail current={current} dots={dots} />
       <div className="dsh-main">
         <header className="dsh-top">
-          <h1>{title}</h1>
-          {/* New, with kinks still to work out. */}
-          <Badge variant="highlight">Beta</Badge>
+          <div className="dsh-title">
+            <h1>{title}</h1>
+            {/* New, with kinks still to work out. */}
+            <Badge variant="highlight">Beta</Badge>
+          </div>
           {sub ? <span className="dsh-sub">{sub}</span> : null}
           {/* On a phone these wrappers let Help and the account stay beside
               the title, and the page's own buttons take a row of their own. */}
