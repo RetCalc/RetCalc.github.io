@@ -14,6 +14,7 @@
    line passes them. Reduced motion shows everything as it ends. */
 
 import { ReportThumb } from "@/tools/guide/report/Thumb";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
@@ -40,9 +41,9 @@ export function Home({ data }: { data: HomeData }) {
             Calculators for saving, withdrawals, taxes, Roth conversions, healthcare and Social Security, each checked against <b>every market since 1926</b>. Free, and you don&apos;t need an account.
           </p>
           <div className="hm-btns">
-            <Link href="/calculator" className={buttonVariants({ size: "xl" })}>Open the Calculator<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>
-            <Link href="/guide" className={buttonVariants({ variant: "outline", size: "xl" })}>Start the guide</Link>
             <DashboardButton />
+            <Link href="/calculator" className={buttonVariants({ variant: "outline", size: "xl" })}>Open the Calculator</Link>
+            <Link href="/guide" className={buttonVariants({ variant: "outline", size: "xl" })}>Start the guide</Link>
           </div>
         </div>
       </section>
@@ -135,6 +136,33 @@ export function Home({ data }: { data: HomeData }) {
         </div>
       </section>
 
+      {/* After the tools along a life, the place that keeps them together. */}
+      <section aria-labelledby="hmDash">
+        <div className="hm-head hm-later">
+          <h2 className="hm-h2" id="hmDash" data-rv="">Your whole plan, in one place.</h2>
+          <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>With a free account, the Dashboard keeps your accounts, pay, spending and retirement together, all worked out from one profile.</p>
+        </div>
+        <Link href="/dashboard" className="hm-tile hm-amber" data-draw="" data-rv="">
+          <span className="hm-kick hm-c-amber hm-kick-row">My Dashboard<Badge variant="highlight">Beta</Badge></span>
+          <div className="hm-split hm-dash">
+            <div>
+              <h3 className="hm-h3">Net worth, readiness and what to do next, on one screen.</h3>
+              <p>Enter your numbers once, then update your balances each month or quarter and see how your plan moves. No bank logins: you type your own numbers.</p>
+              <ul className="hm-dashlist">
+                <li style={{ "--i": 0 } as React.CSSProperties}><CheckIcon aria-hidden="true" />Net worth now and projected through retirement</li>
+                <li style={{ "--i": 1 } as React.CSSProperties}><CheckIcon aria-hidden="true" />A readiness score and your chance of success</li>
+                <li style={{ "--i": 2 } as React.CSSProperties}><CheckIcon aria-hidden="true" />The tools, opened with your numbers filled in</li>
+              </ul>
+            </div>
+            <div className="hm-shot">
+              <Image className="dl-lt" src="/dashboard-landing/v2/dashboard-light.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 760px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
+              <Image className="dl-dk" src="/dashboard-landing/v2/dashboard-dark.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 760px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
+            </div>
+          </div>
+          <Go>Open My Dashboard</Go>
+        </Link>
+      </section>
+
       <section aria-labelledby="hmEveryday">
         <div className="hm-head hm-later">
           <h2 className="hm-h2" id="hmEveryday" data-rv="">Taxes, debt, housing and investing.</h2>
@@ -174,9 +202,9 @@ export function Home({ data }: { data: HomeData }) {
         <div data-rv="" style={{ "--d": 1 } as React.CSSProperties}>
           <p className="hm-body">Free, and no account needed. Everything you enter stays in your browser unless you sign in to save it.</p>
           <div className="hm-btns">
-            <Link href="/calculator" className={buttonVariants({ size: "xl" })}>Open the Calculator<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>
-            <Link href="/guide" className={buttonVariants({ variant: "outline", size: "xl" })}>Start the guide</Link>
             <DashboardButton />
+            <Link href="/calculator" className={buttonVariants({ variant: "outline", size: "xl" })}>Open the Calculator</Link>
+            <Link href="/guide" className={buttonVariants({ variant: "outline", size: "xl" })}>Start the guide</Link>
           </div>
         </div>
       </section>
@@ -184,10 +212,10 @@ export function Home({ data }: { data: HomeData }) {
   );
 }
 
-/** Beside the calculator and the guide, for everyone: signed out (or not
-    set up yet), /dashboard is its front page, which explains it. */
+/** First of the three, for everyone: signed out (or not set up yet),
+    /dashboard is its front page, which explains it. */
 function DashboardButton() {
-  return <Link href="/dashboard" className={buttonVariants({ variant: "outline", size: "xl" })}>My Dashboard<Badge variant="highlight">Beta</Badge></Link>;
+  return <Link href="/dashboard" className={buttonVariants({ size: "xl" })}>My Dashboard<Badge variant="highlight">Beta</Badge><ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>;
 }
 
 const ROWS = ["", "hm-r1", "hm-r2", "hm-r3", "hm-r4", "hm-r5", "hm-r6", "hm-r7", "hm-r8", "hm-r9", "hm-r10"] as const;

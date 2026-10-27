@@ -98,6 +98,14 @@ a.hm-tile:hover .hm-go svg{transform:translateX(3px)}
 .hm-split.hm-dd{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
 .hm-split > div{display:grid;gap:12px}
 .hm-guide{display:grid;grid-template-columns:112px 1fr;gap:20px;align-items:center}
+/* The Dashboard's tile: a picture of it in a window, beside what it does. */
+.hm-kick-row{display:flex;align-items:center;gap:8px}
+.hm-split.hm-dash{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)}
+.hm-shot{border:1px solid var(--ds-rule);border-radius:14px;overflow:hidden;background:var(--ds-ground);box-shadow:var(--ds-float)}
+.hm-shot img{width:100%;height:auto;vertical-align:top}
+.hm-dashlist{list-style:none;margin:2px 0 0;padding:0;display:grid;gap:8px;font-size:15px;color:var(--ds-text)}
+.hm-dashlist li{display:flex;gap:8px;align-items:flex-start}
+.hm-dashlist svg{width:16px;height:16px;flex:none;margin-top:3px;color:var(--ds-brand-jade)}
 .hm-steps{list-style:none;margin:0;padding:0;display:grid;gap:7px;font-size:14px;color:var(--ds-muted)}
 .hm-steps li{display:flex;gap:9px;align-items:center}
 .hm-steps b{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--ds-rule-strong);display:inline-grid;
@@ -115,7 +123,7 @@ a.hm-tile:hover .hm-go svg{transform:translateX(3px)}
   .hm-left,.hm-right,.hm-wide{grid-column:2}
   /* the wide tiles' age sits beside them, not above */
   .hm-tl .hm-node.hm-r1{grid-row:2} .hm-tl .hm-node.hm-r8{grid-row:9}
-  .hm-split,.hm-split.hm-dd{grid-template-columns:1fr;gap:16px}
+  .hm-split,.hm-split.hm-dd,.hm-split.hm-dash{grid-template-columns:1fr;gap:16px}
 }
 
 /* the everyday tools */
@@ -185,10 +193,16 @@ a.hm-tile:hover .hm-go svg{transform:translateX(3px)}
 [data-draw="pending"] .hm-chart .tpk-show{opacity:0}
 [data-draw="go"] .hm-chart .tpk-grow-y{transition:transform var(--du) var(--hm-ease) var(--dl,0s)}
 [data-draw="go"] .hm-chart .tpk-show{transition:opacity var(--du) var(--hm-ease) var(--dl,0s)}
+/* The Dashboard's tile: its picture rises into place, then its three
+   points check on one after another (--i). */
+[data-draw="pending"] .hm-shot{opacity:0;transform:translateY(28px) scale(.97)}
+[data-draw="pending"] .hm-dashlist li{opacity:0;transform:translateX(-8px)}
+[data-draw="go"] .hm-shot{transition:opacity .9s var(--hm-ease),transform 1.1s var(--hm-ease)}
+[data-draw="go"] .hm-dashlist li{transition:opacity .5s var(--hm-ease),transform .5s var(--hm-ease);transition-delay:calc(.55s + var(--i) * .22s)}
 
 @media (prefers-reduced-motion:reduce){
   .hm [data-rv],.hm-tile,.hm-node i,.hm-node span,.hm-chart .fade,[data-draw="go"] .hm-chart .draw,
-  [data-draw="go"] .hm-chart :is(.tpk-grow-y,.tpk-show){transition:none}
+  [data-draw="go"] .hm-chart :is(.tpk-grow-y,.tpk-show),[data-draw="go"] :is(.hm-shot,.hm-dashlist li){transition:none}
 }
 
 /* Printed, nothing waits to scroll into view. */
