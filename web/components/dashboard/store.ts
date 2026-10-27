@@ -71,11 +71,21 @@ export interface Profile {
   value: number | null; owed: number | null; rent: number | null;
   /** The mortgage: rate (0.065 is 6.5%) and payment per month. */
   mortRate: number | null; mortPay: number | null;
+  /** Owning's costs beyond the loan, per month in dollars, as set in the
+      Mortgage Calculator on Home (home.ts): the budget's housing lines. */
+  homeCosts?: { tax: number; ins: number; pmi: number; hoa: number; maint: number; util: number };
+  /** Health cover on Retirement has been opened (Next steps' step done). */
+  healthSeen?: boolean;
+  /** Renting: renter's insurance per month, the budget's insurance line. */
+  rentIns?: number | null;
   assume: Assumptions;
   /** Social Security: checked by the person, each benefit at full
       retirement age per month from a statement (null: estimated), and the
       age to claim (null: 67, or retirement if later). */
-  ss: { checked: boolean; own1: number | null; own2: number | null; claim: number | null; claim2: number | null };
+  ss: { checked: boolean; own1: number | null; own2: number | null; claim: number | null; claim2: number | null;
+    /** The share of the benefit expected, in percent (cuts if the trust
+        fund runs short): every benefit in the plan is scaled by it. Unset: 100. */
+    pct?: number | null };
   /** The withdrawal strategy chosen (the Drawdown Simulator's ids); null: none yet. */
   strategy: string | null;
   /** The Drawdown Simulator's own figures, set on Retirement in place of
@@ -97,8 +107,12 @@ export interface Profile {
       come from the plan. Unset: no bridge plan yet. */
   bridge?: { inputs: ToolInputs; at: string };
   /** The tools behind the tabs, as their own inputs: budget (pay, the
-      budget and the saving sliders), tax, social (pay history), drawdown. */
-  tools: { budget?: ToolInputs; tax?: ToolInputs; social?: ToolInputs; drawdown?: ToolInputs };
+      budget and the saving sliders), tax (the deductions and local tax on
+      Taxes & Savings), social (pay history), drawdown (the strategy, its
+      settings and the mix once retired), healthcare (the benchmark premium),
+      mortgage (owning's costs, extra payments and refinancing, on Home),
+      rentbuy (renting or buying, tried on Home). */
+  tools: { budget?: ToolInputs; tax?: ToolInputs; social?: ToolInputs; drawdown?: ToolInputs; healthcare?: ToolInputs; mortgage?: ToolInputs; rentbuy?: ToolInputs };
   /** How much saving rose each year (one rate for everything); replaced by
       `growth`, read only to carry an older profile over. */
   raise: number;
@@ -125,12 +139,15 @@ export interface Profile {
   kidCover: Record<string, Record<string, number>>;
 }
 
-export type AssetKind = "workplace" | "ira" | "roth" | "brokerage" | "hsa" | "cash" | "home" | "other";
+export type AssetKind = "workplace" | "g457" | "ira" | "roth" | "brokerage" | "hsa" | "cash" | "home" | "other";
 export type DebtKind = "mortgage" | "car" | "student" | "card" | "loan";
 export interface Item {
   id: string; side: "asset" | "debt"; kind: AssetKind | DebtKind; name: string; value: number;
   /** A debt's interest rate (0.069 is 6.9%). */
   rate?: number | null;
+  /** What was put in, when known: a brokerage account's cost basis, or a
+      Roth's own contributions (what can come out any time, tax-free). */
+  basis?: number | null;
 }
 /** What the household had and owed on a day (YYYY-MM-DD). One a day:
     saving again the same day replaces it. */

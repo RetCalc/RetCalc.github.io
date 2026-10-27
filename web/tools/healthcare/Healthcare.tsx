@@ -20,7 +20,7 @@ import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/componen
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
-import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
+import { setToolInputs, toolInputs, useToolScope, useToolState } from "@/components/tools/ToolState";
 import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
 import { KV } from "@/components/common/Readout";
 import { DASH, dollarsField, money, parseNum } from "@/lib/format";
@@ -76,6 +76,9 @@ export function Healthcare() {
   const { state: s, set, setState } = useToolState(HEALTHCARE_DEF);
   const router = useRouter();
   const toast = useToast();
+  // Figures the page this runs in sets itself (the Dashboard's, from its
+  // plan): said in its own words in place of their fields.
+  const scope = useToolScope(), locked = new Set(scope?.locked ?? []);
 
   useHouseholdFill("healthcare", s, setState, (h, c) => {
     const married = h.status === "m";
@@ -90,7 +93,7 @@ export function Healthcare() {
   });
 
   const {
-    joint, household, state, magi, acaMagi, bridgeYears, pctFPL, acaAge, spouseOn, acaAge2, kids, grossMonthly, std, enh, usingStateEst,
+    joint, household, state, magi, magi65, acaMagi, bridgeYears, pctFPL, acaAge, spouseOn, acaAge2, kids, grossMonthly, std, enh, usingStateEst,
     tier, partB, partDIrmaa, partD, totalLow, totalHigh, hasIrmaa, people, prev, next, save, nextThreshold, nextCost, cliff400, bronze, gold,
   } = healthcareCompute(s);
   const coveredDesc = (spouseOn ? (acaAge2 === acaAge ? "two adults age " + acaAge : "ages " + acaAge + " and " + acaAge2) : "age " + acaAge) +
@@ -98,9 +101,9 @@ export function Healthcare() {
 
   const bridge = bridgeYears > 0;
   const acaReady = bridge && acaMagi > 0;
-  const medReady = magi > 0;
+  const medReady = magi65 > 0;
   const nearCliff = acaReady && std.eligible && pctFPL > 3.5 && acaMagi < cliff400;
-  const nearIrmaa = medReady && !!next && nextThreshold - magi < 25000;
+  const nearIrmaa = medReady && !!next && nextThreshold - magi65 < 25000;
 
   /* The reading's figures, in the words and formats the cards below use. */
   const acaPrem = acaReady ? "$" + r(std.eligible ? std.net : grossMonthly) + "/mo" : DASH;
@@ -132,7 +135,7 @@ export function Healthcare() {
     <div className="hc-insight warn mt-0 max-w-copy">Your income is <b>{money(cliff400 - acaMagi)} below</b> the 400% FPL cliff. Every dollar above ${r(cliff400).toLocaleString()} eliminates the entire subsidy, adding ${r(std.credit)}/mo instantly. Roth conversions or portfolio decisions that push income over this line have an outsized cost.</div>
   ) : null;
   const irmaaWarn = nearIrmaa ? (
-    <div className="hc-insight warn mt-0 max-w-copy">Your income is <b>{money(nextThreshold - magi, 0)} below</b> the next IRMAA threshold (${nextThreshold.toLocaleString()}). Crossing it adds <b>${r(nextCost)}/mo per person</b> (${r(nextCost * people * 12).toLocaleString()}/yr{joint ? " for the couple" : ""}). Consider this before large Roth conversions or realizing capital gains.</div>
+    <div className="hc-insight warn mt-0 max-w-copy">Your income is <b>{money(nextThreshold - magi65, 0)} below</b> the next IRMAA threshold (${nextThreshold.toLocaleString()}). Crossing it adds <b>${r(nextCost)}/mo per person</b> (${r(nextCost * people * 12).toLocaleString()}/yr{joint ? " for the couple" : ""}). Consider this before large Roth conversions or realizing capital gains.</div>
   ) : null;
 
   let aca: React.ReactNode = null;
@@ -215,7 +218,7 @@ export function Healthcare() {
         <div className="kv total"><span className="k">Estimated total per person</span><span className="v">~${r(totalLow)}–${r(totalHigh)}/mo</span></div>
         {joint ? <KV k={<>For the couple <Sub>both at same IRMAA tier</Sub></>} v={"~$" + r(totalLow * 2) + "–$" + r(totalHigh * 2) + "/mo"} /> : null}
         {prev ? (
-          <div className="hc-insight max-w-copy">Your income is <b>{money(magi - prev[joint ? 1 : 0], 0)} above</b> the {TIER_NAMES[tier]} threshold (${prev[joint ? 1 : 0].toLocaleString()}). Reducing MAGI below that threshold saves <b>${r(save)}/mo per person</b> (${r(save * people * 12).toLocaleString()}/yr{joint ? " for the couple" : ""}) in Medicare premiums. Roth conversions and capital gains realizations both count toward IRMAA.</div>
+          <div className="hc-insight max-w-copy">Your income is <b>{money(magi65 - prev[joint ? 1 : 0], 0)} above</b> the {TIER_NAMES[tier]} threshold (${prev[joint ? 1 : 0].toLocaleString()}). Reducing MAGI below that threshold saves <b>${r(save)}/mo per person</b> (${r(save * people * 12).toLocaleString()}/yr{joint ? " for the couple" : ""}) in Medicare premiums. Roth conversions and capital gains realizations both count toward IRMAA.</div>
         ) : null}
         <div className={note}>Medicare costs use CMS&apos;s {HC_YEAR.year} figures: a ${HC_YEAR.medicare.irmaa.partB.toFixed(2)} standard Part B premium and {HC_YEAR.year} IRMAA tiers. Medicare applies the surcharge based on your income from <b>two years prior</b>, so income in retirement year 1 may not affect Part B until year 3. Part D estimate is a national average plus IRMAA; your actual plan premium varies. Medigap Plan G estimates are rough national ranges at age 65, and state, insurer, and enrollment age make a significant difference. Medicare Advantage (Part C) plans often have lower monthly premiums but different cost-sharing and network rules.</div>
       </>
@@ -236,6 +239,8 @@ export function Healthcare() {
           <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
+              {scope?.slots?.facts}
+              {locked.has("household") ? null : <>
               <div className={two}>
                 <NumberField id="hcRetireAge" label="Retirement age" unit="yrs old" max={75} value={s.retireAge} onValueChange={set("retireAge")} />
                 <SelectField id="hcState" label="State" value={s.state} onChange={set("state")}>
@@ -252,7 +257,9 @@ export function Healthcare() {
                 </SelectField>
               </div>
               <NumberField id="hcSpouseAge" wrapId="hcSpouseAgeWrap" hidden={!joint} label={<Tipped text="Spouse's age then" k="hcspouseage" />} unit="yrs old" max={90} value={s.spouseAge} onValueChange={set("spouseAge")} />
+              </>}
 
+              {locked.has("income") ? null : <>
               <GroupHead>Income</GroupHead>
               <Field id="hcIncome" label={<Tipped text="Retirement MAGI" k="hcincome" />}>
                 <Affixed prefix="$"><MoneyInput id="hcIncome" nonNeg value={s.income} onValueChange={set("income")} aria-describedby={needIncome ? "hcIncomeHint" : undefined} /></Affixed>
@@ -287,6 +294,7 @@ export function Healthcare() {
                 </div>
               </Field>
               <MoneyField id="hcSS" label={<>Social Security received <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="hcss" /></span></>} unit="/yr" value={s.ss} onValueChange={set("ss")} />
+              </>}
 
               <GroupHead>Your own quote</GroupHead>
               <Field id="hcManualPremium" label={<Tipped text="ACA benchmark premium" k="hcbenchmark" />}>

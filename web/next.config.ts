@@ -19,6 +19,8 @@ const nextConfig: NextConfig = {
       // The old site served each page as a file too (/drawdown.html), and
       // the Calculator modes were once called Single and Series.
       { source: "/index.html", destination: "/", permanent: true },
+      // The Dashboard's Taxes tab became part of Taxes & Savings.
+      { source: "/dashboard/taxes", destination: "/dashboard/savings", permanent: true },
       { source: "/single", destination: "/advanced", permanent: true },
       { source: "/series", destination: "/stages", permanent: true },
       { source: "/single.html", destination: "/advanced", permanent: true },

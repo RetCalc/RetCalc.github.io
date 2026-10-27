@@ -4,7 +4,8 @@
 import type { AssetKind, DebtKind } from "./store";
 
 export const ASSET_KINDS: { kind: AssetKind; name: string; group: Group }[] = [
-  { kind: "workplace", name: "401(k), 403(b) or 457", group: "ret" },
+  { kind: "workplace", name: "401(k) or 403(b)", group: "ret" },
+  { kind: "g457", name: "457(b)", group: "ret" },
   { kind: "ira", name: "Traditional IRA", group: "ret" },
   { kind: "roth", name: "Roth IRA or Roth 401(k)", group: "ret" },
   { kind: "hsa", name: "HSA", group: "ret" },
@@ -31,3 +32,10 @@ export const DEBT_GROUPS: { id: Group; name: string }[] = [
 ];
 export const groupOf = (kind: string): Group => ([...ASSET_KINDS, ...DEBT_KINDS].find((k) => k.kind === kind)?.group ?? "oth");
 export const kindName = (kind: string) => [...ASSET_KINDS, ...DEBT_KINDS].find((k) => k.kind === kind)?.name ?? "Other";
+
+/** The kinds that ask what was put in, and what it's called for each: a
+    brokerage account's cost basis, a Roth's own contributions. */
+export const BASIS_KINDS: Partial<Record<string, { name: string }>> = {
+  brokerage: { name: "Cost basis" },
+  roth: { name: "Your contributions" },
+};

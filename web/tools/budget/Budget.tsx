@@ -47,6 +47,10 @@ export function Budget() {
   // In a walkthrough, the Budget and its Paycheck tab are separate steps:
   // no tabs, and the paycheck is the walkthrough's next step.
   const scope = useToolScope(), go = useToolNav();
+  // Lines the page this runs in sets itself ("row:" and the line's own name:
+  // the Dashboard's housing, from its Home): shown, not changed here.
+  const lockedRows = new Set(scope?.locked ?? []);
+  const fixed = (r: BudgetRow) => lockedRows.has("row:" + (r.slot ?? r.desc));
   // Inside the Dashboard, a second column: the budget cut back for living on
   // the emergency fund.
   const dash = scope?.name === "dashboard", emerg = dash && s.efEmerg;
@@ -171,6 +175,9 @@ export function Budget() {
                     <div className="bgrow" key={i} data-empty={parseNum(r.amount) > 0 ? undefined : ""}>
                       {isSavingsRow(r) ? (
                         <span className="desc"><Tipped text={r.desc} k="bgsavings" /></span>
+                      ) : fixed(r) ? (
+                        /* Set by the page this runs in (the Dashboard's Home). */
+                        <span className="desc">{r.desc} <span className="text-muted-foreground">· from Home</span></span>
                       ) : isLockedRow(r, i) ? (
                         /* Fixed: the Paycheck tab reads this line as your premiums. */
                         <span className="desc" title="The Paycheck tab reads this line as your health premiums, so it keeps its name">{r.desc}</span>
@@ -206,10 +213,10 @@ export function Budget() {
                           <PencilIcon className="ml-1.5 inline size-3 shrink-0 align-baseline text-muted-foreground opacity-0 transition-opacity group-hover/name:opacity-100 group-focus-within/name:opacity-100 pointer-coarse:opacity-70" aria-hidden="true" />
                         </span>
                       )}
-                      <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></Affixed>
+                      <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} readOnly={fixed(r)} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount" + (fixed(r) ? ", set on Home" : "")} /></Affixed>
                       {emerg ? <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="emerg" data-i={i} value={r.emerg ?? r.amount} onValueChange={(v) => setRow(i, { emerg: v })} aria-label={r.desc + " in an emergency"} /></Affixed> : null}
-                      <Segmented size="compact" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => setRow(i, { freq: f })} />
-                      {isLockedRow(r, i) ? <span className="delspace"></span> : (
+                      <Segmented size="compact" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => { if (!fixed(r)) setRow(i, { freq: f }); }} />
+                      {isLockedRow(r, i) || fixed(r) ? <span className="delspace"></span> : (
                         <Button variant="ghost" size="icon-sm" title="Remove this line" aria-label={"Remove " + (r.desc || "this line")} onClick={() => removeLine(i)}><XIcon aria-hidden="true" /></Button>
                       )}
                     </div>

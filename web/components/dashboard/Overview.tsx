@@ -22,7 +22,7 @@ import { FACTORS, areaPoints, ageOf, answers, couple, history, holdings, mortgag
 import { nextSteps } from "./nextsteps";
 import { explain } from "./readiness";
 import { target, type FactorId } from "@/tools/guide/calc";
-import { flow } from "./flows";
+import { flow, mixWords, retireMix } from "./flows";
 import { hasAccounts, netWorth, useDashboard, type DashData } from "./store";
 import { useLandedOn } from "./land";
 import { Empty, Tile, Tip } from "./ui";
@@ -214,7 +214,7 @@ export function Overview() {
               : <p className="dsh-cap">Your projection appears once your profile has your age, savings, retirement age and spending.</p>}
           </div>
           <div className="dsh-assume dsh-cap">
-            In today&apos;s dollars{tax}. Assumes <b>{pct(realGrowth(pr))}</b> growth per year after inflation{R.retireYear ? ` until ${R.retireYear}` : ""}, then every market since 1926 with <b>{pr.assume.stocks}%</b> in stocks. <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#assumptions" />}>Set in Profile</Button>
+            In today&apos;s dollars{tax}. Assumes <b>{pct(realGrowth(pr))}</b> growth per year after inflation{R.retireYear ? ` until ${R.retireYear}` : ""}, then every market since 1926 invested <b>{mixWords(retireMix(pr))}</b>. <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#assumptions" />}>Growth is set in Profile</Button>, the mix on <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement" />}>Retirement</Button>.
           </div>
         </Tile>
         <div className="dsh-side"><Readiness R={R} pr={pr} entries={data.entries} /><Chance R={R} accounts={accounts} /></div>

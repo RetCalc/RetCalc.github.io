@@ -36,6 +36,7 @@ export function brAmortFactor(rate, age){
 }
 /* Real returns of the chosen mix, year by year from 1926, and their
    long-run averages: the plan engine's own table. */
+/* A stock %, or the fuller {us, sv, cash} plMix takes. */
 export function brMix(stock){ return plMix(stock); }
 export function brFlatSeq(len, r, pi){
   var a = new Float64Array(len), b = new Float64Array(len);
@@ -93,6 +94,8 @@ export function brTax(ctx, ord, gain, w){
    of the poverty line an expansion state moves you to Medicaid. */
 export function brHealth(ctx, age, magi){
   if (!ctx.aca) return {cost:0, kind:""};
+  // A partner still working covers the household through their job.
+  if (ctx.work2 > 0 && age < ctx.work2Until) return {cost:0, kind:"work"};
   var gross = ctx.premium > 0
     ? ctx.premium * hcAgeFactor(ctx.state, age) / hcAgeFactor(ctx.state, ctx.age)
     : hcGrossPremium(ctx.state, age, 0) * ctx.adults;
@@ -104,7 +107,7 @@ export function brHealth(ctx, age, magi){
 }
 
 export function brCtx(inp){
-  var mix = brMix(inp.stock), adults = inp.status === "m" ? 2 : 1;
+  var mix = brMix(inp.mixSpec || inp.stock), adults = inp.status === "m" ? 2 : 1;
   return Object.assign({}, inp, {mix:mix, real:mix.real, infl:mix.infl, adults:adults,
     fpl:hcFPL(Math.max(inp.household, adults)), mfpl:hcMedicaidFPL(Math.max(inp.household, adults)),
     nB:Math.max(1, Math.ceil(BR_UNLOCK - inp.age)),
@@ -113,7 +116,11 @@ export function brCtx(inp){
 }
 /* The rule of 55 can only apply from 55, so its input only shows once the
    retirement age gets there. */
-export function brWage(ctx, age){ return ctx.work > 0 && age < ctx.workUntil ? ctx.work : 0; }
+/* Pay in a year: part-time work, and a partner's pay while they keep
+   working (work2, to work2Until, in the early retiree's years). */
+export function brWage(ctx, age){
+  return (ctx.work > 0 && age < ctx.workUntil ? ctx.work : 0) + (ctx.work2 > 0 && age < ctx.work2Until ? ctx.work2 : 0);
+}
 
 /* ---- the pieces of a plan ---- */
 /* What one ladder rung has to cover in the year it's spent: spending, less
@@ -362,7 +369,7 @@ export function brBetter(a, b){
 /* How often a plan reaches 59½ intact across every historical start. */
 export function brHoldRate(ctx, plan){
   var mix = ctx.mix, ok = 0, of = 0;
-  for (var s = 0; s + ctx.nB <= mix.n; s++){
+  for (var s = mix.first || 0; s + ctx.nB <= mix.n; s++){
     of++;
     if (brSim(ctx, plan, {r:mix.r, pi:mix.pi, off:s, len:ctx.nB}, false).ok) ok++;
   }
@@ -446,7 +453,7 @@ export function brMCSeqs(ctx, mcSeed = 20260902){
   var mix = ctx.mix, L = ctx.nB, N = BR_TRIALS, rng = mulberry32((mcSeed ^ 0x5bd1e995) >>> 0);
   var r = new Float64Array(N * L), pi = new Float64Array(N * L);
   for (var i = 0; i < N * L; i++){
-    var k = Math.floor(rng() * mix.n);
+    var k = (mix.first || 0) + Math.floor(rng() * (mix.n - (mix.first || 0)));
     r[i] = mix.r[k]; pi[i] = mix.pi[k];
   }
   return {r:r, pi:pi, N:N};
@@ -460,7 +467,7 @@ export function brTest(ctx, p, mc){
     }
     return out;
   }
-  for (var s = 0; s + ctx.nB <= mix.n; s++){
+  for (var s = mix.first || 0; s + ctx.nB <= mix.n; s++){
     var r = brSim(ctx, p, {r:mix.r, pi:mix.pi, off:s, len:ctx.nB}, false);
     r.start = HIST_START + s;
     out.runs.push(r);

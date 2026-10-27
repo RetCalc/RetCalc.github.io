@@ -112,9 +112,11 @@ export function pias(a: Answers, retire: number) {
   const spAt = mar(a) && ok(a.spouseAge) && ok(a.age) ? a.spouseAge + (retire - a.age) : retire;
   const yrs2 = Math.max(1, Math.min(35, Math.round(spAt) - 22));
   const own = pos(a.ssOwn), own2 = mar(a) && pos(a.ssOwn2);
+  // The share of the benefit expected (the Dashboard asks), on every benefit.
+  const k = ok(a.ssScale) ? Math.max(0, Math.min(1, a.ssScale)) : 1;
   return {
-    pia1: own ? a.ssOwn! : ssEstimate(a.income || 0, yrs1, 67).pia,
-    pia2: !mar(a) ? 0 : own2 ? a.ssOwn2! : ssEstimate(a.income2 || 0, yrs2, 67).pia,
+    pia1: (own ? a.ssOwn! : ssEstimate(a.income || 0, yrs1, 67).pia) * k,
+    pia2: (!mar(a) ? 0 : own2 ? a.ssOwn2! : ssEstimate(a.income2 || 0, yrs2, 67).pia) * k,
     own, own2, career: yrs1, career2: yrs2,
   };
 }
@@ -214,12 +216,15 @@ export function planIn(a: Answers, over: Over = {}): (PlToday & { monthly: numbe
   return {
     status: mar(a) ? "m" : "s", state: a.state || "IL", age: a.age,
     spouseAge: mar(a) && ok(a.spouseAge) ? a.spouseAge : null, retire, stopAge: stop ?? null,
-    trad: A.trad, roth: A.roth, brok: A.brok, rothBasis: A.roth * 0.5, brokBasis: A.brok * 0.6,
+    trad: A.trad, roth: A.roth, brok: A.brok,
+    // What was put in: as given (the Dashboard's accounts), else estimated.
+    rothBasis: ok(a.rothBasisNow) ? Math.min(A.roth, a.rothBasisNow) : A.roth * 0.5,
+    brokBasis: ok(a.brokBasisNow) ? Math.max(0, a.brokBasisNow) : A.brok * 0.6,
     saveTrad: sp.t + emp, saveRoth: sp.r, saveBrok: sp.b, real: a.risk || 0.045, infl: BASIC_INFL as number,
     spend, pia1: pia.pia1, pia2: pia.pia2, claim1: claim, claim2: claim,
     pension: pos(a.pension) ? a.pension * 12 : 0, pensionAge: ok(a.pensionAge) ? a.pensionAge : null,
     pensionCola: a.pensionCola === "yes", aca: a.hcIncl !== "yes",
-    household: hasChanges(a) && !over.flat ? householdAtRetire(a, retire) : mar(a) ? 2 : 1, rule55: a.rule55 === "yes", heirRate: PL_HEIR, mix: retMix(a),
+    household: hasChanges(a) && !over.flat ? householdAtRetire(a, retire) : mar(a) ? 2 : 1, rule55: a.rule55 === "yes", heirRate: PL_HEIR, mix: a.retMixAll ? { ...a.retMixAll } : retMix(a),
     years: yearsFor(a, retire), target: target(a), strategy: "fixed", minSpend: 0, fromYear: HIST_START as number,
     monthly,
   };
@@ -277,7 +282,8 @@ export function sim(a: Answers, over?: Over, base = false): Sim | null {
     D.rows.forEach((r) => { const aca = r.health - r.med; tx += r.tax + r.irmaa; if (aca > 0) { hc += aca; hn++; } });
     const out: Sim = { key, I, P, C, T, tactics: !!Tq, fv: P.fv, years: C.years, ss, spend: I.spend, retire: I.retire,
       monthly: I.monthly, real: I.real, stop: I.stopAge, saveYears: (I.stopAge == null ? I.retire : I.stopAge) - I.age,
-      mix: I.mix, inc: pensionItems(a, I.retire), pension: I.pension, path: (P as unknown as { path: number[] }).path, H, D,
+      // The stocks' share at the start (US and small value), for the figures that take one.
+      mix: typeof I.mix === "number" ? I.mix : I.mix.us + I.mix.sv, inc: pensionItems(a, I.retire), pension: I.pension, path: (P as unknown as { path: number[] }).path, H, D,
       success: H.successRate, taxYr: D.rows.length ? tx / D.rows.length : 0, hcYr: hn ? hc / hn : 0, hcYears: hn,
       lifeTax: H.medTax, portIncome: P.fv * 0.04, coverage: 0, ...(sched ? { sched } : {}) };
     out.coverage = (out.portIncome + ss.total + I.pension) / (I.spend + out.taxYr);

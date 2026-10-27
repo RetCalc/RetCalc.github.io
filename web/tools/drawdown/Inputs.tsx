@@ -48,8 +48,9 @@ export function Inputs({ v, fromNote, periods, open }: {
 }) {
   const { s, set, setState, o, P, firstW, r1, age, mode, inputs, setInputs } = v;
   const toast = useToast();
-  // Set by the page this runs in (the Dashboard's, from its Calculator): shown, not typed.
-  const lockedInitial = useToolScope()?.locked?.initial;
+  // Figures the page this runs in sets itself (the Dashboard's, from its
+  // plan): said in its own words in place of their fields.
+  const scope = useToolScope(), locked = new Set(scope?.locked ?? []);
   const strat = o.strategy, U = DD_UI[strat] || DD_UI.fixed, S = DD_STRAT[strat];
   const shown = (id: string) => U.blocks.includes(id);
   const str = (k: string) => s[k] as string;
@@ -213,17 +214,19 @@ export function Inputs({ v, fromNote, periods, open }: {
           </SegmentedGroup>
         </CardAction></CardHeader>
         <CardContent>
+          {scope?.slots?.facts}
           <GroupHead first>Your portfolio at retirement</GroupHead>
-          <Field id="ddInitial" label="Portfolio value">
-            <Affixed prefix="$"><MoneyInput id="ddInitial" nonNeg value={str("initial")} onValueChange={set("initial")} readOnly={!!lockedInitial}
-              aria-invalid={noPortfolio || undefined} aria-describedby={lockedInitial ? "ddInitialFrom" : noPortfolio ? "ddInitialWarn" : undefined} /></Affixed>
-            {lockedInitial ? <div className="mt-1.5 text-note text-muted-foreground" id="ddInitialFrom">{lockedInitial}</div> : null}
-            <div className="mt-1.5 flex items-start gap-2 text-note text-destructive" hidden={!noPortfolio}>
-              <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              <span id="ddInitialWarn">Enter your portfolio value to run the simulation.</span>
-            </div>
-            {lockedInitial ? null : <Button variant="outline" size="sm" className="mt-1.5" id="ddCopy" onClick={v.copyFromPlan}>Copy from your plan</Button>}
-          </Field>
+          {locked.has("initial") ? null : (
+            <Field id="ddInitial" label="Portfolio value">
+              <Affixed prefix="$"><MoneyInput id="ddInitial" nonNeg value={str("initial")} onValueChange={set("initial")}
+                aria-invalid={noPortfolio || undefined} aria-describedby={noPortfolio ? "ddInitialWarn" : undefined} /></Affixed>
+              <div className="mt-1.5 flex items-start gap-2 text-note text-destructive" hidden={!noPortfolio}>
+                <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <span id="ddInitialWarn">Enter your portfolio value to run the simulation.</span>
+              </div>
+              <Button variant="outline" size="sm" className="mt-1.5" id="ddCopy" onClick={v.copyFromPlan}>Copy from your plan</Button>
+            </Field>
+          )}
           <Field id="ddMixBtn" label={<Tipped text="Asset mix" k="ddstocks" />}>
             <Button variant="outline" size="lg" className="w-full justify-between" id="ddMixBtn" onClick={() => open({ kind: "mix" })}><span id="ddMixText" className="min-w-0 flex-1 truncate text-left">{mixText(o)}</span>
               <svg className="text-muted-foreground" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 3.5l4.5 4.5L5 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></Button>
@@ -263,7 +266,7 @@ export function Inputs({ v, fromNote, periods, open }: {
           </div>
           <GroupHead>Your retirement</GroupHead>
           <div className="two bottomalign max-sm:grid-cols-2">
-            <NumberField id="ddRetireAge" className="ddadv" label={<>Age at retirement <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="retireage" /></span></>} unit="yrs old" max={120}
+            <NumberField id="ddRetireAge" className="ddadv" hidden={locked.has("retireAge")} label={<>Age at retirement <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="retireage" /></span></>} unit="yrs old" max={120}
               value={str("retireAge")} onValueChange={(val) => setState((c) => {
                 const next: DrawdownState = { ...c, retireAge: val };
                 const a = parseNum(val);
@@ -450,6 +453,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               })}>+ Add spending stage</Button>
             </div>
             <GroupHead>Income in retirement</GroupHead>
+            {locked.has("ss") ? scope?.slots?.ssFacts : <>
             <SelectField id="ddSSMode" label="Social Security" value={fromSocial ? "social" : ssMode}
               onChange={(m) => m === "social" ? copySocial() : setState((c) => ({ ...c, ssMode: m, ssFrom: "" }))}>
               <option value="none">Not included</option>
@@ -488,6 +492,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               <Affixed suffix="yrs"><NumberInput id="ddSSDelay" nonNeg max={ssAgeMode ? 120 : 30} value={str("ssDelay")} onValueChange={set("ssDelay")}
                 onBlur={() => ssAgeMode && setState(clampSSAge)} /></Affixed>
             </Field>
+            </>}
             <div className="field mt-3.5">
               <Label className="mb-1.5"><span><Tipped text="Other income" k="customincome" /></span></Label>
               {items("incomeItems", "ddIncomeList")}

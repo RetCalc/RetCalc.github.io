@@ -419,7 +419,7 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
     <p className="op-fine">{(res.goal === "spend" && res.best.spend ? "The best plan lives on " + money(res.best.spend) + " per year after tax and the usual way on " + money(res.base.spend) +
       ", each the most it can in " + pctStr(res.target, 0) + " of markets (the roadmap, charts and table show each at that spending),"
       : "Every plan lives on the same " + money(res.P.spend) + " per year after tax") + " and runs to age " + (res.age1 + res.years) +
-      ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " per year after inflation with " + res.P.mix + "% in stocks. " +
+      ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " per year after inflation with " + (typeof res.P.mix === "number" ? res.P.mix : res.P.mix.us + res.P.mix.sv) + "% in stocks. " +
       "Left after tax counts traditional money at " + pctStr(1 - h, 0) + " of its value, for the income tax whoever inherits it will owe; Roth and brokerage count in full. " +
       "Tax is " + yearData().year + " federal and " + (state ? state.n : "state") + " law, held in today's dollars. Both of you are assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice."}</p>
   );

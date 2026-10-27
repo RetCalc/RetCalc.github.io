@@ -20,7 +20,8 @@ import { Hosted, TOOL_VIEWS, toolHref } from "./host";
 import { answers, otherMonth } from "./model";
 import { childCost, children } from "@/tools/guide/schedule";
 import { useDashboard } from "./store";
-import { Note, Tile, TipLabel } from "./ui";
+import { Note, Tile, TipLabel, To } from "./ui";
+import { housingLines } from "./housing";
 
 export function Spending() {
   const { data, setProfile } = useDashboard();
@@ -28,6 +29,8 @@ export function Spending() {
   // Bumped when the budget is changed from out here (the college line), so
   // the budget below opens again with it.
   const [rev, setRev] = useState(0);
+  // The housing lines Home sets, shown in the budget and changed there.
+  const housing = Object.keys(housingLines(pr));
   const coming = F.hasPay ? F.afterTax + otherMonth(pr) : null;
   // Saving for college through the budget leaves less to save otherwise;
   // premiums already taken out of pay aren't spent twice.
@@ -65,7 +68,8 @@ export function Spending() {
         {left != null && left < 0 ? <div className="dsh-mt"><Note>You&apos;re spending more than comes in after taxes. Check the numbers, or look for room in the budget below.</Note></div> : null}
       </Tile>
       <div className="dsh-r4" id="budget">
-        <Hosted key={rev} household={null}
+        {housing.length ? <p className="dsh-cap dsh-mt6">Lines marked &ldquo;from Home&rdquo; are your {pr.home === "rent" ? "rent and renter's insurance" : "mortgage and what owning costs"}, set on <To href="/dashboard/home">Home</To>.</p> : null}
+        <Hosted key={rev} household={null} locked={housing.map((n) => "row:" + n)}
           seed={(id) => (id === "budget" ? ({ ...budgetFor(pr), view: "budget" } as unknown as ToolInputs) : id === "tax" ? (taxFor(pr) as unknown as ToolInputs) : undefined)}
           keep={(id, d) => { if (id === "budget") setProfile((p) => fromBudget(p, d as unknown as BudgetInputs)); }}>
           <Budget />

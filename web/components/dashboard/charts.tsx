@@ -110,44 +110,83 @@ export interface Lane {
   lead?: string;
 }
 
+/* A label's width at the timeline's 12px, measured once the page can
+   (an estimate before that), so labels can be kept from touching. */
+let measureCtx: CanvasRenderingContext2D | null | undefined;
+function textWidth(text: string): number {
+  if (measureCtx === undefined && typeof document !== "undefined") {
+    measureCtx = document.createElement("canvas").getContext("2d");
+    if (measureCtx) measureCtx.font = "12px " + getComputedStyle(document.body).fontFamily;
+  }
+  return measureCtx ? measureCtx.measureText(text).width : text.length * 6.6;
+}
+
+/** Labels along a line, each at its own x (`end` anchors it on its right
+    edge), put in the first row where it touches nothing already there:
+    returns each label's row (0 nearest the line). */
+function rowsFor(items: { x: number; w: number; end?: boolean }[]): number[] {
+  const GAP = 10, rows: [number, number][][] = [];
+  return items.map((it) => {
+    const from = it.end ? it.x - it.w : it.x, to = from + it.w;
+    let r = 0;
+    while (rows[r]?.some(([a, b]) => from < b + GAP && to > a - GAP)) r++;
+    (rows[r] ??= []).push([from, to]);
+    return r;
+  });
+}
+
 /** Your timeline: who's working or retired, children's college years, and
-    the dates along the way, with today as the amber line. */
+    the dates along the way, with today as the amber line. Words above and
+    below each line never touch: one that would goes to a row of its own,
+    and the lane grows to fit. */
 export function Timeline({ lanes, from, to, now }: { lanes: Lane[]; from: number; to: number; now: number }) {
   const [ref, fit] = useWidth(1100);
   // Never narrower than its labels need; a phone scrolls it sideways.
   const W = Math.max(640, fit);
-  const L = 110, R = 20, G = 58, H = 40 + lanes.length * G + 14;
+  const L = 110, R = 20, ROW = 15;
   const X = (y: number) => L + ((y - from) / (to - from)) * (W - L - R);
   const every = W < 700 ? 10 : 5, ticks: number[] = [];
   for (let y = Math.ceil((from + 1) / every) * every; y <= to; y += every) ticks.push(y);
+  // Each lane's words, laid out: above the line (how old you are now, each
+  // span's name, the note), below it (the dates), in year order.
+  const laid = lanes.map((ln) => {
+    const above: { key: string; x: number; label: string; strong?: boolean }[] = [];
+    if (ln.lead) above.push({ key: "lead", x: X(now) + 8, label: ln.lead });
+    ln.spans.forEach((sp) => { if (sp.label) above.push({ key: "s" + sp.kind + sp.from, x: Math.max(X(sp.from), X(now) + 6) + 2, label: sp.label }); });
+    if (ln.note) above.push({ key: "note", x: X(ln.note.at), label: ln.note.label, strong: true });
+    above.sort((a, b) => a.x - b.x);
+    const upRows = rowsFor(above.map((a) => ({ x: a.x, w: textWidth(a.label) })));
+    const evs = ln.events.slice().sort((a, b) => a.at - b.at);
+    // The first date's words go left of its dot, unless that runs into the names.
+    const below = evs.map((e, j) => { const w = textWidth(e.label), left = j === 0 && X(e.at) - 4 - w >= L; return { e, w, left, x: left ? X(e.at) - 4 : X(e.at) + 4 }; });
+    const downRows = rowsFor(below.map((b) => ({ x: b.x, w: b.w, end: b.left })));
+    const up = Math.max(0, ...upRows) + (above.length ? 1 : 0), down = Math.max(0, ...downRows) + (below.length ? 1 : 0);
+    return { ln, above, upRows, below, downRows, up, down };
+  });
+  // Each lane's line, below the rows of words above it.
+  const ys: number[] = [];
+  let y0 = 26;
+  for (const l of laid) { const y = y0 + 16 + Math.max(1, l.up) * ROW; ys.push(y); y0 = y + Math.max(1, l.down) * ROW + 10; }
+  const H = y0 + 6;
   return (
     <div ref={ref} className="dsh-tl">
       <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Your timeline">
         {ticks.map((y) => <text key={y} x={X(y)} y={18} textAnchor="middle">{y}</text>)}
         <line className="dsh-now" x1={X(now)} x2={X(now)} y1={26} y2={H - 8} />
-        {lanes.map((ln, i) => {
-          const y = 56 + i * G;
+        {laid.map(({ ln, above, upRows, below, downRows }, i) => {
+          const y = ys[i];
           return (
             <g key={ln.name + i}>
               <text className="dsh-lbl" x={0} y={y + 4}>{ln.name}</text>
               <line className="dsh-lane" x1={L} x2={W - R} y1={y} y2={y} />
-              {ln.spans.map((s) => (
-                <g key={s.kind + s.from}>
-                  <line className={"dsh-span " + s.kind} x1={X(Math.max(from, s.from)) + 3} x2={X(Math.min(to, s.to)) - 3} y1={y} y2={y} />
-                  {s.label ? <text x={Math.max(X(s.from), X(now) + 6) + 2} y={y - 11}>{s.label}</text> : null}
+              {ln.spans.map((sp) => <line key={sp.kind + sp.from} className={"dsh-span " + sp.kind} x1={X(Math.max(from, sp.from)) + 3} x2={X(Math.min(to, sp.to)) - 3} y1={y} y2={y} />)}
+              {above.map((a, k) => <text key={a.key} className={a.strong ? "dsh-strong" : undefined} x={a.x} y={y - 11 - upRows[k] * ROW}>{a.label}</text>)}
+              {below.map((b, k) => (
+                <g key={b.e.label}>
+                  <circle className="dsh-ev" cx={X(b.e.at)} cy={y} r={5} />
+                  <text x={b.x} y={y + 21 + downRows[k] * ROW} textAnchor={b.left ? "end" : "start"}>{b.e.label}</text>
                 </g>
               ))}
-              {ln.events.map((e, j) => (
-                <g key={e.label}>
-                  <circle className="dsh-ev" cx={X(e.at)} cy={y} r={5} />
-                  {/* The first event's words go left of its dot, unless that runs into the names. */}
-                  {j || X(e.at) - 4 - e.label.length * 6.4 < L
-                    ? <text x={X(e.at) + 4} y={y + 21} textAnchor="start">{e.label}</text>
-                    : <text x={X(e.at) - 4} y={y + 21} textAnchor="end">{e.label}</text>}
-                </g>
-              ))}
-              {ln.lead ? <text x={X(now) + 8} y={y - 11}>{ln.lead}</text> : null}
-              {ln.note ? <text className="dsh-strong" x={X(ln.note.at)} y={y - 11}>{ln.note.label}</text> : null}
             </g>
           );
         })}

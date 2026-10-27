@@ -14,7 +14,7 @@ import { useAccount } from "@/components/account/AccountProvider";
 import { useDashboard, unstarted, entryFrom, EMPTY_PROFILE, type Profile, type Entry } from "@/components/dashboard/store";
 import { results, holdings, mortgage as mortgageOf, ageOf, couple, contribMonth, grossYear, people, nameOf, spendMonth, realGrowth, type Results } from "@/components/dashboard/model";
 import { guardrailsChance } from "@/components/dashboard/readiness";
-import { flow } from "@/components/dashboard/flows";
+import { flow, retireMix, stocksOf } from "@/components/dashboard/flows";
 import { money, money10 } from "@/components/dashboard/format";
 import type { YoursKey } from "@/lib/learn/catalog";
 import { runSeq, SEQ_RETURNS } from "./widgets/sequence-data";
@@ -144,10 +144,15 @@ function build(key: YoursKey, P: Plan): Out | null {
         line: <><b>{pct(H.trad / tot)}</b> of {yourP} savings is pre-tax, taxed when it comes out.</>,
       };
     }
-    case "stocks": return {
-      rows: [["Stocks once retired", pr.assume.stocks + "%"], ["Bonds and cash", 100 - pr.assume.stocks + "%"]],
-      line: <>{P.sample ? "Their" : "Your"} plan holds <b>{pr.assume.stocks}% in stocks</b> once retired; you can change it in Profile.</>,
-    };
+    case "stocks": {
+      // The mix once retired, in full, as Retirement's simulator holds it.
+      const M = retireMix(pr), st = Math.round(stocksOf(M));
+      return {
+        rows: [["Stocks once retired", st + "%" + (M.sv > 0 ? ` (${Math.round(M.sv)}% small-cap value)` : "")], ["Bonds", Math.max(0, Math.round(100 - st - M.cash)) + "%"],
+          ...(M.cash > 0 ? [["Cash", Math.round(M.cash) + "%"] as [string, string]] : []), ...(M.end != null && Math.round(M.end) !== st ? [["Stocks by the end", Math.round(M.end) + "%"] as [string, string]] : [])],
+        line: <>{P.sample ? "Their" : "Your"} plan holds <b>{st}% in stocks</b> once retired; {P.sample ? "it's" : "you can change it"} set in the Retirement simulator.</>,
+      };
+    }
     case "band": {
       const at = R.path.find((p) => retire != null && age != null && p.t >= (R.retireYear ?? 0) + 25) ?? R.path[R.path.length - 1];
       if (!at) return need("a plan that can run");

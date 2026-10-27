@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import {
-  BanknoteIcon, CalculatorIcon, MenuIcon, MonitorIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, LandmarkIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
+  BanknoteIcon, CalculatorIcon, MenuIcon, MonitorIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
    SunsetIcon, UserRoundIcon, WalletIcon, type LucideIcon,
 } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
@@ -34,7 +34,6 @@ export const SECTIONS: { id: Section; name: string; icon: LucideIcon }[] = [
   { id: "accounts", name: SECTION_NAMES.accounts, icon: WalletIcon },
   { id: "home", name: SECTION_NAMES.home, icon: HouseIcon },
   { id: "income", name: SECTION_NAMES.income, icon: BanknoteIcon },
-  { id: "taxes", name: SECTION_NAMES.taxes, icon: LandmarkIcon },
   { id: "spending", name: SECTION_NAMES.spending, icon: ReceiptIcon },
   { id: "savings", name: SECTION_NAMES.savings, icon: PiggyBankIcon },
   { id: "calculator", name: SECTION_NAMES.calculator, icon: CalculatorIcon },

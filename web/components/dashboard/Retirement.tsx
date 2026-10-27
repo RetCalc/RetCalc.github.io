@@ -1,16 +1,17 @@
 "use client";
 
-/* Retirement: the Drawdown Simulator on your own plan. What you'll have at
-   retirement, the years to 95, the stock mix and Social Security come from
-   the profile (what you'll have is the Calculator's result, shown and not
-   typed here); the strategy, and each strategy's settings, are chosen here
-   and saved, and the chosen strategy is the plan's everywhere (its chance
-   across history is the dashboard's chance of success). The strategies are
-   laid out first, each in a line, to learn them before choosing. */
+/* Retirement: the Drawdown Simulator on your own plan, and, beside it, the
+   Early Retirement Bridge (retiring before 59½) and the Healthcare Cost
+   Planner. What you'll have at retirement (the Calculator's result), the
+   retirement age and Social Security come from the plan and are said in
+   place of their fields; the strategy and its settings, the mix once
+   retired, the years and the starting rate are chosen here and saved, and
+   the chosen strategy is the plan's everywhere (its chance across history
+   is the dashboard's chance of success). The strategies are laid out first,
+   each in a line, to learn them before choosing. */
 
-import Link from "next/link";
-import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { ArrowDownToLineIcon, BookOpenIcon, ChevronDownIcon, MilestoneIcon, SunsetIcon } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { ArrowDownToLineIcon, BookOpenIcon, ChevronDownIcon, HeartPulseIcon, MilestoneIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
@@ -21,42 +22,40 @@ import { DrawdownDialogs } from "@/tools/drawdown/Dialogs";
 import type { DDView } from "@/tools/drawdown/Drawdown";
 import { drawdownSetup } from "@/tools/drawdown/model";
 import type { DrawdownState } from "@/tools/drawdown/model";
-import { Frame } from "./Frame";
-import { drawdownFor, fromDrawdown } from "./flows";
-import { money } from "./format";
-import { Hosted, TOOL_VIEWS } from "./host";
-import { ClaimField } from "./Income";
-import { results, spendMonth } from "./model";
-import { today, useDashboard } from "./store";
-import { bridgeChoices, bridgeFor, bridgeSummary, earlyRetirees } from "./bridge";
 import type { BridgeInputs } from "@/tools/bridge/model";
-import { longDate } from "./format";
+import type { HealthcareInputs } from "@/tools/healthcare/model";
+import { Frame } from "./Frame";
+import { DD_LOCKED, DD_OWN, drawdownFor, fromDrawdown, mixWords, retireMix } from "./flows";
+import { longDate, money } from "./format";
+import { Hosted, TOOL_VIEWS } from "./host";
+import { couple, holdings, nameOf, people, results, spendMonth, type Results } from "./model";
+import { today, useDashboard, type Entry, type Profile } from "./store";
+import { bridgeChoices, bridgeFor, bridgeLocked, bridgeSummary, earlyRetirees, householdAt, partnerWork } from "./bridge";
+import { healthChoices, healthFor, healthGap, healthWords } from "./health";
 import { useLandedOn } from "./land";
-import { Note, Tile, TipLabel } from "./ui";
+import { Note, PlanFacts, Tile, TipLabel, To } from "./ui";
 
 const STRATS_KEY = "retcalc.dashboard.strategiesOpen";
 function readStratsOpen() { try { return localStorage.getItem(STRATS_KEY) === "1"; } catch { return false; } }
 function saveStratsOpen(v: boolean) { try { localStorage.setItem(STRATS_KEY, v ? "1" : "0"); } catch { /* remembered for this visit only */ } }
 
-const OWN_WORDS: Record<string, string> = {
-  rate: "starting rate", initial: "starting balance", years: "years", retireAge: "retirement age", ssMode: "Social Security setting",
-  ssAmount: "Social Security amount", ssAmount2: "partner's Social Security amount", ssDelay2: "partner's claiming age",
-};
-/** "starting rate, years and starting balance". */
-const ownWords = (keys: string[]) => { const w = keys.map((k) => OWN_WORDS[k] ?? k); return w.length > 1 ? w.slice(0, -1).join(", ") + " and " + w[w.length - 1] : w[0]; };
+const OWN_WORDS: Record<string, string> = { rate: "starting rate", years: "years in retirement" };
 
 /* The address's part ("#bridge"), as it changes. */
 const onHash = (f: () => void) => { window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); };
 
+type Side = "drawdown" | "early" | "health";
+
 export function Retirement() {
   const { data, setProfile: set } = useDashboard();
   const pr = data.profile;
-  // Retiring before 59½: the page shows either the drawdown or the bridge,
-  // switched in the title bar; a link to the bridge opens on it.
+  // The page shows the drawdown, the bridge (retiring before 59½) or health
+  // cover, switched under At retirement; a link to one opens on it.
   const early = earlyRetirees(pr).length > 0;
   const hash = useSyncExternalStore(onHash, () => window.location.hash, () => "");
-  const [picked, setPicked] = useState<"drawdown" | "early" | null>(null);
-  const side = !early ? "drawdown" : picked ?? (hash === "#bridge" ? "early" : "drawdown");
+  const [picked, setPicked] = useState<Side | null>(null);
+  const fromHash: Side = hash === "#bridge" && early ? "early" : hash === "#health" ? "health" : "drawdown";
+  const side: Side = picked === "early" && !early ? "drawdown" : picked ?? fromHash;
   const R = useMemo(() => results(pr, data.entries), [pr, data.entries]);
   const tax = R.abroad ? ", before taxes" : "";
   // Bumped when a strategy is chosen out here, so the simulator opens on it.
@@ -65,8 +64,9 @@ export function Retirement() {
   const Drawdown = TOOL_VIEWS.drawdown;
   // The strategy the simulator opens on: picking it there is a choice, opening on it isn't.
   const opened = String(drawdownFor(pr, null).strategy);
-  const own = Object.keys(pr.ddOwn ?? {}), ownRate = pr.ddOwn?.rate != null;
+  const own = DD_OWN.filter((k) => pr.ddOwn?.[k] != null), ownRate = pr.ddOwn?.rate != null;
   const plan = R.ddPlan;
+  const gap = healthGap(pr);
   // The simulator's own comparison, on your numbers: "Use this strategy"
   // there chooses it here.
   const [guide, setGuide] = useState(false);
@@ -83,14 +83,8 @@ export function Retirement() {
   }, [pr, plan, set, setGuide]);
 
   return (
-    <Frame current="retirement" title="Retirement" sub={R.retireYear ? `Starting ${R.retireYear}` : R.gap ?? "Needs your ages and retirement age"} help={early ? "dsh-retirement-early" : undefined}
-      actions={early ? (
-        <Segmented role="group" aria-label="Show" id="retSide">
-          <SegmentedItem pressed={side === "drawdown"} onClick={() => setPicked("drawdown")}>Drawdown</SegmentedItem>
-          <SegmentedItem pressed={side === "early"} onClick={() => setPicked("early")}>Early retirement</SegmentedItem>
-        </Segmented>
-      ) : undefined}>
-      <Tile id="at-retirement" icon={SunsetIcon} title="At retirement" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#plan-retirement" />}>Ages, spending and assumptions</Button>}>
+    <Frame current="retirement" title="Retirement" sub={R.retireYear ? `Starting ${R.retireYear}` : R.gap ?? "Needs your ages and retirement age"} help={side === "health" ? "dsh-retirement-health" : early ? "dsh-retirement-early" : undefined}>
+      <Tile id="at-retirement" icon={SunsetIcon} title="At retirement" right={<To href="/dashboard/profile#plan-retirement">Ages, spending and assumptions</To>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Savings, {R.retireYear ?? "—"}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
           <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div><div className="dsh-cap dsh-mt6">{R.strategy ? R.strategy.name : "Spending a fixed amount"}</div></div>
@@ -98,10 +92,20 @@ export function Retirement() {
           {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Taxes, on top" id="taxes" /></div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div></div> : null}
           {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text={"Social Security" + (R.ssYear ? ", from " + R.ssYear : "")} id="ssTotal" /></div><div className="dsh-fig dsh-md">{R.ss != null ? money(R.ss) : "—"}<small>per month</small></div></div> : null}
         </div>
-        {!R.abroad ? <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3"><ClaimField pr={pr} set={set} />{pr.who === "couple" ? <ClaimField pr={pr} set={set} i={1} /> : <div />}<div className="dsh-hint dsh-self-end">The same ages as on Income: change them in either place.</div></div></div> : null}
+        {gap ? <HealthCallout pr={pr} R={R} onOpen={() => setPicked("health")} here={side === "health"} /> : null}
       </Tile>
 
+      {/* What the page below shows: everything under At retirement changes with it. */}
+      <div className="dsh-r4 dsh-retside">
+        <Segmented role="group" aria-label="Show" id="retSide">
+          <SegmentedItem pressed={side === "drawdown"} onClick={() => setPicked("drawdown")}><ArrowDownToLineIcon aria-hidden="true" />Drawdown</SegmentedItem>
+          {early ? <SegmentedItem pressed={side === "early"} onClick={() => setPicked("early")}><MilestoneIcon aria-hidden="true" />Bridge to 59½</SegmentedItem> : null}
+          {!R.abroad ? <SegmentedItem pressed={side === "health"} onClick={() => setPicked("health")}><HeartPulseIcon aria-hidden="true" />Health cover</SegmentedItem> : null}
+        </Segmented>
+      </div>
+
       {side === "early" ? <BridgeTile /> : null}
+      {side === "health" ? <HealthTile /> : null}
 
       {side === "drawdown" ? <>
       <div className="dsh-r4" id="compare"><Collapsible open={stratsOpen} onOpenChange={openStrats}><Tile id="strategies" icon={BookOpenIcon} title="The withdrawal strategies"
@@ -125,7 +129,7 @@ export function Retirement() {
         <div className="dsh-more">
           <Button variant="outline" onClick={() => setAllStrats((v) => !v)} aria-expanded={allStrats}>{allStrats ? "Show fewer" : "Show all " + Object.keys(DD_UI).length + " strategies"}</Button>
         </div>
-        <p className="dsh-cap dsh-mt">For each one&apos;s pros and cons side by side, open &ldquo;How the withdrawal strategies compare&rdquo;. Everything you set in the simulator below (the starting rate, guardrails, floors and ceilings, a spending path) is saved to your plan as you change it.</p>
+        <p className="dsh-cap dsh-mt">For each one&apos;s pros and cons side by side, open &ldquo;How the withdrawal strategies compare&rdquo;. Everything you set in the simulator below (the mix, the starting rate, guardrails, floors and ceilings, a spending path) is saved to your plan as you change it.</p>
         </CollapsibleContent>
       </Tile></Collapsible></div>
 
@@ -133,12 +137,13 @@ export function Retirement() {
         {plan ? (
           <Tile id="drawdown" icon={ArrowDownToLineIcon} title="Your drawdown" right={<span className="dsh-cap">On your savings at retirement, through every market since 1926</span>}>
             {own.length ? (
-              <p className="dsh-cap dsh-mt6">Your own {ownWords(own)} {own.length > 1 ? "are" : "is"} saved to your plan in place of its figures.{ownRate ? " Your strategy's spending is now the plan's; Profile's spending is your goal." : ""}{" "}
+              <p className="dsh-cap dsh-mt6">Your own {own.map((k) => OWN_WORDS[k]).join(" and ")} {own.length > 1 ? "are" : "is"} saved to your plan in place of its figures.{ownRate ? " Your strategy's spending is now the plan's; Profile's spending is your goal." : ""}{" "}
                 <Button variant="link" size="inline" onClick={() => { set((p) => ({ ...p, ddOwn: undefined })); setRev((r) => r + 1); }}>Use the plan&apos;s figures</Button></p>
             ) : null}
             <div className="dsh-mt">
-              {/* Opened again when the plan under it changes (the claiming ages above, say). */}
-              <Hosted key={rev + "|" + JSON.stringify(plan)} household={null} locked={{ initial: "Your savings at retirement, from the Calculator. Change it there." }}
+              {/* Opened again when the plan under it changes (the claiming ages on Income, say). */}
+              <Hosted key={rev + "|" + JSON.stringify([plan, pr.ss.pct, pr.p2.retire])} household={null} locked={DD_LOCKED}
+                slots={{ facts: <DrawdownFacts pr={pr} R={R} />, ssFacts: <SocialFacts pr={pr} R={R} /> }}
                 seed={(id) => (id === "drawdown" ? (drawdownFor(pr, plan) as unknown as ToolInputs) : undefined)}
                 keep={(id, d) => { if (id === "drawdown") set((p) => fromDrawdown(p, d as unknown as DrawdownState, opened, plan)); }}>
                 {/* Inside this tile, the simulator's own card titles sit one level down. */}
@@ -151,6 +156,37 @@ export function Retirement() {
       </> : null}
       {guide && view ? <DrawdownDialogs v={view} dialog={{ kind: "guide" }} close={() => setGuide(false)} /> : null}
     </Frame>
+  );
+}
+
+/** Each of you's retirement: "58, in 2041". */
+function retireWords(pr: Profile) {
+  return people(pr).map((p, k) => p.retire == null ? null : `${couple(pr) ? nameOf(pr, k as 0 | 1) + " at " : ""}${p.retire}${p.by ? ", in " + (p.by + p.retire) : ""}`).filter(Boolean).join("; ");
+}
+
+/** What the simulator takes from the plan, in place of its fields. */
+function DrawdownFacts({ pr, R }: { pr: Profile; R: Results }) {
+  return (
+    <PlanFacts id="ddFacts" rows={[
+      ["Savings at retirement", R.atRetire != null ? money(Math.round(R.atRetire)) : "—"],
+      [couple(pr) ? "Retiring" : "Retiring at", retireWords(pr) || "—"],
+    ]} note={<>Savings at retirement come from the <To href="/dashboard/calculator">Calculator</To>, the retirement age from <To href="/dashboard/profile#plan-retirement">Profile</To>. Change them there.</>} />
+  );
+}
+
+/** Social Security as the plan has it, in place of the simulator's fields. */
+function SocialFacts({ pr, R }: { pr: Profile; R: Results }) {
+  if (R.abroad) return <p className="dsh-cap">Outside the US, Social Security isn&apos;t counted.</p>;
+  const share = pr.ss.pct ?? 100;
+  const row = (i: 0 | 1): [string, string] => {
+    const ss = i ? R.ss2 : R.ss1, at = i ? R.claim2 : R.claim1;
+    return [couple(pr) ? nameOf(pr, i) + "'s Social Security" : "Social Security", ss != null && ss > 0 ? `${money(ss)} per month from ${at ?? 67}` : "None"];
+  };
+  return (
+    <div className="mt-1 mb-2">
+      <PlanFacts rows={couple(pr) ? [row(0), row(1)] : [row(0)]}
+        note={<>In today&apos;s dollars{share < 100 ? `, at ${share}% of the full benefit` : ""}. The benefits, the ages you claim and the share you expect are set on <To href="/dashboard/income#social-security">Income</To>.</>} />
+    </div>
   );
 }
 
@@ -170,7 +206,8 @@ function BridgeTile() {
   if (!early) return null;
   const yrs = early.years % 1 ? early.years.toFixed(1) : String(early.years);
   const who = early.name === "You" ? "You retire" : early.name + " retires";
-  const use = () => set((p) => ({ ...p, bridge: { inputs: bridgeChoices(latest.current ?? bridgeFor(p, entries)), at: today() } }));
+  const use = () => set((p) => ({ ...p, bridge: { inputs: bridgeChoices(latest.current ?? bridgeFor(p, entries), p, entries), at: today() } }));
+  const inputs = bridgeFor(pr, entries, R);
   return (
     <div className="dsh-r4">
       <Tile id="bridge" icon={MilestoneIcon} title="Bridge to 59½" right={<span className="dsh-cap">{early.from} to {Math.floor(early.to)}</span>}>
@@ -183,17 +220,90 @@ function BridgeTile() {
             <Button size="sm" onClick={use}>Use this bridge plan</Button>
           </div>
         )}
-        <p className="dsh-cap dsh-mt6">The ages, spending and balances come from your plan: what each account holds when you retire. How you fill the bridge, 72(t), health cover and any part-time work are your choices.</p>
         <div className="dsh-mt">
-          <Hosted key={JSON.stringify(R.S?.P ? [R.S.P.trad, R.S.P.roth, R.S.P.brok, R.spend, early.retire] : null)} household={null}
-            seed={(id) => (id === "bridge" ? (bridgeFor(pr, entries, R) as unknown as ToolInputs) : undefined)}
+          <Hosted key={JSON.stringify(R.S?.P ? [R.S.P.trad, R.S.P.roth, R.S.P.brok, R.spend, early.retire, inputs.stock, inputs.sv, inputs.cash, inputs.household, inputs.work2] : null)} household={null}
+            locked={bridgeLocked(pr, entries)} slots={{ facts: <BridgeFacts pr={pr} entries={entries} inputs={inputs} /> }}
+            seed={(id) => (id === "bridge" ? (inputs as unknown as ToolInputs) : undefined)}
             keep={(id, d) => {
               if (id !== "bridge") return;
               latest.current = d as unknown as BridgeInputs;
-              const c = bridgeChoices(d as unknown as BridgeInputs);
+              const c = bridgeChoices(d as unknown as BridgeInputs, pr, entries);
               set((p) => (p.bridge && JSON.stringify(p.bridge.inputs) !== JSON.stringify(c) ? { ...p, bridge: { ...p.bridge, inputs: c } } : p));
             }}>
             <CardHeadingLevel value={3}><BridgeView /></CardHeadingLevel>
+          </Hosted>
+        </div>
+      </Tile>
+    </div>
+  );
+}
+
+/** What the Bridge takes from the plan, in place of its fields. */
+function BridgeFacts({ pr, entries, inputs }: { pr: Profile; entries: Entry[]; inputs: BridgeInputs }) {
+  const early = earlyRetirees(pr)[0], H = holdings(entries, pr), partner = early ? partnerWork(pr, early) : null;
+  const m = (v: string) => money(Number(v.replace(/,/g, "")) || 0);
+  const mix = retireMix(pr);
+  const rows: [string, string][] = [
+    ["Retiring", early ? `${early.name === "You" ? "" : early.name + " "}at ${early.retire}, in ${early.from}` : "—"],
+    ["Filing", `${inputs.status === "m" ? "Married filing jointly" : "Single"}, ${inputs.state}`],
+    ["Spending, after tax", m(inputs.spend) + " per year"],
+    ["Traditional 401(k) and IRA", m(inputs.trad) + (Number(inputs.k401.replace(/,/g, "")) > 0 ? `, ${m(inputs.k401)} in a 401(k) or 403(b)` : "") + (Number(inputs.g457.replace(/,/g, "")) > 0 ? `, ${m(inputs.g457)} in a 457(b)` : "")],
+    ["Roth", m(inputs.roth) + (H.rothBasis != null ? `, ${m(inputs.rothBasis)} of it your contributions` : "")],
+    ["Brokerage", m(inputs.brok) + `, cost basis ${inputs.basis}%${H.brokBasis == null && H.brok > 0 ? " (estimated)" : ""}`],
+    ["Mix", mixWords({ ...mix, end: null })],
+    ["Household", `${inputs.household} ${inputs.household === "1" ? "person" : "people"}`],
+    ...(partner ? [[`${partner.name}'s pay`, `${money(partner.pay)} per year until ${Math.floor(early!.from + (partner.until - early!.retire))}, with their job's health plan`] as [string, string]] : []),
+  ];
+  return (
+    <PlanFacts id="brFacts" rows={rows} note={<>Balances are what each account holds when you retire, from the <To href="/dashboard/calculator">Calculator</To>; cost basis and Roth contributions from <To href="/dashboard/accounts#assets">Net worth</To>{H.rothBasis == null ? " (add your Roth contributions there, or type them below)" : ""}; the mix from Retirement&apos;s Drawdown; the rest from <To href="/dashboard/profile">Profile</To> and <To href="/dashboard/income">Income</To>. The bridge plans on {early?.name === "You" ? "your" : (early?.name ?? "your") + "'s"} ages.</>} />
+  );
+}
+
+/** The years with no job's health plan before Medicare, called out where
+    retirement is shown. */
+function HealthCallout({ pr, R, onOpen, here }: { pr: Profile; R: Results; onOpen: () => void; here: boolean }) {
+  const gap = healthGap(pr);
+  if (!gap) return null;
+  const per = R.S && R.S.hcYr > 0 ? R.S.hcYr / 12 : null;
+  return (
+    <div className="dsh-mt dsh-tip dsh-warn-tip">
+      <span>{healthWords(pr, gap)} Your plan counts about <b>{per != null ? money(per) : "—"} per month</b> for marketplace cover in those years, on average, on top of your spending.</span>
+      {here ? null : <Button size="sm" variant="outline" onClick={onOpen}>Plan health cover</Button>}
+    </div>
+  );
+}
+
+/** Health cover once work stops: the Healthcare Cost Planner on the plan. */
+function HealthTile() {
+  const { data, setProfile: set } = useDashboard();
+  const pr = data.profile, entries = data.entries;
+  const R = useMemo(() => results(pr, entries), [pr, entries]);
+  const Health = TOOL_VIEWS.healthcare;
+  const gap = healthGap(pr), inputs = healthFor(pr, R);
+  // Opened: Next steps' health cover step is done.
+  useEffect(() => { if (!pr.healthSeen) set((p) => ({ ...p, healthSeen: true })); }, [pr.healthSeen, set]);
+  if (!R.S) return <div className="dsh-r4"><Note>Health cover opens once your profile has your ages, savings, retirement age and spending.</Note></div>;
+  const stop = gap?.from ?? R.retireYear;
+  const before = R.S.hcYr / 12;
+  return (
+    <div className="dsh-r4">
+      <Tile id="health" icon={HeartPulseIcon} title="Health cover" right={<span className="dsh-cap">{gap ? `${gap.from} to ${gap.to}, then Medicare` : "Medicare from 65"}</span>}>
+        <p className="dsh-cap dsh-mt6">{gap
+          ? <>{healthWords(pr, gap)} Until then it&apos;s a marketplace plan, priced on your income: your plan counts about <b>{money(before)} per month</b> for it on average, on top of your spending{earlyRetirees(pr).length ? " (the bridge counts it before 59½)" : ""}. From 65, Medicare&apos;s premiums.</>
+          : <>Work stops at 65 or later, so Medicare covers you from then. It isn&apos;t free: Part B, a drug plan and usually a supplement, more at higher incomes. Your plan counts Medicare&apos;s premiums on top of your spending.</>}</p>
+        <div className="dsh-mt">
+          <Hosted key={JSON.stringify(inputs)} household={null} locked={["household", "income"]}
+            slots={{ facts: <PlanFacts id="hcFacts" rows={[
+              ["Work stops", stop ? String(stop) : "—"],
+              [couple(pr) ? "Your ages then" : "Your age then", couple(pr) ? people(pr).map((p, k) => `${nameOf(pr, k as 0 | 1)} ${p.by != null && stop ? stop - p.by : "—"}`).join(", ") : `${inputs.retireAge}`],
+              ["Filing", `${inputs.status === "m" ? "Married filing jointly" : "Single"}, ${inputs.state}`],
+              ["Household", `${stop ? householdAt(pr, stop) : inputs.household} ${inputs.household === "1" ? "person" : "people"}`],
+              ["Income that year", inputs.income ? "$" + inputs.income + (inputs.ss ? `, with $${inputs.ss} of Social Security` : "") : "—"],
+              ["Income at 65", inputs.income65 ? "$" + inputs.income65 : "—"],
+            ]} note={<>From your plan: the ages from <To href="/dashboard/profile">Profile</To>, and the income your withdrawals give each year (the strategy on Drawdown{earlyRetirees(pr).length ? ", the bridge's conversions" : ""}, Social Security from <To href="/dashboard/income#social-security">Income</To>).</>} /> }}
+            seed={(id) => (id === "healthcare" ? (inputs as unknown as ToolInputs) : undefined)}
+            keep={(id, d) => { if (id === "healthcare") set((p) => ({ ...p, tools: { ...p.tools, healthcare: healthChoices(d as unknown as HealthcareInputs) as unknown as ToolInputs } })); }}>
+            <CardHeadingLevel value={3}><Health /></CardHeadingLevel>
           </Hosted>
         </div>
       </Tile>

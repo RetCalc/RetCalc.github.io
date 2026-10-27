@@ -9,6 +9,11 @@ export const BRIDGE_DEFAULTS = {
   trad: "1,000,000", k401: "400,000", roth: "150,000", rothBasis: "90,000", brok: "450,000", basis: "60",
   g457: "0", stock: "70", work: "0", workUntil: "55",
   aca: "1", household: "2", premium: "", fill: "auto", seppMethod: "amort", seppRate: "5.5",
+  /** Set by the Dashboard from its plan, not shown on the tool's own page:
+      small-cap value and cash in percent (then `stock` is US stocks alone),
+      and a partner's pay a year while they keep working, until the early
+      retiree's age `work2Until`. */
+  sv: "0", cash: "0", work2: "0", work2Until: "0",
 };
 export type BridgeInputs = typeof BRIDGE_DEFAULTS;
 
@@ -50,5 +55,8 @@ export function bridgeInput(s: BridgeInputs): BrInput {
     seppMethod: s.seppMethod === "rmd" ? "rmd" : "amort",
     seppRate: num(s.seppRate, 0, 12, 5) / 100,
     fill: s.fill || "auto",
+    ...(num(s.sv ?? "", 0, 100, 0) > 0 || num(s.cash ?? "", 0, 100, 0) > 0
+      ? { mixSpec: { us: num(s.stock, 0, 100, 70), sv: num(s.sv ?? "", 0, 100, 0), cash: num(s.cash ?? "", 0, 100, 0) } } : {}),
+    ...(num(s.work2 ?? "", 0, 1e8, 0) > 0 ? { work2: num(s.work2, 0, 1e8, 0), work2Until: num(s.work2Until ?? "", 0, 120, 0) } : {}),
   };
 }

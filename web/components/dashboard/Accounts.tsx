@@ -20,7 +20,7 @@ import { groupDigits, parseNum } from "@/lib/format";
 import { useWidth } from "./charts";
 import { Frame } from "./Frame";
 import { longDate, money, shortMoney } from "./format";
-import { ASSET_GROUPS, ASSET_KINDS, DEBT_GROUPS, DEBT_KINDS, groupOf, kindName, type Group } from "./kinds";
+import { ASSET_GROUPS, ASSET_KINDS, BASIS_KINDS, DEBT_GROUPS, DEBT_KINDS, groupOf, kindName, type Group } from "./kinds";
 import { Tile, TipLabel } from "./ui";
 import { pctTxt, useTyped } from "./fields";
 import { entryFrom, netWorth, newId, sum, today, useDashboard, withEntry, type Entry, type Item } from "./store";
@@ -132,7 +132,7 @@ function List({ items, side }: { items: Item[]; side: Item["side"] }) {
           <tr key={i.id}>
             <td><i className={"dsh-sw dsh-g-" + groupOf(i.kind)} aria-hidden="true" />{i.name || kindName(i.kind)}</td>
             <td className="dsh-muted">{kindName(i.kind)}</td>
-            <td>{money(i.value)}</td>
+            <td>{money(i.value)}{!debt && BASIS_KINDS[i.kind] && i.basis != null ? <Gain item={i} /> : null}</td>
             {debt ? <td>{i.rate != null ? (i.rate * 100).toFixed(2).replace(/\.?0+$/, "") + "%" : "—"}</td> : null}
           </tr>
         )) : <tr><td colSpan={debt ? 4 : 3} className="dsh-muted">{debt ? "No debts. If that's right, you're set." : "Nothing added yet."}</td></tr>}
@@ -142,30 +142,42 @@ function List({ items, side }: { items: Item[]; side: Item["side"] }) {
   );
 }
 
+/** A brokerage account's gain or loss on what was paid in (a Roth's
+    growth past its contributions), after its amount. */
+function Gain({ item }: { item: Item }) {
+  const d = item.value - (item.basis ?? 0), what = item.kind === "roth" ? "growth past your contributions" : d >= 0 ? "gain" : "loss";
+  return <span className={d >= 0 ? "dsh-basis dsh-up" : "dsh-basis dsh-dn"} title={`${money(Math.abs(d))} ${what}`}>({d >= 0 ? "+" : "−"}{money(Math.abs(d))})</span>;
+}
+
 /** One side's rows, editable. */
 function EditList({ items, side, onChange }: { items: Item[]; side: Item["side"]; onChange: (items: Item[]) => void }) {
   const kinds = side === "asset" ? ASSET_KINDS : DEBT_KINDS;
   const put = (id: string, v: Partial<Item>) => onChange(items.map((i) => (i.id === id ? { ...i, ...v } : i)));
   const rows = items.filter((i) => i.side === side);
+  const debt = side === "debt", row = debt ? "dsh-erow dsh-erow-debt" : "dsh-erow dsh-erow-asset";
   return (
     <div className="dsh-elist">
-      <div className={side === "debt" ? "dsh-erow dsh-erow-debt dsh-ehead" : "dsh-erow dsh-ehead"} aria-hidden="true">
-        <span>Name</span><span>Type</span><span>{side === "debt" ? "Amount owed" : "Amount"}</span>{side === "debt" ? <span>Interest rate</span> : null}<span />
+      <div className={row + " dsh-ehead"} aria-hidden="true">
+        <span>Name</span><span>Type</span><span>{debt ? "Amount owed" : "Amount"}</span>{debt ? <span>Interest rate</span> : <span>What you put in</span>}<span />
       </div>
       {rows.map((i) => (
-        <div key={i.id} className={side === "debt" ? "dsh-erow dsh-erow-debt" : "dsh-erow"}>
+        <div key={i.id} className={row}>
           <Input aria-label="Name" value={i.name} placeholder={kindName(i.kind)} onChange={(e) => put(i.id, { name: e.target.value })} />
-          <NativeSelect aria-label="Kind" value={i.kind} onChange={(e) => put(i.id, { kind: e.target.value as Item["kind"] })}>
+          <NativeSelect aria-label="Kind" value={i.kind} onChange={(e) => put(i.id, { kind: e.target.value as Item["kind"], ...(BASIS_KINDS[e.target.value] ? {} : { basis: undefined }) })}>
             {kinds.map((k) => <option key={k.kind} value={k.kind}>{k.name}</option>)}
           </NativeSelect>
           <Affixed prefix="$"><MoneyInput aria-label="Amount" nonNeg value={i.value ? groupDigits(i.value, true) : ""} onValueChange={(v) => put(i.id, { value: parseNum(v) })} /></Affixed>
-          {side === "debt" ? <RateInput rate={i.rate ?? null} onRate={(rate) => put(i.id, { rate })} /> : null}
+          {debt ? <RateInput rate={i.rate ?? null} onRate={(rate) => put(i.id, { rate })} />
+            : BASIS_KINDS[i.kind] ? <Affixed prefix="$"><MoneyInput aria-label={BASIS_KINDS[i.kind]!.name + " (optional)"} nonNeg placeholder={BASIS_KINDS[i.kind]!.name}
+              value={i.basis != null ? groupDigits(i.basis, true) : ""} onValueChange={(v) => put(i.id, { basis: v.trim() === "" ? null : parseNum(v) })} /></Affixed>
+            : <span className="dsh-muted dsh-ena" aria-hidden="true">—</span>}
           <Button variant="ghost" size="icon" aria-label={"Remove " + (i.name || kindName(i.kind))} onClick={() => onChange(items.filter((x) => x.id !== i.id))}><Trash2Icon aria-hidden="true" /></Button>
         </div>
       ))}
       <Button variant="outline" size="sm" onClick={() => onChange([...items, { id: newId(), side, kind: kinds[0].kind, name: "", value: 0, ...(side === "debt" ? { rate: null } : {}) }])}>
         <PlusIcon aria-hidden="true" />{side === "asset" ? "Add an asset" : "Add a debt"}
       </Button>
+      {debt ? null : <p className="dsh-cap">What you put in is optional: for a brokerage account its <TipLabel text="cost basis" id="costBasis" />, for a Roth <TipLabel text="your own contributions" id="rothContrib" />. A 457(b) is its own type: it can be drawn from without the 10% penalty once you leave that job.</p>}
     </div>
   );
 }

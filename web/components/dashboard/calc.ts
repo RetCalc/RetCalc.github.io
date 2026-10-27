@@ -33,7 +33,7 @@ function shared(pr: Profile, entries: Entry[]) {
   const trad = (k: "match" | "k401max" | "rothIra") => !F.pi.roth[k];
   const tIds = (["match", "k401max", "rothIra"] as const).filter(trad), rIds = (["match", "k401max", "rothIra"] as const).filter((k) => !trad(k));
   return {
-    F, tradBal: H.trad, rothBal: Math.max(0, H.roth - hsaBal), hsaBal, brokBal: H.brok,
+    F, tradBal: H.trad, rothBal: Math.max(0, H.roth - hsaBal), hsaBal, brokBal: H.brok, brokBasis: H.brokBasis,
     tradC: F.trad, rothC: Math.max(0, F.roth - hsaC), hsaC, brokC: F.brok,
     rates: { t: rate(tIds), r: rate(rIds), b: rate(["brok"]), h: rate(["hsa"]) },
     salary: F.pi.gross, matchPct: F.b.pcMatchRate, matchCap: F.b.pcMatchUpTo,
@@ -55,7 +55,7 @@ export function advancedFor(pr: Profile, entries: Entry[]): AdvancedInputs {
     growth: pc((A.rates.t + A.rates.r + A.rates.b) / 3), nominal: pc(A.nominal), inflation: pc(pr.assume.inflation), years: String(A.years),
     ...(A.target > 0 ? { solveFor: "After-Tax Withdrawal", target: g(A.target) } : {}),
     acOn: true, tradBal: g(A.tradBal), tradC: g(A.tradC), rothBal: g(A.rothBal), rothC: g(A.rothC),
-    brokBal: g(A.brokBal), brokC: g(A.brokC), brokBasis: g(A.brokBal * 0.6), hsaBal: g(A.hsaBal), hsaC: g(A.hsaC),
+    brokBal: g(A.brokBal), brokC: g(A.brokC), brokBasis: g(A.brokBasis ?? A.brokBal * 0.6), hsaBal: g(A.hsaBal), hsaC: g(A.hsaC),
     salary: g(A.salary), matchPct: A.matchPct, matchCap: A.matchCap, acStatus: A.status, acState: A.state,
     gRates: A.rates,
   };
@@ -146,7 +146,7 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
     ...withDefaults(STAGES_DEF, {}),
     initial: g(A.tradBal + A.rothBal + A.brokBal + A.hsaBal), inflation: pc(infl),
     ...(A.target > 0 ? { solveFor: "After-Tax Withdrawal", target: g(A.target) } : {}),
-    saOn: true, saTradBal: g(A.tradBal), saRothBal: g(A.rothBal), saBrokBal: g(A.brokBal), saBrokBasis: g(A.brokBal * 0.6), saHsaBal: g(A.hsaBal),
+    saOn: true, saTradBal: g(A.tradBal), saRothBal: g(A.rothBal), saBrokBal: g(A.brokBal), saBrokBasis: g(A.brokBasis ?? A.brokBal * 0.6), saHsaBal: g(A.hsaBal),
     saSalary: g(F.gross * 12), saMatchPct: matchPct > 0 ? String(+matchPct.toFixed(4)) : "0", saMatchCap: "100", saStatus: A.status, saState: A.state,
     stages: [stage(A.years, { monthly: own + F.match }, 0)],
   };
@@ -198,6 +198,14 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
     Calculator's own. */
 const PROFILE_KEYS = new Set(["kids", "kidCover", "histMix", "histSv", "histCash", "histMixEnd"]);
 
+/** Stages inputs the plan sets, which the Calculator locks (Profile, Income
+    and Net worth set them): the balances and cost basis, pay and the
+    match, filing status and state, inflation. Never kept as its own, and
+    any kept before they were locked are let go of. */
+export const CALC_LOCKED_KEYS = ["saOn", "initial", "saTradBal", "saRothBal", "saBrokBal", "saBrokBasis", "saHsaBal", "saSalary", "saMatchPct", "saMatchCap", "saStatus", "saState", "inflation"];
+/** The groups of them the Calculator leaves out (its `facts` say them). */
+export const CALC_LOCKED = ["savings", "inflation"];
+
 /** A value as compared: figures as numbers, whatever their formatting. */
 function norm(v: unknown): unknown {
   if (typeof v === "string" && /^\s*-?[\d,]*\.?\d+\s*%?\s*$/.test(v)) return Math.round(parseNum(v) * 1e4) / 1e4;
@@ -219,13 +227,14 @@ function planStages(pr: Profile, entries: Entry[]): StagesInputs {
 /** The Calculator as it opens: the plan's stages with your own changes on top. */
 export function calcInputs(pr: Profile, entries: Entry[]): StagesInputs {
   const s = planStages(pr, entries);
-  return pr.calcOwn ? ({ ...s, ...pr.calcOwn } as StagesInputs) : s;
+  const own = Object.entries(pr.calcOwn ?? {}).filter(([k]) => !CALC_LOCKED_KEYS.includes(k));
+  return own.length ? ({ ...s, ...Object.fromEntries(own) } as StagesInputs) : s;
 }
 
 /** The inputs that differ from the plan's, to keep; null when none do. */
 export function calcOwnOf(pr: Profile, entries: Entry[], d: StagesInputs): Record<string, unknown> | null {
   const base = planStages(pr, entries) as unknown as Record<string, unknown>, now = d as unknown as Record<string, unknown>, own: Record<string, unknown> = {};
-  for (const k of Object.keys(now)) if (!PROFILE_KEYS.has(k) && JSON.stringify(norm(now[k])) !== JSON.stringify(norm(base[k]))) own[k] = now[k];
+  for (const k of Object.keys(now)) if (!PROFILE_KEYS.has(k) && !CALC_LOCKED_KEYS.includes(k) && JSON.stringify(norm(now[k])) !== JSON.stringify(norm(base[k]))) own[k] = now[k];
   return Object.keys(own).length ? own : null;
 }
 
@@ -233,7 +242,7 @@ const fvs = new Map<string, number | null>();
 /** The Calculator's result, savings at retirement in today's dollars, when
     your changes there move it away from the plan's own; null otherwise. */
 export function calcFvOf(pr: Profile, entries: Entry[]): number | null {
-  if (!pr.calcOwn || !Object.keys(pr.calcOwn).length) return null;
+  if (!Object.keys(pr.calcOwn ?? {}).some((k) => !CALC_LOCKED_KEYS.includes(k))) return null;
   const key = JSON.stringify([pr, entries]);
   if (fvs.has(key)) return fvs.get(key)!;
   const base = planStages(pr, entries);

@@ -17,7 +17,7 @@ import { Frame, SECTIONS, SignedIn } from "./Frame";
 import { Hosted, TOOL_VIEWS, householdOf, seedFor, toolHref } from "./host";
 import { useDashboard, type Entry, type Profile } from "./store";
 import { applyCollege, collegeNeedOf, sameCollege } from "./college";
-import { flow } from "./flows";
+import { flow, mixWords, retireMix } from "./flows";
 import { money } from "./format";
 import { holdings, mortgage, results } from "./model";
 import { Note } from "./ui";
@@ -25,7 +25,7 @@ import { Note } from "./ui";
 /** The tab that holds a tool's figures for the plan itself. */
 const PLAN_TAB: Partial<Record<ToolSub, { id: string; name: string; hash?: string }>> = {
   budget: { id: "spending", name: "Spending" }, drawdown: { id: "retirement", name: "Retirement" },
-  tax: { id: "taxes", name: "Taxes" }, social: { id: "income", name: "Income" },
+  tax: { id: "savings", name: "Taxes & Savings" }, social: { id: "income", name: "Income" },
   college: { id: "profile", name: "Profile", hash: "#college" },
 };
 
@@ -42,7 +42,7 @@ function yoursFor(pr: Profile, entries: Entry[]): Partial<Record<ToolSub, string
   }
   if (R.S) y.roth = `Traditional at retirement: ${money(Math.round(R.S.P.trad / 1000) * 1000)}`;
   if (F.hasPay) y.fire = `You save ${money(F.invested + F.match)} per month, with the match`;
-  y.backtest = `Your mix once retired: ${pr.assume.stocks}% in stocks`;
+  y.backtest = `Your mix once retired: ${mixWords(retireMix(pr))}`;
   const need = collegeNeedOf(pr);
   if (need > 0) y.college = `Your plan for college: about ${money(need)} per month`;
   y.rentbuy = pr.home === "rent" && pr.rent ? `You rent at ${money(pr.rent)} per month` : pr.home === "own" ? `You own: ${money(H.equity)} in equity` : undefined;

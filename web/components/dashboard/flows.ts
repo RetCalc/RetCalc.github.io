@@ -1,7 +1,8 @@
-/* Where the Dashboard's numbers meet the tools. Income, Taxes, Spending and
-   Savings are the Budget tool's Paycheck (pay, health premiums, the match,
-   the saving sliders, the budget's lines) and the Income Tax tool, kept in
-   the profile; Retirement is the Drawdown Simulator; Social Security's pay
+/* Where the Dashboard's numbers meet the tools. Income, Spending, and Taxes
+   & Savings are the Budget tool's Paycheck (pay, health premiums, the
+   match, the saving sliders, the budget's lines, and the year's taxes, with
+   Income Tax's deduction and local tax choices), kept in the profile;
+   Retirement is the Drawdown Simulator; Social Security's pay
    history is the Social Security Calculator's. Each tool's inputs are built
    from the profile as it opens, and what's shared goes back to the profile
    when it changes, so every tab reads one set of numbers. */
@@ -11,11 +12,12 @@ import { dollarsField, groupDigits, parseNum } from "@/lib/format";
 import { BUDGET_DEF, budgetCompute, budgetTotals, openBudget, type BudgetInputs, type BudgetRow } from "@/tools/budget/model";
 import { PC_ZERO, paycheckInput, paycheckRun, pcCap, type PcInput, type PcRun } from "@/tools/budget/paycheck-math";
 import { taxFromPaycheck } from "@/tools/budget/to-calculator";
-import { TAX_DEF, runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
+import { TAX_DEF, type TaxInputs } from "@/tools/tax/model";
 import { SOCIAL_DEF, social, type SocialInputs } from "@/tools/social/model";
 import { DRAWDOWN_DEF, ddWrite, drawdownSetup, type DrawdownState } from "@/tools/drawdown/model";
 import { ddQuick } from "@/lib/engine/drawdown";
 import { OUTSIDE_US, PER_YEAR, type Per, type Person, type Profile } from "./store";
+import { housingLines } from "./housing";
 
 /** The budget line setup's one spending number lives on, until the budget
     is filled in line by line. */
@@ -43,13 +45,28 @@ function overlay(b: BudgetInputs, pr: Profile): BudgetInputs {
   const abroad = pr.state === OUTSIDE_US;
   const g1 = grossOf(pr.p1, abroad), g2 = two ? grossOf(pr.p2, abroad) : null;
   return {
-    ...b, pcNoTax: abroad,
+    ...withHousing(b, pr), pcNoTax: abroad,
     ...(g1 != null ? { pcGross: dollarsField(g1), pcFreq: FREQ[pr.p1.per] } : {}),
     ...(g2 != null ? { pcGross2: dollarsField(g2), pcFreq2: FREQ[pr.p2.per] } : {}),
     pcStatus: pr.who !== "couple" ? "s" : two ? "m2" : "m",
     pcState: taxState(pr),
   };
 }
+
+/** The housing lines Home sets (home.ts), laid over the budget's own: a
+    line that isn't there yet is added to Housing. */
+function withHousing(b: BudgetInputs, pr: Profile): BudgetInputs {
+  const lines = Object.entries(housingLines(pr));
+  if (!lines.length) return b;
+  let rows = b.rows;
+  for (const [name, monthly] of lines) {
+    const amount = groupDigits(Math.round(monthly), true), i = rows.findIndex((r) => (r.slot ?? r.desc) === name);
+    rows = i >= 0 ? rows.map((r, j) => (j === i ? { ...r, amount, freq: 12 } : r))
+      : [...rows.slice(0, lastHousing(rows) + 1), { group: "Housing", desc: name, amount, freq: 12, custom: true, slot: name }, ...rows.slice(lastHousing(rows) + 1)];
+  }
+  return { ...b, rows };
+}
+const lastHousing = (rows: BudgetRow[]) => rows.reduce((at, r, i) => (r.group === "Housing" ? i : at), -1);
 
 /** A first budget from setup's answers: the one spending number as a line,
     and what setup said goes to savings in the 401(k) lines. */
@@ -124,24 +141,31 @@ export interface Flow {
   fullMatch: boolean | null;
   /** The emergency fund's target, by the budget chosen for it. */
   efMonths: number; efTarget: number;
-  /** Income Tax's reading of the year, with the deductions set there. */
-  tax: ReturnType<typeof runTax> | null;
+  /** The year's taxes as the paycheck figures them (its deductions and any
+      local tax included): the household's one tax figure. */
+  tax: TaxYear | null;
   hasPay: boolean;
   /** Set aside for college each month in the budget (its College savings line). */
   college: number;
 }
 
+/** A year of taxes on pay, both of you together. */
+export interface TaxYear { federal: number; state: number; local: number; fica: number; total: number }
+
+/** The deduction and local tax choices made on Taxes & Savings (kept as
+    Income Tax's own inputs), as the paycheck takes them. */
+export const taxChoices = (pr: Profile) => ({ ...withDefaults(TAX_DEF, pr.tools.tax ?? {}), useItem: true });
+
 /** The paycheck, taxes and budget as one month. */
 export function flow(pr: Profile): Flow {
-  // The paycheck takes Income Tax's own local tax, as the Taxes tab does.
-  const b = budgetFor(pr), pi = paycheckInput(b, taxState(pr), withDefaults(TAX_DEF, pr.tools.tax ?? {})), r = paycheckRun(pi), a = pi.amounts;
+  // The paycheck is the one tax calculator: with the deductions and local
+  // tax chosen on Taxes & Savings.
+  const b = budgetFor(pr), pi = paycheckInput(b, taxState(pr), taxChoices(pr)), r = paycheckRun(pi), a = pi.amounts;
   const m = pi.p / 12, hasPay = pi.gross + pi.gross2 > 0;
-  const tx = hasPay ? taxFor(pr, b, pi, r) : null;
-  const T = tx ? runTax(taxInput(tx)) : null;
-  // Taxes: Income Tax's year (its deductions included), else the paycheck's;
-  // none outside the US, where pay is entered after them.
+  // None outside the US, where pay is entered after them.
   const abroad = pr.state === OUTSIDE_US;
-  const taxesYr = abroad ? 0 : T ? T.total : r.taxes * pi.p;
+  const taxesYr = abroad ? 0 : r.taxes * pi.p;
+  const T: TaxYear | null = hasPay && !abroad ? { federal: r.fed * pi.p, state: r.state * pi.p, local: r.local * pi.p, fica: r.fica * pi.p, total: taxesYr } : null;
   const gross = (pi.gross + pi.gross2) / 12, health = r.health * m;
   const net = abroad ? [pr.p1, ...(pr.who === "couple" ? [pr.p2] : [])].reduce((s, p) => s + (p.pay ?? 0) * PER_YEAR[p.per], 0) / 12 : gross - taxesYr / 12 - health;
   const roth = pi.roth;
@@ -151,7 +175,7 @@ export function flow(pr: Profile): Flow {
   const C = budgetCompute(b), spendPaid = pi.spendYear / 12, invested = trad + rothAmt + a.brok * m;
   return {
     b, pi, r, gross, taxes: taxesYr / 12, health, afterTax: net, spend: C.spentYr / 12, spendPaid,
-    // What's left: pay after taxes (as Taxes figures them), less saving and spending.
+    // What's left: pay after taxes, less saving and spending.
     invested, match: r.match * m, ef: a.ef * m, left: hasPay ? net - invested - a.ef * m - spendPaid : r.left * m,
     trad, roth: rothAmt, brok: a.brok * m,
     fullMatch: pi.match.some((x) => x.rate > 0) ? a.match >= cap - 0.5 : null,
@@ -198,25 +222,48 @@ export function socialBenefits(s: SocialInputs): { you: number; spouse: number |
 
 /* ---------- Drawdown ---------- */
 
-/** The Drawdown Simulator on the plan: what's saved at retirement, the
-    years to 95, the stock mix, Social Security and the strategy come from
-    the profile; the strategy's own settings are the ones saved there. */
-/** The simulator's figures that come from the plan, which a person can set
-    for themselves on Retirement (kept in Profile.ddOwn). The stock mix and
-    the first claiming age go back into the plan's own settings instead. */
-/* The portfolio value isn't among them: it's always the Calculator's result. */
-export const DD_OWN = ["rate", "years", "retireAge", "ssMode", "ssAmount", "ssAmount2", "ssDelay2"] as const;
+/** The mix once retired, in percent: US stocks, small-cap value and cash
+    (bonds the rest), and where the stocks' total glides to by the end
+    (null: no glide). Set in Retirement's simulator; until it's been set
+    there, the stock share Profile used to ask for. */
+export interface RetireMix { us: number; sv: number; cash: number; end: number | null }
+export function retireMix(pr: Profile): RetireMix {
+  const d = (pr.tools.drawdown ?? {}) as Record<string, unknown>;
+  const has = (k: string) => d[k] != null && String(d[k]).trim() !== "";
+  const n = (k: string, dflt: number) => (has(k) ? Math.max(0, Math.min(100, parseNum(String(d[k])))) : dflt);
+  return { us: n("stock", pr.assume.stocks ?? 60), sv: n("sv", 0), cash: n("cash", 0), end: has("stockEnd") ? n("stockEnd", 0) : null };
+}
+/** The stocks' total in a mix (US and small value). */
+export const stocksOf = (m: RetireMix) => m.us + m.sv;
+/** A mix in words: "60% stocks (10% small-cap value), 35% bonds, 5% cash, gliding to 40% stocks". */
+export function mixWords(m: RetireMix): string {
+  const st = Math.round(stocksOf(m)), bonds = Math.max(0, Math.round(100 - st - m.cash));
+  const parts = [`${st}% stocks${m.sv > 0 ? ` (${Math.round(m.sv)}% small-cap value)` : ""}`, `${bonds}% bonds`, ...(m.cash > 0 ? [`${Math.round(m.cash)}% cash`] : [])];
+  return parts.join(", ") + (m.end != null && Math.round(m.end) !== st ? `, gliding to ${Math.round(m.end)}% stocks` : "");
+}
+
+/** The Drawdown Simulator on the plan. What's saved at retirement (the
+    Calculator's result), the retirement age and Social Security come from
+    the plan and can't be changed there (Retirement says them in place of
+    their fields); the years and the starting rate can be set there for
+    yourself (kept in Profile.ddOwn); the mix, and the strategy with its
+    own settings, are the simulator's and saved as they are. */
+export const DD_OWN = ["rate", "years"] as const;
+/** The simulator's inputs the plan sets, which Retirement locks. */
+export const DD_LOCKED = ["initial", "retireAge", "ss"];
 
 export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; taxYr: number; years: number; ss1: number; ss2: number; claim: number; claim2?: number | null; retire: number } | null, own = true): DrawdownState {
   const cur = withDefaults(DRAWDOWN_DEF, pr.tools.drawdown ?? {});
   if (!plan) return cur;
   const couple = pr.who === "couple" && plan.ss2 > 0;
   // A partial fill, so each strategy's own saved settings (guardrails,
-  // floors and ceilings, a spending path) are kept as they are.
+  // floors and ceilings, a spending path) and the mix are kept as they are.
   const next = ddWrite(cur, {
-    initial: Math.round(plan.fv), years: plan.years, stock: pr.assume.stocks, retireAge: String(plan.retire),
-    ssMode: plan.ss1 > 0 ? "manual" : "none", ssWho: couple ? "couple" : "single",
+    initial: Math.round(plan.fv), years: plan.years, retireAge: String(plan.retire),
+    ssMode: plan.ss1 > 0 ? "manual" : "none", ssFrom: "", ssWho: couple ? "couple" : "single",
     ssAmount: Math.round(plan.ss1 * 12), ssAmount2: Math.round(plan.ss2 * 12), ssDelay: plan.claim,
+    // Before the mix was set here, it was Profile's stock share.
+    ...(pr.tools.drawdown?.stock == null ? { stock: pr.assume.stocks } : {}),
   });
   // Each of you from your own start year.
   if (couple && plan.claim2 != null) next.ssDelay2 = String(Math.round(plan.claim2));
@@ -225,27 +272,26 @@ export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; ta
   // rest. Always from the plan, so the two can't drift apart.
   // Unless set on Retirement: then it's the plan's spending that follows.
   const rate = Math.round(((plan.spendYr + plan.taxYr) / Math.max(1, plan.fv)) * 10000) / 100;
-  // A portfolio value typed here before it came from the Calculator is set aside.
-  const { initial: _old, ...mine } = (own ? pr.ddOwn : undefined) ?? {};
-  void _old;
+  // Only the figures that can be your own (older profiles kept others).
+  const saved = (own ? pr.ddOwn : undefined) ?? {};
+  const mine = Object.fromEntries(DD_OWN.filter((k) => saved[k] != null).map((k) => [k, saved[k]]));
   return { ...next, rate: String(rate), ...mine, ...(pr.strategy ? { strategy: pr.strategy } : {}) } as DrawdownState;
 }
 
-/** What the profile keeps when the Drawdown changes: its settings, and the
-    strategy once one is picked there (opening it on its default isn't a choice). */
+/** What the profile keeps when the Drawdown changes: its settings (the mix
+    with them), and the strategy once one is picked there (opening it on its
+    default isn't a choice). */
 export function fromDrawdown(pr: Profile, d: DrawdownState, opened?: string, plan?: Parameters<typeof drawdownFor>[1]): Profile {
   const strategy = pr.strategy == null && String(d.strategy) === opened ? null : String(d.strategy);
   const next: Profile = { ...pr, strategy, tools: { ...pr.tools, drawdown: d as unknown as ToolInputs } };
   if (!plan) return next;
-  // Every figure changed here is kept: one that differs from the plan's is
-  // the person's own; set back to the plan's, it follows the plan again.
+  // The years and starting rate, when changed here, are the person's own;
+  // set back to the plan's, they follow the plan again.
   const base = drawdownFor(pr, plan, false) as unknown as Record<string, unknown>, now = d as unknown as Record<string, unknown>;
-  const same = (k: string) => (k === "ssMode" ? String(now[k]) === String(base[k]) : Math.abs(parseNum(String(now[k] ?? "")) - parseNum(String(base[k] ?? ""))) < 0.005);
+  const same = (k: string) => Math.abs(parseNum(String(now[k] ?? "")) - parseNum(String(base[k] ?? ""))) < 0.005;
   const own: Record<string, string> = {};
   DD_OWN.forEach((k) => { if (now[k] != null && !same(k)) own[k] = String(now[k]); });
   next.ddOwn = Object.keys(own).length ? own : undefined;
-  if (!same("stock")) next.assume = { ...pr.assume, stocks: Math.max(0, Math.min(100, Math.round(parseNum(String(now.stock))))) };
-  if (!same("ssDelay")) next.ss = { ...pr.ss, claim: Math.max(62, Math.min(70, Math.round(parseNum(String(now.ssDelay))))) };
   return next;
 }
 

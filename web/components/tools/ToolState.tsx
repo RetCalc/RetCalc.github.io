@@ -231,11 +231,16 @@ export interface ToolScope {
       is the Paycheck tab, after where the rest goes; "payFacts" takes the
       place of the Paycheck's pay, filing status, state and match fields,
       when the scope keeps those itself. */
-  slots?: { afterSliders?: ReactNode; kidsSummary?: ReactNode; payFacts?: ReactNode };
-  /** Fields the scope sets itself and the tool shows but doesn't let you
-      change, by input name, each with the line saying where it comes from
-      (the Dashboard's portfolio value, from its Calculator). */
-  locked?: Record<string, string>;
+  slots?: { afterSliders?: ReactNode; kidsSummary?: ReactNode; payFacts?: ReactNode;
+    /** Said at the top of a tool's inputs: the figures the scope sets itself
+        (`locked`), in its own words, with where each is changed. */
+    facts?: ReactNode;
+    /** The Drawdown Simulator's Social Security, said in place of its fields. */
+    ssFacts?: ReactNode };
+  /** Inputs the scope sets itself, by name (or a group's name: "ss" for
+      the Drawdown's Social Security), which the tool leaves out: the
+      scope's `facts` say them. The Dashboard's figures from its plan. */
+  locked?: string[];
   /** How the scope covers children's costs from saving, when it has its
       own order (the Dashboard's): today's saving by account, what a stage
       takes, and the order in words, for "How will you cover this?". */

@@ -547,3 +547,25 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
   .dsh-embed #bgList[data-emview="normal"] [data-slot="input-group"]:has([data-f="emerg"]),
   .dsh-embed #bgList[data-emview="emergency"] [data-slot="input-group"]:has([data-f="amount"]) { display: none; }
 }
+
+/* Net worth: what was put in (a brokerage account's cost basis, a Roth's
+   contributions), a fifth column while editing; the gain or loss after
+   the amount once saved. */
+.dsh-erow-asset { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.9fr) auto; }
+@media (max-width: 1180px) { .dsh-erow-asset { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.dsh-ena { padding-left: 10px; }
+@media (max-width: 1180px) { .dsh-ena { display: none; } }
+.dsh-basis { margin-left: 6px; font-size: 12.5px; }
+.dsh-basis.dsh-up { color: var(--ds-gain); }
+.dsh-basis.dsh-dn { color: var(--ds-loss); }
+
+/* Income: a hint across two of the row's three columns. */
+.dsh-span2 { grid-column: span 2; }
+@media (max-width: 760px) { .dsh-span2 { grid-column: auto; } }
+
+/* Retirement: what the page below At retirement shows. */
+.dsh-retside { display: flex; justify-content: center; }
+.dsh-retside [role="group"] { flex-wrap: wrap; }
+/* The years before Medicare, called out. */
+.dsh-tip.dsh-warn-tip { border-color: color-mix(in srgb, var(--ds-amber) 45%, var(--ds-rule-strong)); }
+.dsh-retside button { gap: 6px; }

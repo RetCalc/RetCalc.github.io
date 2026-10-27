@@ -71,6 +71,7 @@ export function Income() {
   const putB = (v: Partial<BudgetInputs>) => set((p) => fromBudget(p, { ...budgetFor(p), ...v }));
   const putOther = (id: string, v: Partial<Profile["other"][number]>) => set((p) => ({ ...p, other: p.other.map((o) => (o.id === id ? { ...o, ...v } : o)) }));
   const twoIncomes = b.pcStatus === "m2";
+  const share = pr.ss.pct ?? 100;
   const matchRow = (i: 0 | 1) => {
     const rate = i ? b.pcMatchRate2 : b.pcMatchRate, upTo = i ? b.pcMatchUpTo2 : b.pcMatchUpTo;
     return (
@@ -133,10 +134,15 @@ export function Income() {
                   <MoneyField id={"dshISs" + i} label={<TipLabel text={`${nameOf(pr, i)}: benefit at full retirement age`} k="fra" />} unit="per month" placeholder="Estimated"
                     value={txt(i ? pr.ss.own2 : pr.ss.own1)} onValueChange={(v) => set((p) => ({ ...p, ss: { ...p.ss, ...(i ? { own2: num(v) } : { own1: num(v) }), checked: true } }))} />
                   <ClaimField pr={pr} set={set} i={i} />
-                  <div><div className="dsh-label">Claimed at {(i ? R.claim2 : R.claim1) ?? "—"}{(i ? pr.p2 : pr.p1).by ? `, in ${yearAt(i ? pr.p2 : pr.p1, (i ? R.claim2 : R.claim1) ?? 67)}` : ""}</div>
+                  <div><div className="dsh-label">Claimed at {(i ? R.claim2 : R.claim1) ?? "—"}{(i ? pr.p2 : pr.p1).by ? `, in ${yearAt(i ? pr.p2 : pr.p1, (i ? R.claim2 : R.claim1) ?? 67)}` : ""}{share < 100 ? `, at ${share}%` : ""}</div>
                     <div className="dsh-fig dsh-md">{(i ? R.ss2 : R.ss1) != null ? money((i ? R.ss2 : R.ss1)!) : "—"}<small>per month</small></div></div>
                 </div>
               ))}
+              <div className="dsh-perrow">
+                <NumberField id="dshSsPct" label={<TipLabel text="Share of the benefit you expect" id="ssPct" />} unit="%" step={5} max={100} placeholder="100"
+                  value={pr.ss.pct == null ? "" : String(pr.ss.pct)} onValueChange={(v) => set((p) => ({ ...p, ss: { ...p.ss, pct: v.trim() === "" ? null : Math.max(0, Math.min(100, num(v) ?? 100)) } }))} />
+                <div className="dsh-hint dsh-self-end dsh-span2">{share < 100 ? `Every benefit in your plan is ${share}% of the full amount: ${(two ? [0, 1] as const : [0] as const).map((i) => `${nameOf(pr, i)} ${(i ? R.ss2 : R.ss1) != null ? money((i ? R.ss2 : R.ss1)!) : "—"} per month`).join(", ")}, once claimed.` : "100% unless you expect cuts. If Congress doesn't act, benefits could be cut to roughly 80% once the trust fund runs short in the 2030s."}</div>
+              </div>
               <div className="dsh-perrow">
                 <div className="dsh-self-end"><Button variant="outline" onClick={() => setHist(true)}>Estimate from my pay history</Button></div>
                 <div className="dsh-self-end">{pr.ss.checked ? <Button variant="link" size="inline" onClick={() => set((p) => ({ ...p, ss: { ...p.ss, own1: null, own2: null, checked: false } }))}>Back to the estimate</Button> : null}</div>

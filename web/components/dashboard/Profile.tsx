@@ -1,8 +1,8 @@
 "use client";
 
 /* Profile: every answer from setup on one page, each editable where it
-   stands, and the plan's assumptions (growth, inflation, stocks once
-   retired), which every figure on the dashboard uses. What's saved so far
+   stands, and the plan's assumptions (growth and inflation; the mix once
+   retired is set on Retirement), which every figure on the dashboard uses. What's saved so far
    is read from Accounts and changed there. */
 
 import Link from "next/link";
@@ -21,11 +21,11 @@ import { Frame } from "./Frame";
 import { toolHref } from "./host";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt, useTyped, type PKey } from "./fields";
 import { money } from "./format";
-import { flow } from "./flows";
+import { flow, mixWords, retireMix } from "./flows";
 import { couple, holdings, mortgage, nameOf, nowYear, realGrowth, spendMonth } from "./model";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
 import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, useDashboard, withHome, type Person, type Profile as P } from "./store";
-import { Note, Tile, Tip, TipLabel } from "./ui";
+import { Note, Tile, Tip, TipLabel, To } from "./ui";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
 
@@ -52,12 +52,11 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
       <div className="dsh-row3 dsh-pair dsh-mt dsh-fields-sm">
         <NumberField id="dshGrowth" label={<TipLabel text="Growth per year, before inflation" id="growth" />} unit="%" step={0.25} max={20} value={growthTxt} onValueChange={(v) => { setGrowthTxt(v); put({ growth: (num(v) ?? 0) / 100 }); }} />
         <NumberField id="dshInfl" label={<TipLabel text="Inflation per year" id="inflation" />} unit="%" step={0.25} max={15} value={inflTxt} onValueChange={(v) => { setInflTxt(v); put({ inflation: (num(v) ?? 0) / 100 }); }} />
-        <NumberField id="dshStocks" label={<TipLabel text="In stocks once retired" id="stocks" />} unit="%" step={5} max={100} value={String(A.stocks)} onValueChange={(v) => put({ stocks: Math.max(0, Math.min(100, num(v) ?? 0)) })} />
       </div>
       <div className="dsh-mt"><Note>
-        Until you retire, savings grow at a steady <b>{pct(real)}</b> per year after inflation ({pct(A.growth)} growth less {pct(A.inflation)} inflation). Once retired, the plan runs through <b>every market since 1926</b>, {A.stocks}% in stocks, instead of a steady rate. Every figure is in today&apos;s dollars.
+        Until you retire, savings grow at a steady <b>{pct(real)}</b> per year after inflation ({pct(A.growth)} growth less {pct(A.inflation)} inflation). Once retired, the plan runs through <b>every market since 1926</b> instead of a steady rate, invested in your retirement mix: {mixWords(retireMix(pr))}. That mix is set in the <To href="/dashboard/retirement">Retirement</To> simulator. Every figure is in today&apos;s dollars.
       </Note></div>
-      <div className="dsh-foot"><Button variant="link" size="inline" onClick={() => set((p) => ({ ...p, assume: DEFAULT_ASSUMPTIONS }))}>Back to the usual: balanced, 3% inflation, 60% in stocks</Button></div>
+      <div className="dsh-foot"><Button variant="link" size="inline" onClick={() => set((p) => ({ ...p, assume: { ...DEFAULT_ASSUMPTIONS, stocks: p.assume.stocks } }))}>Back to the usual: balanced, 3% inflation</Button></div>
     </Tile>
   );
 }
@@ -184,7 +183,7 @@ export function Profile() {
             </div>
             <div className="dsh-row">
               <MoneyField id="dshPRetSpend" label={<TipLabel text="Spending once retired" id="retSpend" />} unit="per month" value={txt(pr.retSpend)} placeholder={txt(spendMonth(pr))} onValueChange={(v) => set((p) => ({ ...p, retSpend: num(v) }))} />
-              <div className="dsh-hint dsh-self-end">{pr.ddOwn?.rate != null ? "Your goal. The plan spends what your starting rate on Retirement gives." : pr.retSpend == null ? "Leave blank to use what you spend today." : "Today's spending is " + money(spendMonth(pr) ?? 0) + " per month."}</div>
+              <div className="dsh-hint dsh-self-end">{pr.ddOwn?.rate != null ? "Your goal. The plan spends what your starting rate on Retirement gives." : pr.retSpend == null ? (pr.home === "own" ? "Leave blank to use what you spend today, less the mortgage payment if it's paid off by then." : "Leave blank to use what you spend today.") : "Today's spending is " + money(spendMonth(pr) ?? 0) + " per month."}</div>
             </div></div>
           </Tile>
           <Tile id="saving" icon={WalletIcon} title="Saving">

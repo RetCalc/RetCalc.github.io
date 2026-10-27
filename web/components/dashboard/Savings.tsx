@@ -1,15 +1,23 @@
 "use client";
 
-/* Savings: where what's left after taxes and spending goes, by the Paycheck
-   tab's own sliders (401(k) up to the match, HSA, emergency fund, IRA,
-   401(k) beyond the match, brokerage), each traditional or Roth. Pre-tax
-   lines lower the taxes on the Taxes tab; the plan saves into each account
-   as set here, rising each year by what's set below. */
+/* Taxes & Savings: the year's taxes on pay, and where what's left after
+   taxes and spending goes, by the Paycheck tab's own sliders (401(k) up to
+   the match, HSA, emergency fund, IRA, 401(k) beyond the match,
+   brokerage), each traditional or Roth. The Paycheck is the household's
+   one tax calculator: the deductions (standard or itemized) and any local
+   tax are chosen here, pre-tax lines lower the taxes, and the plan saves
+   into each account as set here, rising each year by what's set below. */
 
 import Link from "next/link";
-import { PiggyBankIcon } from "lucide-react";
+import { LandmarkIcon, PiggyBankIcon } from "lucide-react";
 import { useState } from "react";
-import { NumberField } from "@/components/fields/Field";
+import { Affixed, Field, NumberField, SelectField } from "@/components/fields/Field";
+import { MoneyInput } from "@/components/fields/NumberInput";
+import { Badge } from "@/components/ui/badge";
+import { yearData } from "@/lib/engine/typed";
+import { LOCAL_TAX } from "@/tools/tax/local";
+import { TAX_DEF, type TaxInputs } from "@/tools/tax/model";
+import { withDefaults } from "@/components/tools/ToolState";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
@@ -19,12 +27,12 @@ import { parseNum } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { Frame } from "./Frame";
 import { num } from "./fields";
-import { budgetFor, flow, fromBudget, growthLines, taxFor } from "./flows";
+import { budgetFor, flow, fromBudget, fromTax, growthLines, taxFor, taxState } from "./flows";
 import { money } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
-import { nameOf, outsideUS } from "./model";
+import { couple, nameOf, outsideUS } from "./model";
 import { useDashboard, type Profile } from "./store";
-import { Note, Tile, Tip, TipLabel } from "./ui";
+import { Note, Tile, Tip, TipLabel, To } from "./ui";
 
 const pct = (v: number) => String(Math.round(v * 1000) / 10);
 
@@ -105,8 +113,9 @@ export function Savings() {
   // Shown once the emergency fund line is in "Where the rest goes", even at 0.
   const efOn = budgetFor(pr).pcEfOn;
   return (
-    <Frame current="savings" title="Savings" sub={F.hasPay ? `${money(F.invested + F.match)} per month into savings, with your employer's match` : "Where your paycheck goes"}>
-      <Tile id="month" icon={PiggyBankIcon} title="Each month">
+    <Frame current="savings" title="Taxes & Savings" sub={F.hasPay ? `${F.tax ? money(F.tax.total) + " per year in taxes, " : ""}${money(F.invested + F.match)} per month into savings, with your employer's match` : "Where your paycheck goes"}>
+      <Taxes pr={pr} />
+      <Tile id="month" icon={PiggyBankIcon} title="Each month" className="dsh-r4">
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">You save and invest</div><div className="dsh-fig dsh-key">{money(F.invested)}<small>per month</small></div></div>
           <div className="dsh-stat"><div className="dsh-label">Employer match</div><div className="dsh-fig dsh-md">{money(F.match)}<small>per month</small></div></div>
@@ -128,5 +137,53 @@ export function Savings() {
         </Hosted>
       </div>
     </Frame>
+  );
+}
+
+/** The year's taxes on pay, as the Paycheck figures them, and the choices
+    that change them: the standard deduction or itemizing, and a local tax
+    where the state has them. Kept as Income Tax's own inputs. */
+function Taxes({ pr }: { pr: Profile }) {
+  const { setProfile } = useDashboard();
+  const F = flow(pr), T = F.tax, abroad = outsideUS(pr);
+  const t = withDefaults(TAX_DEF, pr.tools.tax ?? {});
+  const put = (v: Partial<TaxInputs>) => setProfile((p) => fromTax(p, { ...withDefaults(TAX_DEF, p.tools.tax ?? {}), ...v }));
+  if (abroad) return <Tile id="taxes" icon={LandmarkIcon} title="Taxes"><p className="dsh-cap dsh-mt6">Outside the US we don&apos;t work out taxes: your pay is entered after taxes, and figures for retirement are before taxes.</p></Tile>;
+  const yr = F.gross * 12, state = taxState(pr), local = LOCAL_TAX[state];
+  const std = yearData().fedStd[couple(pr) ? "m" : "s"];
+  const localOn = !!local && parseNum(t.localRate ?? "0") > 0;
+  return (
+    <Tile id="taxes" icon={LandmarkIcon} title="Taxes this year">
+      <div className="dsh-stats">
+        <div className="dsh-stat"><div className="dsh-label">Pay after taxes</div><div className="dsh-fig dsh-key">{F.hasPay ? money(F.afterTax) : "—"}<small>per month</small></div></div>
+        <div className="dsh-stat"><div className="dsh-label">Federal income tax</div><div className="dsh-fig dsh-md">{T ? money(T.federal) : "—"}<small>per year</small></div></div>
+        <div className="dsh-stat"><div className="dsh-label">State income tax</div><div className="dsh-fig dsh-md">{T ? money(T.state) : "—"}<small>per year</small></div></div>
+        {T && T.local > 0 ? <div className="dsh-stat"><div className="dsh-label">Local income tax</div><div className="dsh-fig dsh-md">{money(T.local)}<small>per year</small></div></div> : null}
+        <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Social Security and Medicare" id="fica" /></div><div className="dsh-fig dsh-md">{T ? money(T.fica) : "—"}<small>per year</small></div></div>
+        {T && yr > 0 ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Of your pay" k="effrate" /></div><div className="dsh-fig dsh-md">{Math.round((T.total / yr) * 1000) / 10}%</div></div> : null}
+      </div>
+      <div className="dsh-fields dsh-fields-sm dsh-mt"><div className="dsh-row3">
+        <SelectField id="dshDed" label={<TipLabel text="Deduction" id="deduction" />} value={t.dedType} onChange={(v) => put({ dedType: v as TaxInputs["dedType"] })}>
+          <option value="std">Standard deduction ({money(std)})</option>
+          <option value="item">Itemized</option>
+        </SelectField>
+        {t.dedType === "item" ? (
+          <Field id="dshItem" label="Itemized total, per year">
+            <Affixed prefix="$"><MoneyInput id="dshItem" nonNeg value={t.item} onValueChange={(v) => put({ item: v })} /></Affixed>
+          </Field>
+        ) : <div />}
+        {local ? (
+          <NumberField id="dshLocal" label={<>Local income tax <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="%" step={0.1} max={20} value={t.localRate ?? "0"} onValueChange={(v) => put({ localRate: v })} />
+        ) : <div />}
+      </div></div>
+      <div className="dsh-cap dsh-mt6">
+        {t.dedType === "item"
+          ? <>Mortgage interest, gifts to charity, and state and local taxes (income or sales, plus property) up to the cap, added up for the year.{parseNum(t.item) > 0 && parseNum(t.item) < std ? <b> That&apos;s less than the {money(std)} standard deduction, which you&apos;d take instead.</b> : null}</>
+          : "Most households take the standard deduction. Itemize only if your mortgage interest, charity and state and local taxes add up to more."}
+        {local ? <> {local.note} {localOn ? "" : "Leave it at 0 if there's none where you live. "}Your pay stub shows any local tax taken out{local.links.length ? ", or look up your rate: " : "."}
+          {local.links.map(([label, url], i) => <span key={url}>{i ? ", " : ""}<a href={url} target="_blank" rel="noopener noreferrer">{label}</a></span>)}{local.links.length ? "." : null}</> : null}
+      </div>
+      <p className="dsh-cap dsh-mt6">Pay comes from <To href="/dashboard/income#pay">Income</To>; what goes to your 401(k), HSA and health premiums is set in the paycheck below, and lowers these taxes.</p>
+    </Tile>
   );
 }

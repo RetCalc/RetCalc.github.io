@@ -10,9 +10,10 @@ import { withDefaults, type ToolInputs } from "@/components/tools/ToolState";
 import { groupDigits } from "@/lib/format";
 import { BRIDGE_DEF, bridgeInput, type BridgeInputs } from "@/tools/bridge/model";
 import { runBridge } from "@/tools/bridge/run";
-import { ageOf, couple, holdings, nameOf, people, results, type Results } from "./model";
+import { ageOf, couple, grossYear, holdings, nameOf, nowYear, people, results, type Results } from "./model";
 import { OUTSIDE_US, sum, type Entry, type Profile } from "./store";
-import { taxState } from "./flows";
+import { retireMix, taxState } from "./flows";
+import { collegeChildren } from "./college";
 
 export const UNLOCK = 59.5;
 /** The share of the retirement outlook held back while there's no bridge plan. */
@@ -36,6 +37,33 @@ export const hasBridgePlan = (pr: Profile) => !!pr.bridge;
 
 const g = (n: number) => groupDigits(Math.round(Math.max(0, n)), true);
 
+/** The people in the household in a year: the two of you (or you), and the
+    children still at home (under 19, born by then), as the ACA counts a
+    household for its subsidy. */
+export function householdAt(pr: Profile, year: number): number {
+  const now = Math.floor(nowYear());
+  const kids = collegeChildren(pr).filter((c) => { const born = c.by ?? now + c.bornIn; return born <= year && year - born < 19; }).length;
+  return (couple(pr) ? 2 : 1) + kids;
+}
+
+/** A partner still working after the early retiree stops: their pay a year
+    before taxes, and the early retiree's age when it ends. */
+export function partnerWork(pr: Profile, early: EarlyRetiree): { pay: number; until: number; name: string } | null {
+  if (!couple(pr)) return null;
+  const j = early.i ? 0 : 1, p = j ? pr.p2 : pr.p1;
+  if (p.by == null || p.retire == null) return null;
+  const stops = p.by + p.retire, pay = grossYear(p) ?? 0;
+  if (!(stops > early.from) || !(pay > 0)) return null;
+  return { pay, until: early.retire + (stops - early.from), name: nameOf(pr, j as 0 | 1) };
+}
+
+/** The Bridge's inputs the plan sets, which Retirement locks: the
+    situation, the accounts at retirement, the household; and the Roth's
+    contributions once Net worth gives them. */
+export function bridgeLocked(pr: Profile, entries: Entry[]): string[] {
+  return ["situation", "accounts", "household", ...(holdings(entries, pr).rothBasis != null ? ["rothBasis"] : [])];
+}
+
 /** The Bridge on the plan: its figures from the plan, its choices from the
     saved bridge plan (or the Bridge's own starting choices). */
 export function bridgeFor(pr: Profile, entries: Entry[], R: Results = results(pr, entries)): BridgeInputs {
@@ -43,26 +71,36 @@ export function bridgeFor(pr: Profile, entries: Entry[], R: Results = results(pr
   const early = earlyRetirees(pr)[0];
   const P = R.S?.P;
   if (!early || !P) return cur;
-  // Of today's traditional money, the share in workplace plans: the part the
-  // rule of 55 can reach, carried to retirement in proportion.
+  // Of today's traditional money, the share in workplace plans (the part
+  // the rule of 55 can reach) and in a 457(b) (open once you leave that
+  // job), carried to retirement in proportion.
   const H = holdings(entries, pr), last = entries[entries.length - 1];
   const work = last ? sum(last.items, "asset", ["workplace"]) : H.trad;
-  const k401Share = H.trad > 0 ? Math.min(1, work / H.trad) : 1;
+  const k401Share = H.trad > 0 ? Math.min(1, work / H.trad) : 1, g457Share = H.trad > 0 ? H.g457 / H.trad : 0;
   const basis = P.brok > 0 ? Math.round((P.brokBasis / P.brok) * 100) : 100;
+  const mix = retireMix(pr), partner = partnerWork(pr, early);
+  // Roth contributions: from the plan once Net worth gives them; otherwise
+  // as typed here (saved with the bridge's choices), else the plan's estimate.
+  const rothBasis = H.rothBasis != null || pr.bridge?.inputs.rothBasis == null ? g(Math.min(P.roth, P.rothBasis)) : cur.rothBasis;
   return {
     ...cur,
     age: String(Math.round(early.retire)), status: couple(pr) ? "m" : "s", state: taxState(pr) || cur.state,
-    household: String(Math.max(couple(pr) ? 2 : 1, Number(cur.household) || 0)),
-    spend: g((R.spend ?? 0) * 12), stock: String(pr.assume.stocks),
-    trad: g(P.trad), k401: g(P.trad * k401Share), roth: g(P.roth), rothBasis: g(Math.min(P.roth, P.rothBasis)),
+    household: String(householdAt(pr, early.from)),
+    spend: g((R.spend ?? 0) * 12),
+    // The mix once retired, as Retirement's simulator holds it.
+    stock: String(mix.us), sv: String(mix.sv), cash: String(mix.cash),
+    trad: g(P.trad), k401: g(P.trad * k401Share), g457: g(P.trad * g457Share), roth: g(P.roth), rothBasis,
     brok: g(P.brok), basis: String(basis),
+    work2: partner ? g(partner.pay) : "0", work2Until: partner ? String(Math.round(partner.until * 10) / 10) : "0",
   };
 }
 
 /** What the profile keeps from the Bridge: only the choices, since its
-    figures always come from the plan. */
-export function bridgeChoices(d: BridgeInputs): ToolInputs {
-  const keep: (keyof BridgeInputs)[] = ["fill", "seppMethod", "seppRate", "aca", "premium", "work", "workUntil", "g457", "household"];
+    figures always come from the plan (and the Roth's contributions, while
+    Net worth doesn't give them). */
+export function bridgeChoices(d: BridgeInputs, pr?: Profile, entries?: Entry[]): ToolInputs {
+  const keep: (keyof BridgeInputs)[] = ["fill", "seppMethod", "seppRate", "aca", "premium", "work", "workUntil"];
+  if (pr && entries && holdings(entries, pr).rothBasis == null) keep.push("rothBasis");
   return Object.fromEntries(keep.filter((k) => d[k] != null).map((k) => [k, d[k]])) as ToolInputs;
 }
 

@@ -2,8 +2,10 @@
 
 /* The tools, inside the Dashboard. Each runs in a tool scope: its inputs
    start from the profile (everything known filled in, with no notice), and
-   its edits stay with it. A tab built on a tool (Spending, Savings, Taxes,
-   Retirement) passes `keep`, which takes the edits into the profile; a tool
+   its edits stay with it. A tab built on a tool (Home, Spending, Taxes &
+   Savings, the Calculator, Retirement) passes `keep`, which takes the edits
+   into the profile, and lists what it sets from the plan (`locked`, said
+   in its `facts`) in place of those fields; a tool
    opened from Tools passes none, so nothing it does reaches the profile.
    Either way the site's own copies of the tools (tab memory, the saved
    household, share links) are never touched. */
@@ -107,13 +109,16 @@ export function Hosted({ seed, keep, household, slots, cover, locked, children }
   household: SavedHousehold | null; slots?: ToolScope["slots"]; cover?: ToolScope["cover"]; locked?: ToolScope["locked"]; children: ReactNode;
 }) {
   const router = useRouter();
-  const latest = useRef({ seed, keep });
-  useEffect(() => { latest.current = { seed, keep }; });
-  // One scope for the host's life: the tools read it as they open.
+  const latest = useRef({ seed, keep, slots, locked });
+  useEffect(() => { latest.current = { seed, keep, slots, locked }; });
+  // One scope for the host's life: the tools read it as they open. What
+  // the page says in them, and what it locks, follow the page as it draws.
   const [scope] = useState<ToolScope>(() => {
     const mem = new Map<string, ToolInputs>();
     return {
-      name: "dashboard", household, slots, cover, locked,
+      name: "dashboard", household, cover,
+      get slots() { return latest.current.slots; },
+      get locked() { return latest.current.locked; },
       read: (id) => mem.get(id) ?? latest.current.seed(id),
       write: (id, data) => { mem.set(id, data); latest.current.keep?.(id, data); },
       go: (path) => { const t = toolFromPath(path); if (t) router.push(toolHref(t)); return true; },

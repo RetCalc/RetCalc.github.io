@@ -113,14 +113,24 @@ export interface FinalStageSolve {
 export interface TaxBucket { label: string; withdrawn: number; taxable: number; federal: number; state: number; tax: number; eff: number }
 export interface RetireTax { total: number; buckets: TaxBucket[]; [k: string]: unknown }
 
+/** A mix: a stock % (bonds the rest), or US stocks, small-cap value and cash
+    in percent (bonds the rest) with where the stocks' total glides to by the
+    end (null: no glide), as plMix() takes it. */
+export type PlMixSpec = number | { us: number; sv: number; cash: number; end?: number | null };
+
 /* ---- the Early Retirement Bridge (bridge.js) ---- */
 export interface BrInput {
   status: "m" | "s"; state: string; age: number; spend: number;
   trad: number; k401: number; roth: number; rothBasis: number; brok: number; basisPct: number; g457: number;
   stock: number; work: number; workUntil: number; aca: boolean; household: number; premium: number;
   seppMethod: "amort" | "rmd"; seppRate: number; fill: string;
+  /** The fuller mix, in place of `stock` (no glide over the bridge's years). */
+  mixSpec?: PlMixSpec;
+  /** A partner's pay a year while they keep working, until the early
+      retiree's age `work2Until`; their job's health plan covers the household. */
+  work2?: number; work2Until?: number;
 }
-export interface BrMix { r: ArrayLike<number>; pi: ArrayLike<number>; n: number; real: number; infl: number }
+export interface BrMix { r: ArrayLike<number>; pi: ArrayLike<number>; n: number; real: number; infl: number; first?: number; rEnd?: ArrayLike<number>; realEnd?: number }
 export interface BrCtx extends BrInput {
   mix: BrMix; real: number; infl: number; adults: number; fpl: number; nB: number;
   r55Age: number; r55: boolean; stateCA: boolean;
@@ -177,7 +187,7 @@ export interface PlToday {
   saveTrad: number; saveRoth: number; saveBrok: number; real: number; infl: number;
   spend: number; pia1: number; pia2: number; claim1: number; claim2: number;
   pension: number; pensionAge: number | null; pensionCola: boolean; aca: boolean; household: number;
-  rule55: boolean; heirRate: number; mix: number; years: number; target: number; strategy: string; minSpend: number; fromYear: number;
+  rule55: boolean; heirRate: number; mix: PlMixSpec; years: number; target: number; strategy: string; minSpend: number; fromYear: number;
 }
 /** The plan at retirement, as plPrep() and plOptimize() take it. */
 export interface PlPlan extends PlToday { age1: number; age2: number | null; rmdAge: number; fv: number }
@@ -186,6 +196,8 @@ export interface PlStats { successRate: number; survived: number; total: number;
 export interface PlRow {
   age: number; spend: number; ss: number; pension: number; rmd: number; trad: number; conv: number; brok: number; roth: number;
   tax: number; pen: number; health: number; med: number; irmaa: number; taxable: number; fplPct: number | null; short: number; surplus: number;
+  /** The year's AGI (taxable Social Security in it) and MAGI (all of it). */
+  agi: number; magi: number;
   endTrad: number; endRoth: number; endBrok: number; end: number;
 }
 export interface PlSide { T: PlTactics; stats: PlStats; detail: { rows: PlRow[] }; spend: number }

@@ -11,6 +11,7 @@ import { collegeChildren, collegeNeedOf, collegeYears } from "./college";
 import { toolHref } from "./host";
 import { room } from "./readiness";
 import { earlyRetirees } from "./bridge";
+import { healthGap } from "./health";
 
 /** A stage's words without the yearly growth in them ("after the raise"
     once for each year saving has grown). */
@@ -63,8 +64,14 @@ export function allSteps(d: DashData, R: Results): Step[] {
   add({ id: "ss", title: "Check your Social Security", why: "Your statement's figure or your pay history, not an estimate", action: "Check", href: "/dashboard/income#social-security", done: pr.ss.checked || R.abroad, gain: 5 });
   add({ id: "strategy", title: "Choose a withdrawal strategy", why: "How you'll draw down in retirement; it sets your chance of success", action: "Choose", href: "/dashboard/retirement#strategies", done: !!pr.strategy, gain: 5 });
   add({ id: "budget", title: "Build a budget", why: "See where each month goes", action: "Start", href: "/dashboard/spending#budget", done: detailed(F.b), gain: room(R, "flow", 10) / 2 + 2 });
-  add({ id: "assume", title: "Review your assumptions", why: "Growth, inflation and stocks once retired", action: "Review", href: "/dashboard/profile#assumptions", done: JSON.stringify(pr.assume) !== JSON.stringify(DEFAULT_ASSUMPTIONS), gain: 2 });
-  if (pr.home === "own") add({ id: "mortgage", title: "Add your mortgage's rate and payment", why: "Shows when it's paid off", action: "Add", href: "/dashboard/home#mortgage", done: M.payoff != null || M.owed === 0, gain: 1 });
+  add({ id: "assume", title: "Review your assumptions", why: "Growth and inflation until you retire", action: "Review", href: "/dashboard/profile#assumptions", done: pr.assume.growth !== DEFAULT_ASSUMPTIONS.growth || pr.assume.inflation !== DEFAULT_ASSUMPTIONS.inflation, gain: 2 });
+  if (pr.home === "own") add({ id: "mortgage", title: "Set your mortgage and what owning costs", why: "When it's paid off, and your housing lines on Spending", action: "Set", href: M.payoff != null || M.owed === 0 ? "/dashboard/home#owning" : "/dashboard/home#mortgage", done: (M.payoff != null || M.owed === 0) && !!pr.homeCosts, gain: 2 });
+  // Retiring before Medicare: health cover to buy until then.
+  const gap = healthGap(pr);
+  if (gap) add({ id: "health", title: "Plan health cover until Medicare", why: `${gap.years} ${gap.years === 1 ? "year" : "years"} with no job's plan, ${gap.from} to ${gap.to}`, action: "Plan it", href: "/dashboard/retirement#health", done: !!pr.healthSeen, gain: 7 });
+  // Retiring before 59½: what can come out of a Roth early, and what a sale is taxed on.
+  if (early && H.accounts && ((H.roth > 0 && H.rothBasis == null) || (H.brok > 0 && H.brokBasis == null)))
+    add({ id: "basis", title: H.roth > 0 && H.rothBasis == null ? "Add your Roth contributions" : "Add your brokerage cost basis", why: "Your bridge to 59½ depends on what can come out early, and its tax", action: "Add", href: "/dashboard/accounts#assets", done: false, gain: 3 });
   if (couple(pr) && !pr.p2.by) add({ id: "partner", title: "Add your partner's birth date", why: "Ages drive Social Security and Medicare", action: "Add", href: "/dashboard/profile#household", done: false, gain: 6 });
   if (last) add({ id: "update", title: "Update your balances", why: `Last entry was ${daysSince(last.date)} days ago`, action: "Update", href: "/dashboard/accounts#assets", done: daysSince(last.date) < 28, gain: daysSince(last.date) > 60 ? 20 : 4 });
 

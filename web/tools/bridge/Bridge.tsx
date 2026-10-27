@@ -18,7 +18,7 @@ import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/componen
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
-import { useToolState } from "@/components/tools/ToolState";
+import { useToolScope, useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
@@ -73,6 +73,10 @@ const PATHS = [["above", "Above"], ["avg", "Average"], ["below", "Below"]] as co
 export function Bridge({ variant }: { variant?: "72t" } = {}) {
   const t72 = variant === "72t";
   const { state: s, set, setState } = useToolState(BRIDGE_DEF);
+  // Figures the page this runs in sets itself (the Dashboard's, from its
+  // plan): said in its own words in place of their fields. There, the
+  // hand-offs to other tools aren't offered and the market switch stays put.
+  const scope = useToolScope(), locked = new Set(scope?.locked ?? []);
   const router = useRouter();
   const toast = useToast();
   const [mode, setMode] = useState<"hist" | "mc">("hist");
@@ -171,6 +175,8 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
           <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
+              {scope?.slots?.facts}
+              {locked.has("situation") ? null : <>
               {/* One column on phones: "Married filing jointly" needs the full row. */}
               <div className="two bottomalign max-sm:grid-cols-1">
                 <NumberField id="brAge" label={<Tipped text="Retire at" k="brage" />} unit="yrs old" max={59} value={s.age} onValueChange={set("age")} />
@@ -186,9 +192,14 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
                 <Affixed prefix="$" suffix="/yr"><MoneyInput id="brSpend" nonNeg value={s.spend} onValueChange={set("spend")} /></Affixed>
                 <div className="hint" id="brSpendNote">{aca ? "Leave out health insurance: each plan adds the premium its income level earns." : ""}</div>
               </Field>
+              </>}
 
               {t72 ? <><GroupHead>72(t) payments</GroupHead>{sepp}</> : null}
 
+              {locked.has("accounts") ? (locked.has("rothBasis") ? null : <>
+                <GroupHead>Your Roth at retirement</GroupHead>
+                <MoneyField id="brRothBasis" label={<Tipped text="Of that, contributions" k="brrothbasis" />} value={s.rothBasis} onValueChange={set("rothBasis")} />
+              </>) : <>
               <GroupHead>Your accounts at retirement</GroupHead>
               <MoneyField id="brTrad" label={<Tipped text="Traditional 401(k) / IRA" k="brtrad" />} value={s.trad} onValueChange={set("trad")} />
               <MoneyField id="brK401" wrapId="brK401Wrap" hidden={bridgeAge(s) < 55} label={<Tipped text="Of that, in the 401(k) you're leaving" k="brk401" />} value={s.k401} onValueChange={set("k401")} />
@@ -204,6 +215,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
                 <MoneyField id="brG457" label={<Tipped text="Governmental 457(b)" k="br457" />} value={s.g457} onValueChange={set("g457")} />
                 <NumberField id="brStock" label={<Tipped text="Stocks" k="brstock" />} unit="%" step={5} max={100} value={s.stock} onValueChange={set("stock")} />
               </div>
+              </>}
 
               <GroupHead>Income</GroupHead>
               <div className={two}>
@@ -217,7 +229,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
                 <option value="0">Leave health insurance out</option>
               </SelectField>
               <div className={two} id="brAcaWrap" hidden={!aca}>
-                <NumberField id="brHousehold" label="Household size" unit="people" max={10} value={s.household} onValueChange={set("household")} />
+                {locked.has("household") ? null : <NumberField id="brHousehold" label="Household size" unit="people" max={10} value={s.household} onValueChange={set("household")} />}
                 <Field id="brPremium" label={<>Benchmark premium <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="brpremium" /></span></>}>
                   <Affixed prefix="$" suffix="/mo"><MoneyInput id="brPremium" nonNeg placeholder="estimate" value={s.premium} onValueChange={set("premium")} /></Affixed>
                 </Field>
@@ -266,7 +278,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
           {/* One plan, followed through one market: the head names both and
               holds the market switch, and stays in view over the detail. */}
           <div className="stack">
-            <div className="sticky top-(--pin-top) z-10 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-(--r-panel) border border-border bg-card px-5.5 py-3 max-sm:px-4" id="brFollow">
+            <div className={cn(!scope && "sticky top-(--pin-top) z-10", "flex flex-wrap items-center gap-x-3 gap-y-2 rounded-(--r-panel) border border-border bg-card px-5.5 py-3 max-sm:px-4")} id="brFollow">
               <span className="text-body text-muted-foreground">Following</span>
               <b className="text-body font-semibold text-foreground">{sel ? sel.name : ""}</b>
               <span className="ml-auto max-sm:ml-0 max-sm:w-full">
@@ -284,11 +296,13 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               <CardHeader><CardTitle id="brAtTitle">What you&apos;ll have at 59½</CardTitle><CardDescription>Today&apos;s dollars, in three markets from history.</CardDescription></CardHeader>
               <CardContent>
                 <div id="brAtOut">{R && S ? <AtTable ctx={R.ctx} S={S} path={path} /> : null}</div>
-                <div className="br-send">
-                  <Button variant="outline" id="brToDD" onClick={toDrawdown}>Send to Drawdown Simulator</Button>{" "}
-                  <Button variant="outline" id="brToTax" onClick={toTax}>Send to Income Tax</Button>{" "}
-                  <TipDot k="brhandoff" title="Sending this to another tool" />
-                </div>
+                {scope ? null : (
+                  <div className="br-send">
+                    <Button variant="outline" id="brToDD" onClick={toDrawdown}>Send to Drawdown Simulator</Button>{" "}
+                    <Button variant="outline" id="brToTax" onClick={toTax}>Send to Income Tax</Button>{" "}
+                    <TipDot k="brhandoff" title="Sending this to another tool" />
+                  </div>
+                )}
               </CardContent>
             </Card>
 

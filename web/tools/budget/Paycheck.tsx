@@ -64,7 +64,9 @@ export function Paycheck({ s, set, setState }: {
   // says them here in place of the fields.
   const facts = scope?.slots?.payFacts;
   const tax = store.read("tax", TAX_DEFAULTS), taxState = tax.state;
-  const pi = paycheckInput(s, taxState, tax);
+  // In the Dashboard the paycheck is the household's one tax figure, so its
+  // itemized deductions count here too.
+  const pi = paycheckInput(s, taxState, scope?.name === "dashboard" ? { ...tax, useItem: true } : tax);
   const r = paycheckRun(pi);
   const base = paycheckRun(pi, PC_ZERO);
   // Married, two incomes: the household by the month; otherwise one paycheck.

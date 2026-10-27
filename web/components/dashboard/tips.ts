@@ -18,9 +18,8 @@ export const TIPS = {
   /* Profile */
   growth: "How much your savings earn each year until you retire, before inflation. Less inflation, it's what they really gain, so every figure stays in today's dollars. The usual 7.6% is 4.5% after 3% inflation.",
   inflation: "How fast prices rise each year. Every figure on your dashboard is in today's dollars, so inflation is taken out: growth before inflation, less this, is what your savings really gain.",
-  stocks: "Once you retire, your plan is tested in every market since 1926 instead of at a steady rate. This is the share in stocks then, with the rest in 10-year Treasury bonds. More in stocks swings more, and has usually lasted longer.",
   stratSpend: "What your plan spends each month once retired, before taxes, in today's dollars: your withdrawal strategy's first year, from the starting rate you set on Retirement. Your goal from Profile is shown under it.",
-  retSpend: "What you expect to spend each month once retired, in today's dollars, before taxes (the plan adds those on top). Many people spend less than while working.",
+  retSpend: "What you expect to spend each month once retired, in today's dollars, before taxes and health premiums (the plan adds those on top). Many people spend less than while working. Left blank, it's what you spend today, less the mortgage payment if it's paid off by then.",
   saved: "Your retirement and investment accounts: 401(k)s, IRAs, Roth and brokerage accounts, and HSAs. Checking and savings count as your emergency fund instead, and your home isn't spent in retirement.",
   payTaxed: "Before taxes is your gross pay, as on an offer letter or at the top of a pay stub. After taxes is what reaches your bank account; we work back from it.",
   childcare: "Paid care such as daycare or a nanny before a child starts school, usually the most expensive years of raising one. It's added to each child's costs from birth to 5.",
@@ -30,11 +29,16 @@ export const TIPS = {
   /* Net worth and Home */
   assetType: "Each kind is treated its own way: retirement accounts and brokerage pay for retirement, each taxed differently; checking and savings are your emergency fund; your home counts toward net worth but isn't spent in retirement.",
   debtRate: "The interest rate decides how urgent a debt is. Debt at 8% or more usually costs more than saving earns, so paying it down comes first in your next steps.",
+  costBasis: "What you paid for what's in a brokerage account, purchases and reinvested dividends together (your brokerage shows it). Only the gain above it is taxed when you sell, so it decides the tax on brokerage money in retirement. Leave it blank and the plan estimates 60% of the balance.",
+  rothContrib: "What you've put into a Roth yourself, not counting its growth. Those contributions can come out any time without tax or penalty, which matters most if you retire before 59½. Leave it blank and the plan estimates half the balance.",
   equity: "What your home is worth, less what's left on the mortgage: the part of it you own.",
+  ownCost: "Everything owning costs each month: the mortgage payment, property tax, insurance, PMI, HOA, upkeep and utilities. It's your budget's housing lines on Spending.",
+  rentIns: "Insurance for what you own in a rented home, and your liability. Often $15 to $30 per month. It's your budget's insurance line on Spending.",
   interestLeft: "The interest you'll still pay on the mortgage at today's payment, from now until it's paid off. Paying extra brings it down.",
 
-  /* Income, Taxes, Spending, Savings */
+  /* Income, Spending, Taxes & Savings */
   otherIncome: "Money that comes in besides pay, after taxes: side work, rent from a property, a pension. It adds to what you have each month to spend and save.",
+  deduction: "What comes off your income before federal income tax is figured. Everyone can take the standard deduction; itemizing (adding up mortgage interest, charity and state and local taxes) only helps when those come to more.",
   fica: "Social Security and Medicare taxes, taken from every paycheck: 6.2% of pay for Social Security, up to a yearly limit, and 1.45% for Medicare.",
   leftAfter: "Pay after taxes, less what you spend. Your saving comes out of this; whatever isn't put toward saving shows on Savings as not assigned.",
   notAssigned: "Money left each month after taxes, spending and saving that hasn't been given a place. It sits in checking and earns nothing; putting it toward saving raises your plan.",
@@ -44,6 +48,7 @@ export const TIPS = {
   /* Retirement and Plan summary */
   chance: "How often your plan lasted to 95 when retirement started in each month since 1926 and lived through what markets did next, drawing down with your withdrawal strategy.",
   taxes: "Taxes on what you take out in retirement, in the plan's average year. Money from traditional accounts is taxed as income, and the required withdrawals that start in your 70s can raise taxes later; Roth money comes out tax-free.",
+  ssPct: "The part of your benefit you expect to be paid. Social Security's trust fund is projected to run short in the 2030s; if Congress doesn't act, benefits could be cut to roughly 80%. Set a lower share here to plan for that: every benefit in your plan is scaled by it, from the day each of you claims.",
   ssTotal: "Both of your benefits together, per month in today's dollars, from the year each of you claims. Social Security pays part of your spending and taxes; savings pay the rest.",
 } as const;
 

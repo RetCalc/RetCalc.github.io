@@ -83,6 +83,9 @@ export interface PcInput {
   /** A local income tax, from Income Tax's own setting: its rate (0-1), on
       wages or on the state's taxable income. None when it's 0. */
   local?: { rate: number; base: "wages" | "state" };
+  /** Itemized deductions over a year, when they're taken in place of the
+      standard deduction (Income Tax's own choice). */
+  item?: number;
   /** Health premiums through work, per period: through your job, and your
       spouse's (typed per check on each one's own schedule). */
   health: [number, number];
@@ -121,14 +124,20 @@ export function pcOrder(raw: string): PcStep[] {
 
 /** The tab's inputs as numbers. `taxState` is the Income Tax tool's state,
     used while the tab has none of its own. */
-/** Income Tax's local tax, when there's one in the paycheck's state. */
-function localOf(state: string, tax?: { localRate?: string; localBase?: string }): { local?: PcInput["local"] } {
+/** Income Tax's local tax, when there's one in the paycheck's state, and
+    its itemized deductions, when those are chosen. */
+function localOf(state: string, tax?: PcTaxChoices): { local?: PcInput["local"]; item?: number } {
   if (!tax) return {};
   const L = localFor(state, tax.localRate, tax.localBase);
-  return L.localRate > 0 ? { local: { rate: L.localRate, base: L.localBase } } : {};
+  const item = tax.useItem && tax.dedType === "item" ? Math.max(0, parseNum(tax.item ?? "")) : null;
+  return { ...(L.localRate > 0 ? { local: { rate: L.localRate, base: L.localBase } } : {}), ...(item != null ? { item } : {}) };
 }
+/** The Income Tax choices the paycheck takes: a local tax, and itemizing
+    (only where the paycheck is the household's one tax figure, the
+    Dashboard's, which sets `useItem`). */
+export interface PcTaxChoices { localRate?: string; localBase?: string; dedType?: string; item?: string; useItem?: boolean }
 
-export function paycheckInput(b: BudgetInputs, taxState: string, tax?: { localRate?: string; localBase?: string }): PcInput {
+export function paycheckInput(b: BudgetInputs, taxState: string, tax?: PcTaxChoices): PcInput {
   const two = b.pcStatus === "m2";
   const sched = (v: string) => ([52, 26, 24, 12].includes(+v) ? +v : 26);
   const pays: [number, number] = [sched(b.pcFreq), sched(b.pcFreq2)];
@@ -274,7 +283,7 @@ export function paycheckRun(pi: PcInput, a: PcAmounts = pi.amounts): PcRun {
   const hsas = sp.hsa, healths = pi.health;
   const iras = [0, 1].map((i) => (pi.roth.rothIra ? 0 : sp.rothIra[i]));
   const R0 = computeTax({
-    status: pi.status, gross: pi.gross, gross2: pi.gross2, pre: 0, dedType: "std", item: 0, state: pi.state,
+    status: pi.status, gross: pi.gross, gross2: pi.gross2, pre: 0, dedType: pi.item != null ? "item" : "std", item: pi.item ?? 0, state: pi.state,
     localRate: pi.local?.rate ?? 0, localBase: pi.local?.base ?? "wages",
     // In a 401(k) at work, traditional or Roth, is what phases out the IRA deduction.
     ded: [0, 1].map((i) => ({ k401: k401s[i] * p, ira: iras[i] * p, hsa: hsas[i] * p, health: healths[i] * p, other: 0,

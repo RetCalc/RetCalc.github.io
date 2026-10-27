@@ -86,6 +86,9 @@ export function Stages() {
   // In a walkthrough, its Summary leads on to Drawdown, not this step.
   const scope = useToolScope();
   const dash = scope?.name === "dashboard";
+  // Figures the page this runs in sets itself (the Dashboard's, from its
+  // plan): said in its own words in place of their fields.
+  const locked = new Set(scope?.locked ?? []);
   const toast = useToast();
   const seed = useMcSeed();
   const [mode, setMode] = useState<ChartMode>("band");
@@ -340,6 +343,7 @@ export function Stages() {
                 <div><span>Total contributed</span><span className="num" id="gTotalContrib">{money(R.contribTotal)}</span></div>
               </div>
 
+              {locked.has("savings") ? <><GroupHead>Your savings</GroupHead>{scope?.slots?.facts}</> : <>
               <GroupHead>Your savings</GroupHead>
               <div className="glidewrap acwrap mt-0">
                 <CheckToggle id="saToggle" on={split} onToggle={toggleAccounts} controls="saFields" tip={<TipDot k="staccttypes" />}>Split by account type</CheckToggle>
@@ -380,9 +384,10 @@ export function Stages() {
               </div>
               <MoneyField id="gInitial" wrapId="gInitialField" hidden={split} label="Starting value" value={s.initial} onValueChange={set("initial")} />
 
+              </>}
               <GroupHead>Markets</GroupHead>
               <div className="two bottomalign max-sm:grid-cols-2">
-                <NumberField id="gInflation" label="Inflation" unit="%" value={s.inflation} onValueChange={set("inflation")} />
+                {locked.has("inflation") ? null : <NumberField id="gInflation" label="Inflation" unit="%" value={s.inflation} onValueChange={set("inflation")} />}
                 <NumberField id="gFees" label={<>Fees <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
               </div>
 

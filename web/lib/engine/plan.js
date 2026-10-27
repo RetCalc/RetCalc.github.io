@@ -11,6 +11,7 @@ import {
   rmdStartAge, irmaaAnnual, HIST_STOCK, HIST_BOND, HIST_INFL, pmtStart,
   ssEstimate, ssSpousalAdj, hcFPL, hcMedicaidFPL, hcAgeFactor, hcGrossPremium, hcCalcACA
 } from "./math.js";
+import { HIST_SV, HIST_CASH } from "./drawdown.js";
 import { yearData, HIST_START } from "./data/index.js";
 
 // ===PLAN START===
@@ -48,21 +49,50 @@ import { yearData, HIST_START } from "./data/index.js";
 export var PL_EARLY = 59;          // a year that starts before 59 ends before 59½
 export var PL_HEIR = 0.24;         // default tax rate heirs pay on inherited traditional money
 
-/* Real returns of a stock/bond mix by calendar year from 1926, inflation
-   alongside, and their long-run averages: the steady path runs at the
-   geometric mean. */
+/* Real returns of a mix by calendar year from 1926, inflation alongside,
+   and their long-run averages: the steady path runs at the geometric mean.
+   The mix is a stock % (bonds the rest), or the fuller {us, sv, cash, end}:
+   US stocks, small-cap value and cash in percent, bonds the rest, and where
+   the stocks' total glides to by the plan's last year (null: no glide), as
+   the Drawdown Simulator holds it (ddMixAt). With small value or cash in
+   it, starts begin in 1927, their first full year. */
 export var plMixMemo = {};
-export function plMix(stock){
-  var key = String(stock);
-  if (plMixMemo[key]) return plMixMemo[key];
-  var w = stock / 100, n = HIST_STOCK.length;
-  var r = new Float64Array(n), pi = new Float64Array(n), sl = 0, si = 0;
-  for (var i = 0; i < n; i++){
-    var nom = (w * HIST_STOCK[i] + (1 - w) * HIST_BOND[i]) / 100, inf = HIST_INFL[i] / 100;
-    r[i] = (1 + nom) / (1 + inf) - 1; pi[i] = inf;
-    sl += Math.log(1 + r[i]); si += Math.log(1 + inf);
+/* The fuller mix's weights, [US, small value, bonds, cash] as shares, at
+   its start or with the stocks' total at its glide's end. */
+function plMixW(o, atEnd){
+  var us = Math.max(0, o.us || 0), sv = Math.max(0, o.sv || 0), cash = Math.max(0, o.cash || 0), tot = us + sv + cash;
+  if (tot > 100){ us = us * 100 / tot; sv = sv * 100 / tot; cash = cash * 100 / tot; }
+  if (atEnd && o.end != null){
+    var s0 = us + sv, st = Math.min(100, Math.max(0, o.end)), rest0 = 100 - s0;
+    if (s0 > 0){ us = us * st / s0; sv = sv * st / s0; } else us = st;
+    cash = rest0 > 0 ? cash * (100 - st) / rest0 : 0;
   }
-  return (plMixMemo[key] = {r:r, pi:pi, n:n, real:Math.exp(sl / n) - 1, infl:Math.exp(si / n) - 1});
+  return [us / 100, sv / 100, 1 - (us + sv + cash) / 100, cash / 100];
+}
+export function plMix(spec){
+  var o = spec && typeof spec === "object" ? spec : null;
+  var key = o ? JSON.stringify([o.us, o.sv, o.cash, o.end == null ? null : o.end]) : String(spec);
+  if (plMixMemo[key]) return plMixMemo[key];
+  var n = HIST_STOCK.length;
+  var build = function(w){
+    var r = new Float64Array(n), sl = 0;
+    for (var i = 0; i < n; i++){
+      var nom = (w[0] * HIST_STOCK[i] + w[1] * HIST_SV[i] + w[2] * HIST_BOND[i] + w[3] * HIST_CASH[i]) / 100;
+      r[i] = (1 + nom) / (1 + HIST_INFL[i] / 100) - 1;
+      if (i >= first) sl += Math.log(1 + r[i]);
+    }
+    return {r:r, real:Math.exp(sl / (n - first)) - 1};
+  };
+  var w0 = o ? plMixW(o, false) : [spec / 100, 0, 1 - spec / 100, 0];
+  var first = w0[1] > 0 || w0[3] > 0 ? 1 : 0;
+  var pi = new Float64Array(n), si = 0;
+  for (var i = 0; i < n; i++){ pi[i] = HIST_INFL[i] / 100; si += Math.log(1 + pi[i]); }
+  var A = build(w0), out = {r:A.r, pi:pi, n:n, real:A.real, infl:Math.exp(si / n) - 1, first:first};
+  if (o && o.end != null){
+    var E = build(plMixW(o, true));
+    out.rEnd = E.r; out.realEnd = E.real;
+  }
+  return (plMixMemo[key] = out);
 }
 
 /* Saving until retirement, month by month: the Basic calculator's projection
@@ -412,7 +442,7 @@ export function plRun(C, K, R, PI, off, out){
   var cum = 1, prev = C.spend, lastGain = 0;
   var tax = 0, pen = 0, health = 0, irm = 0, conv = 0, shortSum = 0, depleted = 0, lived = 0;
   var path = out && out.path, livedArr = out && out.lived, rows = out && out.rows;
-  var Y = plY;
+  var Y = plY, RE = R === C.mix.r && C.mix.rEnd ? C.mix.rEnd : null;
   for (var y = 0; y < n; y++){
     var a1 = C.age1 + y, early = C.early[y] === 1;
     var slot = y % 5;
@@ -523,7 +553,10 @@ export function plRun(C, K, R, PI, off, out){
         startTrad:0, endTrad:0, endRoth:0, endBrok:0, end:0});
     }
     // A year of markets.
-    var g = 1 + R[off + y], d = 1 + PI[off + y];
+    var rr = R[off + y];
+    // A glide, through history: each year's return moves toward the end mix's.
+    if (RE) rr += (n > 1 ? y / (n - 1) : 1) * (RE[off + y] - rr);
+    var g = 1 + rr, d = 1 + PI[off + y];
     trad *= g; roth *= g; brok *= g;
     bBasis /= d; rAcc /= d; cum *= d;
     for (var q = 0; q < 5; q++) pend[q] /= d;
@@ -542,12 +575,14 @@ export function plRun(C, K, R, PI, off, out){
 export function plSteady(C){
   if (C.steady) return C.steady;
   var n = C.years, r = new Float64Array(n), pi = new Float64Array(n);
-  r.fill(C.mix.real); pi.fill(C.mix.infl);
+  pi.fill(C.mix.infl);
+  // A glide moves the return in a straight line to the end mix's.
+  for (var y = 0; y < n; y++) r[y] = C.mix.rEnd ? C.mix.real + (n > 1 ? y / (n - 1) : 1) * (C.mix.realEnd - C.mix.real) : C.mix.real;
   return (C.steady = {r:r, pi:pi});
 }
 /* The historical starting years with enough record to run the whole plan. */
 export function plStarts(C){
-  var n = C.mix.n, from = Math.max(0, Math.min(n - 1, Math.round((C.P.fromYear || HIST_START) - HIST_START)));
+  var n = C.mix.n, from = Math.max(C.mix.first || 0, Math.min(n - 1, Math.round((C.P.fromYear || HIST_START) - HIST_START)));
   var out = [];
   for (var s = from; s + C.years <= n; s++) out.push(s);
   if (!out.length) out.push(Math.max(0, n - C.years));

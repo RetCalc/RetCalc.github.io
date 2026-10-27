@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-26T20:08:38.216Z",
+  "recorded": "2026-10-27T15:43:11.012Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -875,8 +875,8 @@
       },
       "fields": {
         "after": "e86436436a386868",
-        "ctx": "fdca76b2a4520974",
-        "run": "be089a474fa211d8",
+        "ctx": "3aab61a54dd593a2",
+        "run": "035a052d3bd52a68",
         "sc": "e3bac686fa552b2e"
       }
     },
@@ -892,8 +892,8 @@
       },
       "fields": {
         "after": "04c0536e556b525f",
-        "ctx": "fd86fb99886c6ea5",
-        "run": "06c959cb7f0a091e",
+        "ctx": "c94b5ff2aef5d1ba",
+        "run": "f5146496415d1d86",
         "sc": "8358171d67e3a5a4"
       }
     },
@@ -1068,7 +1068,7 @@
         "needAtRetirement": 924000
       },
       "fields": {
-        "S": "3dc3c1f8c4a41bd8",
+        "S": "c41b1cd119679908",
         "need": "8687fbfca8bdf1d5",
         "sc": "cf1beef94f7af3dd",
         "strats": "6eff53e7da569dd9"
@@ -1085,7 +1085,7 @@
         "needAtRetirement": 380000
       },
       "fields": {
-        "S": "544e8b14726cd7e4",
+        "S": "a59bb3c7c1f604a1",
         "need": "df61f9f8bfae765c",
         "sc": "f5f05cd352878bbb",
         "strats": "527c72e4b619ddab"

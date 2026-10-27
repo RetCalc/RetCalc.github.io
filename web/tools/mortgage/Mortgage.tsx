@@ -22,7 +22,7 @@ import { Legend, ShareBar } from "@/components/charts/Legend";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
-import { useToolState } from "@/components/tools/ToolState";
+import { useToolScope, useToolState } from "@/components/tools/ToolState";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
 import { PMI_DEFAULT } from "@/lib/engine/typed";
@@ -94,6 +94,9 @@ const TERMS = (
 
 export function Mortgage() {
   const { state: s, set, setState } = useToolState(DEF);
+  // A loan the page this runs in already knows (the Dashboard's own
+  // mortgage): its facts in place of the home and loan fields.
+  const scope = useToolScope(), locked = new Set(scope?.locked ?? []);
   useShareKit(DEF.id, mortgageShare(s));
   const table = useRef<HTMLTableElement>(null);
   const setDown = (k: "price" | "downPct" | "downAmt") => (v: string) =>
@@ -181,6 +184,7 @@ export function Mortgage() {
           <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
+              {locked.has("loan") ? scope?.slots?.facts : <>
               <GroupHead first>The home</GroupHead>
               <Field id="moPrice" label="Home price">
                 <Affixed prefix="$"><MoneyInput id="moPrice" nonNeg value={s.price} onValueChange={setDown("price")}
@@ -209,6 +213,7 @@ export function Mortgage() {
                 <SelectField id="moTerm" label="Length" value={s.term} onChange={set("term")}>{TERMS}</SelectField>
               </div>
 
+              </>}
               <GroupHead>Monthly costs</GroupHead>
               <div className="two bottomalign max-sm:grid-cols-2">
                 <NumberField id="moTax" label={<Tipped text="Property tax" k="proptax" />} unit="%/yr" step={0.1} value={s.tax} onValueChange={set("tax")} />

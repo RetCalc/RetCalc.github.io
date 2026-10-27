@@ -3,7 +3,7 @@
    it explains. */
 import "./core.js";
 import * as E from "./plan.js";
-import type { PlDone, PlHist, PlPlan, PlPrep, PlProgress, PlRow, PlSS, PlTactics, PlToday } from "./types";
+import type { PlDone, PlHist, PlMixSpec, PlPlan, PlPrep, PlProgress, PlRow, PlSS, PlTactics, PlToday } from "./types";
 
 const typed = <F>(f: unknown) => f as F;
 
@@ -12,7 +12,7 @@ export const plPrep = typed<(P: PlPlan) => PlPrep>(E.plPrep);
 export const plBaseTactics = typed<(C: PlPrep) => PlTactics>(E.plBaseTactics);
 export const plCombos = typed<(C: PlPrep, T0: PlTactics) => PlTactics[]>(E.plCombos);
 export const plStarts = typed<(C: PlPrep) => number[]>(E.plStarts);
-export const plMix = typed<(stock: number) => { real: number; infl: number }>(E.plMix);
+export const plMix = typed<(mix: PlMixSpec) => { real: number; infl: number }>(E.plMix);
 export const plKey = typed<(T: PlTactics) => string>(E.plKey);
 export const plOptimize = typed<(P: PlPlan, goal: string) => Generator<PlProgress | PlDone>>(E.plOptimize);
 export const plHistory = typed<(C: PlPrep, T: PlTactics, opts: { paths?: boolean; stopAfter?: number }) => PlHist>(E.plHistory);

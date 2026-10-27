@@ -32,6 +32,17 @@ export interface Answers {
   college?: string | null; kidAge?: number | null; collegeMo?: number | null; clState?: Record<string, unknown> | null;
   saved?: number | null; contrib?: number | null; employer?: number | null; match?: string | null; risk?: number | null;
   rothNow?: number | null; brokNow?: number | null;
+  /** What was put in today, when it's known (the Dashboard's accounts say):
+      Roth contributions and brokerage cost basis. Unset: estimated. */
+  rothBasisNow?: number | null; brokBasisNow?: number | null;
+  /** The share of Social Security expected, 0 to 1 (the Dashboard asks):
+      every benefit scaled by it. Unset: all of it. */
+  ssScale?: number | null;
+  /** The full mix once retired, in percent (the Dashboard's, from its
+      Drawdown Simulator): US stocks, small-cap value and cash, bonds the
+      rest, and where the stocks' total glides to by the end (null: none).
+      In place of retMix when given. */
+  retMixAll?: { us: number; sv: number; cash: number; end: number | null } | null;
   /** Where each month's saving goes, in percent of what you put in (split.ts). */
   splitTrad?: number | null; splitRoth?: number | null; splitBrok?: number | null;
   /** The four-way choice the split replaced; read from guides saved before it, then dropped. */

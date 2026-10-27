@@ -60,3 +60,19 @@ export function Stat({ label, value, sub, keyFig }: { label: ReactNode; value: R
     </div>
   );
 }
+
+/** A link inside a sentence, to where a figure is changed. */
+export function To({ href, children }: { href: string; children: ReactNode }) {
+  return <Button variant="link" size="inline" nativeButton={false} render={<Link href={href} />}>{children}</Button>;
+}
+
+/** Figures a tool takes from the plan, said in place of its fields (the
+    tool can't change them), with a line saying where each is changed. */
+export function PlanFacts({ rows, note, id }: { rows: [ReactNode, ReactNode][]; note?: ReactNode; id?: string }) {
+  return (
+    <div className="dsh-payfacts" id={id}>
+      <dl className="dsh-facts">{rows.map(([k, v], i) => <div key={i}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+      {note ? <p className="dsh-cap dsh-mt6">{note}</p> : null}
+    </div>
+  );
+}

@@ -19,11 +19,16 @@ import { useState } from "react";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import type { StagesInputs } from "@/tools/stages/model";
 import { Frame } from "./Frame";
-import { calcInputs, calcOwnOf } from "./calc";
+import { CALC_LOCKED, CALC_LOCKED_KEYS, calcInputs, calcOwnOf } from "./calc";
 import { childrenSentence } from "./children";
 import { coverScope, shiftCover } from "./cover";
 import { budgetFor, flow, taxFor } from "./flows";
-import { ageOf } from "./model";
+import { ageOf, holdings } from "./model";
+import { money } from "./format";
+import { PlanFacts, To } from "./ui";
+import { STATE_OPTIONS } from "@/lib/states";
+import { parseNum } from "@/lib/format";
+import type { Entry } from "./store";
 import { KID_BASE } from "@/tools/stages/kids";
 import { Hosted } from "./host";
 import { useDashboard, type Profile } from "./store";
@@ -63,7 +68,7 @@ export function Calculator() {
       return JSON.stringify(own ?? null) === JSON.stringify(q.calcOwn ?? null) ? q : { ...q, calcOwn: own ?? undefined };
     });
   };
-  const changed = !!pr.calcOwn && Object.keys(pr.calcOwn).length > 0;
+  const changed = Object.keys(pr.calcOwn ?? {}).some((k) => !CALC_LOCKED_KEYS.includes(k));
   const summary = <>{childrenSentence(pr)} <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Change them in Profile</Button></>;
   return (
     <Frame current="calculator" title="Calculator" sub="Filled in from your plan. What you change here is saved to your plan, and its result is your savings at retirement everywhere.">
@@ -72,9 +77,28 @@ export function Calculator() {
           <Button variant="link" size="inline" onClick={() => { setProfile((p) => ({ ...p, calcOwn: undefined })); setRev((r) => r + 1); }}>Use the plan&apos;s figures</Button></p>
       ) : null}
       {/* New child costs build the stages again, from the plan. */}
-      <Hosted key={costsKey(pr) + "|" + rev} household={null} cover={coverScope(flow(pr))} seed={seed} slots={{ kidsSummary: summary }} keep={keep}>
+      <Hosted key={costsKey(pr) + "|" + rev} household={null} cover={coverScope(flow(pr))} seed={seed} keep={keep}
+        locked={CALC_LOCKED} slots={{ kidsSummary: summary, facts: <CalcFacts pr={pr} entries={entries} /> }}>
         <Stages />
       </Hosted>
     </Frame>
   );
+}
+
+/** What the Calculator takes from the plan, in place of its fields: the
+    balances today, pay and the match, how retirement's taxes are figured,
+    and inflation. */
+function CalcFacts({ pr, entries }: { pr: Profile; entries: Entry[] }) {
+  const s = calcInputs(pr, entries), H = holdings(entries, pr), F = flow(pr);
+  const m = (v: string) => money(parseNum(v));
+  const rows: [string, string][] = [
+    ["Traditional", m(s.saTradBal)],
+    ["Roth", m(s.saRothBal)],
+    ["Brokerage", m(s.saBrokBal) + (parseNum(s.saBrokBal) > 0 ? `, cost basis ${m(s.saBrokBasis)}${H.brokBasis == null ? " (estimated)" : ""}` : "")],
+    ...(parseNum(s.saHsaBal) > 0 ? [["HSA", m(s.saHsaBal)] as [string, string]] : []),
+    ["Pay", F.gross > 0 ? `${money(F.gross * 12)} per year, the match adding ${money(F.match)} per month` : "Not given yet"],
+    ["Taxes in retirement", `${s.saStatus === "m" ? "Married filing jointly" : "Single"}, ${STATE_OPTIONS.find((o) => o.code === s.saState)?.name ?? s.saState}`],
+    ["Inflation", `${+(pr.assume.inflation * 100).toFixed(2)}% per year`],
+  ];
+  return <PlanFacts id="calcFacts" rows={rows} note={<>Balances and cost basis come from <To href="/dashboard/accounts#assets">Net worth</To>, pay and the match from <To href="/dashboard/income#pay">Income</To>, filing status, state and inflation from <To href="/dashboard/profile">Profile</To>. Change them there.</>} />;
 }

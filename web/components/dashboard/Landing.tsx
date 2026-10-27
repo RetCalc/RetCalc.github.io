@@ -12,7 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  ArrowRightIcon, BanknoteIcon, CalculatorIcon, CheckIcon, ClipboardListIcon, ClockIcon, HouseIcon, LandmarkIcon,
+  ArrowRightIcon, BanknoteIcon, CalculatorIcon, CheckIcon, ClipboardListIcon, ClockIcon, HouseIcon,
   LayoutGridIcon, ListChecksIcon, LockIcon, MessageCircleIcon, PiggyBankIcon, ReceiptIcon, SunsetIcon, WalletIcon,
   WrenchIcon, CircleDollarSignIcon, type LucideIcon,
 } from "lucide-react";
@@ -53,13 +53,12 @@ const PAGES: { icon: LucideIcon; name: string; what: string }[] = [
   { icon: LayoutGridIcon, name: "Dashboard", what: "Your main numbers on one screen" },
   { icon: ClipboardListIcon, name: "Plan summary", what: "The whole plan on one page" },
   { icon: WalletIcon, name: "Net worth", what: "Accounts and debts, kept by date" },
-  { icon: HouseIcon, name: "Home", what: "Equity and when the mortgage is paid off" },
+  { icon: HouseIcon, name: "Home", what: "Your mortgage and what owning costs, or your rent" },
   { icon: BanknoteIcon, name: "Income", what: "Pay, the employer match and Social Security" },
-  { icon: LandmarkIcon, name: "Taxes", what: "This year's, line by line" },
   { icon: ReceiptIcon, name: "Spending", what: "Your budget and emergency fund" },
-  { icon: PiggyBankIcon, name: "Savings", what: "Where each paycheck goes" },
+  { icon: PiggyBankIcon, name: "Taxes & Savings", what: "This year's taxes, and where each paycheck goes" },
   { icon: CalculatorIcon, name: "Calculator", what: "Your saving, stage by stage" },
-  { icon: SunsetIcon, name: "Retirement", what: "Withdrawal strategies and your chance of success" },
+  { icon: SunsetIcon, name: "Retirement", what: "Withdrawal strategies, early retirement and health cover" },
   { icon: WrenchIcon, name: "Tools", what: "All 14, opened with your numbers" },
   { icon: ListChecksIcon, name: "Next steps", what: "Changes ranked by how much they help" },
 ];

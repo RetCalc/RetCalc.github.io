@@ -9,6 +9,9 @@ export const HC_STATES: [string, string][] = [["AL", "Alabama"], ["AK", "Alaska"
 
 export const HEALTHCARE_DEFAULTS = {
   retireAge: "62", status: "s", household: "2", spouseAge: "62", state: "IL", income: "", ss: "", premium: "",
+  /** Income at 65, for Medicare, when it isn't the same as the first year's
+      (the Dashboard's plan knows both); blank: the same. */
+  income65: "",
 };
 export type HealthcareInputs = typeof HEALTHCARE_DEFAULTS;
 
@@ -72,8 +75,9 @@ export function healthcareCompute(s: HealthcareInputs) {
   const bronze = Math.max(0, grossMonthly * 0.75 - std.credit);
   const gold = Math.max(0, grossMonthly * 1.25 - std.credit);
 
-  // ── Medicare ──
-  const tier = irmaaTier(magi, joint);
+  // ── Medicare ── (on income at 65, when it's given apart)
+  const magi65 = (s.income65 ?? "").trim() ? parseNum(s.income65) || 0 : magi;
+  const tier = irmaaTier(magi65, joint);
   const [, , partB, partDIrmaa] = HC_IRMAA[tier];
   const { partD: partDBase, medigap } = HC_YEAR.medicare;
   const partD = partDBase + partDIrmaa;
@@ -86,7 +90,7 @@ export function healthcareCompute(s: HealthcareInputs) {
   const nextThreshold = next ? next[joint ? 1 : 0] : 0;
   const nextCost = next ? next[2] - partB + (next[3] - partDIrmaa) : 0;
   return {
-    retireAge, joint, household, state, manualPremium, magi, ssGross, ssTaxed, acaMagi, bridgeYears, fpl, pctFPL, acaAge, spouseAge, spouseOn, acaAge2, kids, childPrem, grossMonthly, std, enh, usingStateEst,
+    retireAge, joint, household, state, manualPremium, magi, magi65, ssGross, ssTaxed, acaMagi, bridgeYears, fpl, pctFPL, acaAge, spouseAge, spouseOn, acaAge2, kids, childPrem, grossMonthly, std, enh, usingStateEst,
     tier, partB, partDIrmaa, partD, totalLow, totalHigh, hasIrmaa, people, prev, next, save, nextThreshold, nextCost, cliff400, bronze, gold,
   };
 }

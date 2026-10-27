@@ -8,11 +8,12 @@
 import { FACTORS, STRATS, retPath, score, sim, strats, type FactorId, type Part, type Sim, type StratResult } from "@/tools/guide/calc";
 import type { Answers } from "@/tools/guide/store";
 import { parseNum } from "@/lib/format";
-import { budgetFor, drawdownFor, drawdownSuccess, flow, savingAt, taxState } from "./flows";
+import { budgetFor, drawdownFor, drawdownSuccess, flow, retireMix, savingAt, stocksOf, taxState } from "./flows";
 import { paycheckInput } from "@/tools/budget/paycheck-math";
 import { collegeKid, collegeNeedOf, collegeYears } from "./college";
 import { yearlySaving } from "./cover";
 import { calcFvOf } from "./calc";
+import { payoffDrop } from "./housing";
 import { BRIDGE_DOCK, hasBridgePlan, needsBridge } from "./bridge";
 import { drawdownSetup } from "@/tools/drawdown/model";
 import { DD_STRAT_NAMES } from "@/tools/drawdown/text";
@@ -59,14 +60,19 @@ export function holdings(entries: Entry[], pr: Profile) {
   const last = entries[entries.length - 1];
   if (!last) {
     const eq = pr.home === "own" ? (pr.value ?? 0) - (pr.owed ?? 0) : 0;
-    return { trad: pr.saved ?? 0, roth: 0, brok: 0, cash: null, other: 0, home: pr.home === "own" ? pr.value ?? 0 : 0, mortgage: pr.home === "own" ? pr.owed ?? 0 : 0, equity: eq, debts: 0, debtsHigh: 0, accounts: false, total: (pr.saved ?? 0) + eq };
+    return { trad: pr.saved ?? 0, g457: 0, roth: 0, brok: 0, rothBasis: null, brokBasis: null, cash: null, other: 0, home: pr.home === "own" ? pr.value ?? 0 : 0, mortgage: pr.home === "own" ? pr.owed ?? 0 : 0, equity: eq, debts: 0, debtsHigh: 0, accounts: false, total: (pr.saved ?? 0) + eq };
   }
   const it = last.items, accounts = hasAccounts(entries);
   const home = sum(it, "asset", ["home"]), mortgage = sum(it, "debt", ["mortgage"]);
   const debts = sum(it, "debt") - mortgage;
   const debtsHigh = it.filter((i) => i.side === "debt" && i.kind !== "mortgage" && (i.rate ?? 0) >= 0.08).reduce((s, i) => s + i.value, 0);
+  // What was put in, when it's given for every account of the kind (a
+  // Roth's contributions, a brokerage account's cost basis); null otherwise.
+  // A Roth's contributions can't be more than it holds; a cost basis can (a loss).
+  const basisOf = (kind: string) => { const xs = it.filter((i) => i.side === "asset" && i.kind === kind && i.value > 0); return xs.length && xs.every((i) => i.basis != null) ? xs.reduce((s, i) => s + (kind === "roth" ? Math.min(i.value, i.basis!) : i.basis!), 0) : null; };
   return {
-    trad: sum(it, "asset", ["workplace", "ira"]), roth: sum(it, "asset", ["roth", "hsa"]), brok: sum(it, "asset", ["brokerage"]),
+    trad: sum(it, "asset", ["workplace", "g457", "ira"]), g457: sum(it, "asset", ["g457"]), roth: sum(it, "asset", ["roth", "hsa"]), brok: sum(it, "asset", ["brokerage"]),
+    rothBasis: basisOf("roth"), brokBasis: basisOf("brokerage"),
     cash: accounts ? sum(it, "asset", ["cash"]) : null, other: sum(it, "asset", ["other"]),
     home, mortgage, equity: home - mortgage, debts, debtsHigh, accounts, total: netWorth(last),
   };
@@ -78,6 +84,12 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   const F = flow(pr);
   const spend = F.spendPaid > 0 ? F.spendPaid : pr.spend;
   const saved = H.trad + H.roth + H.brok;
+  // Spending once retired, left blank, follows today's, which pays the
+  // mortgage: paid off by retirement, the payment comes out of it.
+  const drop = pr.retSpend == null ? payoffDrop(pr, entries) : null;
+  const retYear = pr.p1.by != null && pr.p1.retire != null ? pr.p1.by + pr.p1.retire : null;
+  const paidOff = drop && retYear != null && drop.year <= retYear ? drop.monthly : 0;
+  const retSpend = pr.retSpend ?? (spend == null ? null : Math.max(0, spend - paidOff));
   const a: Answers = {
     status: two ? "m" : "s",
     // Outside the US the plan still needs a state to run; its taxes are
@@ -90,10 +102,18 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
     rothNow: abroad ? saved : H.roth, brokNow: abroad ? 0 : H.brok,
     contrib: F.hasPay ? F.invested : contribMonth(pr), employer: F.hasPay ? F.match : 0,
     match: F.fullMatch == null ? "none" : F.fullMatch ? "full" : "partial",
-    spend, retSpend: (pr.retSpend ?? spend) == null ? null : (pr.retSpend ?? spend)! * 12,
-    home: pr.home, risk: realGrowth(pr), retMix: pr.assume.stocks,
+    spend, retSpend: retSpend == null ? null : retSpend * 12,
+    home: pr.home, risk: realGrowth(pr), retMix: stocksOf(retireMix(pr)),
     ssClaim: pr.ss.claim, ssOwn: pr.ss.own1, ssOwn2: two ? pr.ss.own2 : null,
   };
+  // The mix once retired, in full when it's more than stocks and bonds.
+  const mix = retireMix(pr);
+  if (mix.sv > 0 || mix.cash > 0 || mix.end != null) a.retMixAll = mix;
+  // What was put in, when the accounts say: Roth contributions, cost basis.
+  if (H.rothBasis != null) a.rothBasisNow = H.rothBasis;
+  if (H.brokBasis != null) a.brokBasisNow = H.brokBasis;
+  // The share of Social Security expected.
+  if (pr.ss.pct != null && pr.ss.pct < 100) a.ssScale = pr.ss.pct / 100;
   // Where each month's saving goes, by how it's taxed.
   if (F?.hasPay && F.invested > 0) Object.assign(a, { splitTrad: (F.trad / F.invested) * 100, splitRoth: (F.roth / F.invested) * 100, splitBrok: (F.brok / F.invested) * 100 });
   // Changes ahead: saving that grows (each line to its limit), children

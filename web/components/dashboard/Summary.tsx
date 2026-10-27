@@ -8,7 +8,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { CalendarDaysIcon, ChartBarIcon, ListChecksIcon, MilestoneIcon, ReceiptIcon, SunsetIcon } from "lucide-react";
+import { CalendarDaysIcon, ChartBarIcon, HeartPulseIcon, ListChecksIcon, MilestoneIcon, ReceiptIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShareBar } from "@/components/charts/Legend";
 import { SERIES } from "@/lib/hues";
@@ -29,7 +29,8 @@ import { nextSteps } from "./nextsteps";
 import { Readiness, timeline } from "./Overview";
 import { Timeline } from "./charts";
 import { entryFrom, netWorth, sum, useDashboard, type Entry, type Profile } from "./store";
-import { Note, Tile, TipLabel } from "./ui";
+import { Note, Tile, TipLabel, To } from "./ui";
+import { healthGap, healthWords } from "./health";
 
 /** The answer, from the plan itself: what you'll have at retirement, what
     your withdrawal strategy and Social Security pay the first year against
@@ -114,6 +115,7 @@ export function Summary() {
       ) : <Note>The summary fills in once your profile has your age, retirement age and pay.</Note>}
 
       <EarlyRetirement pr={pr} entries={data.entries} R={R} />
+      <HealthCover pr={pr} R={R} />
 
       <div className="dsh-grid dsh-two">
         <Tile icon={ReceiptIcon} title="Your budget" right={<span className="dsh-cap">{money(F.spend)} per month</span>}>
@@ -167,6 +169,24 @@ export function Summary() {
         </Tile>
       </div>
     </Frame>
+  );
+}
+
+/** The years with no job's health plan before Medicare: called out, with
+    what the plan counts for them, and where to plan them. */
+function HealthCover({ pr, R }: { pr: Profile; R: Results }) {
+  const gap = healthGap(pr);
+  if (!gap) return null;
+  return (
+    <div className="dsh-r4">
+      <Tile icon={HeartPulseIcon} title="Health cover before Medicare" right={<To href="/dashboard/retirement#health">Plan health cover</To>}>
+        <div className="dsh-stats">
+          <div className="dsh-stat"><div className="dsh-label">With no job&apos;s plan</div><div className="dsh-fig dsh-md">{gap.years} {gap.years === 1 ? "year" : "years"}</div><div className="dsh-cap dsh-mt6">{gap.from} to {gap.to}</div></div>
+          <div className="dsh-stat"><div className="dsh-label">Your plan counts</div><div className="dsh-fig dsh-md">{R.S && R.S.hcYr > 0 ? money(R.S.hcYr / 12) : "—"}<small>per month</small></div><div className="dsh-cap dsh-mt6">for marketplace cover, on top of your spending</div></div>
+        </div>
+        <p className="dsh-cap dsh-mt">{healthWords(pr, gap)} Until Medicare starts, cover is a marketplace plan priced on your income, and it&apos;s often one of the biggest costs of retiring early.</p>
+      </Tile>
+    </div>
   );
 }
 
