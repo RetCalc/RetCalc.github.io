@@ -32,7 +32,12 @@ const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/
 export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entries: DashData["entries"] }) {
   const pts = areaPoints(R.parts, R.score);
   const areas = FACTORS.map((f) => ({ name: f.name, w: f.w, p: R.parts[f.id]?.p ?? null, pts: pts[f.id] ?? null }));
-  const word = R.score == null ? "Not scored yet" : R.partial ? "Partial score" : R.score >= 85 ? "On track" : R.score >= 70 ? "Nearly there" : R.score >= 50 ? "Getting there" : "Needs work";
+  // With an area still unscored, the points scored out of the points scored
+  // so far: a full "of 100" only once all five are in.
+  const avail = areas.reduce((s, a) => s + (a.p == null ? 0 : a.w), 0);
+  const got = areas.reduce((s, a) => s + (a.pts ?? 0), 0);
+  const part = R.score != null && R.partial;
+  const word = R.score == null ? "Not scored yet" : part ? `${100 - avail} points not scored yet` : R.score >= 85 ? "On track" : R.score >= 70 ? "Nearly there" : R.score >= 50 ? "Getting there" : "Needs work";
   // One area open at a time: why it scored what it did, and what would raise it.
   const [open, setOpen] = useState<FactorId | null>(null);
   // A link to one area ("/dashboard#readiness-outlook") opens it.
@@ -41,7 +46,7 @@ export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profil
   return (
     <Tile id="readiness" icon={GaugeIcon} title="Readiness score" tip="readiness">
       <div className="dsh-inline dsh-mt">
-        <span className="dsh-fig">{R.score ?? "—"}<small>of 100</small></span>
+        <span className="dsh-fig">{part ? got : R.score ?? "—"}<small>{part ? `of ${avail} so far` : "of 100"}</small></span>
         <span className={!R.partial && (R.score ?? 0) >= 70 ? "dsh-badge dsh-gain" : "dsh-badge"}>{word}</span>
       </div>
       <SplitBar areas={areas} />
