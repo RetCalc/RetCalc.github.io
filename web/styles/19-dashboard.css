@@ -470,6 +470,8 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-ltbl th:nth-child(2) { text-align: left; }
 .dsh-ltbl tfoot td { font-weight: 600; border-top: 1px solid var(--ds-rule-strong); border-bottom: 0; padding-top: 10px; }
 .dsh-ehead { font-size: 11.5px; font-weight: 500; color: var(--ds-muted); }
+.dsh-ef { display: contents; }
+.dsh-efl { display: none; }
 .dsh-editbar { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
 .dsh-wrapbtns { flex-wrap: wrap; }
 @media (max-width: 1180px) { .dsh-ehead { display: none; } }
@@ -700,4 +702,21 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
   .dsh-tile-h .dsh-r, .dsh-nwhead { max-width: 100%; min-width: 0; }
   .dsh [data-slot="card-header"]:has(> [data-slot="card-action"] .seg) { grid-template-columns: minmax(0, 1fr); }
   .dsh [data-slot="card-header"]:has(> [data-slot="card-action"] .seg) > [data-slot="card-action"] { grid-column: 1; grid-row: auto; justify-self: start; max-width: 100%; }
+}
+
+/* Net worth's editing on a phone: each asset or debt is a small card, its
+   fields two across with their names over them, Remove at its foot. */
+@media (max-width: 640px) {
+  .dsh-elist { gap: 12px; justify-items: stretch; }
+  .dsh-elist > .dsh-erow:not(.dsh-ehead) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; padding: 12px; border: 1px solid var(--ds-rule); border-radius: 12px; background: var(--ds-ground); }
+  .dsh-ef { display: grid; gap: 4px; min-width: 0; }
+  .dsh-efl { display: block; font-size: 12px; font-weight: 500; color: var(--ds-muted); }
+  .dsh-elist > .dsh-erow > [data-slot="button"] { grid-column: 1 / -1; justify-self: end; margin: -4px -4px -6px 0; }
+  .dsh-elist > [data-slot="button"] { justify-self: start; }
+}
+/* A touch tablet edits in two columns too, with no column names above:
+   each field keeps its name over it. */
+@media (hover: none) and (pointer: coarse) and (min-width: 641px) and (max-width: 1180px) {
+  .dsh-ef { display: grid; gap: 4px; min-width: 0; }
+  .dsh-efl { display: block; font-size: 12px; font-weight: 500; color: var(--ds-muted); }
 }

@@ -165,6 +165,12 @@ function Gain({ item }: { item: Item }) {
   return <span className={d >= 0 ? "dsh-basis dsh-up" : "dsh-basis dsh-dn"} title={`${money(Math.abs(d))} ${what}`}>({d >= 0 ? "+" : "−"}{money(Math.abs(d))})</span>;
 }
 
+/** A field in an editable row, with its column's name over it on a phone
+    (wider screens name the columns once, above the rows). */
+function F({ l, children }: { l: string; children: React.ReactNode }) {
+  return <div className="dsh-ef"><span className="dsh-efl" aria-hidden="true">{l}</span>{children}</div>;
+}
+
 /** One side's rows, editable. */
 function EditList({ items, side, names, onChange }: { items: Item[]; side: Item["side"]; names: [string, string] | null; onChange: (items: Item[]) => void }) {
   const kinds = side === "asset" ? ASSET_KINDS : DEBT_KINDS;
@@ -179,21 +185,21 @@ function EditList({ items, side, names, onChange }: { items: Item[]; side: Item[
       </div>
       {rows.map((i) => (
         <div key={i.id} className={row}>
-          <Input aria-label="Name" value={i.name} placeholder={kindName(i.kind)} onChange={(e) => put(i.id, { name: e.target.value })} />
-          <NativeSelect aria-label="Kind" value={i.kind} onChange={(e) => put(i.id, { kind: e.target.value as Item["kind"], ...(BASIS_KINDS[e.target.value] ? {} : { basis: undefined }) })}>
+          <F l="Name"><Input aria-label="Name" value={i.name} placeholder={kindName(i.kind)} onChange={(e) => put(i.id, { name: e.target.value })} /></F>
+          <F l="Type"><NativeSelect aria-label="Kind" value={i.kind} onChange={(e) => put(i.id, { kind: e.target.value as Item["kind"], ...(BASIS_KINDS[e.target.value] ? {} : { basis: undefined }) })}>
             {kinds.map((k) => <option key={k.kind} value={k.kind}>{k.name}</option>)}
-          </NativeSelect>
+          </NativeSelect></F>
           {whose ? (OWNED_KINDS.includes(i.kind) ? (
-            <NativeSelect aria-label="Whose account" value={String(ownerOf(i, names) ?? "")} onChange={(e) => put(i.id, { owner: e.target.value === "" ? null : (Number(e.target.value) as 0 | 1) })}>
+            <F l="Whose"><NativeSelect aria-label="Whose account" value={String(ownerOf(i, names) ?? "")} onChange={(e) => put(i.id, { owner: e.target.value === "" ? null : (Number(e.target.value) as 0 | 1) })}>
               <option value="0">{whoName(names!, 0)}</option>
               <option value="1">{whoName(names!, 1)}</option>
               <option value="">Not sure: half each</option>
-            </NativeSelect>
+            </NativeSelect></F>
           ) : <span className="dsh-muted dsh-ena" aria-hidden="true">Shared</span>) : null}
-          <Affixed prefix="$"><MoneyInput aria-label="Amount" nonNeg value={i.value ? groupDigits(i.value, true) : ""} onValueChange={(v) => put(i.id, { value: parseNum(v) })} /></Affixed>
-          {debt ? <RateInput rate={i.rate ?? null} onRate={(rate) => put(i.id, { rate })} />
-            : BASIS_KINDS[i.kind] ? <Affixed prefix="$"><MoneyInput aria-label={BASIS_KINDS[i.kind]!.name + " (optional)"} nonNeg placeholder={BASIS_KINDS[i.kind]!.name}
-              value={i.basis != null ? groupDigits(i.basis, true) : ""} onValueChange={(v) => put(i.id, { basis: v.trim() === "" ? null : parseNum(v) })} /></Affixed>
+          <F l={debt ? "Amount owed" : "Amount"}><Affixed prefix="$"><MoneyInput aria-label="Amount" nonNeg value={i.value ? groupDigits(i.value, true) : ""} onValueChange={(v) => put(i.id, { value: parseNum(v) })} /></Affixed></F>
+          {debt ? <F l="Interest rate"><RateInput rate={i.rate ?? null} onRate={(rate) => put(i.id, { rate })} /></F>
+            : BASIS_KINDS[i.kind] ? <F l={BASIS_KINDS[i.kind]!.name + " (optional)"}><Affixed prefix="$"><MoneyInput aria-label={BASIS_KINDS[i.kind]!.name + " (optional)"} nonNeg placeholder={BASIS_KINDS[i.kind]!.name}
+              value={i.basis != null ? groupDigits(i.basis, true) : ""} onValueChange={(v) => put(i.id, { basis: v.trim() === "" ? null : parseNum(v) })} /></Affixed></F>
             : <span className="dsh-muted dsh-ena" aria-hidden="true">—</span>}
           <Button variant="ghost" size="icon" aria-label={"Remove " + (i.name || kindName(i.kind))} onClick={() => onChange(items.filter((x) => x.id !== i.id))}><Trash2Icon aria-hidden="true" /></Button>
         </div>
