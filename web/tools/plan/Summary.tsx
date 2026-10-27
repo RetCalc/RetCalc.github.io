@@ -329,12 +329,16 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
   const ticks = Array.from({ length: Math.floor(span / 5) + 1 }, (_, i) => a0 + i * 5).filter((t) => t < a1 - 1).concat(a1);
   const gone = K.without - S.atRetire.total;
   /** One stretch along the years: a tinted bar with its edge in the
-      color, and the monthly cost written in where it fits. */
+      color, and the monthly cost written in where it fits (on a phone's
+      narrower bar, without "/mo", or in thousands). */
   const Seg = ({ from, to, monthly, c, title }: { from: number; to: number; monthly: number; c: string; title: string }) => (
-    <div title={title} className="absolute inset-y-0 left-(--l) flex w-(--w) items-center overflow-hidden rounded-sm border-l-3 border-l-(--c) px-1.5 text-label whitespace-nowrap tabular-nums"
+    <div title={title} className="@container absolute inset-y-0 left-(--l) flex w-(--w) items-center overflow-hidden rounded-sm border-l-3 border-l-(--c) px-1.5 text-label whitespace-nowrap tabular-nums"
       style={{ "--l": at(from), "--w": ((to - from) / span) * 100 + "%", "--c": c } as React.CSSProperties}>
       <span className="absolute inset-0 bg-(--c) opacity-25" aria-hidden="true"></span>
-      <span className="relative">{(to - from) / span > 0.09 ? money(monthly) + "/mo" : ""}</span>
+      {(to - from) / span > 0.09 ? <>
+        <span className="relative @max-[2.75rem]:hidden">{money(monthly)}<span className="@max-[4.5rem]:hidden">/mo</span></span>
+        <span className="relative hidden @max-[2.75rem]:inline">{monthly >= 1000 ? "$" + +(monthly / 1000).toFixed(1) + "k" : money(monthly)}</span>
+      </> : null}
     </div>
   );
   return (
