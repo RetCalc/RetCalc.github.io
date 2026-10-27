@@ -691,17 +691,12 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 /* Under a finger, each readiness area opens from a full-height row. */
 @media (pointer: coarse) { .dsh-arow { min-height: 40px; } }
 
-/* The narrowest phones (320px): a switch never runs past the screen; its
-   options share what room there is, a long one taking two lines, and a
-   card's switch moves under its title. */
+/* The narrowest phones (320px): switches fit the screen (segmented.tsx, card.tsx)
+   and a tile's header and its figures make room. */
 @media (max-width: 400px) {
-  .dsh .seg { max-width: 100%; }
-  .dsh .seg > button { min-width: 0; flex-shrink: 1; white-space: normal; line-height: 1.2; }
   .dsh-tile-h .dsh-r, .dsh-nwhead { max-width: 100%; min-width: 0; }
   /* Two figures to a row leave no room for "per month" beside them. */
   .dsh-stats .dsh-fig small { display: block; margin: 2px 0 0; }
-  .dsh [data-slot="card-header"]:has(> [data-slot="card-action"] .seg) { grid-template-columns: minmax(0, 1fr); }
-  .dsh [data-slot="card-header"]:has(> [data-slot="card-action"] .seg) > [data-slot="card-action"] { grid-column: 1; grid-row: auto; justify-self: start; max-width: 100%; }
 }
 
 /* Net worth's editing on a phone: each asset or debt is a small card, its

@@ -16,9 +16,11 @@ import { cn } from "@/lib/utils"
    in a dialog, on the main site or the dashboard, light or dark. The group
    keeps the class `seg` and each chosen option the class `on`: the Guide's
    trips, the coach panel and the tool readers look for `.on`. The size is
-   set once on the group; the options follow it. */
+   set once on the group; the options follow it. On the narrowest phones
+   (400px and under) a switch is never wider than the screen: its options
+   share the room, a long one on two lines. */
 const segmentedVariants = cva(
-  "seg group/seg relative inline-flex flex-none gap-0.5 overflow-hidden border border-input bg-background p-0.75",
+  "seg group/seg relative inline-flex flex-none gap-0.5 overflow-hidden border border-input bg-background p-0.75 max-[400px]:max-w-full",
   {
     variants: {
       size: {
@@ -66,6 +68,7 @@ function SegmentedItem({
       pressed={pressed}
       className={cn(
         "relative z-1 inline-flex min-h-7 cursor-pointer items-center justify-center rounded-[calc(var(--r-well)-4px)] bg-transparent px-2.75 py-1.25 text-xs whitespace-nowrap text-muted-foreground transition-colors outline-none pointer-coarse:min-h-9 pointer-coarse:px-3.5 pointer-coarse:py-2 pointer-coarse:text-sm pointer-coarse:select-none hover:text-foreground hover:not-data-pressed:bg-foreground/5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-solid focus-visible:outline-ring disabled:cursor-default disabled:opacity-40",
+        "max-[400px]:min-w-0 max-[400px]:shrink max-[400px]:leading-tight max-[400px]:whitespace-normal",
         // The chosen option: filled a shade darker (lighter in dark mode), with a fine edge.
         "data-pressed:bg-foreground/10 data-pressed:text-foreground data-pressed:shadow-[inset_0_0_0_1px_color-mix(in_oklch,var(--foreground)_16%,transparent)]",
         "group-data-[size=tab]/seg:px-4 group-data-[size=tab]/seg:py-1.25 group-data-[size=tab]/seg:text-[13px] max-sm:group-data-[size=tab]/seg:flex-1 max-sm:group-data-[size=tab]/seg:px-1.5 max-sm:group-data-[size=tab]/seg:py-1.75",

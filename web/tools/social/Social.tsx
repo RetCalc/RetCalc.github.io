@@ -435,7 +435,9 @@ function Lifespan({ S, setThrough }: { S: SocialFigures; setThrough: (v: string)
     <Card className="min-w-0" id="ssLifespan">
       <CardHeader><CardTitle>Best age, by how long you live<TipDot k="" text="The claiming age that collects the most in all if you live to each age, in today's dollars, before tax. A 65-year-old today lives to about 84 on average; in a couple, one of the two usually passes 90." /></CardTitle></CardHeader>
       <CardContent>
-        <div className="relative">
+        {/* A phone keeps the bar at a readable width and scrolls it sideways. */}
+        <div className="swipehint px-0!">Swipe the bar sideways to see every age.</div>
+        <div className="max-sm:-mx-1 max-sm:overflow-x-auto max-sm:px-1 max-sm:pb-1"><div className="relative max-sm:min-w-150">
           <div className="mt-6 flex h-10 gap-0.5 overflow-hidden rounded-lg" role="img" aria-label={"Best claiming age by lifespan: " + S.wins.map((w) => `live to ${w.from} to ${w.to}, claim at ${w.claim}`).join("; ")}>
             {S.wins.map((w) => (
               // The shade deepens with the claiming age but stops at half
@@ -455,7 +457,7 @@ function Lifespan({ S, setThrough }: { S: SocialFigures; setThrough: (v: string)
           <div className="pointer-events-none absolute top-6 bottom-4.5 left-(--x) w-0.5 -translate-x-px bg-foreground" style={{ "--x": x(t + .5) } as React.CSSProperties}>
             <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-card px-1 text-label font-semibold whitespace-nowrap">Live to {t}</span>
           </div>
-        </div>
+        </div></div>
         <label className="mt-2 block">
           <span className="text-label text-muted-foreground">Live to age <b className="text-foreground">{t}</b></span>
           <NativeRange min={70} max={100} value={t} onChange={(e) => setThrough(e.target.value)} aria-label="Live to age" />

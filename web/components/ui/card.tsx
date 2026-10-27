@@ -28,6 +28,8 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="card-header"
       className={cn(
         "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-(--r-panel) px-(--card-spacing) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing)",
+        // The narrowest phones: a switch beside the title goes under it.
+        "max-[400px]:has-[>[data-slot=card-action]_.seg]:grid-cols-[minmax(0,1fr)]",
         className
       )}
       {...props}
@@ -66,6 +68,7 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="card-action"
       className={cn(
         "col-start-2 row-span-2 row-start-1 flex flex-wrap items-center gap-2 self-start justify-self-end",
+        "max-[400px]:has-[.seg]:col-start-1 max-[400px]:has-[.seg]:row-span-1 max-[400px]:has-[.seg]:row-start-auto max-[400px]:has-[.seg]:max-w-full max-[400px]:has-[.seg]:justify-self-start",
         className
       )}
       {...props}

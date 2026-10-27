@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /** `more` sits under the description (a strategy page's links); `full`
-    keeps the description whole on phones instead of two lines; `controls`
+    is no longer needed (the description is whole on phones too); `controls`
     (the saved scenarios, Save, Share and Reset) sit beside Help. */
 export function ToolHeader({ sub, name, desc, more, full, controls }: { sub: ToolSub; name: string; desc: string; more?: React.ReactNode; full?: boolean; controls?: React.ReactNode }) {
   const router = useRouter();
