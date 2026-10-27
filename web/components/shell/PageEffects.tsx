@@ -2,9 +2,6 @@
 
 /* Small page-wide behaviors, from src/page.html and 19-widgets-theme.js:
 
-   - Each segmented switch (.seg) gets one raised highlight that slides to
-     the chosen option, instead of the highlight blinking from one to the
-     next. Measured off the active button, so unequal widths line up.
    - A page's own views (Drawdown's three, a stack carrying data-tab whose
      panels say which views they belong to with data-ddtabs): on a switch,
      the panels that come in rise a few pixels as they fade in (.pane-in,
@@ -23,31 +20,6 @@
      02-accounts-advanced.js did the same). */
 
 import { useEffect } from "react";
-
-function initSeg(seg: HTMLElement & { __thumb?: boolean }) {
-  if (seg.__thumb) return;
-  seg.__thumb = true;
-  const thumb = document.createElement("span");
-  thumb.className = "seg-thumb";
-  seg.insertBefore(thumb, seg.firstChild);
-  const place = () => {
-    const on = seg.querySelector<HTMLElement>("button.on");
-    // Every write here is guarded: even a no-op classList change counts as a
-    // mutation, and would wake this observer again, forever.
-    if (!on || !on.offsetWidth) {
-      if (thumb.classList.contains("ready")) thumb.classList.remove("ready");
-      return;
-    }
-    const w = on.offsetWidth + "px", x = `translateX(${on.offsetLeft}px)`;
-    // Only write on a real change, so this can't re-trigger its own observer.
-    if (thumb.style.width !== w) thumb.style.width = w;
-    if (thumb.style.transform !== x) thumb.style.transform = x;
-    if (!thumb.classList.contains("ready")) thumb.classList.add("ready");
-  };
-  new MutationObserver(place).observe(seg, { subtree: true, attributes: true, attributeFilter: ["class"] });
-  new ResizeObserver(place).observe(seg);
-  place();
-}
 
 function announce() {
   const head = [...document.querySelectorAll<HTMLElement>("#main .headline, #main [data-readout]")].find((el) => el.offsetParent !== null);
@@ -143,15 +115,8 @@ export function PageEffects() {
   useEffect(() => {
     const main = document.getElementById("main");
     if (!main) return;
-    main.querySelectorAll<HTMLElement>(".seg").forEach(initSeg);
     let timer: ReturnType<typeof setTimeout>;
-    const obs = new MutationObserver((muts) => {
-      for (const m of muts) m.addedNodes.forEach((n) => {
-        if (n instanceof HTMLElement) {
-          if (n.matches(".seg")) initSeg(n);
-          n.querySelectorAll<HTMLElement>(".seg").forEach(initSeg);
-        }
-      });
+    const obs = new MutationObserver(() => {
       clearTimeout(timer);
       timer = setTimeout(announce, 700);
     });
