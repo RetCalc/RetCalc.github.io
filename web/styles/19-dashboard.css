@@ -541,6 +541,13 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
   /* The timeline keeps its size and scrolls sideways, so its words stay readable. */
   .dsh-tl svg { width: auto; }
 }
+/* A phone on its side has little height: the bar's tabs put their names
+   beside their icons, so the bar is shorter. */
+@media (max-height: 500px) and (hover: none) and (pointer: coarse) {
+  .dsh-tb { flex-direction: row; gap: 8px; min-height: 44px; padding: 4px 6px; font-size: 12px; }
+  .dsh-tb svg { width: 20px; height: 20px; }
+  .dsh-tabbar { grid-template-columns: repeat(5, minmax(0, 150px)); justify-content: center; }
+}
 /* A tablet on its side: the rail, its labels always showing, since a
    finger can't hover to open it. */
 @media (hover: none) and (pointer: coarse) and (min-width: 1024px) and (min-height: 501px) {
@@ -548,6 +555,11 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
   .dsh-rail-in, .dsh-rail:hover .dsh-rail-in, .dsh-rail:focus-within .dsh-rail-in { width: 236px; box-shadow: none; overflow-y: auto; padding-left: max(10px, env(safe-area-inset-left)); }
   .dsh-rail .dsh-brand span, .dsh-ri span { opacity: 1; }
   .dsh-skip:focus { left: 248px; }
+  /* With the rail's labels taking room, a tile's switches go under its
+     title when they don't fit beside it. */
+  .dsh-tile-h { flex-wrap: wrap; }
+  .dsh-tile-h h2 { flex: none; }
+  .dsh-tile-h .dsh-r { flex-wrap: wrap; row-gap: 8px; }
 }
 /* Narrow screens: figures two to a row, steps with their button under
    them, short fields side by side, and nothing wider than the screen. */
