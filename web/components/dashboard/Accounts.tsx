@@ -210,7 +210,7 @@ function EditList({ items, side, names, onChange }: { items: Item[]; side: Item[
           <Button variant="ghost" size="icon" aria-label={"Remove " + (i.name || kindName(i.kind))} onClick={() => removeRow(i)}><Trash2Icon aria-hidden="true" /></Button>
         </div>
       ))}
-      {gone ? <p className="dsh-cap dsh-undo" role="status">Removed {gone.item.name || kindName(gone.item.kind)}. <Button variant="link" size="inline" onClick={undo}>Undo</Button></p> : null}
+      {gone ? <p className="dsh-cap" role="status">Removed {gone.item.name || kindName(gone.item.kind)}. <Button variant="link" size="inline" onClick={undo}>Undo</Button></p> : null}
       <Button variant="outline" size="sm" onClick={() => { setGone(null); onChange([...items, { id: newId(), side, kind: kinds[0].kind, name: "", value: 0, ...(side === "debt" ? { rate: null } : {}) }]); }}>
         <PlusIcon aria-hidden="true" />{side === "asset" ? "Add an asset" : "Add a debt"}
       </Button>

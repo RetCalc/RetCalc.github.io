@@ -156,14 +156,14 @@ function DetailFold({ on, picks, children }: { on: boolean; picks: number; child
   if (picks !== seen) { setSeen(picks); setOpen(true); }
   if (!on) return <>{children}</>;
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="stack" data-ddtabs="plan">
+    <Collapsible open={open} onOpenChange={setOpen} data-ddtabs="plan">
       <Card size="flush" className="overflow-hidden">
         <CollapsibleTrigger variant="row">
           <span>{open ? "Hide the detail" : "The detail: spending scorecard, every start, year by year, the spread and what moves it"}</span>
           <ChevronDownIcon aria-hidden="true" />
         </CollapsibleTrigger>
       </Card>
-      <CollapsibleContent className="stack">{children}</CollapsibleContent>
+      <CollapsibleContent><div className="stack mt-5 max-sm:mt-3.5">{children}</div></CollapsibleContent>
     </Collapsible>
   );
 }

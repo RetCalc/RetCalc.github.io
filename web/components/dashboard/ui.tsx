@@ -85,10 +85,10 @@ export function PlanFacts({ rows, note, id }: { rows: [ReactNode, ReactNode][]; 
 export function Fold({ icon: Icon, title, summary, id, className, children }: { icon: LucideIcon; title: string; summary: ReactNode; id?: string; className?: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="dsh-fold" id={id}>
+    <div className="dsh-fold" id={id}><Collapsible open={open} onOpenChange={setOpen}>
       <section className="dsh-tile dsh-fold-h">
         <h2>
-          <CollapsibleTrigger variant="row" className="dsh-fold-t">
+          <CollapsibleTrigger variant="row">
             <span className="dsh-ti"><Icon aria-hidden="true" /></span>
             <span className="dsh-fold-n"><span className="dsh-fold-title">{title}</span><span className="dsh-cap">{summary}</span></span>
             <span className="dsh-fold-a" aria-hidden="true">{open ? "Hide" : "Show"}</span>
@@ -96,7 +96,7 @@ export function Fold({ icon: Icon, title, summary, id, className, children }: { 
           </CollapsibleTrigger>
         </h2>
       </section>
-      <CollapsibleContent className={className}>{children}</CollapsibleContent>
-    </Collapsible>
+      <CollapsibleContent><div className={className ? "dsh-fold-b " + className : "dsh-fold-b"}>{children}</div></CollapsibleContent>
+    </Collapsible></div>
   );
 }
