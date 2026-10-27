@@ -569,3 +569,12 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 /* The years before Medicare, called out. */
 .dsh-tip.dsh-warn-tip { border-color: color-mix(in srgb, var(--ds-amber) 45%, var(--ds-rule-strong)); }
 .dsh-retside button { gap: 6px; }
+/* Taxes & Savings: the deduction and local tax, with the paycheck's facts. */
+.dsh-taxin { display: grid; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--ds-rule); }
+.dsh-taxin .field { margin: 0; }
+.dsh-taxin-h { margin: 0; font-size: 14px; font-weight: 600; }
+/* Profile: what changed and what it did, with Undo, kept in view at the
+   top while the page scrolls. */
+.dsh-changebar { position: sticky; top: 12px; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-top: 16px; padding: 12px 16px; border: 1px solid var(--ds-rule-strong); border-radius: 14px; background: var(--ds-surface); box-shadow: var(--ds-float); font-size: 13.5px; }
+.dsh-changebar > span:first-child { flex: 1 1 320px; }
+.dsh-changebar-b { display: flex; gap: 8px; }

@@ -86,10 +86,12 @@ const spending: Tour<DashData> = { name: "Spending", title: "Build a budget that
 
 const savings: Tour<DashData> = { name: "Taxes & Savings", title: "Your taxes, and a place for every dollar", read: plan,
   pages: [
-    { title: "Taxes this year", focus: "#taxes", tasks: ({ s }) => [
+    { title: "Taxes this year", focus: "#taxes", tasks: () => [
       { h: "<b>Pay after taxes</b> is what reaches your bank account each month, after income taxes, Social Security and Medicare, and anything taken out before tax (401(k), HSA, health premiums)." },
       { h: "<b>Federal</b> and <b>State income tax</b> are worked out from your pay, filing status and state, the same way your paycheck below figures them. <b>Social Security and Medicare</b> is a flat 7.65% of pay, up to a yearly limit for Social Security. <b>Of your pay</b> is all of it as a share of your pay." },
-      { h: "<b>Deduction</b>: most people take the <b>standard deduction</b>, a flat amount of income that's never taxed. Pick <b>Itemized</b> only if mortgage interest, state and local taxes and gifts to charity add up to more.", ok: done(s.profile.tools.tax != null) },
+    ] },
+    { title: "Your deduction", focus: "#taxChoices", tasks: ({ s }) => [
+      { h: "<b>Deduction</b>, with your paycheck's other inputs: most people take the <b>standard deduction</b>, a flat amount of income that's never taxed. Pick <b>Itemized</b> only if mortgage interest, state and local taxes and gifts to charity add up to more.", ok: done(s.profile.tools.tax != null) },
       { h: "Live where cities or counties tax income too? A <b>Local income tax</b> field shows up for your state, with where to look your rate up." },
     ] },
     { title: "Each month", focus: "#month", tasks: () => [

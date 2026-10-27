@@ -6,7 +6,7 @@
    is read from Accounts and changed there. */
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { parseNum } from "@/lib/format";
 import { CHILD_COST, earlyCost } from "@/tools/guide/schedule";
 import { ChildCostsDialog, CoverDialog, coverSegs } from "./children";
@@ -20,11 +20,11 @@ import { RISKS } from "@/lib/engine/typed";
 import { Frame } from "./Frame";
 import { toolHref } from "./host";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt, useTyped, type PKey } from "./fields";
-import { money } from "./format";
+import { MONTHS, money } from "./format";
 import { flow, mixWords, retireMix } from "./flows";
-import { couple, holdings, mortgage, nameOf, nowYear, realGrowth, spendMonth } from "./model";
+import { couple, holdings, mortgage, nameOf, nowYear, realGrowth, results, spendMonth } from "./model";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
-import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, useDashboard, withHome, type Person, type Profile as P } from "./store";
+import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, readDashboard, useDashboard, withHome, type DashData, type Person, type Profile as P } from "./store";
 import { Note, Tile, Tip, TipLabel, To } from "./ui";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
@@ -136,6 +136,67 @@ function CollegeApplied({ pr }: { pr: P }) {
   );
 }
 
+/* ---------- What changed, with Undo ---------- */
+
+type Change = [label: string, from: string, to: string];
+const yn = (v: boolean) => (v ? "yes" : "no");
+const val = (v: number | null | undefined, f: (n: number) => string = String) => (v == null ? "not given" : f(v));
+const born = (p: Person) => (p.by ? (p.bm ? MONTHS[p.bm - 1].slice(0, 3) + " " : "") + p.by : "not given");
+
+/** The answers that changed between two profiles, in words. */
+function changesOf(a: P, b: P): Change[] {
+  const out: Change[] = [];
+  const add = (label: string, x: string, y: string) => { if (x !== y) out.push([label, x, y]); };
+  const who = (p: P) => (p.who === "couple" ? "a couple" : p.who === "single" ? "single" : "not given");
+  add("Household", who(a), who(b));
+  (["p1", "p2"] as const).forEach((k, i) => {
+    if (i && b.who !== "couple") return;
+    const n = nameOf(b, i as 0 | 1), whose = n === "You" ? "Your" : n === "Your partner" ? "Your partner's" : n + "'s";
+    add(whose + " birth", born(a[k]), born(b[k]));
+    add(whose + " retirement age", val(a[k].retire), val(b[k].retire));
+  });
+  add("Where you live", a.state ?? "not given", b.state ?? "not given");
+  add("Children", String(a.kids), String(b.kids));
+  add("Children planned", String(a.planned.count), String(b.planned.count));
+  add("Spending once retired", val(a.retSpend, (n) => money(n) + " per month"), val(b.retSpend, (n) => money(n) + " per month"));
+  add("Home", a.home ?? "not given", b.home ?? "not given");
+  add("Rent", val(a.rent, money), val(b.rent, money));
+  add("Mortgage payment", val(a.mortPay, money), val(b.mortPay, money));
+  add("Growth per year", pct(a.assume.growth), pct(b.assume.growth));
+  add("Inflation", pct(a.assume.inflation), pct(b.assume.inflation));
+  add("Paid childcare", yn(a.childcare), yn(b.childcare));
+  add("Help with college", a.college.help, b.college.help);
+  return out;
+}
+
+/** Changes made on this page since it opened (or since Keep): what
+    changed, what it did to the plan, and Undo, which puts back the
+    profile and entries as they were. Changes still save as they're made. */
+function ChangeBar() {
+  const { data, update } = useDashboard();
+  const [base, setBase] = useState<DashData>(() => readDashboard());
+  const R0 = useMemo(() => results(base.profile, base.entries), [base]);
+  const R1 = useMemo(() => results(data.profile, data.entries), [data.profile, data.entries]);
+  if (JSON.stringify([base.profile, base.entries]) === JSON.stringify([data.profile, data.entries])) return null;
+  const list = changesOf(base.profile, data.profile);
+  const words = list.length ? list.slice(0, 3).map(([l, x, y]) => `${l} ${x} → ${y}`).join("; ") + (list.length > 3 ? `; and ${list.length - 3} more` : "") : "Your answers changed";
+  const effects: string[] = [];
+  const chance = (r: typeof R0) => (r.success != null ? Math.round(r.success * 100) : null);
+  if (chance(R0) !== chance(R1)) effects.push(`chance of success ${chance(R0) ?? "—"}% → ${chance(R1) ?? "—"}%`);
+  const atR = (r: typeof R0) => (r.atRetire != null ? Math.round(r.atRetire / 1000) * 1000 : null);
+  if (atR(R0) !== atR(R1)) effects.push(`savings at retirement ${atR(R0) != null ? money(atR(R0)!) : "—"} → ${atR(R1) != null ? money(atR(R1)!) : "—"}`);
+  if (R0.score !== R1.score) effects.push(`readiness ${R0.score ?? "—"} → ${R1.score ?? "—"}`);
+  return (
+    <div className="dsh-changebar" role="status" aria-live="polite">
+      <span><b>{words}</b>{effects.length ? <>: {effects.join(", ")}.</> : "."} Saved.</span>
+      <span className="dsh-changebar-b">
+        <Button variant="outline" size="sm" onClick={() => setBase(readDashboard())}>Keep</Button>
+        <Button size="sm" onClick={() => { update((d) => ({ ...d, profile: base.profile, entries: base.entries })); }}>Undo</Button>
+      </span>
+    </div>
+  );
+}
+
 export function Profile() {
   const { data, setProfile: set, update } = useDashboard();
   const pr = data.profile, two = couple(pr), H = holdings(data.entries, pr), F = flow(pr);
@@ -145,6 +206,7 @@ export function Profile() {
   const [rateTxt, setRateTxt] = useTyped(pctTxt(mortgage(pr, data.entries).rate));
   return (
     <Frame current="profile" title="Profile" sub="Everything your plan is built on. Changes save as you go.">
+      <ChangeBar />
       <div className="dsh-grid dsh-two dsh-flush">
         <Tile id="household" icon={two ? UsersRoundIcon : UserRoundIcon} title="Household">
           <div className="dsh-fields dsh-fields-sm">

@@ -101,6 +101,7 @@ function PayFacts({ pr }: { pr: Profile }) {
       <p className="dsh-cap dsh-mt6">
         {abroad ? "Pay is" : "Pay and the match are"} set in <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income#pay" />}>Income</Button>, {abroad ? "where you live" : "filing status and state"} in <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#household" />}>Profile</Button>.
       </p>
+      <TaxChoices />
     </div>
   );
 }
@@ -140,18 +141,11 @@ export function Savings() {
   );
 }
 
-/** The year's taxes on pay, as the Paycheck figures them, and the choices
-    that change them: the standard deduction or itemizing, and a local tax
-    where the state has them. Kept as Income Tax's own inputs. */
+/** The year's taxes on pay, as the Paycheck figures them. */
 function Taxes({ pr }: { pr: Profile }) {
-  const { setProfile } = useDashboard();
   const F = flow(pr), T = F.tax, abroad = outsideUS(pr);
-  const t = withDefaults(TAX_DEF, pr.tools.tax ?? {});
-  const put = (v: Partial<TaxInputs>) => setProfile((p) => fromTax(p, { ...withDefaults(TAX_DEF, p.tools.tax ?? {}), ...v }));
   if (abroad) return <Tile id="taxes" icon={LandmarkIcon} title="Taxes"><p className="dsh-cap dsh-mt6">Outside the US we don&apos;t work out taxes: your pay is entered after taxes, and figures for retirement are before taxes.</p></Tile>;
-  const yr = F.gross * 12, state = taxState(pr), local = LOCAL_TAX[state];
-  const std = yearData().fedStd[couple(pr) ? "m" : "s"];
-  const localOn = !!local && parseNum(t.localRate ?? "0") > 0;
+  const yr = F.gross * 12;
   return (
     <Tile id="taxes" icon={LandmarkIcon} title="Taxes this year">
       <div className="dsh-stats">
@@ -162,28 +156,45 @@ function Taxes({ pr }: { pr: Profile }) {
         <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Social Security and Medicare" id="fica" /></div><div className="dsh-fig dsh-md">{T ? money(T.fica) : "—"}<small>per year</small></div></div>
         {T && yr > 0 ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Of your pay" k="effrate" /></div><div className="dsh-fig dsh-md">{Math.round((T.total / yr) * 1000) / 10}%</div></div> : null}
       </div>
-      <div className="dsh-fields dsh-fields-sm dsh-mt"><div className="dsh-row3">
-        <SelectField id="dshDed" label={<TipLabel text="Deduction" id="deduction" />} value={t.dedType} onChange={(v) => put({ dedType: v as TaxInputs["dedType"] })}>
-          <option value="std">Standard deduction ({money(std)})</option>
-          <option value="item">Itemized</option>
-        </SelectField>
-        {t.dedType === "item" ? (
-          <Field id="dshItem" label="Itemized total, per year">
-            <Affixed prefix="$"><MoneyInput id="dshItem" nonNeg value={t.item} onValueChange={(v) => put({ item: v })} /></Affixed>
-          </Field>
-        ) : <div />}
-        {local ? (
-          <NumberField id="dshLocal" label={<>Local income tax <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="%" step={0.1} max={20} value={t.localRate ?? "0"} onValueChange={(v) => put({ localRate: v })} />
-        ) : <div />}
-      </div></div>
-      <div className="dsh-cap dsh-mt6">
+      <p className="dsh-cap dsh-mt">Pay comes from <To href="/dashboard/income#pay">Income</To>. Your deduction{LOCAL_TAX[taxState(pr)] ? " and local income tax are" : " is"} chosen with your paycheck below, and what goes to your 401(k), HSA and health premiums there lowers these taxes.</p>
+    </Tile>
+  );
+}
+
+/** The choices that change the year's taxes, with the paycheck's other
+    inputs: the standard deduction or itemizing, and a local tax where the
+    state has them. Kept as Income Tax's own inputs. Reads the profile
+    itself, so it's current wherever the paycheck draws it. */
+function TaxChoices() {
+  const { data, setProfile } = useDashboard();
+  const pr = data.profile;
+  if (outsideUS(pr)) return null;
+  const t = withDefaults(TAX_DEF, pr.tools.tax ?? {});
+  const put = (v: Partial<TaxInputs>) => setProfile((p) => fromTax(p, { ...withDefaults(TAX_DEF, p.tools.tax ?? {}), ...v }));
+  const local = LOCAL_TAX[taxState(pr)], std = yearData().fedStd[couple(pr) ? "m" : "s"];
+  const localOn = !!local && parseNum(t.localRate ?? "0") > 0;
+  return (
+    <div className="dsh-taxin" id="taxChoices">
+      <h3 className="dsh-taxin-h">Taxes</h3>
+      <SelectField id="dshDed" label={<TipLabel text="Deduction" id="deduction" />} value={t.dedType} onChange={(v) => put({ dedType: v as TaxInputs["dedType"] })}>
+        <option value="std">Standard deduction ({money(std)})</option>
+        <option value="item">Itemized</option>
+      </SelectField>
+      {t.dedType === "item" ? (
+        <Field id="dshItem" label="Itemized total, per year">
+          <Affixed prefix="$"><MoneyInput id="dshItem" nonNeg value={t.item} onValueChange={(v) => put({ item: v })} /></Affixed>
+        </Field>
+      ) : null}
+      <p className="dsh-cap">
         {t.dedType === "item"
           ? <>Mortgage interest, gifts to charity, and state and local taxes (income or sales, plus property) up to the cap, added up for the year.{parseNum(t.item) > 0 && parseNum(t.item) < std ? <b> That&apos;s less than the {money(std)} standard deduction, which you&apos;d take instead.</b> : null}</>
           : "Most households take the standard deduction. Itemize only if your mortgage interest, charity and state and local taxes add up to more."}
-        {local ? <> {local.note} {localOn ? "" : "Leave it at 0 if there's none where you live. "}Your pay stub shows any local tax taken out{local.links.length ? ", or look up your rate: " : "."}
-          {local.links.map(([label, url], i) => <span key={url}>{i ? ", " : ""}<a href={url} target="_blank" rel="noopener noreferrer">{label}</a></span>)}{local.links.length ? "." : null}</> : null}
-      </div>
-      <p className="dsh-cap dsh-mt6">Pay comes from <To href="/dashboard/income#pay">Income</To>; what goes to your 401(k), HSA and health premiums is set in the paycheck below, and lowers these taxes.</p>
-    </Tile>
+      </p>
+      {local ? <>
+        <NumberField id="dshLocal" label={<>Local income tax <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="%" step={0.1} max={20} value={t.localRate ?? "0"} onValueChange={(v) => put({ localRate: v })} />
+        <p className="dsh-cap">{local.note} {localOn ? "" : "Leave it at 0 if there's none where you live. "}Your pay stub shows any local tax taken out{local.links.length ? ", or look up your rate: " : "."}
+          {local.links.map(([label, url], i) => <span key={url}>{i ? ", " : ""}<a href={url} target="_blank" rel="noopener noreferrer">{label}</a></span>)}{local.links.length ? "." : null}</p>
+      </> : null}
+    </div>
   );
 }

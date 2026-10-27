@@ -195,7 +195,7 @@ export function About() {
                     <dt>Taxes &amp; Savings</dt>
                     <dd>The year&apos;s taxes on your pay: federal, state, Social Security and
                     Medicare, and a local income tax where your state has them. Choose the
-                    standard deduction or itemize here. Then where the rest goes: your 401(k) up
+                    standard deduction or itemize with your paycheck&apos;s inputs. Then where the rest goes: your 401(k) up
                     to the match, HSA, IRA, 401(k) beyond the match, brokerage and emergency
                     fund. Each line can grow each year beyond inflation, and stops growing at
                     its contribution limit.</dd>
