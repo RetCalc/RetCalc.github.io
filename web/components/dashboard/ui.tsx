@@ -12,11 +12,12 @@ import { TipDot } from "@/components/shell/Tooltips";
 import { TIPS, type TipId } from "./tips";
 
 /** A tile; `id` lets a link land on it ("/dashboard/profile#assumptions");
-    `tip`, a "?" after its title explaining it. */
+    `tip`, a "?" after its title explaining it, kept out of the heading so
+    the heading reads as its title alone. */
 export function Tile({ icon: Icon, title, right, className, id, tip, tipK, children }: { icon: LucideIcon; title: string; right?: ReactNode; className?: string; id?: string; tip?: TipId; tipK?: string; children: ReactNode }) {
   return (
     <section id={id} className={className ? "dsh-tile " + className : "dsh-tile"}>
-      <div className="dsh-tile-h"><span className="dsh-ti"><Icon aria-hidden="true" /></span><h2>{title}{tip || tipK ? <> <Tip id={tip} k={tipK} title={title} /></> : null}</h2>{right ? <div className="dsh-r">{right}</div> : null}</div>
+      <div className="dsh-tile-h"><span className="dsh-ti"><Icon aria-hidden="true" /></span>{tip || tipK ? <span className="dsh-tile-t"><h2>{title}</h2><Tip id={tip} k={tipK} title={title} /></span> : <h2>{title}</h2>}{right ? <div className="dsh-r">{right}</div> : null}</div>
       {children}
     </section>
   );

@@ -178,6 +178,10 @@ function EditList({ items, side, names, onChange }: { items: Item[]; side: Item[
   const kinds = side === "asset" ? ASSET_KINDS : DEBT_KINDS;
   const put = (id: string, v: Partial<Item>) => onChange(items.map((i) => (i.id === id ? { ...i, ...v } : i)));
   const rows = items.filter((i) => i.side === side);
+  // The row last removed, and where it was, so it can be put back.
+  const [gone, setGone] = useState<{ item: Item; at: number } | null>(null);
+  const removeRow = (i: Item) => { setGone({ item: i, at: items.indexOf(i) }); onChange(items.filter((x) => x.id !== i.id)); };
+  const undo = () => { if (!gone) return; const next = items.slice(); next.splice(Math.min(gone.at, next.length), 0, gone.item); onChange(next); setGone(null); };
   const debt = side === "debt", whose = !debt && !!names;
   const row = debt ? "dsh-erow dsh-erow-debt" : whose ? "dsh-erow dsh-erow-asset dsh-erow-whose" : "dsh-erow dsh-erow-asset";
   return (
@@ -203,10 +207,11 @@ function EditList({ items, side, names, onChange }: { items: Item[]; side: Item[
             : BASIS_KINDS[i.kind] ? <F l={BASIS_KINDS[i.kind]!.name + " (optional)"}><Affixed prefix="$"><MoneyInput aria-label={BASIS_KINDS[i.kind]!.name + " (optional)"} nonNeg placeholder={BASIS_KINDS[i.kind]!.name}
               value={i.basis != null ? groupDigits(i.basis, true) : ""} onValueChange={(v) => put(i.id, { basis: v.trim() === "" ? null : parseNum(v) })} /></Affixed></F>
             : <span className="dsh-muted dsh-ena" aria-hidden="true">—</span>}
-          <Button variant="ghost" size="icon" aria-label={"Remove " + (i.name || kindName(i.kind))} onClick={() => onChange(items.filter((x) => x.id !== i.id))}><Trash2Icon aria-hidden="true" /></Button>
+          <Button variant="ghost" size="icon" aria-label={"Remove " + (i.name || kindName(i.kind))} onClick={() => removeRow(i)}><Trash2Icon aria-hidden="true" /></Button>
         </div>
       ))}
-      <Button variant="outline" size="sm" onClick={() => onChange([...items, { id: newId(), side, kind: kinds[0].kind, name: "", value: 0, ...(side === "debt" ? { rate: null } : {}) }])}>
+      {gone ? <p className="dsh-cap dsh-undo" role="status">Removed {gone.item.name || kindName(gone.item.kind)}. <Button variant="link" size="inline" onClick={undo}>Undo</Button></p> : null}
+      <Button variant="outline" size="sm" onClick={() => { setGone(null); onChange([...items, { id: newId(), side, kind: kinds[0].kind, name: "", value: 0, ...(side === "debt" ? { rate: null } : {}) }]); }}>
         <PlusIcon aria-hidden="true" />{side === "asset" ? "Add an asset" : "Add a debt"}
       </Button>
       {debt ? null : <p className="dsh-cap">What you put in is optional: for a brokerage account its <TipLabel text="cost basis" id="costBasis" />, for a Roth <TipLabel text="your own contributions" id="rothContrib" />. A 457(b) is its own type: it can be drawn from without the 10% penalty once you leave that job.{whose ? " Say whose each retirement account is: each opens at its owner's 59½. Not sure counts it half each." : ""}</p>}

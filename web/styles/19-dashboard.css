@@ -82,6 +82,7 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-tile { background: var(--ds-surface); border: 1px solid var(--ds-rule); border-radius: 16px; padding: 16px 18px; min-width: 0; display: flex; flex-direction: column; }
 .dsh-tile-h { display: flex; align-items: center; gap: 8px; min-height: 22px; }
 .dsh-tile-h h2 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
+.dsh-tile-t { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
 .dsh-tile-h .dsh-r { margin-left: auto; display: flex; align-items: center; gap: 14px; }
 .dsh-ti { color: var(--ds-muted); display: grid; }
 .dsh-ti svg { width: 16px; height: 16px; }
@@ -199,7 +200,9 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-tl .dsh-lane { stroke: var(--ds-rule); stroke-width: 1; }
 .dsh-tl .dsh-span { stroke-width: 6; stroke-linecap: round; }
 .dsh-tl .dsh-work { stroke: var(--ds-rule-strong); }
-.dsh-tl .dsh-ret { stroke: var(--ds-amber); }
+/* Retired years in ink, working years in the strong rule: amber is kept
+   for its four places (DESIGN.md). */
+.dsh-tl .dsh-ret { stroke: var(--ds-text); }
 .dsh-tl .dsh-k1 { stroke: var(--ds-series-sky); }
 .dsh-tl .dsh-k2 { stroke: var(--ds-series-teal); }
 .dsh-tl .dsh-k3 { stroke: var(--ds-series-lavender); }
@@ -744,3 +747,7 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-fold-title { font-size: 14px; font-weight: 600; color: var(--ds-text); }
 .dsh-fold-a { font-size: 13px; color: var(--ds-muted); flex: none; }
 .dsh-fold > [data-slot="collapsible-content"] { margin-top: 16px; }
+
+/* Retirement: the simulator's notes on the marked years, and its "When you
+   retire" intro, kept to a readable measure inside the Dashboard. */
+.dsh-embed .dderas p, .dsh-embed #ddSeqIntro .ddintro { max-width: 70ch; }
