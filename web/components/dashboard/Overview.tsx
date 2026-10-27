@@ -80,7 +80,7 @@ function Answer({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entri
   const how = useMemo(() => (R.success != null && R.success < goal ? explain("outlook", pr, entries, R).how[0] ?? null : null), [R, goal, pr, entries]);
   if (R.success == null || R.atRetire == null) return null;
   const lasted = lastedWords(R.success, R.runs);
-  const at = `${money(Math.round(R.atRetire / 1000) * 1000)} at ${pr.p1.retire}`;
+  const at = `${money(Math.round(R.atRetire / 1000) * 1000)} in savings at ${pr.p1.retire}`;
   return (
     <p className="dsh-answer">
       {R.success >= goal ? <><b>You&apos;re on track:</b> {at}, and your plan lasted in {lasted}.</>

@@ -5,7 +5,7 @@
 
 import { couple, holdings, mortgage, nowYear, type Results } from "./model";
 import { DEFAULT_ASSUMPTIONS, hasAccounts, type DashData } from "./store";
-import { daysSince, money10, pctDown } from "./format";
+import { daysSince, money, money10, pctDown } from "./format";
 import { detailed, flow } from "./flows";
 import { collegeChildren, collegeNeedOf, collegeYears } from "./college";
 import { toolHref } from "./host";
@@ -45,12 +45,13 @@ export function allSteps(d: DashData, R: Results): Step[] {
     add({ id: "match", title: "Get the full employer match", why: "It's money you'd otherwise leave behind", action: "Fix it", href: "/dashboard/savings#rest", done: false, gain: room(R, "rate", 20) + 4 });
   }
   if (F.left > 50) add({ id: "assign", title: `Put ${money10(F.left)} per month to work`, why: "It's left after spending and isn't assigned to saving", action: "Assign it", href: "/dashboard/savings#rest", done: false, gain: room(R, "rate", 20) });
-  add({ id: "cushion", title: `Build ${F.efMonths} months of cash`, why: R.cushion != null ? `You have ${R.cushion.toFixed(1)} months set aside` : "Once your cash is in", action: "See it", href: "/dashboard/spending#emergency", done: (R.cushion ?? 0) >= F.efMonths, gain: room(R, "cushion", 15) });
-  add({ id: "debt", title: "Pay down debt at 8% or more", why: H.debtsHigh > 0 ? "It costs more than most saving earns" : "Nothing at 8% or more", action: "See debts", href: "/dashboard/accounts#debts", done: accounts && H.debtsHigh === 0, gain: room(R, "debt", 15) });
+  add({ id: "cushion", title: `Build ${F.efMonths} months of cash`, why: R.cushion != null ? `You have ${R.cushion.toFixed(1)} months set aside` : "Add your cash accounts to see how many months you have", action: "See it", href: "/dashboard/spending#emergency", done: (R.cushion ?? 0) >= F.efMonths, gain: room(R, "cushion", 15) });
+  // Done while nothing entered is at 8% or more; adding accounts and debts is its own step.
+  add({ id: "debt", title: H.debtsHigh > 0 ? `Pay down the ${money(H.debtsHigh)} at 8% or more` : "Pay down debt at 8% or more", why: H.debtsHigh > 0 ? "It costs more than most saving earns" : "Nothing at 8% or more", action: "See debts", href: "/dashboard/accounts#debts", done: H.debtsHigh === 0, gain: room(R, "debt", 15) });
 
   // Children and college: what's planned but not yet in the budget.
   const need = collegeNeedOf(pr);
-  if (need > 0) add({ id: "college", title: F.college > 0 ? `Raise college saving to ${money10(need)} per month` : `Save ${money10(need)} per month for college`, why: "You plan to help with college, and saving ahead keeps it out of your saving later", action: "Add to budget", href: "/dashboard/spending#month", done: F.college >= need - 25, gain: 8 });
+  if (need > 0) add({ id: "college", title: F.college > 0 ? `Raise college saving to ${money(need)} per month` : `Save ${money(need)} per month for college`, why: "You plan to help with college, and saving ahead keeps it out of your saving later", action: "Add to budget", href: "/dashboard/spending#month", done: F.college >= need - 25, gain: 8 });
   const drop = R.S?.sched?.find((s, i, all) => i > 0 && s.monthly < all[0].monthly - 50);
   if (drop && R.S) {
     // The calendar year you reach that age, as the Calculator and timeline count it.

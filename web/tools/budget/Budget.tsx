@@ -215,7 +215,7 @@ export function Budget() {
                       )}
                       <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} readOnly={fixed(r)} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount" + (fixed(r) ? ", set on Home" : "")} /></Affixed>
                       {emerg ? <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="emerg" data-i={i} value={r.emerg ?? r.amount} onValueChange={(v) => setRow(i, { emerg: v })} aria-label={r.desc + " in an emergency"} /></Affixed> : null}
-                      <Segmented size="compact" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => { if (!fixed(r)) setRow(i, { freq: f }); }} />
+                      <Segmented size="compact" attr="data-fv" options={dash ? ([[12, "Per month"], [1, "Per year"]] as const) : ([[12, "/mo"], [1, "/yr"]] as const)} value={r.freq} onChange={(f) => { if (!fixed(r)) setRow(i, { freq: f }); }} />
                       {isLockedRow(r, i) || fixed(r) ? <span className="delspace"></span> : (
                         <Button variant="ghost" size="icon-sm" title="Remove this line" aria-label={"Remove " + (r.desc || "this line")} onClick={() => removeLine(i)}><XIcon aria-hidden="true" /></Button>
                       )}
@@ -274,7 +274,7 @@ export function Budget() {
               <h3 className="m-0 flex items-center gap-2 text-body font-semibold">Emergency fund<TipDot k="emergency" /></h3>
               <div className="efrow mt-2.5">
                 <span>Target for</span>{" "}
-                <Affixed suffix="mo" className="w-18"><NumberInput id="efMonths" aria-label="Emergency fund target, months of expenses" nonNeg max={36} value={s.efMonths} onValueChange={set("efMonths")} /></Affixed>{" "}
+                <Affixed suffix={dash ? "months" : "mo"} className={dash ? "w-28" : "w-18"}><NumberInput id="efMonths" aria-label="Emergency fund target, months of expenses" nonNeg max={36} value={s.efMonths} onValueChange={set("efMonths")} /></Affixed>{" "}
                 <span>of monthly expenses</span>
               </div>
               <div className="mt-3.5">

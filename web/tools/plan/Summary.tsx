@@ -323,7 +323,10 @@ function MadeOf({ S, future }: { S: PlanSummary; future: boolean }) {
 /* ---- what the children cost: each child along the years, then together ---- */
 const CARE = SERIES.rose, SCHOOL = SERIES.lavender;
 /** `withoutWords`: what the balance without them assumes (the Dashboard's plan differs). */
-export function ChildrenCost({ S, withoutWords = "saving today's amounts all the way" }: { S: PlanSummary; withoutWords?: string }) {
+/** `dash`: the Dashboard's wording (per month spelled out, whose age runs
+    along the bottom as `ageWho`, and a balance that comes out higher with
+    the children said as more, with why). */
+export function ChildrenCost({ S, withoutWords = "saving today's amounts all the way", dash = false, ageWho }: { S: PlanSummary; withoutWords?: string; dash?: boolean; ageWho?: string }) {
   const K = S.children!, a0 = S.age, a1 = S.retire, span = Math.max(1, a1 - a0);
   const at = (age: number) => ((age - a0) / span) * 100 + "%";
   const ticks = Array.from({ length: Math.floor(span / 5) + 1 }, (_, i) => a0 + i * 5).filter((t) => t < a1 - 1).concat(a1);
@@ -336,7 +339,7 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
       style={{ "--l": at(from), "--w": ((to - from) / span) * 100 + "%", "--c": c } as React.CSSProperties}>
       <span className="absolute inset-0 bg-(--c) opacity-25" aria-hidden="true"></span>
       {(to - from) / span > 0.09 ? <>
-        <span className="relative @max-[2.75rem]:hidden">{money(monthly)}<span className="@max-[4.5rem]:hidden">/mo</span></span>
+        <span className="relative @max-[2.75rem]:hidden">{money(monthly)}{dash ? null : <span className="@max-[4.5rem]:hidden">/mo</span>}</span>
         <span className="relative hidden @max-[2.75rem]:inline">{monthly >= 1000 ? "$" + +(monthly / 1000).toFixed(1) + "k" : money(monthly)}</span>
       </> : null}
     </div>
@@ -354,9 +357,9 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
           <div><div className="text-label text-muted-foreground">Paid for by saving less</div>
             <div className="text-3xl font-medium tabular-nums">{money(K.fromSaving)}</div>
             <div className="text-label text-muted-foreground">{K.fromSpending > 0.5 ? "and " + money(K.fromSpending) + " cut from spending, when saving ran out" : "Saving covered all of it"}</div></div>
-          <div><div className="text-label text-muted-foreground">Less in your balance at {a1}</div>
-            <div className="text-3xl font-medium tabular-nums">{money(Math.max(0, gone))}</div>
-            <div className="text-label text-muted-foreground">{money(S.atRetire.total)} with them, {money(K.without)} {withoutWords}</div></div>
+          <div><div className="text-label text-muted-foreground">{dash && gone < 0 ? "More" : "Less"} in your balance at {a1}</div>
+            <div className="text-3xl font-medium tabular-nums">{money(dash ? Math.abs(gone) : Math.max(0, gone))}</div>
+            <div className="text-label text-muted-foreground">{money(S.atRetire.total)} with them, {money(K.without)} {withoutWords}{dash && gone < 0 ? ". Your budget pays for them today; once they're grown, the plan saves that money instead" : ""}</div></div>
         </div>
         {/* Along the years: each child, then all of them together. A phone
             keeps its room and scrolls it sideways. */}
@@ -371,7 +374,7 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
             </div>
           ))}
           <div className="flex items-center gap-3 border-t border-border pt-2">
-            <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">Together</b><span className="block text-label text-muted-foreground">A month</span></div>
+            <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">Together</b><span className="block text-label text-muted-foreground">{dash ? "Per month" : "A month"}</span></div>
             <div className="relative h-9 min-w-0 flex-1">
               {K.together.map((t) => <Seg key={t.from} {...t} c={SERIES.sky} title={"Your ages " + ageSpan(t.from, t.to) + ": " + money(t.monthly) + " per month"} />)}
             </div>
@@ -385,7 +388,7 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
         </div></div>
         <div className="legend mt-2 px-0!">
           <span><i className="bg-series-rose"></i>Before school (childcare)</span><span><i className="bg-series-lavender"></i>At school</span>
-          <span><i className="bg-series-sky"></i>All the children, per month</span><span>Ages are yours</span>
+          <span><i className="bg-series-sky"></i>All the children, per month</span><span>{dash ? "Along the bottom, " + (ageWho ?? "your age") : "Ages are yours"}</span>
         </div>
       </CardContent>
     </Card>

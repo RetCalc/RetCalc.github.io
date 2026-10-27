@@ -25,6 +25,7 @@ import { yearlySaving } from "./cover";
 import { budgetFor, flow } from "./flows";
 import { lastedWords, money, pctDown } from "./format";
 import { FACTORS, ageOf, answers, areaPoints, holdings, nameOf, nowYear, results, spendMonth, type Results } from "./model";
+import { collegeChildren } from "./college";
 import { nextSteps } from "./nextsteps";
 import { Readiness, timeline } from "./Overview";
 import { Timeline } from "./charts";
@@ -76,7 +77,11 @@ function withPlanChildren(S: PlanSummary, pr: Profile, entries: Entry[]): PlanSu
   const fromSpending = Y.rows.reduce((t, r) => t + r.short * 12, 0);
   const none = { ...pr, kids: 0, planned: { ...pr.planned, count: 0 } };
   const without = results(none, entries).S?.fv ?? S.children.without;
-  return { ...S, children: { ...S.children, fromSaving, fromSpending, without } };
+  // Each child by name, in the plan's order (the ones you have, then the
+  // ones planned): its rows are labeled "Child 1", "Child 2"...
+  const names = collegeChildren(pr).filter((c) => c.planned || (c.age >= 0 && c.age < 30)).map((c) => c.name);
+  const rows = S.children.rows.map((r) => { const i = Number(r.label.replace(/^Child /, "")) - 1; return names[i] ? { ...r, label: names[i] } : r; });
+  return { ...S, children: { ...S.children, rows, fromSaving, fromSpending, without } };
 }
 
 export function Summary() {
@@ -150,7 +155,7 @@ export function Summary() {
       {S?.children ? (
         <Fold icon={BabyIcon} title="What the children cost" className="dsh-psum"
           summary={<>{money(S.children.total)} until you retire at {S.retire}, at the most {money(S.children.peak.monthly)} per month</>}>
-          <ChildrenCost S={S} withoutWords="without children or their college" />
+          <ChildrenCost S={S} withoutWords="without children or their college" dash ageWho={pr.who === "couple" ? nameOf(pr, 0) + "'s age" : "your age"} />
         </Fold>
       ) : null}
 

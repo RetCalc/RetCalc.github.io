@@ -18,7 +18,7 @@ import { Hosted, TOOL_VIEWS, householdOf, seedFor, toolHref } from "./host";
 import { useDashboard, type Entry, type Profile } from "./store";
 import { applyCollege, collegeNeedOf, sameCollege } from "./college";
 import { flow, mixWords, retireMix } from "./flows";
-import { money } from "./format";
+import { money, pctDown } from "./format";
 import { holdings, mortgage, results } from "./model";
 import { Note } from "./ui";
 
@@ -33,7 +33,7 @@ const PLAN_TAB: Partial<Record<ToolSub, { id: string; name: string; hash?: strin
 function yoursFor(pr: Profile, entries: Entry[]): Partial<Record<ToolSub, string>> {
   const R = results(pr, entries), F = flow(pr), H = holdings(entries, pr), M = mortgage(pr, entries), retire = pr.p1.retire;
   const y: Partial<Record<ToolSub, string>> = {};
-  if (R.success != null) y.drawdown = `Your plan: lasted in ${Math.round(R.success * 100)}% of past markets`;
+  if (R.success != null) y.drawdown = `Your plan: lasted in ${pctDown(R.success)}% of past markets`;
   if (R.atRetire != null) y.optimizer = `Your savings at retirement: ${money(Math.round(R.atRetire / 1000) * 1000)}`;
   if (R.ss != null && !R.abroad) y.social = `Your estimate: ${money(R.ss)} per month${R.ssYear ? " from " + R.ssYear : ""}`;
   if (retire != null) {

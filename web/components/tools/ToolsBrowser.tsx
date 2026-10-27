@@ -106,8 +106,10 @@ function ChartCard({ sub, size, data, glide }: { sub: ToolSub; size: "lead" | "t
     <ToolCardLink href={use(HrefFor)(sub)} sub={sub} i={c.i} className={"tp-card tp-" + size} charted>
       {top}
       <div className="toolcard-desc">{c.q}</div>
-      <YoursLine sub={sub} />
       <div className="tp-chart" data-bars={bars}>{chart}</div>
+      {/* Your own figure under the sample chart, not as its headline (the
+          Dashboard's list only; the site's list has none). */}
+      <YoursLine sub={sub} />
     </ToolCardLink>
   );
 }
