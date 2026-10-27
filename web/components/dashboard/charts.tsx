@@ -5,6 +5,7 @@
    they're given, so their text stays the size of the page's. */
 
 import { useLayoutEffect, useRef, useState } from "react";
+import { useScrub } from "@/components/charts/ChartFrame";
 import { shortMoney } from "./format";
 import type { Point } from "./model";
 
@@ -30,18 +31,24 @@ function niceStep(max: number) {
 /** What the hover readout says for a year on the chart. */
 export interface Readout { title: string; rows: [string, string][] }
 
-/** Net worth: the entries as a solid line, the plan dotted, and in
-    retirement the band 8 in 10 historical markets fell within. Pointing
-    at it (or tapping) shows that year's figures. */
-export function NetWorthChart({ hist, proj, marks, until, height = 270, describe }: {
+type NetWorthProps = {
   hist: { t: number; v: number; date?: string }[]; proj: Point[]; marks: { t: number; label: string }[]; until?: number; height?: number;
   describe?: (p: { t: number; v: number; lo: number; hi: number; entry?: string }) => Readout;
-}) {
+};
+
+/** Net worth: the entries as a solid line, the plan dotted, and in
+    retirement the band 8 in 10 historical markets fell within. Pointing
+    at it, or tapping and dragging along it, shows that year's figures. */
+export function NetWorthChart(props: NetWorthProps) {
+  const pts = props.proj.filter((p) => p.t <= (props.until ?? Infinity));
+  return pts.length ? <NetWorthPlot {...props} /> : <div />;
+}
+
+function NetWorthPlot({ hist, proj, marks, until, height = 270, describe }: NetWorthProps) {
   const [ref, W] = useWidth(900);
   const [at, setAt] = useState<number | null>(null);
   const H = height, L = 56, R = 16, T = 18, B = 26;
   const pts = proj.filter((p) => p.t <= (until ?? Infinity));
-  if (!pts.length) return <div ref={ref} />;
   const x0 = hist.length ? Math.min(hist[0].t, pts[0].t) : pts[0].t, x1 = Math.max(pts[pts.length - 1].t, x0 + 1);
   const ymax = Math.max(...pts.map((p) => p.hi), ...hist.map((h) => h.v)) * 1.05;
   const step = niceStep(ymax), top = Math.ceil(ymax / step) * step || step;
@@ -64,15 +71,20 @@ export function NetWorthChart({ hist, proj, marks, until, height = 270, describe
   };
   const hot = at != null ? pick(at) : null;
   const read = hot && describe ? describe(hot) : null;
-  const move = (e: React.PointerEvent<SVGSVGElement>) => {
-    const r = e.currentTarget.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * W;
+  const probe = (clientX: number) => {
+    const r = ref.current?.querySelector("svg")?.getBoundingClientRect();
+    if (!r) return;
+    const x = ((clientX - r.left) / r.width) * W;
     setAt(x < L || x > W - R ? null : x0 + ((x - L) / (W - L - R)) * (x1 - x0));
   };
+  const move = (e: React.PointerEvent<SVGSVGElement>) => { if (e.pointerType !== "touch") probe(e.clientX); };
+  // A finger reads it as the site's charts do: tap, or drag sideways.
+  const scrub = useScrub(ref, (x) => probe(x), () => setAt(null));
   const left = hot ? X(hot.t) > W * 0.6 : false;
   return (
-    <div ref={ref} className="dsh-chartwrap">
+    <div ref={ref} className="dsh-chartwrap" {...(describe ? scrub : {})}>
       <svg className="dsh-chart" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Net worth: your entries and the plan ahead"
-        onPointerMove={describe ? move : undefined} onPointerDown={describe ? move : undefined} onPointerLeave={() => setAt(null)}>
+        onPointerMove={describe ? move : undefined} onPointerDown={describe ? move : undefined} onPointerLeave={(e) => { if (e.pointerType !== "touch") setAt(null); }}>
         {grid.map((v) => (
           <g key={v}><line className="dsh-gl" x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} /><text x={L - 8} y={Y(v) + 4} textAnchor="end">{shortMoney(v)}</text></g>
         ))}

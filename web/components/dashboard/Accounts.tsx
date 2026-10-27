@@ -31,12 +31,25 @@ const byGroup = (items: Item[], side: Item["side"]) => {
   return out;
 };
 
+/** A finger on the bars: what's under it is read out (each part names
+    itself in data-read) as it's tapped or dragged sideways, and stays
+    until the next touch. A mouse uses the parts' own hover. */
+function touchRead(set: (r: string | null) => void) {
+  const at = (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse") return;
+    const el = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-read]");
+    if (el) set(el.getAttribute("data-read"));
+  };
+  return { onPointerDown: at, onPointerMove: at };
+}
+
 /** Today: what you have and what you owe as two bars on one scale. */
 export function TodayBars({ items }: { items: Item[] }) {
   const [ref, W] = useWidth(800);
   const [hover, setHover] = useState<string | null>(null);
   const have = sum(items, "asset"), owe = sum(items, "debt"), max = Math.max(have, owe, 1);
-  const L = 120, R = 90, bh = 34, gap = 22, H = bh * 2 + gap + 8;
+  // A phone's narrow tile gives the bars the room the names don't need.
+  const L = W < 480 ? 64 : 120, R = W < 480 ? 64 : 90, bh = 34, gap = 22, H = bh * 2 + gap + 8;
   const row = (side: Item["side"], groups: { id: Group; name: string }[], y: number) => {
     const g = byGroup(items, side), total = side === "asset" ? have : owe;
     const shown = groups.filter((gr) => (g[gr.id] ?? 0) > 0);
@@ -49,7 +62,7 @@ export function TodayBars({ items }: { items: Item[] }) {
         {shown.map((gr, k) => {
           const w = widths[k], at = starts[k];
           const label = `${gr.name}: ${money(g[gr.id] ?? 0)}, ${Math.round(((g[gr.id] ?? 0) / Math.max(total, 1)) * 100)}% of your ${side === "asset" ? "assets" : "debts"}`;
-          return <rect key={gr.id} className={"dsh-seg dsh-g-" + gr.id} x={at} y={y} width={Math.max(0, w - 2)} height={bh} rx={4} onMouseEnter={() => setHover(label)} onMouseLeave={() => setHover(null)} aria-label={label} />;
+          return <rect key={gr.id} className={"dsh-seg dsh-g-" + gr.id} x={at} y={y} width={Math.max(0, w - 2)} height={bh} rx={4} onMouseEnter={() => setHover(label)} onMouseLeave={() => setHover(null)} aria-label={label} data-read={label} />;
         })}
         <text className="dsh-bar-v" x={W - R + 10} y={y + bh / 2 + 5}>{shortMoney(total)}</text>
       </g>
@@ -57,11 +70,11 @@ export function TodayBars({ items }: { items: Item[] }) {
   };
   return (
     <div ref={ref}>
-      <svg className="dsh-bars" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={`Assets ${money(have)}, debts ${money(owe)}`}>
+      <svg className="dsh-bars" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={`Assets ${money(have)}, debts ${money(owe)}`} {...touchRead((r) => setHover(r))}>
         {row("asset", ASSET_GROUPS, 0)}
         {row("debt", DEBT_GROUPS, bh + gap)}
       </svg>
-      <div className="dsh-cap dsh-hoverline" aria-live="polite">{hover ?? "Point at a part of a bar for its amount."}</div>
+      <div className="dsh-cap dsh-hoverline" aria-live="polite">{hover ?? <><span className="dsh-mouse">Point at a part of a bar for its amount.</span><span className="dsh-touch">Tap a part of a bar, or drag along it, for its amount.</span></>}</div>
     </div>
   );
 }
@@ -80,7 +93,7 @@ function OverTime({ entries }: { entries: Entry[] }) {
   const e = hover != null ? entries[hover] : null;
   return (
     <div ref={ref}>
-      <svg className="dsh-bars" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Assets and debts at each entry">
+      <svg className="dsh-bars" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Assets and debts at each entry" {...touchRead((r) => setHover(r == null ? null : +r))}>
         <line className="dsh-gl" x1={L} x2={W} y1={zero} y2={zero} />
         <text className="dsh-axis" x={L - 8} y={Y(up) + 4} textAnchor="end">{shortMoney(up)}</text>
         <text className="dsh-axis" x={L - 8} y={zero + 4} textAnchor="end">$0</text>
@@ -95,7 +108,7 @@ function OverTime({ entries }: { entries: Entry[] }) {
           const dtop = dh.map((_, k) => zero + dh.slice(0, k).reduce((s2, v) => s2 + v, 0));
           return (
             <g key={en.date} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
-              <rect className="dsh-hit" x={L + i * slot} y={0} width={slot} height={H - B} />
+              <rect className="dsh-hit" x={L + i * slot} y={0} width={slot} height={H - B} data-read={String(i)} />
               {ASSET_GROUPS.map((g, k) => (ah[k] > 0 ? <rect key={g.id} className={"dsh-seg dsh-g-" + g.id} x={x} y={atop[k]} width={bw} height={Math.max(0, ah[k] - 1)} /> : null))}
               {DEBT_GROUPS.map((g, k) => (dh[k] > 0 ? <rect key={g.id} className={"dsh-seg dsh-g-" + g.id} x={x} y={dtop[k] + 1} width={bw} height={Math.max(0, dh[k] - 1)} /> : null))}
               <line className="dsh-nwmark" x1={x - 4} x2={x + bw + 4} y1={Y(netWorth(en))} y2={Y(netWorth(en))} />
@@ -105,7 +118,7 @@ function OverTime({ entries }: { entries: Entry[] }) {
         })}
       </svg>
       <div className="dsh-cap dsh-hoverline" aria-live="polite">
-        {e ? <>{longDate(e.date)}: assets <b>{money(sum(e.items, "asset"))}</b>, debts <b>{money(sum(e.items, "debt"))}</b>, net worth <b>{money(netWorth(e))}</b></> : "The amber mark is net worth. Point at an entry for its figures."}
+        {e ? <>{longDate(e.date)}: assets <b>{money(sum(e.items, "asset"))}</b>, debts <b>{money(sum(e.items, "debt"))}</b>, net worth <b>{money(netWorth(e))}</b></> : <>The amber mark is net worth. <span className="dsh-mouse">Point at an entry for its figures.</span><span className="dsh-touch">Tap an entry, or drag across them, for its figures.</span></>}
       </div>
     </div>
   );
@@ -134,7 +147,7 @@ function List({ items, side, names }: { items: Item[]; side: Item["side"]; names
         {sorted.length ? sorted.map((i) => (
           <tr key={i.id}>
             <td><i className={"dsh-sw dsh-g-" + groupOf(i.kind)} aria-hidden="true" />{i.name || kindName(i.kind)}</td>
-            <td className="dsh-muted">{kindName(i.kind)}{ownerOf(i, names) != null ? " · " + whoName(names!, ownerOf(i, names)!) : ""}</td>
+            <td className="dsh-muted dsh-kind">{kindName(i.kind)}{ownerOf(i, names) != null ? " · " + whoName(names!, ownerOf(i, names)!) : ""}</td>
             <td>{money(i.value)}{!debt && BASIS_KINDS[i.kind] && i.basis != null ? <Gain item={i} /> : null}</td>
             {debt ? <td>{i.rate != null ? (i.rate * 100).toFixed(2).replace(/\.?0+$/, "") + "%" : "—"}</td> : null}
           </tr>
@@ -291,14 +304,14 @@ export function Accounts() {
 
       {data.entries.length ? (
         <Tile id="entries" icon={CalendarDaysIcon} title="Your entries" className="dsh-r4" right={<span className="dsh-cap">{data.entries.length} so far</span>}>
-          <div className="dsh-scrollx"><table className="dsh-tbl">
+          <div className="dsh-scrollx"><table className="dsh-tbl dsh-etbl">
             <thead><tr><th>Date</th><th>Assets</th><th>Debts</th><th>Net worth</th><th>Change</th><th><span className="sr-only">Delete</span></th></tr></thead>
             <tbody>
               {data.entries.slice().reverse().map((e, i, arr) => {
                 const before = arr[i + 1], ch = before ? netWorth(e) - netWorth(before) : null;
                 return (
-                  <tr key={e.date}><td>{longDate(e.date)}</td><td>{money(sum(e.items, "asset"))}</td><td>{money(sum(e.items, "debt"))}</td><td>{money(netWorth(e))}</td>
-                    <td>{ch == null ? <span className="dsh-muted">First entry</span> : <span className={ch >= 0 ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{ch >= 0 ? "+" : "-"}{money(Math.abs(ch))}</span>}</td>
+                  <tr key={e.date}><td>{longDate(e.date)}</td><td data-l="Assets">{money(sum(e.items, "asset"))}</td><td data-l="Debts">{money(sum(e.items, "debt"))}</td><td data-l="Net worth">{money(netWorth(e))}</td>
+                    <td data-l="Change">{ch == null ? <span className="dsh-muted">First entry</span> : <span className={ch >= 0 ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{ch >= 0 ? "+" : "-"}{money(Math.abs(ch))}</span>}</td>
                     <td className="dsh-del"><Button variant="ghost" size="icon-xs" aria-label={"Delete the entry from " + longDate(e.date)} onClick={() => setRemoving(e.date)}><XIcon aria-hidden="true" /></Button></td></tr>
                 );
               })}

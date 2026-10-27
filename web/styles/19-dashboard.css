@@ -313,6 +313,11 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-bars .dsh-axis { font-size: 11.5px; }
 .dsh-bars .dsh-gl { stroke: var(--ds-rule-strong); }
 .dsh-bars .dsh-hit { fill: transparent; }
+/* A finger reads the bars by dragging along them; scrolling up and down still works. */
+.dsh-bars { touch-action: pan-y; }
+/* Words for whichever kind of pointer is reading. */
+.dsh-touch { display: none; }
+@media (hover: none) { .dsh-mouse { display: none; } .dsh-touch { display: inline; } }
 .dsh-bars g:hover .dsh-hit { fill: color-mix(in srgb, var(--ds-text) 5%, transparent); }
 .dsh-bars .dsh-nwmark { stroke: var(--ds-amber); stroke-width: 3; stroke-linecap: round; }
 .dsh-hoverline { margin-top: 6px; min-height: 20px; }
@@ -610,3 +615,39 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 /* A couple's assets: whose each retirement account is, too. */
 .dsh-erow-asset.dsh-erow-whose { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 0.9fr) auto; }
 @media (max-width: 1180px) { .dsh-erow-asset.dsh-erow-whose { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
+/* Net worth on a phone: each asset or debt on two lines, its name and
+   amount above, its type (and a debt's rate) below, so nothing runs off
+   the screen; the column names stay as one line over them. Each entry is
+   a small card: its date, then its four figures, each named. */
+@media (max-width: 640px) {
+  .dsh-ltbl, .dsh-ltbl :is(thead, tbody, tfoot) { display: block; }
+  .dsh-ltbl tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--ds-rule); }
+  .dsh-ltbl tbody tr:last-child { border-bottom: 0; }
+  .dsh-ltbl :is(th, td) { padding: 0; border: 0; text-align: left; }
+  .dsh-ltbl thead tr { display: flex; flex-wrap: wrap; gap: 4px 6px; padding: 4px 0 8px; }
+  .dsh-ltbl thead th + th::before { content: "· "; }
+  .dsh-ltbl thead th:nth-child(3) { margin-left: auto; }
+  .dsh-ltbl thead th:nth-child(3)::before { content: none; }
+  .dsh-ltbl td:first-child { grid-column: 1; grid-row: 1; font-weight: 500; }
+  .dsh-ltbl td.dsh-kind { grid-column: 1; grid-row: 2; font-size: 12.5px; white-space: normal; margin-top: 2px; }
+  .dsh-ltbl td:nth-child(3) { grid-column: 2; grid-row: 1; text-align: right; }
+  .dsh-ltbl tr:not(:has(> td:nth-child(4))) > td:nth-child(3) { grid-row: 1 / span 2; }
+  .dsh-ltbl td:nth-child(4) { grid-column: 2; grid-row: 2; text-align: right; font-size: 12.5px; color: var(--ds-muted); margin-top: 2px; }
+  .dsh-ltbl td .dsh-basis { display: block; margin: 2px 0 0; }
+  .dsh-ltbl td[colspan] { grid-column: 1 / -1; white-space: normal; }
+  .dsh-ltbl tfoot tr { border-bottom: 0; border-top: 1px solid var(--ds-rule-strong); padding-top: 10px; }
+  .dsh-ltbl tfoot td { padding: 0; border: 0; }
+  .dsh-ltbl tfoot td:empty { display: none; }
+  .dsh-etbl, .dsh-etbl tbody { display: block; }
+  .dsh-etbl thead { display: none; }
+  .dsh-etbl tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 12px; padding: 12px 0; border-bottom: 1px solid var(--ds-rule); }
+  .dsh-etbl tbody tr:last-child { border-bottom: 0; }
+  .dsh-etbl td { padding: 0; border: 0; text-align: left; white-space: normal; }
+  .dsh-etbl td:first-child { grid-column: 1; grid-row: 1; font-weight: 600; align-self: center; }
+  .dsh-etbl td.dsh-del { grid-column: 2; grid-row: 1; width: auto; justify-self: end; }
+  .dsh-etbl td[data-l] { display: grid; gap: 1px; }
+  .dsh-etbl td[data-l]::before { content: attr(data-l); font-size: 11.5px; font-weight: 500; color: var(--ds-muted); }
+}
+/* Under a finger, an entry's delete button is a full-size target. */
+@media (pointer: coarse) { .dsh-del [data-slot="button"] { width: 40px; height: 40px; } }
