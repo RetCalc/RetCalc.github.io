@@ -153,24 +153,33 @@ function rowsFor(items: { x: number; w: number; end?: boolean }[]): number[] {
     and the lane grows to fit. */
 export function Timeline({ lanes, from, to, now }: { lanes: Lane[]; from: number; to: number; now: number }) {
   const [ref, fit] = useWidth(1100);
-  // Never narrower than its labels need; a phone scrolls it sideways.
-  const W = Math.max(640, fit);
-  const L = 110, R = 20, ROW = 15;
+  // A phone's width: each lane's name goes above its line instead of
+  // beside it, so the years get the whole width and nothing scrolls.
+  const narrow = fit < 600;
+  const W = narrow ? fit : Math.max(640, fit);
+  const L = narrow ? 2 : 110, R = narrow ? 4 : 20, ROW = 15;
+  // Words that would run past the right edge end at it instead.
+  const fitIn = (x: number, w: number) => (narrow && x + w > W - R ? { x: W - R, end: true } : { x, end: false });
   const X = (y: number) => L + ((y - from) / (to - from)) * (W - L - R);
   const every = W < 700 ? 10 : 5, ticks: number[] = [];
   for (let y = Math.ceil((from + 1) / every) * every; y <= to; y += every) ticks.push(y);
   // Each lane's words, laid out: above the line (how old you are now, each
   // span's name, the note), below it (the dates), in year order.
   const laid = lanes.map((ln) => {
-    const above: { key: string; x: number; label: string; strong?: boolean }[] = [];
+    const above: { key: string; x: number; label: string; strong?: boolean; end?: boolean }[] = [];
     if (ln.lead) above.push({ key: "lead", x: X(now) + 8, label: ln.lead });
     ln.spans.forEach((sp) => { if (sp.label) above.push({ key: "s" + sp.kind + sp.from, x: Math.max(X(sp.from), X(now) + 6) + 2, label: sp.label }); });
     if (ln.note) above.push({ key: "note", x: X(ln.note.at), label: ln.note.label, strong: true });
+    above.forEach((a) => Object.assign(a, fitIn(a.x, textWidth(a.label))));
     above.sort((a, b) => a.x - b.x);
-    const upRows = rowsFor(above.map((a) => ({ x: a.x, w: textWidth(a.label) })));
+    const upRows = rowsFor(above.map((a) => ({ x: a.x, w: textWidth(a.label), end: a.end })));
     const evs = ln.events.slice().sort((a, b) => a.at - b.at);
     // The first date's words go left of its dot, unless that runs into the names.
-    const below = evs.map((e, j) => { const w = textWidth(e.label), left = j === 0 && X(e.at) - 4 - w >= L; return { e, w, left, x: left ? X(e.at) - 4 : X(e.at) + 4 }; });
+    const below = evs.map((e, j) => {
+      const w = textWidth(e.label), first = j === 0 && X(e.at) - 4 - w >= L;
+      const at = first ? { x: X(e.at) - 4, end: true } : fitIn(X(e.at) + 4, w);
+      return { e, w, left: at.end, x: at.x };
+    });
     const downRows = rowsFor(below.map((b) => ({ x: b.x, w: b.w, end: b.left })));
     const up = Math.max(0, ...upRows) + (above.length ? 1 : 0), down = Math.max(0, ...downRows) + (below.length ? 1 : 0);
     return { ln, above, upRows, below, downRows, up, down };
@@ -178,21 +187,21 @@ export function Timeline({ lanes, from, to, now }: { lanes: Lane[]; from: number
   // Each lane's line, below the rows of words above it.
   const ys: number[] = [];
   let y0 = 26;
-  for (const l of laid) { const y = y0 + 16 + Math.max(1, l.up) * ROW; ys.push(y); y0 = y + Math.max(1, l.down) * ROW + 10; }
+  for (const l of laid) { const y = y0 + 16 + (Math.max(1, l.up) + (narrow ? 1 : 0)) * ROW; ys.push(y); y0 = y + Math.max(1, l.down) * ROW + 10; }
   const H = y0 + 6;
   return (
     <div ref={ref} className="dsh-tl">
       <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Your timeline">
-        {ticks.map((y) => <text key={y} x={X(y)} y={18} textAnchor="middle">{y}</text>)}
+        {ticks.filter((y) => !narrow || X(y) + 16 <= W).map((y) => <text key={y} x={X(y)} y={18} textAnchor="middle">{y}</text>)}
         <line className="dsh-now" x1={X(now)} x2={X(now)} y1={26} y2={H - 8} />
-        {laid.map(({ ln, above, upRows, below, downRows }, i) => {
+        {laid.map(({ ln, above, upRows, below, downRows, up }, i) => {
           const y = ys[i];
           return (
             <g key={ln.name + i}>
-              <text className="dsh-lbl" x={0} y={y + 4}>{ln.name}</text>
+              {narrow ? <text className="dsh-lbl" x={Math.max(0, X(now) + 8)} y={y - 11 - Math.max(1, up) * ROW}>{ln.name}</text> : <text className="dsh-lbl" x={0} y={y + 4}>{ln.name}</text>}
               <line className="dsh-lane" x1={L} x2={W - R} y1={y} y2={y} />
               {ln.spans.map((sp) => <line key={sp.kind + sp.from} className={"dsh-span " + sp.kind} x1={X(Math.max(from, sp.from)) + 3} x2={X(Math.min(to, sp.to)) - 3} y1={y} y2={y} />)}
-              {above.map((a, k) => <text key={a.key} className={a.strong ? "dsh-strong" : undefined} x={a.x} y={y - 11 - upRows[k] * ROW}>{a.label}</text>)}
+              {above.map((a, k) => <text key={a.key} className={a.strong ? "dsh-strong" : undefined} x={a.x} y={y - 11 - upRows[k] * ROW} textAnchor={a.end ? "end" : undefined}>{a.label}</text>)}
               {below.map((b, k) => (
                 <g key={b.e.label}>
                   <circle className="dsh-ev" cx={X(b.e.at)} cy={y} r={5} />
