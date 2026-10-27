@@ -715,3 +715,17 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
   .dsh-ef { display: grid; gap: 4px; min-width: 0; }
   .dsh-efl { display: block; font-size: 12px; font-weight: 500; color: var(--ds-muted); }
 }
+
+/* The home-screen web app: the page runs under the clock, the Dynamic
+   Island and the battery, so the dashboard keeps the same blank strip the
+   rest of the site does (--sb-clear, 00-base.css): its title bars start
+   below it, and a strip in the page's colour stays over the top of the
+   screen so nothing scrolls under the island. A browser tab and desktop
+   have no inset there, so --sb-clear is 0 and nothing changes. */
+html.pwa .dsh::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: var(--sb-clear); z-index: 48; background: var(--ds-ground); pointer-events: none; }
+html.pwa .dsh-top, html.pwa .dsh-setup-top { box-sizing: content-box; padding-top: var(--sb-clear); }
+html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
+@media (max-width: 760px), (hover: none) and (pointer: coarse) and (max-width: 1023px), (hover: none) and (pointer: coarse) and (max-height: 500px) {
+  html.pwa .dsh-top { box-sizing: border-box; padding-top: calc(12px + var(--sb-clear)); }
+  html.pwa .dsh { --pin-top: calc(8px + var(--sb-clear)); }
+}
