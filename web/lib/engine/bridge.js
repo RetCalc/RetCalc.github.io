@@ -26,7 +26,7 @@ export var BR_CATS = [
   {k:"rothBasis", name:"Roth contributions", c:"#4fbf95"},
   {k:"rung", name:"Ladder rungs", c:"#2f8f6f"},
   {k:"sepp", name:"72(t) payments", c:"#c98fb8"},
-  {k:"r55", name:"Rule of 55 / 457(b)", c:"#a98fd6"},
+  {k:"r55", name:"Penalty-free traditional", c:"#a98fd6"},
   {k:"early", name:"Early, with penalty", c:"#e2795f"}
 ];
 
@@ -171,8 +171,8 @@ export function brTakeRungs(s, amt, y, matured){
 export function brSnap(s){
   var rb = s.rBasis;
   for (var i = 0; i < s.rungs.length; i++) rb += s.rungs[i].amt;
-  var trad = s.ira + s.k401 + s.sepp + s.g457;
-  return {trad:trad, ira:s.ira + s.k401, sepp:s.sepp, g457:s.g457, roth:s.roth,
+  var trad = s.ira + (s.iraB || 0) + s.k401 + s.sepp + s.g457;
+  return {trad:trad, ira:s.ira + (s.iraB || 0) + s.k401, sepp:s.sepp, g457:s.g457, roth:s.roth,
     rothIn:Math.min(s.roth, rb), brok:s.brok, bBasis:Math.min(s.brok, s.bBasis),
     total:trad + s.roth + s.brok};
 }
@@ -182,8 +182,8 @@ export function brSnap(s){
    pays for spending plus the tax, penalty and premium that draw itself
    causes. Doesn't touch the balances. */
 export function brYear(ctx, p, s, y, age, W, sp, F, C){
-  var fG = Math.min(F, s.g457), fK = F - fG, cI = Math.min(C, s.ira), cK = C - cI;
-  var ira = s.ira - cI, k401 = s.k401 - fK - cK, g457 = s.g457 - fG, roth = s.roth + C;
+  var fG = Math.min(F, s.g457), fK = F - fG, cI = Math.min(C, s.ira + (s.iraB || 0)), cK = C - cI;
+  var ira = s.ira + (s.iraB || 0) - cI, k401 = s.k401 - fK - cK, g457 = s.g457 - fG, roth = s.roth + C;
   var mat = 0, unmat = C, all = C, i;
   for (i = 0; i < s.rungs.length; i++){
     var g = s.rungs[i]; all += g.amt;
@@ -253,7 +253,8 @@ export function brYear(ctx, p, s, y, age, W, sp, F, C){
 export function brCommit(s, Y, y){
   var F = Y.F, C = Y.C, d = {brok:0, rothBasis:0, rung:0, r55:0, early:0};
   var fG = Math.min(F, s.g457); s.g457 -= fG; s.k401 -= F - fG; d.r55 += F;
-  var cI = Math.min(C, s.ira); s.ira -= cI; s.k401 -= C - cI;
+  var cI = Math.min(C, s.ira); s.ira -= cI;
+  var cB = Math.min(C - cI, s.iraB || 0); s.iraB -= cB; s.k401 -= C - cI - cB;
   if (C > 0){ s.roth += C; s.rungs.push({amt:C, avail:y + 5}); }
   for (var k = 0; k < Y.list.length; k++){
     var t = Y.takes[k];
@@ -267,11 +268,13 @@ export function brCommit(s, Y, y){
       case "rothEarn": s.roth -= t; d.early += t; break;
       case "g457": s.g457 -= t; d.r55 += t; break;
       case "r55": s.k401 -= t; d.r55 += t; break;
-      case "tradPen": var a = Math.min(t, s.ira); s.ira -= a; s.k401 -= t - a; d.early += t; break;
+      case "tradPen": var a = Math.min(t, s.ira); s.ira -= a;
+        var b2 = Math.min(t - a, s.iraB || 0); s.iraB -= b2; s.k401 -= t - a - b2; d.early += t; break;
     }
   }
   if (Y.surplus > 0){ s.brok += Y.surplus; s.bBasis += Y.surplus; }
   if (s.ira < 0) s.ira = 0;
+  if (s.iraB < 0) s.iraB = 0;
   if (s.k401 < 0) s.k401 = 0;
   if (s.g457 < 0) s.g457 = 0;
   if (s.roth < 0) s.roth = 0;
@@ -286,7 +289,10 @@ export function brCommit(s, Y, y){
 export function brSim(ctx, p, seq, wantRows){
   var A = ctx.age, len = seq.len, R = seq.r, PI = seq.pi, off = seq.off;
   var s = {ira:ctx.trad - ctx.k401, k401:ctx.k401, sepp:0, g457:ctx.g457,
-    roth:ctx.roth, rBasis:ctx.rothBasis, rungs:[], brok:ctx.brok, bBasis:ctx.brok * ctx.basisPct};
+    roth:ctx.roth, rBasis:ctx.rothBasis, rungs:[], brok:ctx.brok, bBasis:ctx.brok * ctx.basisPct, iraB:0};
+  // A partner's own traditional accounts (trad2, age2 their age now): under
+  // the same rules until they reach 59½ themselves, then penalty-free.
+  if (ctx.trad2 > 0 && ctx.age2 != null){ s.iraB = Math.min(ctx.trad2, s.ira); s.ira -= s.iraB; }
   var seppNom = 0;
   if (p.sepp > 0){
     // Split off an IRA just big enough to pay the target, so only that much
@@ -304,9 +310,11 @@ export function brSim(ctx, p, seq, wantRows){
     rows:wantRows ? [] : null};
   var cum = 1, lastGain = 0;
   out.path = new Float64Array(len + 1);
-  out.path[0] = s.ira + s.k401 + s.g457 + s.sepp + s.roth + s.brok;
+  out.path[0] = s.ira + s.iraB + s.k401 + s.g457 + s.sepp + s.roth + s.brok;
   for (var y = 0; y < len; y++){
     var age = A + y, W = brWage(ctx, age);
+    // The partner reaches 59½: their accounts come out penalty-free from now.
+    if (s.iraB > 0 && ctx.age2 + y >= BR_UNLOCK){ s.g457 += s.iraB; s.iraB = 0; }
     // A 72(t) payment is fixed: it can't be skipped or topped up.
     var sp = 0;
     if (s.sepp > 0){
@@ -315,7 +323,7 @@ export function brSim(ctx, p, seq, wantRows){
     }
     // Conversions, and in the blended plan the penalty-free ordinary income
     // (rule of 55, 457(b)) that fills the same bracket room first.
-    var F = 0, C = 0, convCap = s.ira + (ctx.r55 ? 0 : s.k401);
+    var F = 0, C = 0, convCap = s.ira + s.iraB + (ctx.r55 ? 0 : s.k401);
     if (p.conv === "ladder" && y + 5 < ctx.nB){
       C = Math.min(convCap, brRungFor(ctx, age + 5, y + 10 < ctx.nB));
     } else if (p.conv === "fill"){
@@ -339,10 +347,10 @@ export function brSim(ctx, p, seq, wantRows){
     else if (Y.hk === "gap") out.gap++;
     lastGain = Y.gain;
     var g1 = 1 + R[off + y], dfl = 1 + PI[off + y];
-    s.ira *= g1; s.k401 *= g1; s.sepp *= g1; s.g457 *= g1; s.roth *= g1; s.brok *= g1;
+    s.ira *= g1; s.iraB *= g1; s.k401 *= g1; s.sepp *= g1; s.g457 *= g1; s.roth *= g1; s.brok *= g1;
     s.rBasis /= dfl; s.bBasis /= dfl; cum *= dfl;
     for (var q = 0; q < s.rungs.length; q++) s.rungs[q].amt /= dfl;
-    out.path[y + 1] = s.ira + s.k401 + s.sepp + s.g457 + s.roth + s.brok;
+    out.path[y + 1] = s.ira + s.iraB + s.k401 + s.sepp + s.g457 + s.roth + s.brok;
     if (out.rows) out.rows.push({age:age, W:W, sp:sp, F:F, C:C, d:d,
       tax:Y.tax, pen:Y.pen, health:Y.health, hk:Y.hk, fplPct:Y.fplPct, fica:Y.fica,
       magi:Y.magi, ord:Y.ord, gain:Y.gain, short:Y.short, surplus:Y.surplus, end:brSnap(s)});

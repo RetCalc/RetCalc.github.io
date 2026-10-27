@@ -153,6 +153,10 @@ export function About() {
                     Roth before 59½; left out, it estimates them.</li>
                     <li>A <b>457(b)</b> is its own type: it can be drawn from without the 10%
                     penalty once you leave that job, which matters for retiring early.</li>
+                    <li>For a couple, each retirement account says <b>whose</b> it is, since each
+                    opens without the penalty at its owner&apos;s 59½. It&apos;s guessed from the
+                    name (&ldquo;Sam&apos;s 401(k)&rdquo;); one you&apos;re not sure of counts half
+                    each. Brokerage, cash and the home are shared.</li>
                     <li><b>Save as new entry</b> records it with today&apos;s date. One entry per day:
                     saving again the same day replaces that day&apos;s entry.</li>
                     <li>Each entry is a point in your net worth history, so the chart grows as you
@@ -223,9 +227,10 @@ export function About() {
                     account holds at retirement, your mix and your household. If your partner
                     keeps working, their pay counts until they retire, and their job&apos;s health
                     plan covers you both. How you fill the bridge, 72(t), health cover and any
-                    part-time work are your choices. The bridge plans on the earlier
-                    retiree&apos;s ages, with both of your accounts treated as opening at that
-                    person&apos;s 59½.</dd>
+                    part-time work are your choices. The bridge runs to the early
+                    retiree&apos;s 59½, and each of your traditional accounts opens at its own
+                    owner&apos;s 59½: a partner older than the early retiree has theirs open
+                    partway through.</dd>
                     <dt>Health cover</dt>
                     <dd>The Healthcare Cost Planner on your plan: the year work stops, your ages
                     then, your household, and the income your plan gives that year and at 65.
@@ -241,6 +246,11 @@ export function About() {
                     instead, invested in your mix once retired: US stocks, small-cap value, bonds
                     and cash, gliding toward fewer stocks over the years if you choose. It&apos;s set
                     in the Retirement simulator.</li>
+                    <li><b>When you two stop work at different times</b>, the plan follows both.
+                    A partner who stops first stops saving through work that year. A partner
+                    who keeps working after you retire brings in their pay, taxed as wages, keeps
+                    saving through work, and their job&apos;s health plan covers you both until
+                    they stop.</li>
                     <li><b>Taxes and health premiums come on top of your spending</b> once you
                     retire: a marketplace plan priced on your income until Medicare at 65, then
                     Medicare&apos;s premiums.</li>

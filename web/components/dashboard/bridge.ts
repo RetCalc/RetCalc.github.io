@@ -11,8 +11,8 @@ import { groupDigits } from "@/lib/format";
 import { BRIDGE_DEF, bridgeInput, type BridgeInputs } from "@/tools/bridge/model";
 import { runBridge } from "@/tools/bridge/run";
 import { ageOf, couple, grossYear, holdings, nameOf, nowYear, people, results, type Results } from "./model";
-import { OUTSIDE_US, sum, type Entry, type Profile } from "./store";
-import { retireMix, taxState } from "./flows";
+import { OUTSIDE_US, type Entry, type Profile } from "./store";
+import { flow, personSaving, retireMix, taxState } from "./flows";
 import { collegeChildren } from "./college";
 
 export const UNLOCK = 59.5;
@@ -52,7 +52,9 @@ export function partnerWork(pr: Profile, early: EarlyRetiree): { pay: number; un
   if (!couple(pr)) return null;
   const j = early.i ? 0 : 1, p = j ? pr.p2 : pr.p1;
   if (p.by == null || p.retire == null) return null;
-  const stops = p.by + p.retire, pay = grossYear(p) ?? 0;
+  // Their pay, less what they keep saving through work (it isn't there to spend).
+  const F = flow(pr), ps = F.pi.two ? personSaving(F, j as 0 | 1) : { t: 0, r: 0, match: 0 };
+  const stops = p.by + p.retire, pay = Math.max(0, (grossYear(p) ?? 0) - (ps.t - ps.match + ps.r) * 12);
   if (!(stops > early.from) || !(pay > 0)) return null;
   return { pay, until: early.retire + (stops - early.from), name: nameOf(pr, j as 0 | 1) };
 }
@@ -71,12 +73,15 @@ export function bridgeFor(pr: Profile, entries: Entry[], R: Results = results(pr
   const early = earlyRetirees(pr)[0];
   const P = R.S?.P;
   if (!early || !P) return cur;
-  // Of today's traditional money, the share in workplace plans (the part
-  // the rule of 55 can reach) and in a 457(b) (open once you leave that
-  // job), carried to retirement in proportion.
-  const H = holdings(entries, pr), last = entries[entries.length - 1];
-  const work = last ? sum(last.items, "asset", ["workplace"]) : H.trad;
-  const k401Share = H.trad > 0 ? Math.min(1, work / H.trad) : 1, g457Share = H.trad > 0 ? H.g457 / H.trad : 0;
+  // Today's traditional money, apart from a 457(b) (open once you leave
+  // that job): the share in the workplace plan you're leaving (the part the
+  // rule of 55 can reach), and the share that's your partner's (open at
+  // their own 59½), each carried to retirement in proportion.
+  const H = holdings(entries, pr), j = early.i ? 0 : 1, other = H.trad - H.g457;
+  const g457Share = H.trad > 0 ? H.g457 / H.trad : 0, trad = P.trad * (1 - g457Share);
+  const k401Share = other > 0 ? Math.min(1, H.workBy[early.i] / other) : H.trad > 0 ? 0 : 1;
+  const share2 = couple(pr) && other > 0 ? Math.min(1, H.tradBy[j] / other) : 0;
+  const p2 = j ? pr.p2 : pr.p1, age2 = couple(pr) && p2.by != null ? early.from - p2.by : null;
   const basis = P.brok > 0 ? Math.round((P.brokBasis / P.brok) * 100) : 100;
   const mix = retireMix(pr), partner = partnerWork(pr, early);
   // Roth contributions: from the plan once Net worth gives them; otherwise
@@ -89,7 +94,8 @@ export function bridgeFor(pr: Profile, entries: Entry[], R: Results = results(pr
     spend: g((R.spend ?? 0) * 12),
     // The mix once retired, as Retirement's simulator holds it.
     stock: String(mix.us), sv: String(mix.sv), cash: String(mix.cash),
-    trad: g(P.trad), k401: g(P.trad * k401Share), g457: g(P.trad * g457Share), roth: g(P.roth), rothBasis,
+    trad: g(trad), k401: g(trad * k401Share), g457: g(P.trad * g457Share), roth: g(P.roth), rothBasis,
+    trad2: age2 != null ? g(trad * share2) : "0", age2: age2 != null ? String(age2) : "",
     brok: g(P.brok), basis: String(basis),
     work2: partner ? g(partner.pay) : "0", work2Until: partner ? String(Math.round(partner.until * 10) / 10) : "0",
   };

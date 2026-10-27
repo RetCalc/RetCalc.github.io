@@ -46,7 +46,8 @@ import { yearData, HIST_START } from "./data/index.js";
    line and required distributions following your age, and both of you
    living to the end of the plan. */
 
-export var PL_EARLY = 59;          // a year that starts before 59 ends before 59½
+export var PL_EARLY = 59;
+export var PL_FICA = 0.0765;       // Social Security and Medicare tax on a partner's pay          // a year that starts before 59 ends before 59½
 export var PL_HEIR = 0.24;         // default tax rate heirs pay on inherited traditional money
 
 /* Real returns of a mix by calendar year from 1926, inflation alongside,
@@ -229,6 +230,16 @@ export function plPrep(P){
   C.mfpl = hcMedicaidFPL(Math.max(P.household || (C.married ? 2 : 1), C.married ? 2 : 1));
   C.total0 = C.trad + C.roth + C.brok;
   C.rate = C.total0 > 0 ? C.spend / C.total0 : 0;
+  /* A partner still working after you retire (P.work2): their pay a year
+     before tax, what they still put away from it (t to traditional, the
+     employer's match with it; r to Roth; b to the brokerage), for the first
+     `years` of the plan. Their job's health plan covers the household. */
+  var W2 = P.work2 && P.work2.pay > 0 ? P.work2 : null;
+  C.work = new Float64Array(n); C.workT = new Float64Array(n); C.workR = new Float64Array(n); C.workB = new Float64Array(n);
+  if (W2) for (var wy = 0; wy < n && wy < W2.years; wy++){
+    var part = Math.min(1, W2.years - wy);
+    C.work[wy] = W2.pay * part; C.workT[wy] = (W2.t || 0) * part; C.workR[wy] = (W2.r || 0) * part; C.workB[wy] = (W2.b || 0) * part;
+  }
   C.early = new Uint8Array(n); C.seniors = new Uint8Array(n);
   C.rmdDiv = new Float64Array(n); C.acaGross = new Float64Array(n);
   C.med = new Float64Array(n);
@@ -246,7 +257,7 @@ export function plPrep(P){
     C.early[y] = a1 < PL_EARLY ? 1 : 0;
     C.seniors[y] = (a1 >= 65 ? 1 : 0) + (a2 != null && a2 >= 65 ? 1 : 0);
     C.rmdDiv[y] = a1 >= C.rmdAge ? ultDivisor(Math.min(100, a1)) : 0;
-    if (P.aca){
+    if (P.aca && !(C.work[y] > 0)){
       var g = 0;
       if (P.premium > 0 && m0 > 0){
         if (a1 < 65) g += P.premium * hcAgeFactor(C.state, a1) / m0;
@@ -256,10 +267,10 @@ export function plPrep(P){
         if (a2 != null && a2 < 65) g += hcGrossPremium(C.state, a2, 0);
       }
       C.acaGross[y] = g;
-      // Medicare from 65: standard Part B plus an average Part D plan, per
-      // person, under the same "price health coverage" switch as the ACA.
-      C.med[y] = (MED.irmaa.partB + MED.partD) * 12 * C.seniors[y];
     }
+    // Medicare from 65: standard Part B plus an average Part D plan, per
+    // person, under the same "price health coverage" switch as the ACA.
+    if (P.aca) C.med[y] = (MED.irmaa.partB + MED.partD) * 12 * C.seniors[y];
   }
   return C;
 }
@@ -452,6 +463,11 @@ export function plRun(C, K, R, PI, off, out){
     var bal = trad + roth + brok;
     var w = plSpend(C, y, bal, prev);
     prev = w;
+    // A partner's pay: taxed as wages (less what goes into their 401(k) before
+    // tax), Social Security and Medicare tax off it, and what they save from
+    // it isn't there to spend.
+    var wage = C.work[y], wT = C.workT[y], wR = C.workR[y], wB = C.workB[y];
+    var wOrd = wage > 0 ? Math.max(0, wage - wT) : 0, wCash = wage > 0 ? wage - wT - wR - wB - wage * PL_FICA : 0;
     var M = C.rmdDiv[y] > 0 && trad > 0 ? Math.min(trad, trad / C.rmdDiv[y]) : 0;
     var seniors = C.seniors[y];
     var pn = early && !C.rule55;
@@ -463,14 +479,14 @@ export function plRun(C, K, R, PI, off, out){
     // the year is solved; last year's stands in, and the guards below
     // correct for any difference.
     var gs0 = brok > 0 ? Math.max(0, 1 - bBasis / brok) : 0;
-    var g0 = y > 0 ? lastGain : Math.min(brok, Math.max(0, w - ss - pension - M)) * gs0;
+    var g0 = y > 0 ? lastGain : Math.min(brok, Math.max(0, w - ss - pension - M - wCash)) * gs0;
     if (fillOn){
-      D = M + plLargest(function(t){ return plOrdTaxable(pension + M + t, g0, ss, st, seniors) - lvl; }, trad - M);
+      D = M + plLargest(function(t){ return plOrdTaxable(pension + wOrd + M + t, g0, ss, st, seniors) - lvl; }, trad - M);
       if (K.capIr[y]){
         var lim = irmLine;
-        D = Math.min(D, M + plLargest(function(t){ return plAgi(pension + M + t, g0, ss, st) - lim; }, trad - M));
+        D = Math.min(D, M + plLargest(function(t){ return plAgi(pension + wOrd + M + t, g0, ss, st) - lim; }, trad - M));
       }
-      if (K.capAca[y]) D = Math.min(D, Math.max(M, C.fpl * 4 - 1500 - pension - ss - g0));
+      if (K.capAca[y]) D = Math.min(D, Math.max(M, C.fpl * 4 - 1500 - pension - wOrd - ss - g0));
       if (D < M) D = M;
     }
     var flex = D - M;
@@ -492,7 +508,8 @@ export function plRun(C, K, R, PI, off, out){
     Y.med = C.med[y];
     Y.people = seniors;
     Y.look = m2;
-    Y.cash = ss + pension + M;
+    Y.baseOrd += wOrd;
+    Y.cash = ss + pension + M + wCash;
     Y.w = w;
     var x = plSolve(C, Y, total);
     // A guarded line crossed anyway (the brokerage's gain came in higher than
@@ -508,7 +525,7 @@ export function plRun(C, K, R, PI, off, out){
         plAv[0] = pn ? 0 : flex;
         plAv[2] = Math.max(0, trad - D);
         Y.conv = convY && flex > 0 ? 1 : 0;
-        Y.baseOrd = pension + (Y.conv ? D : M);
+        Y.baseOrd = pension + (Y.conv ? D : M) + wOrd;
         total = plAv[0] + plAv[1] + plAv[2] + plAv[3] + plAv[4];
         x = plSolve(C, Y, total);
         if (!(flex > 0)) break;
@@ -531,6 +548,8 @@ export function plRun(C, K, R, PI, off, out){
     roth += Cv - plTk[3] - plTk[4];
     if (Cv > 0) pend[slot] = Cv;
     if (surplus > 0){ brok += surplus; bBasis += surplus; }
+    // What a partner still working puts away goes into the accounts.
+    if (wage > 0){ trad += wT; roth += wR; rAcc += wR; brok += wB; bBasis += wB; }
     if (trad < 0) trad = 0;
     if (roth < 0) roth = 0;
     if (brok < 0) brok = 0;
@@ -545,7 +564,7 @@ export function plRun(C, K, R, PI, off, out){
     m2 = m1; m1 = plE.agi;
     if (rows){
       rows.push({y:y, age:a1, age2:C.age2 == null ? null : C.age2 + y, spend:w, lived:livedY,
-        ss:ss, pension:pension, rmd:M, trad:M + plTk[0] + plTk[2], conv:Cv, brok:plTk[1],
+        ss:ss, pension:pension, work:wage, rmd:M, trad:M + plTk[0] + plTk[2], conv:Cv, brok:plTk[1],
         roth:plTk[3] + plTk[4], tax:plE.tax, pen:plE.pen, health:plE.health, med:Y.med, irmaa:plE.irm,
         agi:plE.agi, magi:plE.magi, ord:plE.ord, gain:plE.gain,
         taxable:plOrdTaxable(plE.ord, plE.gain, ss, st, seniors),

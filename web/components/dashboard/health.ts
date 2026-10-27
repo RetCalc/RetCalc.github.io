@@ -26,7 +26,7 @@ export function healthGap(pr: Profile): HealthGap | null {
   const ps = people(pr);
   if (ps.some((p) => p.by == null || p.retire == null)) return null;
   const from = Math.max(...ps.map((p) => p.by! + p.retire!));
-  const who = ps.map((p, k) => ({ i: k as 0 | 1, name: nameOf(pr, k as 0 | 1), medicare: p.by! + MEDICARE_AGE })).filter((w) => w.medicare > from);
+  const who = ps.map((p, k) => ({ i: k as 0 | 1, name: nameOf(pr, k as 0 | 1), medicare: p.by! + MEDICARE_AGE })).filter((w) => w.medicare > from).sort((x, y) => x.medicare - y.medicare);
   if (!who.length) return null;
   const to = Math.max(...who.map((w) => w.medicare));
   return { from, to, years: to - from, who };

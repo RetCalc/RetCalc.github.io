@@ -247,7 +247,9 @@ function BridgeFacts({ pr, entries, inputs }: { pr: Profile; entries: Entry[]; i
     ["Retiring", early ? `${early.name === "You" ? "" : early.name + " "}at ${early.retire}, in ${early.from}` : "—"],
     ["Filing", `${inputs.status === "m" ? "Married filing jointly" : "Single"}, ${inputs.state}`],
     ["Spending, after tax", m(inputs.spend) + " per year"],
-    ["Traditional 401(k) and IRA", m(inputs.trad) + (Number(inputs.k401.replace(/,/g, "")) > 0 ? `, ${m(inputs.k401)} in a 401(k) or 403(b)` : "") + (Number(inputs.g457.replace(/,/g, "")) > 0 ? `, ${m(inputs.g457)} in a 457(b)` : "")],
+    ["Traditional 401(k) and IRA", m(inputs.trad) + (Number(inputs.k401.replace(/,/g, "")) > 0 ? `, ${m(inputs.k401)} of it in the plan ${early?.name === "You" ? "you're" : (early?.name ?? "") + " is"} leaving` : "")],
+    ...(Number(inputs.g457.replace(/,/g, "")) > 0 ? [["457(b)", m(inputs.g457)] as [string, string]] : []),
+    ...(Number(inputs.trad2.replace(/,/g, "")) > 0 && inputs.age2 ? [[`Of that, ${early && early.i ? nameOf(pr, 0) : nameOf(pr, 1)}'s`, `${m(inputs.trad2)}, open at their own 59½ in ${Math.ceil(early!.from + 59.5 - Number(inputs.age2))}`] as [string, string]] : []),
     ["Roth", m(inputs.roth) + (H.rothBasis != null ? `, ${m(inputs.rothBasis)} of it your contributions` : "")],
     ["Brokerage", m(inputs.brok) + `, cost basis ${inputs.basis}%${H.brokBasis == null && H.brok > 0 ? " (estimated)" : ""}`],
     ["Mix", mixWords({ ...mix, end: null })],
@@ -255,7 +257,7 @@ function BridgeFacts({ pr, entries, inputs }: { pr: Profile; entries: Entry[]; i
     ...(partner ? [[`${partner.name}'s pay`, `${money(partner.pay)} per year until ${Math.floor(early!.from + (partner.until - early!.retire))}, with their job's health plan`] as [string, string]] : []),
   ];
   return (
-    <PlanFacts id="brFacts" rows={rows} note={<>Balances are what each account holds when you retire, from the <To href="/dashboard/calculator">Calculator</To>; cost basis and Roth contributions from <To href="/dashboard/accounts#assets">Net worth</To>{H.rothBasis == null ? " (add your Roth contributions there, or type them below)" : ""}; the mix from Retirement&apos;s Drawdown; the rest from <To href="/dashboard/profile">Profile</To> and <To href="/dashboard/income">Income</To>. The bridge plans on {early?.name === "You" ? "your" : (early?.name ?? "your") + "'s"} ages.</>} />
+    <PlanFacts id="brFacts" rows={rows} note={<>Balances are what each account holds when you retire, from the <To href="/dashboard/calculator">Calculator</To>; cost basis and Roth contributions from <To href="/dashboard/accounts#assets">Net worth</To>{H.rothBasis == null ? " (add your Roth contributions there, or type them below)" : ""}; the mix from Retirement&apos;s Drawdown; the rest from <To href="/dashboard/profile">Profile</To> and <To href="/dashboard/income">Income</To>. The bridge runs to {early?.name === "You" ? "your" : (early?.name ?? "your") + "'s"} 59½; each of your traditional accounts opens at its owner&apos;s 59½, by whose it is on Net worth (not said, half each).</>} />
   );
 }
 

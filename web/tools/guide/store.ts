@@ -43,6 +43,11 @@ export interface Answers {
       rest, and where the stocks' total glides to by the end (null: none).
       In place of retMix when given. */
   retMixAll?: { us: number; sv: number; cash: number; end: number | null } | null;
+  /** A partner still working once you retire (the Dashboard knows both
+      retirement ages): their pay a year before tax, what they put away a
+      year (t traditional with the match, r Roth, b brokerage), and how many
+      years past your retirement they work. */
+  work2?: { pay: number; t: number; r: number; b: number; years: number } | null;
   /** Where each month's saving goes, in percent of what you put in (split.ts). */
   splitTrad?: number | null; splitRoth?: number | null; splitBrok?: number | null;
   /** The four-way choice the split replaced; read from guides saved before it, then dropped. */

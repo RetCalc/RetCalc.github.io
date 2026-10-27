@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-27T15:43:11.012Z",
+  "recorded": "2026-10-27T17:00:49.212Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -991,8 +991,8 @@
         "age1": "81b8a03f97e8787c",
         "age2": "39fa9ec190eee7b6",
         "alts": "8bd54d9a677032ad",
-        "base": "a5a47c84ebf893a9",
-        "best": "6879b5ecb0f5ecc4",
+        "base": "24924cc949c2e1be",
+        "best": "f60ad4533960e4be",
         "first": "255ac64f2a9b3741",
         "floor": "8139b33952401b3e",
         "goal": "e4c13c4401d43136",
@@ -1039,8 +1039,8 @@
         "age1": "39fa9ec190eee7b6",
         "age2": "74234e98afe7498f",
         "alts": "4f53cda18c2baa0c",
-        "base": "af1a9115b775e659",
-        "best": "ba88157da1bfbbe5",
+        "base": "a13f4dc93b3fd42d",
+        "best": "d58768f63325f85e",
         "first": "255ac64f2a9b3741",
         "floor": "8139b33952401b3e",
         "goal": "cd05eba3b23c89e8",
@@ -1068,7 +1068,7 @@
         "needAtRetirement": 924000
       },
       "fields": {
-        "S": "c41b1cd119679908",
+        "S": "b5e73043394f1542",
         "need": "8687fbfca8bdf1d5",
         "sc": "cf1beef94f7af3dd",
         "strats": "6eff53e7da569dd9"
@@ -1085,7 +1085,7 @@
         "needAtRetirement": 380000
       },
       "fields": {
-        "S": "a59bb3c7c1f604a1",
+        "S": "c07864bf3cf421c8",
         "need": "df61f9f8bfae765c",
         "sc": "f5f05cd352878bbb",
         "strats": "527c72e4b619ddab"

@@ -148,6 +148,9 @@ export interface Item {
   /** What was put in, when known: a brokerage account's cost basis, or a
       Roth's own contributions (what can come out any time, tax-free). */
   basis?: number | null;
+  /** Whose account it is, for a couple's retirement accounts (0 you, 1 your
+      partner; null split evenly). Left out, it's guessed from the name. */
+  owner?: 0 | 1 | null;
 }
 /** What the household had and owed on a day (YYYY-MM-DD). One a day:
     saving again the same day replaces it. */

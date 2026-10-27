@@ -129,6 +129,9 @@ export interface BrInput {
   /** A partner's pay a year while they keep working, until the early
       retiree's age `work2Until`; their job's health plan covers the household. */
   work2?: number; work2Until?: number;
+  /** A partner's own traditional accounts (part of `trad`) and their age at
+      the start: those open penalty-free at the partner's own 59½. */
+  trad2?: number; age2?: number;
 }
 export interface BrMix { r: ArrayLike<number>; pi: ArrayLike<number>; n: number; real: number; infl: number; first?: number; rEnd?: ArrayLike<number>; realEnd?: number }
 export interface BrCtx extends BrInput {
@@ -188,7 +191,13 @@ export interface PlToday {
   spend: number; pia1: number; pia2: number; claim1: number; claim2: number;
   pension: number; pensionAge: number | null; pensionCola: boolean; aca: boolean; household: number;
   rule55: boolean; heirRate: number; mix: PlMixSpec; years: number; target: number; strategy: string; minSpend: number; fromYear: number;
+  /** A partner still working after you retire: their pay a year before
+      tax, what they put away from it (t traditional with the match, r Roth,
+      b brokerage), for the plan's first `years` (a fraction counts part of
+      a year). Their job's health plan covers the household meanwhile. */
+  work2?: PlWork | null;
 }
+export interface PlWork { pay: number; t: number; r: number; b: number; years: number }
 /** The plan at retirement, as plPrep() and plOptimize() take it. */
 export interface PlPlan extends PlToday { age1: number; age2: number | null; rmdAge: number; fv: number }
 export interface PlPrep { P: PlPlan; married: boolean; gap: number; rmdAge: number; years: number; age1: number; age2: number | null }
@@ -198,6 +207,8 @@ export interface PlRow {
   tax: number; pen: number; health: number; med: number; irmaa: number; taxable: number; fplPct: number | null; short: number; surplus: number;
   /** The year's AGI (taxable Social Security in it) and MAGI (all of it). */
   agi: number; magi: number;
+  /** A partner's pay that year, before tax. */
+  work?: number;
   endTrad: number; endRoth: number; endBrok: number; end: number;
 }
 export interface PlSide { T: PlTactics; stats: PlStats; detail: { rows: PlRow[] }; spend: number }

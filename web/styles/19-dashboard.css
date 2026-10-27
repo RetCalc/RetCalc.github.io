@@ -578,3 +578,6 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 .dsh-changebar { position: sticky; top: 12px; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-top: 16px; padding: 12px 16px; border: 1px solid var(--ds-rule-strong); border-radius: 14px; background: var(--ds-surface); box-shadow: var(--ds-float); font-size: 13.5px; }
 .dsh-changebar > span:first-child { flex: 1 1 320px; }
 .dsh-changebar-b { display: flex; gap: 8px; }
+/* A couple's assets: whose each retirement account is, too. */
+.dsh-erow-asset.dsh-erow-whose { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 0.9fr) auto; }
+@media (max-width: 1180px) { .dsh-erow-asset.dsh-erow-whose { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }

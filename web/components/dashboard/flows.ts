@@ -10,11 +10,11 @@
 import { withDefaults, type ToolInputs } from "@/components/tools/ToolState";
 import { dollarsField, groupDigits, parseNum } from "@/lib/format";
 import { BUDGET_DEF, budgetCompute, budgetTotals, openBudget, type BudgetInputs, type BudgetRow } from "@/tools/budget/model";
-import { PC_ZERO, paycheckInput, paycheckRun, pcCap, type PcInput, type PcRun } from "@/tools/budget/paycheck-math";
+import { PC_ZERO, paycheckInput, paycheckRun, pcCap, pcSplit, type PcInput, type PcRun } from "@/tools/budget/paycheck-math";
 import { taxFromPaycheck } from "@/tools/budget/to-calculator";
 import { TAX_DEF, type TaxInputs } from "@/tools/tax/model";
 import { SOCIAL_DEF, social, type SocialInputs } from "@/tools/social/model";
-import { DRAWDOWN_DEF, ddWrite, drawdownSetup, type DrawdownState } from "@/tools/drawdown/model";
+import { DRAWDOWN_DEF, ddWrite, drawdownSetup, type DdItem, type DrawdownState } from "@/tools/drawdown/model";
 import { ddQuick } from "@/lib/engine/drawdown";
 import { OUTSIDE_US, PER_YEAR, type Per, type Person, type Profile } from "./store";
 import { housingLines } from "./housing";
@@ -184,6 +184,17 @@ export function flow(pr: Profile): Flow {
   };
 }
 
+/** One of you's own saving through work a month, with their employer's
+    match: what goes to traditional (the match with it) and to Roth (the
+    HSA with it). The brokerage is the household's, so it isn't anyone's. */
+export function personSaving(F: Flow, i: 0 | 1): { t: number; r: number; match: number } {
+  const { pi } = F, sp = pcSplit(pi), m = pi.p / 12, roth = pi.roth;
+  const t = (roth.match ? 0 : sp.match[i]) + (roth.k401max ? 0 : sp.k401max[i]) + (roth.rothIra ? 0 : sp.rothIra[i]);
+  const r = (roth.match ? sp.match[i] : 0) + (roth.k401max ? sp.k401max[i] : 0) + (roth.rothIra ? sp.rothIra[i] : 0) + sp.hsa[i];
+  const match = (sp.match[i] * (pi.match[i]?.rate ?? 0)) / 100;
+  return { t: (t + match) * m, r: r * m, match: match * m };
+}
+
 /* ---------- Taxes ---------- */
 
 /** Income Tax as the profile has it: its own choices (deductions, year),
@@ -272,10 +283,33 @@ export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; ta
   // rest. Always from the plan, so the two can't drift apart.
   // Unless set on Retirement: then it's the plan's spending that follows.
   const rate = Math.round(((plan.spendYr + plan.taxYr) / Math.max(1, plan.fv)) * 10000) / 100;
+  // A partner still working once you retire: their pay after taxes and
+  // their own saving, as other income for those years (said, not typed).
+  const items = ((cur.incomeItems ?? []) as DdItem[]).filter((x) => !x.name.endsWith(FROM_PLAN));
+  const w2 = partnerIncome(pr);
+  next.incomeItems = w2 ? [w2, ...items] : items;
   // Only the figures that can be your own (older profiles kept others).
   const saved = (own ? pr.ddOwn : undefined) ?? {};
   const mine = Object.fromEntries(DD_OWN.filter((k) => saved[k] != null).map((k) => [k, saved[k]]));
   return { ...next, rate: String(rate), ...mine, ...(pr.strategy ? { strategy: pr.strategy } : {}) } as DrawdownState;
+}
+
+/** The Drawdown's other income the plan adds, named to end with this. */
+export const FROM_PLAN = " (from your plan)";
+/** A partner who keeps working after you retire, as the Drawdown's other
+    income: their pay after taxes and their own saving, a year, for the
+    years until they stop. Null otherwise. */
+export function partnerIncome(pr: Profile): DdItem | null {
+  if (pr.who !== "couple" || pr.state === OUTSIDE_US) return null;
+  const { p1, p2 } = pr;
+  if (p1.by == null || p1.retire == null || p2.by == null || p2.retire == null) return null;
+  const years = p2.by + p2.retire - (p1.by + p1.retire);
+  const F = flow(pr);
+  if (!(years > 0) || !F.pi.two) return null;
+  const sp = pcSplit(F.pi), annual = Math.round((F.r.people[1].deposit - (F.pi.roth.rothIra ? sp.rothIra[1] : 0)) * F.pi.p);
+  if (!(annual > 0)) return null;
+  const name = (p2.name.trim() || "Your partner") + "'s pay, after tax and saving" + FROM_PLAN;
+  return { name, annual, inflate: true, startYear: 1, on: true, duration: { type: "years", years } };
 }
 
 /** What the profile keeps when the Drawdown changes: its settings (the mix

@@ -226,6 +226,7 @@ export function planIn(a: Answers, over: Over = {}): (PlToday & { monthly: numbe
     pensionCola: a.pensionCola === "yes", aca: a.hcIncl !== "yes",
     household: hasChanges(a) && !over.flat ? householdAtRetire(a, retire) : mar(a) ? 2 : 1, rule55: a.rule55 === "yes", heirRate: PL_HEIR, mix: a.retMixAll ? { ...a.retMixAll } : retMix(a),
     years: yearsFor(a, retire), target: target(a), strategy: "fixed", minSpend: 0, fromYear: HIST_START as number,
+    ...(a.work2 && a.work2.pay > 0 && a.work2.years > 0 ? { work2: { ...a.work2 } } : {}),
     monthly,
   };
 }
@@ -279,12 +280,15 @@ export function sim(a: Answers, over?: Over, base = false): Sim | null {
     let tx = 0, hc = 0, hn = 0;
     // The healthcare step's note tells the pre-65 marketplace story, so the
     // Medicare share of each year's premiums stays out of its average.
-    D.rows.forEach((r) => { const aca = r.health - r.med; tx += r.tax + r.irmaa; if (aca > 0) { hc += aca; hn++; } });
+    // Years a partner still works are left out of the typical year's tax:
+    // the tax on their pay comes out of their pay, not on top of spending.
+    let tn = 0;
+    D.rows.forEach((r) => { const aca = r.health - r.med; if (!(r.work && r.work > 0)) { tx += r.tax + r.irmaa; tn++; } if (aca > 0) { hc += aca; hn++; } });
     const out: Sim = { key, I, P, C, T, tactics: !!Tq, fv: P.fv, years: C.years, ss, spend: I.spend, retire: I.retire,
       monthly: I.monthly, real: I.real, stop: I.stopAge, saveYears: (I.stopAge == null ? I.retire : I.stopAge) - I.age,
       // The stocks' share at the start (US and small value), for the figures that take one.
       mix: typeof I.mix === "number" ? I.mix : I.mix.us + I.mix.sv, inc: pensionItems(a, I.retire), pension: I.pension, path: (P as unknown as { path: number[] }).path, H, D,
-      success: H.successRate, taxYr: D.rows.length ? tx / D.rows.length : 0, hcYr: hn ? hc / hn : 0, hcYears: hn,
+      success: H.successRate, taxYr: tn ? tx / tn : 0, hcYr: hn ? hc / hn : 0, hcYears: hn,
       lifeTax: H.medTax, portIncome: P.fv * 0.04, coverage: 0, ...(sched ? { sched } : {}) };
     out.coverage = (out.portIncome + ss.total + I.pension) / (I.spend + out.taxYr);
     return out;

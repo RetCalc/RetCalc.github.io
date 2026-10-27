@@ -20,7 +20,7 @@ import { groupDigits, parseNum } from "@/lib/format";
 import { useWidth } from "./charts";
 import { Frame } from "./Frame";
 import { longDate, money, shortMoney } from "./format";
-import { ASSET_GROUPS, ASSET_KINDS, BASIS_KINDS, DEBT_GROUPS, DEBT_KINDS, groupOf, kindName, type Group } from "./kinds";
+import { ASSET_GROUPS, ASSET_KINDS, BASIS_KINDS, DEBT_GROUPS, DEBT_KINDS, OWNED_KINDS, groupOf, kindName, ownerOf, type Group } from "./kinds";
 import { Tile, TipLabel } from "./ui";
 import { pctTxt, useTyped } from "./fields";
 import { entryFrom, netWorth, newId, sum, today, useDashboard, withEntry, type Entry, type Item } from "./store";
@@ -119,8 +119,11 @@ export function Legend() {
   );
 }
 
+/** A person's name for a "whose" choice. */
+const whoName = (names: [string, string], i: 0 | 1) => names[i].trim() || (i ? "Your partner" : "You");
+
 /** One side's list, read-only, under its column names. */
-function List({ items, side }: { items: Item[]; side: Item["side"] }) {
+function List({ items, side, names }: { items: Item[]; side: Item["side"]; names: [string, string] | null }) {
   const rows = items.filter((i) => i.side === side);
   const kinds = side === "asset" ? ASSET_KINDS : DEBT_KINDS, debt = side === "debt";
   const sorted = rows.slice().sort((a, b) => kinds.findIndex((k) => k.kind === a.kind) - kinds.findIndex((k) => k.kind === b.kind));
@@ -131,7 +134,7 @@ function List({ items, side }: { items: Item[]; side: Item["side"] }) {
         {sorted.length ? sorted.map((i) => (
           <tr key={i.id}>
             <td><i className={"dsh-sw dsh-g-" + groupOf(i.kind)} aria-hidden="true" />{i.name || kindName(i.kind)}</td>
-            <td className="dsh-muted">{kindName(i.kind)}</td>
+            <td className="dsh-muted">{kindName(i.kind)}{ownerOf(i, names) != null ? " · " + whoName(names!, ownerOf(i, names)!) : ""}</td>
             <td>{money(i.value)}{!debt && BASIS_KINDS[i.kind] && i.basis != null ? <Gain item={i} /> : null}</td>
             {debt ? <td>{i.rate != null ? (i.rate * 100).toFixed(2).replace(/\.?0+$/, "") + "%" : "—"}</td> : null}
           </tr>
@@ -150,15 +153,16 @@ function Gain({ item }: { item: Item }) {
 }
 
 /** One side's rows, editable. */
-function EditList({ items, side, onChange }: { items: Item[]; side: Item["side"]; onChange: (items: Item[]) => void }) {
+function EditList({ items, side, names, onChange }: { items: Item[]; side: Item["side"]; names: [string, string] | null; onChange: (items: Item[]) => void }) {
   const kinds = side === "asset" ? ASSET_KINDS : DEBT_KINDS;
   const put = (id: string, v: Partial<Item>) => onChange(items.map((i) => (i.id === id ? { ...i, ...v } : i)));
   const rows = items.filter((i) => i.side === side);
-  const debt = side === "debt", row = debt ? "dsh-erow dsh-erow-debt" : "dsh-erow dsh-erow-asset";
+  const debt = side === "debt", whose = !debt && !!names;
+  const row = debt ? "dsh-erow dsh-erow-debt" : whose ? "dsh-erow dsh-erow-asset dsh-erow-whose" : "dsh-erow dsh-erow-asset";
   return (
     <div className="dsh-elist">
       <div className={row + " dsh-ehead"} aria-hidden="true">
-        <span>Name</span><span>Type</span><span>{debt ? "Amount owed" : "Amount"}</span>{debt ? <span>Interest rate</span> : <span>What you put in</span>}<span />
+        <span>Name</span><span>Type</span>{whose ? <span>Whose</span> : null}<span>{debt ? "Amount owed" : "Amount"}</span>{debt ? <span>Interest rate</span> : <span>What you put in</span>}<span />
       </div>
       {rows.map((i) => (
         <div key={i.id} className={row}>
@@ -166,6 +170,13 @@ function EditList({ items, side, onChange }: { items: Item[]; side: Item["side"]
           <NativeSelect aria-label="Kind" value={i.kind} onChange={(e) => put(i.id, { kind: e.target.value as Item["kind"], ...(BASIS_KINDS[e.target.value] ? {} : { basis: undefined }) })}>
             {kinds.map((k) => <option key={k.kind} value={k.kind}>{k.name}</option>)}
           </NativeSelect>
+          {whose ? (OWNED_KINDS.includes(i.kind) ? (
+            <NativeSelect aria-label="Whose account" value={String(ownerOf(i, names) ?? "")} onChange={(e) => put(i.id, { owner: e.target.value === "" ? null : (Number(e.target.value) as 0 | 1) })}>
+              <option value="0">{whoName(names!, 0)}</option>
+              <option value="1">{whoName(names!, 1)}</option>
+              <option value="">Not sure: half each</option>
+            </NativeSelect>
+          ) : <span className="dsh-muted dsh-ena" aria-hidden="true">Shared</span>) : null}
           <Affixed prefix="$"><MoneyInput aria-label="Amount" nonNeg value={i.value ? groupDigits(i.value, true) : ""} onValueChange={(v) => put(i.id, { value: parseNum(v) })} /></Affixed>
           {debt ? <RateInput rate={i.rate ?? null} onRate={(rate) => put(i.id, { rate })} />
             : BASIS_KINDS[i.kind] ? <Affixed prefix="$"><MoneyInput aria-label={BASIS_KINDS[i.kind]!.name + " (optional)"} nonNeg placeholder={BASIS_KINDS[i.kind]!.name}
@@ -177,13 +188,15 @@ function EditList({ items, side, onChange }: { items: Item[]; side: Item["side"]
       <Button variant="outline" size="sm" onClick={() => onChange([...items, { id: newId(), side, kind: kinds[0].kind, name: "", value: 0, ...(side === "debt" ? { rate: null } : {}) }])}>
         <PlusIcon aria-hidden="true" />{side === "asset" ? "Add an asset" : "Add a debt"}
       </Button>
-      {debt ? null : <p className="dsh-cap">What you put in is optional: for a brokerage account its <TipLabel text="cost basis" id="costBasis" />, for a Roth <TipLabel text="your own contributions" id="rothContrib" />. A 457(b) is its own type: it can be drawn from without the 10% penalty once you leave that job.</p>}
+      {debt ? null : <p className="dsh-cap">What you put in is optional: for a brokerage account its <TipLabel text="cost basis" id="costBasis" />, for a Roth <TipLabel text="your own contributions" id="rothContrib" />. A 457(b) is its own type: it can be drawn from without the 10% penalty once you leave that job.{whose ? " Say whose each retirement account is: each opens at its owner's 59½. Not sure counts it half each." : ""}</p>}
     </div>
   );
 }
 
 export function Accounts() {
   const { data, update } = useDashboard();
+  // A couple says whose each retirement account is.
+  const names: [string, string] | null = data.profile.who === "couple" ? [data.profile.p1.name, data.profile.p2.name] : null;
   const last = data.entries[data.entries.length - 1] ?? entryFrom(data.profile);
   const [view, setView] = useState<"today" | "time">("today");
   const [draft, setDraft] = useState<{ date: string; items: Item[] } | null>(null);
@@ -254,12 +267,13 @@ export function Accounts() {
         </div>
       ) : null}
 
-      <div className="dsh-grid dsh-two">
+      {/* Editing, each side takes the full width, so every field has room. */}
+      <div className={draft ? "dsh-grid dsh-r4" : "dsh-grid dsh-two"}>
         <Tile id="assets" icon={WalletIcon} title="Assets" right={<span className="dsh-cap">{money(have)}</span>}>
-          {draft ? <EditList items={draft.items} side="asset" onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="asset" />}
+          {draft ? <EditList items={draft.items} side="asset" names={names} onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="asset" names={names} />}
         </Tile>
         <Tile id="debts" icon={LandmarkIcon} title="Debts" right={<span className="dsh-cap">{money(owe)}</span>}>
-          {draft ? <EditList items={draft.items} side="debt" onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="debt" />}
+          {draft ? <EditList items={draft.items} side="debt" names={names} onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="debt" names={names} />}
         </Tile>
       </div>
       <div className="dsh-editbar">{actions}</div>

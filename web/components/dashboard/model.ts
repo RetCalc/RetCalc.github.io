@@ -8,7 +8,7 @@
 import { FACTORS, STRATS, retPath, score, sim, strats, type FactorId, type Part, type Sim, type StratResult } from "@/tools/guide/calc";
 import type { Answers } from "@/tools/guide/store";
 import { parseNum } from "@/lib/format";
-import { budgetFor, drawdownFor, drawdownSuccess, flow, retireMix, savingAt, stocksOf, taxState } from "./flows";
+import { budgetFor, drawdownFor, drawdownSuccess, flow, personSaving, retireMix, savingAt, stocksOf, taxState } from "./flows";
 import { paycheckInput } from "@/tools/budget/paycheck-math";
 import { collegeKid, collegeNeedOf, collegeYears } from "./college";
 import { yearlySaving } from "./cover";
@@ -18,6 +18,7 @@ import { BRIDGE_DOCK, hasBridgePlan, needsBridge } from "./bridge";
 import { drawdownSetup } from "@/tools/drawdown/model";
 import { DD_STRAT_NAMES } from "@/tools/drawdown/text";
 import { OUTSIDE_US, PER_YEAR, hasAccounts, netWorth, sum, type Entry, type Person, type Profile } from "./store";
+import { ownerOf } from "./kinds";
 
 /** Take-home is about this share of pay before taxes, when only one is known. */
 const NET_SHARE = 0.76;
@@ -60,7 +61,7 @@ export function holdings(entries: Entry[], pr: Profile) {
   const last = entries[entries.length - 1];
   if (!last) {
     const eq = pr.home === "own" ? (pr.value ?? 0) - (pr.owed ?? 0) : 0;
-    return { trad: pr.saved ?? 0, g457: 0, roth: 0, brok: 0, rothBasis: null, brokBasis: null, cash: null, other: 0, home: pr.home === "own" ? pr.value ?? 0 : 0, mortgage: pr.home === "own" ? pr.owed ?? 0 : 0, equity: eq, debts: 0, debtsHigh: 0, accounts: false, total: (pr.saved ?? 0) + eq };
+    return { trad: pr.saved ?? 0, g457: 0, tradBy: [(pr.saved ?? 0) / 2, (pr.saved ?? 0) / 2] as [number, number], workBy: [0, 0] as [number, number], roth: 0, brok: 0, rothBasis: null, brokBasis: null, cash: null, other: 0, home: pr.home === "own" ? pr.value ?? 0 : 0, mortgage: pr.home === "own" ? pr.owed ?? 0 : 0, equity: eq, debts: 0, debtsHigh: 0, accounts: false, total: (pr.saved ?? 0) + eq };
   }
   const it = last.items, accounts = hasAccounts(entries);
   const home = sum(it, "asset", ["home"]), mortgage = sum(it, "debt", ["mortgage"]);
@@ -70,12 +71,37 @@ export function holdings(entries: Entry[], pr: Profile) {
   // Roth's contributions, a brokerage account's cost basis); null otherwise.
   // A Roth's contributions can't be more than it holds; a cost basis can (a loss).
   const basisOf = (kind: string) => { const xs = it.filter((i) => i.side === "asset" && i.kind === kind && i.value > 0); return xs.length && xs.every((i) => i.basis != null) ? xs.reduce((s, i) => s + (kind === "roth" ? Math.min(i.value, i.basis!) : i.basis!), 0) : null; };
+  // A couple's traditional accounts (not a 457(b)) by whose they are, and
+  // the workplace plans among them; one not said is half each.
+  const names: [string, string] | null = couple(pr) ? [pr.p1.name, pr.p2.name] : null;
+  const by = (kinds: string[]): [number, number] => {
+    const o: [number, number] = [0, 0];
+    for (const i of it) {
+      if (i.side !== "asset" || !kinds.includes(i.kind)) continue;
+      const w = ownerOf(i, names), v = i.value || 0;
+      if (w == null) { o[0] += v / 2; o[1] += v / 2; } else o[w] += v;
+    }
+    return o;
+  };
   return {
-    trad: sum(it, "asset", ["workplace", "g457", "ira"]), g457: sum(it, "asset", ["g457"]), roth: sum(it, "asset", ["roth", "hsa"]), brok: sum(it, "asset", ["brokerage"]),
+    trad: sum(it, "asset", ["workplace", "g457", "ira"]), g457: sum(it, "asset", ["g457"]),
+    tradBy: by(["workplace", "ira"]), workBy: by(["workplace"]), roth: sum(it, "asset", ["roth", "hsa"]), brok: sum(it, "asset", ["brokerage"]),
     rothBasis: basisOf("roth"), brokBasis: basisOf("brokerage"),
     cash: accounts ? sum(it, "asset", ["cash"]) : null, other: sum(it, "asset", ["other"]),
     home, mortgage, equity: home - mortgage, debts, debtsHigh, accounts, total: netWorth(last),
   };
+}
+
+/** When your partner stops work against when you retire: the year, and
+    whether it's before you (they stop saving then) or after (they keep
+    working, `years` past your retirement). Null for one person, the same
+    year, or before both ages are in. */
+export function partnerStop(pr: Profile): { year: number; before: boolean; years: number } | null {
+  if (!couple(pr)) return null;
+  const { p1, p2 } = pr;
+  if (p1.by == null || p1.retire == null || p2.by == null || p2.retire == null) return null;
+  const r1 = p1.by + p1.retire, r2 = p2.by + p2.retire;
+  return r2 === r1 ? null : { year: r2, before: r2 < r1, years: Math.abs(r2 - r1) };
 }
 
 /** The profile and latest entry as the Guide's answers. */
@@ -173,9 +199,22 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   // in the dashboard's order, so the plan's account mix, match and taxes
   // follow those choices.
   if (F.hasPay && a.age != null && a.retire != null && a.retire > a.age) {
-    const rows = yearlySaving(pr, F, a, { college: Array.from({ length: a.retire - a.age }, (_, k) => college[k] ?? 0) }).rows;
+    const rows = yearlySaving(pr, F, a, { college: Array.from({ length: a.retire - a.age }, (_, k) => college[k] ?? 0) }).rows.map((y) => ({ ...y }));
     // Outside the US every account is counted as tax-free, as below.
+    // A partner who stops work before you retire stops saving through work then.
+    const stop2 = partnerStop(pr);
+    if (stop2 != null && stop2.before) {
+      const ps = personSaving(F, 1), from = Math.max(0, Math.round(stop2.year - Math.floor(nowYear())));
+      rows.forEach((y, k) => { if (k >= from) { y.t = Math.max(0, y.t - ps.t); y.r = Math.max(0, y.r - ps.r); } });
+    }
     Object.assign(a, { yearly: abroad ? rows.map((y) => ({ t: 0, r: y.t + y.r + y.b, b: 0, short: y.short })) : rows, yearlyBase: F.invested + F.match });
+  }
+  // A partner who keeps working after you retire: their pay, and their own
+  // saving through work, count in the plan until they stop.
+  const stop2 = partnerStop(pr);
+  if (stop2 != null && !stop2.before && !abroad && F.hasPay && F.pi.two) {
+    const pay = grossYear(pr.p2) ?? 0, ps = personSaving(F, 1);
+    if (pay > 0) a.work2 = { pay, t: ps.t * 12, r: ps.r * 12, b: 0, years: stop2.years };
   }
   // Each of you's own claiming age (the plan's optimizer path, which takes
   // two), each defaulting to 67 or retirement if later, as the fields say.

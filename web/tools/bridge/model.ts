@@ -14,6 +14,9 @@ export const BRIDGE_DEFAULTS = {
       and a partner's pay a year while they keep working, until the early
       retiree's age `work2Until`. */
   sv: "0", cash: "0", work2: "0", work2Until: "0",
+  /** Also the Dashboard's: a partner's own traditional accounts, part of
+      `trad`, and their age when you retire; those open at their own 59½. */
+  trad2: "0", age2: "",
 };
 export type BridgeInputs = typeof BRIDGE_DEFAULTS;
 
@@ -58,5 +61,6 @@ export function bridgeInput(s: BridgeInputs): BrInput {
     ...(num(s.sv ?? "", 0, 100, 0) > 0 || num(s.cash ?? "", 0, 100, 0) > 0
       ? { mixSpec: { us: num(s.stock, 0, 100, 70), sv: num(s.sv ?? "", 0, 100, 0), cash: num(s.cash ?? "", 0, 100, 0) } } : {}),
     ...(num(s.work2 ?? "", 0, 1e8, 0) > 0 ? { work2: num(s.work2, 0, 1e8, 0), work2Until: num(s.work2Until ?? "", 0, 120, 0) } : {}),
+    ...(num(s.trad2 ?? "", 0, 1e10, 0) > 0 && (s.age2 ?? "").trim() !== "" ? { trad2: num(s.trad2, 0, 1e10, 0), age2: num(s.age2, 20, 100, 50) } : {}),
   };
 }
