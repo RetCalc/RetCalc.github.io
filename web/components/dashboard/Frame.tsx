@@ -81,7 +81,7 @@ function Rail({ current, dots }: { current: Section; dots: Partial<Record<Sectio
 }
 
 /* The tabs a phone keeps at hand in its bottom bar; the rest are under More. */
-const BAR: Section[] = ["overview", "accounts", "retirement", "next"];
+const BAR: Section[] = ["overview", "summary", "calculator", "retirement"];
 
 /** Phones and touch screens: a bar along the bottom with the tabs used
     most, and More, which opens every tab at once with the theme switch and
