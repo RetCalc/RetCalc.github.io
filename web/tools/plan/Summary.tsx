@@ -358,8 +358,10 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
             <div className="text-3xl font-medium tabular-nums">{money(Math.max(0, gone))}</div>
             <div className="text-label text-muted-foreground">{money(S.atRetire.total)} with them, {money(K.without)} {withoutWords}</div></div>
         </div>
-        {/* Along the years: each child, then all of them together. */}
-        <div className="mt-5 space-y-2">
+        {/* Along the years: each child, then all of them together. A phone
+            keeps its room and scrolls it sideways. */}
+        <div className="swipehint mt-4 px-0!">Swipe the chart sideways to see every year.</div>
+        <div className="max-sm:-mx-1 max-sm:overflow-x-auto max-sm:px-1"><div className="mt-5 space-y-2 max-sm:mt-2 max-sm:min-w-150">
           {K.rows.map((r) => (
             <div key={r.label} className="flex items-center gap-3">
               <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">{r.label}</b><span className="block text-label text-muted-foreground">{r.born >= a0 ? "Born at " + ageText(r.born) : "Age " + ageText(a0 - r.born) + " now"}</span></div>
@@ -380,7 +382,7 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
               {ticks.map((t) => <span key={t} className="absolute left-(--l) -translate-x-1/2" style={{ "--l": at(t) } as React.CSSProperties}>{t}</span>)}
             </div>
           </div>
-        </div>
+        </div></div>
         <div className="legend mt-2 px-0!">
           <span><i className="bg-series-rose"></i>Before school (childcare)</span><span><i className="bg-series-lavender"></i>At school</span>
           <span><i className="bg-series-sky"></i>All the children, per month</span><span>Ages are yours</span>
