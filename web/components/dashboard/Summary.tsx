@@ -15,6 +15,8 @@ import { SERIES } from "@/lib/hues";
 import { budgetGroups } from "@/tools/budget/model";
 import { PLAN_DEFAULTS, type PlanState } from "@/tools/plan/model";
 import { planSummary, type PlanSummary } from "@/tools/plan/results";
+import { sim } from "@/tools/guide/calc";
+import { childCost, children } from "@/tools/guide/schedule";
 import { Accounts as PlanAccounts, ChildrenCost, Climb, PayCard, StageLine } from "@/tools/plan/Summary";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { Legend, TodayBars } from "./Accounts";
@@ -75,8 +77,17 @@ function withPlanChildren(S: PlanSummary, pr: Profile, entries: Entry[]): PlanSu
   const Y = yearlySaving(pr, F, a, { college });
   const fromSaving = Y.rows.reduce((t, r, k) => t + Math.max(0, Y.base[k] - (r.t + r.r + r.b)) * 12, 0);
   const fromSpending = Y.rows.reduce((t, r) => t + r.short * 12, 0);
-  const none = { ...pr, kids: 0, planned: { ...pr.planned, count: 0 } };
-  const without = results(none, entries).S?.fv ?? S.children.without;
+  // Without them: no children, and what they take from the budget today
+  // (their costs this year and the college line) saved instead, every year
+  // to retirement. Leaving that money in the budget would count it as spent
+  // either way, so the plan with children came out ahead once they'd grown.
+  const kidsNow = children(a).filter((c) => !c.planned);
+  const extra = kidsNow.reduce((t, c) => t + childCost(c, Math.round(a.age!)), 0) + F.college;
+  const a0 = answers({ ...pr, kids: 0, planned: { ...pr.planned, count: 0 }, college: { ...pr.college, help: "none" } }, entries);
+  a0.contrib = (a0.contrib ?? 0) + extra;
+  if (a0.yearly) a0.yearly = a0.yearly.map((y) => ({ ...y, b: y.b + extra }));
+  if (a0.yearlyBase != null) a0.yearlyBase += extra;
+  const without = sim(a0)?.fv ?? S.children.without;
   // Each child by name, in the plan's order (the ones you have, then the
   // ones planned): its rows are labeled "Child 1", "Child 2"...
   const names = collegeChildren(pr).filter((c) => c.planned || (c.age >= 0 && c.age < 30)).map((c) => c.name);
