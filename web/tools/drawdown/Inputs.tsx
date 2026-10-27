@@ -14,7 +14,7 @@ import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { StageHead } from "@/components/tools/StageHead";
-import { toolInputs } from "@/components/tools/ToolState";
+import { toolInputs, useToolScope } from "@/components/tools/ToolState";
 import { forDrawdown, type SocialInputs } from "@/tools/social/model";
 import { Html } from "@/components/common/Html";
 import { DD_STRAT, ddMCHistory, ssDrawdownStreams, ssEstimate } from "@/lib/engine/typed-drawdown";
@@ -48,6 +48,8 @@ export function Inputs({ v, fromNote, periods, open }: {
 }) {
   const { s, set, setState, o, P, firstW, r1, age, mode, inputs, setInputs } = v;
   const toast = useToast();
+  // Set by the page this runs in (the Dashboard's, from its Calculator): shown, not typed.
+  const lockedInitial = useToolScope()?.locked?.initial;
   const strat = o.strategy, U = DD_UI[strat] || DD_UI.fixed, S = DD_STRAT[strat];
   const shown = (id: string) => U.blocks.includes(id);
   const str = (k: string) => s[k] as string;
@@ -213,13 +215,14 @@ export function Inputs({ v, fromNote, periods, open }: {
         <CardContent>
           <GroupHead first>Your portfolio at retirement</GroupHead>
           <Field id="ddInitial" label="Portfolio value">
-            <Affixed prefix="$"><MoneyInput id="ddInitial" nonNeg value={str("initial")} onValueChange={set("initial")}
-              aria-invalid={noPortfolio || undefined} aria-describedby={noPortfolio ? "ddInitialWarn" : undefined} /></Affixed>
+            <Affixed prefix="$"><MoneyInput id="ddInitial" nonNeg value={str("initial")} onValueChange={set("initial")} readOnly={!!lockedInitial}
+              aria-invalid={noPortfolio || undefined} aria-describedby={lockedInitial ? "ddInitialFrom" : noPortfolio ? "ddInitialWarn" : undefined} /></Affixed>
+            {lockedInitial ? <div className="mt-1.5 text-note text-muted-foreground" id="ddInitialFrom">{lockedInitial}</div> : null}
             <div className="mt-1.5 flex items-start gap-2 text-note text-destructive" hidden={!noPortfolio}>
               <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               <span id="ddInitialWarn">Enter your portfolio value to run the simulation.</span>
             </div>
-            <Button variant="outline" size="sm" className="mt-1.5" id="ddCopy" onClick={v.copyFromPlan}>Copy from your plan</Button>
+            {lockedInitial ? null : <Button variant="outline" size="sm" className="mt-1.5" id="ddCopy" onClick={v.copyFromPlan}>Copy from your plan</Button>}
           </Field>
           <Field id="ddMixBtn" label={<Tipped text="Asset mix" k="ddstocks" />}>
             <Button variant="outline" size="lg" className="w-full justify-between" id="ddMixBtn" onClick={() => open({ kind: "mix" })}><span id="ddMixText" className="min-w-0 flex-1 truncate text-left">{mixText(o)}</span>

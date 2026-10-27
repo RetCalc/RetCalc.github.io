@@ -87,6 +87,11 @@ export interface Profile {
       stocks, small-cap value and cash (bonds the rest), and where the
       stocks' total glides to in the last stage. Unset until changed there. */
   calcMix?: { stock: string; sv: string; cash: string; end: string };
+  /** Everything else changed in the Calculator (fees, returns, stages,
+      settings), by its Stages input: kept in place of the plan's figures.
+      When its result differs from the plan's own, that result is the
+      plan's savings at retirement (calc.ts, calcFvOf). Unset: the plan's. */
+  calcOwn?: Record<string, unknown>;
   /** The tools behind the tabs, as their own inputs: budget (pay, the
       budget and the saving sliders), tax, social (pay history), drawdown. */
   tools: { budget?: ToolInputs; tax?: ToolInputs; social?: ToolInputs; drawdown?: ToolInputs };

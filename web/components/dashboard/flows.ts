@@ -204,7 +204,8 @@ export function socialBenefits(s: SocialInputs): { you: number; spouse: number |
 /** The simulator's figures that come from the plan, which a person can set
     for themselves on Retirement (kept in Profile.ddOwn). The stock mix and
     the first claiming age go back into the plan's own settings instead. */
-export const DD_OWN = ["rate", "initial", "years", "retireAge", "ssMode", "ssAmount", "ssAmount2", "ssDelay2"] as const;
+/* The portfolio value isn't among them: it's always the Calculator's result. */
+export const DD_OWN = ["rate", "years", "retireAge", "ssMode", "ssAmount", "ssAmount2", "ssDelay2"] as const;
 
 export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; taxYr: number; years: number; ss1: number; ss2: number; claim: number; claim2?: number | null; retire: number } | null, own = true): DrawdownState {
   const cur = withDefaults(DRAWDOWN_DEF, pr.tools.drawdown ?? {});
@@ -224,7 +225,10 @@ export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; ta
   // rest. Always from the plan, so the two can't drift apart.
   // Unless set on Retirement: then it's the plan's spending that follows.
   const rate = Math.round(((plan.spendYr + plan.taxYr) / Math.max(1, plan.fv)) * 10000) / 100;
-  return { ...next, rate: String(rate), ...(own ? pr.ddOwn : {}), ...(pr.strategy ? { strategy: pr.strategy } : {}) } as DrawdownState;
+  // A portfolio value typed here before it came from the Calculator is set aside.
+  const { initial: _old, ...mine } = (own ? pr.ddOwn : undefined) ?? {};
+  void _old;
+  return { ...next, rate: String(rate), ...mine, ...(pr.strategy ? { strategy: pr.strategy } : {}) } as DrawdownState;
 }
 
 /** What the profile keeps when the Drawdown changes: its settings, and the

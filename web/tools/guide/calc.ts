@@ -261,9 +261,10 @@ export function sim(a: Answers, over?: Over, base = false): Sim | null {
   // Saving that changes over time (Changes ahead) builds the plan from its
   // schedule; without it, as today.
   const sched = !over?.flat && hasChanges(a) ? schedule(a, { retire: I.retire, monthly: I.monthly, stop: I.stopAge }) : null;
-  const key = JSON.stringify(I) + "|" + (Tq ? plKey(Tq) : "") + (sched ? "|" + JSON.stringify(sched.map((s) => [s.from, s.to, s.monthly, s.split])) : "");
+  const fvTo = a.fvTo != null && a.fvTo > 0 ? a.fvTo : null;
+  const key = JSON.stringify(I) + "|" + (Tq ? plKey(Tq) : "") + (sched ? "|" + JSON.stringify(sched.map((s) => [s.from, s.to, s.monthly, s.split])) : "") + (fvTo ? "|fv" + Math.round(fvTo) : "");
   return cached(key, () => {
-    const P = sched ? atRetireScheduled(I, sched) : plAtRetire(I), C = plPrep(P);
+    const P = scaleTo(sched ? atRetireScheduled(I, sched) : plAtRetire(I), fvTo), C = plPrep(P);
     let T = plBaseTactics(C);
     if (Tq) T = { ...Tq, c1: Math.max(plClaimMin(C.age1), Math.min(70, Tq.c1)),
       c2: C.married ? Math.max(plClaimMin(C.age2!), Math.min(70, Tq.c2)) : Math.max(plClaimMin(C.age1), Math.min(70, Tq.c1)) };
@@ -282,6 +283,16 @@ export function sim(a: Answers, over?: Over, base = false): Sim | null {
     out.coverage = (out.portIncome + ss.total + I.pension) / (I.spend + out.taxYr);
     return out;
   });
+}
+
+/** The plan at retirement with every account scaled to `fv` (as `need`
+    scales them), and the path there bending smoothly into it. */
+function scaleTo<T extends { fv: number; trad: number; roth: number; rothBasis: number; brok: number; brokBasis: number }>(P: T, fv: number | null): T {
+  if (fv == null || !(P.fv >= 1000) || Math.abs(fv - P.fv) < 0.5) return P;
+  const k = fv / P.fv, path = (P as unknown as { path?: number[] }).path;
+  const n = path ? path.length - 1 : 0;
+  return { ...P, fv, trad: P.trad * k, roth: P.roth * k, rothBasis: P.rothBasis * k, brok: P.brok * k, brokBasis: P.brokBasis * k,
+    ...(path ? { path: path.map((v, i) => v * (1 + (k - 1) * (n > 0 ? i / n : 1))) } : {}) };
 }
 
 /** What the plan has to have saved by retirement to last in the target

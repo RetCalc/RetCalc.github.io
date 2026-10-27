@@ -17,7 +17,8 @@ import { budgetFor, flow, fromBudget, taxFor, withCollegeLine } from "./flows";
 import { collegeNeedOf } from "./college";
 import { money } from "./format";
 import { Hosted, TOOL_VIEWS, toolHref } from "./host";
-import { otherMonth } from "./model";
+import { answers, otherMonth } from "./model";
+import { childCost, children } from "@/tools/guide/schedule";
 import { useDashboard } from "./store";
 import { Note, Tile, TipLabel } from "./ui";
 
@@ -34,6 +35,10 @@ export function Spending() {
   const need = collegeNeedOf(pr), short = need - F.college;
   const addCollege = () => { setProfile((p) => fromBudget(p, withCollegeLine(budgetFor(p), collegeNeedOf(p)))); setRev((r) => r + 1); };
   const Budget = TOOL_VIEWS.budget;
+  // What the plan counts for the children you have now, this year: part of
+  // the spending above. As they grow, a change from this comes out of saving.
+  const a = answers(pr, data.entries), kidsNow = children(a).filter((c) => !c.planned);
+  const kidCost = a.age != null ? kidsNow.reduce((s, c) => s + childCost(c, Math.round(a.age!)), 0) : 0;
   return (
     <Frame current="spending" title="Spending" sub={F.spend ? `${money(F.spend)} per month` : "What goes out"}>
       <Tile id="month" icon={ReceiptIcon} title="Each month">
@@ -43,6 +48,11 @@ export function Spending() {
           {coming != null ? <div className="dsh-stat"><div className="dsh-label">Pay after taxes</div><div className="dsh-fig dsh-md">{money(coming)}<small>per month</small></div></div> : null}
           {left != null ? <div className="dsh-stat"><div className="dsh-label">{left >= 0 ? <TipLabel text="Left after spending" id="leftAfter" /> : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(left))}<small>per month</small></div></div> : null}
           <div className="dsh-stat"><div className="dsh-label">Emergency fund, {F.efMonths} months</div><div className="dsh-fig dsh-md">{money(F.efTarget)}</div></div>
+          {kidCost > 0.5 ? (
+            <div className="dsh-stat"><div className="dsh-label"><TipLabel text={kidsNow.length > 1 ? "Your children, in the plan now" : "Your child, in the plan now"} id="kidCostNow" /></div>
+              <div className="dsh-fig dsh-md">{money(kidCost)}<small>per month</small></div>
+              <div className="dsh-cap dsh-mt6">Part of your spending. <Link href="/dashboard/profile#children">Costs in Profile</Link></div></div>
+          ) : null}
         </div>
         {need > 0 && short > 25 ? (
           <div className="dsh-mt dsh-tip">

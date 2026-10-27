@@ -2,7 +2,8 @@
 
 /* Retirement: the Drawdown Simulator on your own plan. What you'll have at
    retirement, the years to 95, the stock mix and Social Security come from
-   the profile; the strategy, and each strategy's settings, are chosen here
+   the profile (what you'll have is the Calculator's result, shown and not
+   typed here); the strategy, and each strategy's settings, are chosen here
    and saved, and the chosen strategy is the plan's everywhere (its chance
    across history is the dashboard's chance of success). The strategies are
    laid out first, each in a line, to learn them before choosing. */
@@ -115,7 +116,7 @@ export function Retirement() {
             ) : null}
             <div className="dsh-mt">
               {/* Opened again when the plan under it changes (the claiming ages above, say). */}
-              <Hosted key={rev + "|" + JSON.stringify(plan)} household={null}
+              <Hosted key={rev + "|" + JSON.stringify(plan)} household={null} locked={{ initial: "Your savings at retirement, from the Calculator. Change it there." }}
                 seed={(id) => (id === "drawdown" ? (drawdownFor(pr, plan) as unknown as ToolInputs) : undefined)}
                 keep={(id, d) => { if (id === "drawdown") set((p) => fromDrawdown(p, d as unknown as DrawdownState, opened, plan)); }}>
                 {/* Inside this tile, the simulator's own card titles sit one level down. */}

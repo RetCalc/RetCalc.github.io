@@ -12,6 +12,7 @@ import { budgetFor, drawdownFor, drawdownSuccess, flow, savingAt, taxState } fro
 import { paycheckInput } from "@/tools/budget/paycheck-math";
 import { collegeKid, collegeNeedOf, collegeYears } from "./college";
 import { yearlySaving } from "./cover";
+import { calcFvOf } from "./calc";
 import { drawdownSetup } from "@/tools/drawdown/model";
 import { DD_STRAT_NAMES } from "@/tools/drawdown/text";
 import { OUTSIDE_US, PER_YEAR, hasAccounts, netWorth, sum, type Entry, type Person, type Profile } from "./store";
@@ -172,6 +173,9 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   const after = abroad ? people(pr).reduce((s, p) => s + (payYear(p) ?? 0), 0) / 12 : 0;
   const th = (F.hasPay ? F.afterTax : after) + otherMonth(pr);
   if (th > 0) a.takehome = th;
+  // The Calculator's result, when it's been changed away from the plan's.
+  const fvTo = calcFvOf(pr, entries);
+  if (fvTo != null) a.fvTo = fvTo;
   return a;
 }
 

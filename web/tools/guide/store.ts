@@ -64,6 +64,10 @@ export interface Answers {
       household chose), with `yearlyBase` the saving it starts from. The
       schedule uses these in place of its own; nothing else sets them. */
   yearly?: YearSaving[] | null; yearlyBase?: number | null;
+  /** The Dashboard's savings at retirement when its Calculator has been
+      changed away from the plan (fees, say): every account is scaled to
+      this total, today's dollars. Nothing else sets it. */
+  fvTo?: number | null;
 }
 /** One year's saving a month, in today's dollars: traditional (with the
     employer's match), Roth and HSA, and brokerage; and what the costs that

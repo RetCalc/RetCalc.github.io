@@ -5,6 +5,7 @@
 
 export const TIPS = {
   /* Dashboard */
+  kidCostNow: "What your plan counts per month for the children you have, at their ages now, from the costs in Profile. It's already part of your spending. As they move into an age that costs more or less, or leave home, the difference comes out of (or goes back to) your saving.",
   netWorth: "What you have, less what you owe: every account, your home and anything else you listed, minus your debts. It comes from your latest entry on Net worth.",
   band: "Markets don't all go the same way. The shaded band is where your net worth landed in 8 of every 10 past markets since 1926; the dotted line is the middle one.",
   atRetire: "Your savings at retirement, plus your home and anything else you own, less your debts. In today's dollars, so it compares with what things cost now.",

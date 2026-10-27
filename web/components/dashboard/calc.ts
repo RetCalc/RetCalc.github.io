@@ -4,7 +4,7 @@
    kids?" builds them; College Savings with each child's years to go. */
 
 import { withDefaults } from "@/components/tools/ToolState";
-import { groupDigits } from "@/lib/format";
+import { groupDigits, parseNum } from "@/lib/format";
 import { ADVANCED_DEF, type AdvancedInputs } from "@/tools/advanced/model";
 import { STAGES_DEF, stageFields, stagesCompute, type StageInputs, type StagesInputs } from "@/tools/stages/model";
 import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
@@ -190,3 +190,56 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
   return withMix(withKids({ ...base, stages: out }));
 }
 
+
+/* ---------- The Calculator's own changes ---------- */
+
+/** Stages inputs the profile keeps elsewhere (the children's costs and how
+    they're covered, historical mode's mix), so never kept as the
+    Calculator's own. */
+const PROFILE_KEYS = new Set(["kids", "kidCover", "histMix", "histSv", "histCash", "histMixEnd"]);
+
+/** A value as compared: figures as numbers, whatever their formatting. */
+function norm(v: unknown): unknown {
+  if (typeof v === "string" && /^\s*-?[\d,]*\.?\d+\s*%?\s*$/.test(v)) return Math.round(parseNum(v) * 1e4) / 1e4;
+  if (Array.isArray(v)) return v.map(norm);
+  if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b)).map(([k, x]) => [k, norm(x)]));
+  return v;
+}
+
+/* The plan's own stages are costly to build (each stage's growth is
+   solved for), so they're kept for the profile they came from. */
+const built = new Map<string, StagesInputs>();
+function planStages(pr: Profile, entries: Entry[]): StagesInputs {
+  const base = { ...pr, calcOwn: undefined }, key = JSON.stringify([base, entries]);
+  let s = built.get(key);
+  if (!s) { if (built.size > 30) built.clear(); s = stagesFor(base, entries); built.set(key, s); }
+  return s;
+}
+
+/** The Calculator as it opens: the plan's stages with your own changes on top. */
+export function calcInputs(pr: Profile, entries: Entry[]): StagesInputs {
+  const s = planStages(pr, entries);
+  return pr.calcOwn ? ({ ...s, ...pr.calcOwn } as StagesInputs) : s;
+}
+
+/** The inputs that differ from the plan's, to keep; null when none do. */
+export function calcOwnOf(pr: Profile, entries: Entry[], d: StagesInputs): Record<string, unknown> | null {
+  const base = planStages(pr, entries) as unknown as Record<string, unknown>, now = d as unknown as Record<string, unknown>, own: Record<string, unknown> = {};
+  for (const k of Object.keys(now)) if (!PROFILE_KEYS.has(k) && JSON.stringify(norm(now[k])) !== JSON.stringify(norm(base[k]))) own[k] = now[k];
+  return Object.keys(own).length ? own : null;
+}
+
+const fvs = new Map<string, number | null>();
+/** The Calculator's result, savings at retirement in today's dollars, when
+    your changes there move it away from the plan's own; null otherwise. */
+export function calcFvOf(pr: Profile, entries: Entry[]): number | null {
+  if (!pr.calcOwn || !Object.keys(pr.calcOwn).length) return null;
+  const key = JSON.stringify([pr, entries]);
+  if (fvs.has(key)) return fvs.get(key)!;
+  const base = planStages(pr, entries);
+  const fv = stagesCompute(calcInputs(pr, entries), null).R.fvReal, was = stagesCompute(base, null).R.fvReal;
+  const out = Number.isFinite(fv) && Math.abs(fv - was) >= 0.5 ? Math.max(0, fv) : null;
+  if (fvs.size > 60) fvs.clear();
+  fvs.set(key, out);
+  return out;
+}

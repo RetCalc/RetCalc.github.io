@@ -232,6 +232,10 @@ export interface ToolScope {
       place of the Paycheck's pay, filing status, state and match fields,
       when the scope keeps those itself. */
   slots?: { afterSliders?: ReactNode; kidsSummary?: ReactNode; payFacts?: ReactNode };
+  /** Fields the scope sets itself and the tool shows but doesn't let you
+      change, by input name, each with the line saying where it comes from
+      (the Dashboard's portfolio value, from its Calculator). */
+  locked?: Record<string, string>;
   /** How the scope covers children's costs from saving, when it has its
       own order (the Dashboard's): today's saving by account, what a stage
       takes, and the order in words, for "How will you cover this?". */
