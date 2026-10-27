@@ -78,7 +78,11 @@ export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
         {spec.band ? (() => {
           const a = Xv(spec.band.from), b = Xv(spec.band.to);
-          return a != null && b != null ? <g><rect className="lrn-band" x={a} y={T} width={b - a} height={H - T - B} />{spec.band.label ? <text className="lrn-bandl" x={(a + b) / 2} y={T + 13} textAnchor="middle">{spec.band.label}</text> : null}</g> : null;
+          if (a == null || b == null) return null;
+          // Centred over the band, unless that would run past the axis or the edge.
+          const half = (spec.band.label?.length ?? 0) * 3.3, mid = (a + b) / 2;
+          const [lx, anchor]: [number, "start" | "end" | "middle"] = mid - half < L + 2 ? [Math.max(a, L) + 4, "start"] : mid + half > W - R ? [Math.min(b, W - R) - 4, "end"] : [mid, "middle"];
+          return <g><rect className="lrn-band" x={a} y={T} width={b - a} height={H - T - B} />{spec.band.label ? <text className="lrn-bandl" x={lx} y={T + 13} textAnchor={anchor}>{spec.band.label}</text> : null}</g>;
         })() : null}
         <g className="lrn-grid">
           {Array.from({ length: Math.round((hi - lo) / step) + 1 }, (_, i) => lo + i * step).map((v) => (
@@ -99,7 +103,10 @@ export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
           ))}
         {(spec.marks ?? []).map((m, i) => {
           const x = Xv(m.x);
-          return x == null ? null : <g key={i} className="lrn-mark"><line x1={x} x2={x} y1={T + 16 + i * 15} y2={H - B} /><text x={x + 5} y={T + 12 + i * 15}>{m.label}</text></g>;
+          if (x == null) return null;
+          // A row lower when the band has a label, so the two don't run together.
+          const y = T + 12 + (i + (spec.band?.label ? 1 : 0)) * 15, right = x > W - R - 130;
+          return <g key={i} className="lrn-mark"><line x1={x} x2={x} y1={y + 4} y2={H - B} /><text x={right ? x - 5 : x + 5} y={y} textAnchor={right ? "end" : "start"}>{m.label}</text></g>;
         })}
       </svg>
       {/* A table ignores the hidden box's size, so the box is a div around it. */}

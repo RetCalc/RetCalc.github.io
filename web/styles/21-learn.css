@@ -3,9 +3,13 @@
    home and mock A's lesson. Everything is under .lrn or .lrn-site, so
    nothing here reaches the rest of the site. */
 
-.lrn { --lrn-ease: cubic-bezier(.2, .7, .3, 1); color: var(--ds-text); font-variant-numeric: tabular-nums; }
+.lrn { --lrn-ease: cubic-bezier(.2, .7, .3, 1);
+  /* Where sticky things pin: below the site's header, or near the top
+     inside the Dashboard, whose title bar scrolls away. */
+  --lrn-pin: calc(var(--pin-top) + 16px); color: var(--ds-text); font-variant-numeric: tabular-nums; }
 .lrn :is(a, button):not([data-slot]):focus-visible { outline: 2px solid var(--ds-focus); outline-offset: 2px; border-radius: 6px; }
 .lrn [data-slot="card-title"] svg { width: 16px; height: 16px; color: var(--ds-muted); }
+.dsh .lrn { --lrn-pin: calc(var(--sb-clear, 0px) + 16px); }
 .lrn-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ds-muted); }
 .lrn-eyebrow svg { width: 14px; height: 14px; }
 .lrn-amber { color: var(--ds-amber); }
@@ -23,7 +27,10 @@
 .lrn-homebar .lrn-cap { margin: 0; }
 .lrn-search { width: 280px; max-width: 100%; margin-left: auto; }
 .dsh-top .lrn-search { width: 240px; }
-@media (max-width: 760px) { .dsh-top .lrn-search { display: none; } .lrn-search { width: 100%; } }
+/* The Dashboard's title bar drops the search on a phone; the page has its own there. */
+.lrn-dsearch { display: none; margin-bottom: 14px; }
+.lrn-dsearch .lrn-search { width: 100%; }
+@media (max-width: 760px) { .dsh-top .lrn-search { display: none; } .lrn-search { width: 100%; } .lrn-dsearch { display: block; } }
 
 /* ---------- Home: Next for you ---------- */
 .lrn-next4u { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 32px; align-items: center; padding: 22px 26px; }
@@ -47,7 +54,7 @@
 
 /* ---------- Home: tracks and the route ---------- */
 .lrn-body2 { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; margin-top: 20px; align-items: start; }
-.lrn-tlist { position: sticky; top: 24px; }
+.lrn-tlist { position: sticky; top: var(--lrn-pin); }
 .lrn-tlist > [data-slot="card"] { padding: 8px; gap: 2px; }
 .lrn-tbtn { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 12px; cursor: pointer; }
 .lrn-tbtn:hover { background: var(--ds-raised); }
@@ -57,7 +64,7 @@
 .lrn-tbtn:focus-visible { outline: 2px solid var(--ds-focus); outline-offset: 2px; }
 .lrn-ring { --p: 0; width: 30px; height: 30px; border-radius: 50%; flex: none; background: radial-gradient(closest-side, var(--ds-surface) 72%, transparent 74%), conic-gradient(var(--ds-gain) calc(var(--p) * 1%), var(--ds-raised) 0); }
 .lrn-tbtn:hover .lrn-ring, .lrn-tbtn[aria-pressed="true"] .lrn-ring { background: radial-gradient(closest-side, var(--ds-raised) 72%, transparent 74%), conic-gradient(var(--ds-gain) calc(var(--p) * 1%), var(--ds-rule) 0); }
-.lrn-path-h { display: flex; align-items: flex-start; gap: 16px; padding: 20px 24px 6px; }
+.lrn-path-h { display: flex; align-items: flex-start; gap: 16px; padding: 20px 24px 6px; scroll-margin-top: var(--lrn-pin); }
 .lrn-path-h h2 { margin: 2px 0 4px; font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
 .lrn-path-h p { margin: 0; color: var(--ds-muted); font-size: 14px; }
 .lrn-path-r { margin-left: auto; text-align: right; }
@@ -74,26 +81,46 @@
 .lrn-node { position: relative; z-index: 1; width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--ds-rule-strong); background: var(--ds-surface); display: grid; place-items: center; font-weight: 600; font-size: 14px; color: var(--ds-muted); }
 .lrn-stop.dn .lrn-node { background: var(--ds-gain); border-color: var(--ds-gain); color: var(--ds-ground); }
 .lrn-stop.dn .lrn-node svg { width: 18px; height: 18px; stroke-width: 2.6; }
-.lrn-stop.nx .lrn-node { border-color: var(--ds-amber); color: var(--ds-amber); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ds-amber) 18%, transparent); }
+/* Up next and For you: neutral (amber is the one lesson at the top). */
+.lrn-stop:is(.nx, .fy) .lrn-node { border-color: var(--ds-text); color: var(--ds-text); }
+.lrn-stop.nx .lrn-node { box-shadow: 0 0 0 4px var(--ds-raised); }
+/* A search result: a dot, not a number in an order. */
+.lrn-stop.plain .lrn-node { width: 14px; height: 14px; margin: 13px; border-width: 2px; }
+.lrn-stop.plain::before { display: none; }
+.lrn-none { padding: 4px 24px 22px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.lrn-none p { margin: 0; font-size: 14px; color: var(--ds-muted); }
 .lrn-txt b { display: block; font-size: 16px; font-weight: 500; }
 .lrn-txt > span { display: block; color: var(--ds-muted); font-size: 13.5px; margin-top: 2px; }
 .lrn-stop > a:hover .lrn-txt b { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--ds-rule-strong); }
 .lrn-meta { display: flex; align-items: center; gap: 14px; }
 .lrn-tool { font-size: 12.5px; color: var(--ds-muted); border: 1px solid var(--ds-rule); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
-.lrn-stat { font-size: 12px; font-weight: 500; min-width: 58px; text-align: right; color: var(--ds-amber); }
+.lrn-stat { font-size: 12px; font-weight: 500; min-width: 58px; text-align: right; color: var(--ds-text); }
+.lrn-stat:empty { display: none; }
 .lrn-stat.read { color: var(--ds-gain); }
 .lrn-after { margin: 0 24px 20px; padding: 12px 14px; border-radius: 12px; background: var(--ds-raised); font-size: 13.5px; color: var(--ds-muted); display: flex; align-items: center; gap: 10px; }
 .lrn-after b { color: var(--ds-text); font-weight: 500; }
 .lrn-after [data-slot="button"] { margin-left: auto; }
 @media (max-width: 900px) {
-  .lrn-body2 { grid-template-columns: 1fr; }
+  .lrn-body2 { grid-template-columns: minmax(0, 1fr); }
+  .lrn-tlist { min-width: 0; }
   .lrn-tlist { position: static; }
   .lrn-tlist > [data-slot="card"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lrn-tool { display: none; }
 }
+/* A phone: the tracks as one row that scrolls sideways, so the route
+   isn't pushed down a screen. */
+@media (max-width: 760px) {
+  .lrn-body2 { gap: 14px; margin-top: 16px; }
+  .lrn-tlist > [data-slot="card"] { display: flex; flex-direction: row; gap: 4px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding: 6px; }
+  .lrn-tlist > [data-slot="card"]::-webkit-scrollbar { display: none; }
+  .lrn-tbtn { flex: none; scroll-snap-align: start; padding: 7px 12px 7px 8px; gap: 9px; }
+  .lrn-tbtn b { white-space: nowrap; }
+  .lrn-tbtn span span { white-space: nowrap; }
+  .lrn-ring { width: 24px; height: 24px; }
+}
 @media (max-width: 560px) {
-  .lrn-tlist > [data-slot="card"] { grid-template-columns: 1fr; }
-  .lrn-stat { display: none; }
+  .lrn-stat { min-width: 0; }
+  .lrn-stat.read { display: none; }
   .lrn-route { padding: 6px 16px 16px; }
   .lrn-path-h { padding: 18px 16px 4px; }
   .lrn-after { margin: 0 16px 16px; flex-wrap: wrap; }
@@ -105,10 +132,10 @@
 .lrn-crumb a:hover { color: var(--ds-text); }
 .lrn-crumb svg { width: 16px; height: 16px; }
 .lrn-lgrid { display: grid; grid-template-columns: minmax(0, 720px) 360px; gap: 56px; justify-content: center; padding-top: 18px; }
-.lrn-lhead h1 { margin: 8px 0 10px; font-size: 38px; font-weight: 600; letter-spacing: -.03em; line-height: 1.1; }
+.lrn-lhead .lrn-title { margin: 8px 0 10px; font-size: 38px; font-weight: 600; letter-spacing: -.03em; line-height: 1.1; }
 .lrn-lmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; font-size: 13px; color: var(--ds-muted); margin-bottom: 26px; }
 .lrn-dots { display: flex; gap: 4px; }
-.lrn-dots i { width: 18px; height: 5px; border-radius: 3px; background: var(--ds-raised); }
+.lrn-dots i { width: 18px; height: 5px; border-radius: 3px; background: var(--ds-rule-strong); }
 .lrn-dots i.on { background: var(--ds-gain); }
 .lrn-dots i.cur { background: var(--ds-amber); }
 .lrn-read { display: inline-flex; align-items: center; gap: 4px; color: var(--ds-gain); font-weight: 500; }
@@ -116,18 +143,27 @@
 
 .lrn-prose { font-size: 16.5px; line-height: 1.65; }
 .lrn-prose p { margin: 0 0 18px; }
+/* About 68 characters a line for reading; figures and tables use the
+   column's full width. */
+.lrn-prose :is(p, ul, ol, details, h2, h3):not(.lrn-yours-line) { max-width: 68ch; }
+.lrn-prose figcaption { max-width: 82ch; }
 .lrn-prose .lrn-lede { font-size: 19px; line-height: 1.55; margin-bottom: 24px; }
-.lrn-prose h2 { margin: 38px 0 10px; font-size: 22px; font-weight: 600; letter-spacing: -.015em; line-height: 1.25; scroll-margin-top: 24px; }
-.lrn-prose h3 { margin: 26px 0 8px; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+.lrn-prose h2, .lrn-sub h3 { margin: 38px 0 10px; font-size: 22px; font-weight: 600; letter-spacing: -.015em; line-height: 1.25; scroll-margin-top: 24px; }
+.lrn-sub h3 { max-width: 68ch; }
+.lrn-prose:not(.lrn-sub) h3, .lrn-sub h4 { margin: 26px 0 8px; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
 .lrn-prose ul, .lrn-prose ol { margin: 0 0 18px; padding-left: 22px; display: grid; gap: 8px; }
 .lrn-prose b { font-weight: 600; }
 .lrn-prose a { color: var(--ds-text); text-decoration: underline; text-decoration-color: var(--ds-rule-strong); text-underline-offset: 3px; }
 .lrn-prose a:hover { text-decoration-color: var(--ds-text); }
+/* A chart or widget the lesson draws (.lrn-figure), or a table it writes. */
+.lrn-figure { break-inside: avoid; }
 .lrn-prose figure { margin: 26px 0; padding: 16px 18px 14px; border: 1px solid var(--ds-rule); border-radius: 16px; background: var(--ds-surface); overflow-x: auto; }
 .lrn-prose figcaption { margin-top: 10px; font-size: 13px; color: var(--ds-muted); line-height: 1.5; }
 .lrn-prose table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.45; }
 .lrn-prose th { font-size: 12px; font-weight: 500; color: var(--ds-muted); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--ds-rule); vertical-align: bottom; }
-.lrn-prose td { padding: 8px 10px; border-bottom: 1px solid var(--ds-rule); vertical-align: top; }
+.lrn-prose td { padding: 8px 10px; border-bottom: 1px solid var(--ds-rule); vertical-align: top; text-align: left; }
+/* Columns of figures (marked by components/learn/tables.ts) line up right. */
+.lrn-prose :is(th, td).num { text-align: right; }
 .lrn-prose tbody tr:last-child td { border-bottom: 0; }
 .lrn-prose td.neg { color: var(--ds-loss); }
 .lrn-prose td:first-child { min-width: 4.5em; }
@@ -139,7 +175,7 @@
 .lrn-prose details[open] summary::after { content: "−"; }
 .lrn-prose details p { margin: 8px 0 0; }
 .lrn-prose .insum { margin-top: 34px; padding: 18px 22px 4px; border: 1px solid var(--ds-rule); border-radius: 16px; background: var(--ds-surface); }
-.lrn-prose .insum h2 { margin: 0 0 10px; font-size: 18px; }
+.lrn-prose .insum :is(h2, h3) { margin: 0 0 10px; font-size: 18px; }
 .lrn-yours-line { margin: 26px 0 !important; padding: 12px 16px; border-left: 3px solid var(--ds-amber); background: var(--ds-surface); border-radius: 0 12px 12px 0; font-size: 15px; color: var(--ds-muted); }
 .lrn-yours-line b { color: var(--ds-text); font-weight: 500; }
 .lrn-yours-tag { color: var(--ds-amber); font-weight: 500; }
@@ -148,7 +184,7 @@
 .lrn-disclaim { margin: 18px 0 0; font-size: 12.5px; color: var(--ds-muted); }
 
 .lrn-aside { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.lrn-toc { position: sticky; top: 24px; }
+.lrn-toc { position: sticky; top: var(--lrn-pin); }
 .lrn-toc ol { list-style: none; margin: 0; padding: 0; display: grid; }
 .lrn-toc a { display: block; padding: 6px 0 6px 12px; border-left: 2px solid var(--ds-rule); font-size: 13.5px; color: var(--ds-muted); text-decoration: none; line-height: 1.4; }
 .lrn-toc a:hover { color: var(--ds-text); }
@@ -189,7 +225,7 @@
   .lrn-toc { display: none; }
 }
 @media (max-width: 640px) {
-  .lrn-lhead h1 { font-size: 30px; }
+  .lrn-lhead .lrn-title { font-size: 30px; }
   .lrn-prose { font-size: 16px; }
   .lrn-prose figure { padding: 12px; }
   .lrn-pagehead h1 { font-size: 28px; }
@@ -218,6 +254,7 @@
 .lrn-readout { margin: 10px 0 0 !important; font-size: 13.5px; color: var(--ds-muted); line-height: 1.5; }
 .lrn-readout b { color: var(--ds-text); font-weight: 500; }
 @media (max-width: 640px) { .lrn-mover { flex-wrap: wrap; } .lrn-mover output { text-align: left; min-width: 0; } }
+}
 
 /* A phone: a table of four or more columns keeps readable columns and
    scrolls sideways in its box, rather than squeezing to a word a line. */

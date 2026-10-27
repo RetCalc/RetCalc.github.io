@@ -189,8 +189,12 @@ function build(key: YoursKey, P: Plan): Out | null {
       const rows: Row[] = [["Savings at retirement", money(R.atRetire)], ["First year's withdrawal", money(W)], ["Starting withdrawal rate", pct(rate, 1)]];
       if (R.ss && R.ssYear) rows.push([`Once Social Security starts (${R.ssYear})`, pct(later, 1) + " of the starting balance"]);
       rows.push(["Chance of success", pct(R.success ?? 0)]);
+      // Why a starting rate above 4% can still last: it's only that high
+      // until Social Security takes over part of the spending.
+      const early = R.ss && R.ssYear && R.ssYear > (R.retireYear ?? 0) && rate > 0.045;
       return {
         rows,
+        note: early ? <>The 4% rule assumes one withdrawal, raised with inflation, for all 30 years. Here the rate is high only until Social Security starts in {R.ssYear}; after that, withdrawals come to {pct(later, 1)} of the starting balance.</> : undefined,
         line: <>{P.sample ? "Their" : "Your"} plan starts by withdrawing <b>{pct(rate, 1)}</b> of savings{R.ss && R.ssYear && R.ssYear > (R.retireYear ?? 0) ? <>, falling to about {pct(later, 1)} once Social Security starts in {R.ssYear}</> : null}.</>,
       };
     }

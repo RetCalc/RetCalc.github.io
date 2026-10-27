@@ -15,7 +15,7 @@ export function DashLearnHome({ lessons, previews }: { lessons: LessonSummary[];
   return (
     <SignedIn>
       <Frame current="learn" title="Learn" sub="Lessons on the ideas behind your plan" actions={<LearnSearch value={q} onChange={setQ} />}>
-        <LearnHome lessons={lessons} previews={previews} mode="dashboard" search={q} />
+        <LearnHome lessons={lessons} previews={previews} mode="dashboard" search={q} onSearch={setQ} />
       </Frame>
     </SignedIn>
   );

@@ -10,7 +10,8 @@ import { useDashboard, unstarted } from "@/components/dashboard/store";
 import { ageOf, holdings, results } from "@/components/dashboard/model";
 import type { LessonSummary } from "@/lib/learn/lessons";
 
-export interface Pick { slug: string; why: string }
+/** `personal`: picked from the reader's own plan, not the curriculum's order. */
+export interface Pick { slug: string; why: string; personal: boolean }
 
 export function useSuggestions(lessons: LessonSummary[], read: Record<string, string>): Pick[] {
   const { account } = useAccount();
@@ -18,7 +19,7 @@ export function useSuggestions(lessons: LessonSummary[], read: Record<string, st
   const own = !!account && !unstarted(data);
   return useMemo(() => {
     const have = new Set(lessons.map((l) => l.slug)), out: Pick[] = [];
-    const add = (slug: string, why: string) => { if (have.has(slug) && !read[slug] && !out.some((p) => p.slug === slug)) out.push({ slug, why }); };
+    const add = (slug: string, why: string, personal = true) => { if (have.has(slug) && !read[slug] && !out.some((p) => p.slug === slug)) out.push({ slug, why, personal }); };
     if (own) {
       const pr = data.profile, R = results(pr, data.entries), H = holdings(data.entries, pr);
       const age = ageOf(pr.p1), retire = pr.p1.retire, toGo = age != null && retire != null ? retire - age : null;
@@ -40,7 +41,7 @@ export function useSuggestions(lessons: LessonSummary[], read: Record<string, st
       if (H.mortgage > 0 && retire != null) add("mortgage-payoff", "You're carrying a mortgage toward retirement.");
     }
     // Then the curriculum in order.
-    for (const l of lessons) add(l.slug, !own && l.slug === lessons[0]?.slug ? "Start here: what a plan answers, and what the rest of Learn covers." : "Next in the curriculum.");
+    for (const l of lessons) add(l.slug, !own && l.slug === lessons[0]?.slug ? "What a plan answers, and what the rest of Learn covers." : "Next in the curriculum.", false);
     return out;
   }, [own, data, lessons, read]);
 }
