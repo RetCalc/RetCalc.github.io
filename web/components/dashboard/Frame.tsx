@@ -7,7 +7,7 @@
    rail, its labels always showing. */
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   BanknoteIcon, CalculatorIcon, MenuIcon, MonitorIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
    SunsetIcon, UserRoundIcon, WalletIcon, type LucideIcon,
@@ -88,10 +88,28 @@ const BAR: Section[] = ["overview", "accounts", "retirement", "next"];
     the way back to the site. */
 function TabBar({ current, dots }: { current: Section; dots: Partial<Record<Section, boolean>> }) {
   const [open, setOpen] = useState(false);
+  // Away while scrolling down, back on the way up or at the end, as a
+  // phone browser's own toolbar does: Safari spends a tap near the bottom
+  // on bringing its toolbar back, so the bar is only there when it is.
+  const [away, setAway] = useState(false);
+  useEffect(() => {
+    let last = window.scrollY, frame = 0;
+    const on = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const y = window.scrollY, end = y + window.innerHeight >= document.documentElement.scrollHeight - 4;
+        if (y < 60 || end || y < last - 6) setAway(false);
+        else if (y > last + 6) setAway(true);
+        if (Math.abs(y - last) > 6) last = y;
+      });
+    };
+    window.addEventListener("scroll", on, { passive: true });
+    return () => { window.removeEventListener("scroll", on); cancelAnimationFrame(frame); };
+  }, []);
   const elsewhere = !BAR.includes(current), moreDot = SECTIONS.some((s) => !BAR.includes(s.id) && dots[s.id]);
   return (
     <>
-      <nav className="dsh-tabbar" aria-label="Dashboard tabs">
+      <nav className="dsh-tabbar" aria-label="Dashboard tabs" data-away={away && !open ? "" : undefined}>
         {BAR.map((id) => {
           const { name, icon: Icon } = SECTIONS.find((s) => s.id === id)!;
           return (

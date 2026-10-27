@@ -545,6 +545,14 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
   /* The timeline keeps its size and scrolls sideways, so its words stay readable. */
   .dsh-tl svg { width: auto; }
 }
+/* On a phone the bar follows the browser's toolbar: away while scrolling
+   down, back on the way up (an upright tablet's browser keeps its toolbar
+   at the top, so its bar stays). Focus brings it back for a keyboard. */
+@media (max-width: 760px), (hover: none) and (pointer: coarse) and (max-height: 500px) {
+  .dsh-tabbar { transition: transform .22s var(--dsh-ease); }
+  .dsh-tabbar[data-away]:not(:focus-within) { transform: translateY(calc(100% + 2px)); }
+}
+@media (prefers-reduced-motion: reduce) { .dsh-tabbar { transition: none; } }
 /* A phone on its side has little height: the bar's tabs put their names
    beside their icons, so the bar is shorter. */
 @media (max-height: 500px) and (hover: none) and (pointer: coarse) {
