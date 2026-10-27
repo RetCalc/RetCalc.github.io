@@ -214,7 +214,7 @@ export function Climb({ S }: { S: PlanSummary }) {
   return (
     <Card className="col-span-full">
       <CardHeader><CardTitle>The climb</CardTitle>
-        <CardDescription>Your balance at each age{future ? ", in the dollars of each year" : ", in today's dollars"}, by account. Point at any age for the figures.
+        <CardDescription>Your balance at each age{future ? ", in the dollars of each year" : ", in today's dollars"}, by account. <span className="dsh-mouse">Point at any age for the figures.</span><span className="dsh-touch">Tap any age, or drag along the chart, for the figures.</span>
           {S.stages ? " Numbers along the top are your life stages." : ""}</CardDescription>
         <CardAction><Segmented size="compact" attr="data-ppreal" options={[["today", "Today's dollars"], ["future", "Future dollars"]] as const} value={future ? "future" : "today"} onChange={(v) => setFuture(v === "future")} /></CardAction>
       </CardHeader>

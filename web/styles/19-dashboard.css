@@ -651,3 +651,18 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 }
 /* Under a finger, an entry's delete button is a full-size target. */
 @media (pointer: coarse) { .dsh-del [data-slot="button"] { width: 40px; height: 40px; } }
+
+/* More phone fixes: a figure's unit ("per month") moves to the next line
+   whole rather than split; a tile that hosts a tool lets the tool's own
+   cards take the screen's width (its title stays as the section's
+   heading), so cards don't sit three deep; Reset's words take the width
+   with the button under them. */
+@media (max-width: 640px) {
+  .dsh-fig small { white-space: nowrap; }
+  .dsh-tile:has(> .dsh-mt > .dsh-embed) { padding: 0; border: 0; background: none; }
+  .dsh-tile:has(> .dsh-mt > .dsh-embed) > .dsh-tile-h { padding: 4px 2px 0; }
+  .dsh-tile:has(> .dsh-mt > .dsh-embed) > :is(p, .dsh-tip, div:not(.dsh-mt):not(.dsh-tile-h)) { margin-left: 2px; margin-right: 2px; }
+  .dsh-reset { flex-wrap: wrap; }
+}
+/* Under a finger, each readiness area opens from a full-height row. */
+@media (pointer: coarse) { .dsh-arow { min-height: 40px; } }
