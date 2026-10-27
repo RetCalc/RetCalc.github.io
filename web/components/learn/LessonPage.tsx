@@ -3,14 +3,18 @@
 /* A lesson, laid out as the approved mock C: the text on the left, and
    beside it Your numbers, Try it, Key terms, Go deeper and "In this lesson"
    (which stays in view while reading and marks the section you're in).
+   Narrower than 1180px there's no room beside the text, so the aids come
+   into the reading column where they're needed: a Contents control at the
+   top, Your numbers after the lede, Try it and Key terms before the end.
    The lesson counts as read once its "In short" comes into view. */
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRightIcon, CalculatorIcon, CheckIcon, ChevronLeftIcon, ClockIcon, ExternalLinkIcon, ListIcon, BookOpenIcon, RotateCcwIcon } from "lucide-react";
+import { ArrowRightIcon, CalculatorIcon, CheckIcon, ChevronDownIcon, ChevronLeftIcon, ClockIcon, ExternalLinkIcon, ListIcon, BookOpenIcon, RotateCcwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { Lesson, LessonSummary, Segment } from "@/lib/learn/lessons";
 import type { Track } from "@/lib/learn/catalog";
 import { Chart } from "./Chart";
@@ -75,10 +79,28 @@ function TocList({ toc, on, onJump }: { toc: Lesson["toc"]; on: string; onJump: 
 /** "In this lesson" beside the text. */
 function Contents({ toc, on, onJump }: { toc: Lesson["toc"]; on: string; onJump: (id: string) => void }) {
   return (
-    <div className="lrn-toc"><Card size="sm">
+    <div className="lrn-toc lrn-wide"><Card size="sm">
       <CardHeader><CardTitle><ListIcon aria-hidden="true" />In this lesson</CardTitle></CardHeader>
       <CardContent><nav aria-label="In this lesson"><TocList toc={toc} on={on} onJump={onJump} /></nav></CardContent>
     </Card></div>
+  );
+}
+
+/** Narrower screens: the same list, folded into one line that stays at the
+    top of the screen and names the section you're in. */
+function ContentsBar({ toc, on, onJump }: { toc: Lesson["toc"]; on: string; onJump: (id: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const cur = toc.find((t) => t.id === on) ?? toc[0];
+  return (
+    <div className="lrn-mtoc lrn-narrow"><Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger variant="row">
+        <span className="lrn-mtoc-l"><ListIcon aria-hidden="true" /><span>Contents</span><span className="lrn-mtoc-cur">{cur?.text}</span></span>
+        <ChevronDownIcon aria-hidden="true" />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <nav aria-label="In this lesson"><TocList toc={toc} on={on} onJump={(id) => { setOpen(false); onJump(id); }} /></nav>
+      </CollapsibleContent>
+    </Collapsible></div>
   );
 }
 
@@ -169,10 +191,13 @@ export function LessonPage({ lesson, next, track, mode }: { lesson: Lesson; next
               {done ? <span className="lrn-read"><CheckIcon aria-hidden="true" />Read</span> : null}
             </div>
           </header>
+          {contents ? <ContentsBar toc={lesson.toc} on={on} onJump={onJump} /> : null}
           <div className={`lrn-prose${dash ? " lrn-sub" : ""}`}>
             {lesson.lede ? <p className="lrn-lede" dangerouslySetInnerHTML={{ __html: lesson.lede }} /> : null}
+            {lesson.yours ? <div className="lrn-narrow lrn-yours-in"><YoursPanel k={lesson.yours} /></div> : null}
             {lesson.segments.map((s, i) => <Piece key={i} s={s} lesson={lesson} mode={mode} from={here} />)}
           </div>
+          {tryCard || termsCard ? <div className="lrn-narrow lrn-endaids">{tryCard}{termsCard}</div> : null}
           <div className="lrn-endrow">
             {done
               ? <Button variant="outline" onClick={() => { kept.current = true; markUnread(lesson.slug); setSaid("Marked as unread."); }}><RotateCcwIcon aria-hidden="true" />Mark as unread</Button>
@@ -187,9 +212,9 @@ export function LessonPage({ lesson, next, track, mode }: { lesson: Lesson; next
         </article>
 
         <div className="lrn-aside">
-          {lesson.yours ? <YoursPanel k={lesson.yours} /> : null}
-          {tryCard}
-          {termsCard}
+          {lesson.yours ? <div className="lrn-wide"><YoursPanel k={lesson.yours} /></div> : null}
+          {tryCard ? <div className="lrn-wide">{tryCard}</div> : null}
+          {termsCard ? <div className="lrn-wide">{termsCard}</div> : null}
           {lesson.deeper.length ? (
             <Card size="sm">
               <CardHeader><CardTitle><ExternalLinkIcon aria-hidden="true" />Go deeper</CardTitle></CardHeader>

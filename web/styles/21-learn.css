@@ -220,9 +220,28 @@
 .lrn-yours-foot { margin: 10px 0 0; font-size: 12.5px; color: var(--ds-muted); }
 .lrn-yours-foot a { color: var(--ds-text); }
 
+/* Contents, folded into a line at the top (narrower than 1180px) */
+.lrn-mtoc { position: sticky; top: calc(var(--lrn-pin) - 8px); z-index: 20; margin: -8px 0 22px; border: 1px solid var(--ds-rule); border-radius: 14px; background: var(--ds-surface); }
+.lrn-mtoc [data-slot="collapsible-trigger"] { min-height: 44px; padding: 8px 14px; border-radius: 13px; font-weight: 500; }
+.lrn-mtoc-l { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; }
+.lrn-mtoc-l svg { width: 16px; height: 16px; color: var(--ds-muted); flex: none; }
+.lrn-mtoc-cur { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ds-muted); font-weight: 400; }
+.lrn-mtoc-cur::before { content: "·"; margin-right: 8px; }
+.lrn-mtoc [data-slot="collapsible-content"] { max-height: min(60vh, 420px); overflow-y: auto; padding: 0 14px 10px; border-top: 1px solid var(--ds-rule); }
+.lrn-mtoc ol { list-style: none; margin: 8px 0 0; padding: 0; display: grid; }
+.lrn-mtoc a { display: block; padding: 9px 0 9px 12px; border-left: 2px solid var(--ds-rule); font-size: 14px; color: var(--ds-muted); text-decoration: none; line-height: 1.4; }
+.lrn-mtoc a[aria-current] { color: var(--ds-text); border-left-color: var(--ds-amber); }
+.lrn-yours-in { margin: 0 0 26px; }
+.lrn-yours-in:empty { display: none; }
+.lrn-endaids { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 30px; align-items: start; }
+
+/* Wide: the aids beside the text. Narrower: in the reading column. */
+@media (min-width: 1181px) { .lrn-narrow { display: none !important; } }
 @media (max-width: 1180px) {
   .lrn-lgrid { grid-template-columns: minmax(0, 720px); }
-  .lrn-toc { display: none; }
+  .lrn-wide { display: none; }
+  /* A section lands below the Contents line. */
+  .lrn-prose :is(h2, h3) { scroll-margin-top: 64px; }
 }
 @media (max-width: 640px) {
   .lrn-lhead .lrn-title { font-size: 30px; }
@@ -253,7 +272,12 @@
 .lrn-mixes .lrn-cap { white-space: nowrap; }
 .lrn-readout { margin: 10px 0 0 !important; font-size: 13.5px; color: var(--ds-muted); line-height: 1.5; }
 .lrn-readout b { color: var(--ds-text); font-weight: 500; }
-@media (max-width: 640px) { .lrn-mover { flex-wrap: wrap; } .lrn-mover output { text-align: left; min-width: 0; } }
+/* A phone: the label and the value on one line, the slider full width below. */
+@media (max-width: 640px) {
+  .lrn-mover { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "l o" "r r"; gap: 8px 12px; }
+  .lrn-mover label { grid-area: l; white-space: normal; }
+  .lrn-mover output { grid-area: o; min-width: 0; }
+  .lrn-mover [data-slot="native-range"] { grid-area: r; width: 100%; }
 }
 
 /* A phone: a table of four or more columns keeps readable columns and

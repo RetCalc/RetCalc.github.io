@@ -1,8 +1,12 @@
+"use client";
+
 /* A lesson's chart, drawn from the data written into the lesson
    (content/lessons/README.md: line, area or grouped bars, up to four
    series, optional marks and a shaded band). The same figures sit in a
-   table for screen readers. */
+   table for screen readers. The drawing is laid out at the width it's
+   shown (up to 720), so its labels stay their real size on a phone. */
 
+import { useEffect, useRef, useState } from "react";
 import type { ChartSpec } from "@/lib/learn/lessons";
 
 const TONE: Record<string, string> = {
@@ -29,7 +33,16 @@ function niceStep(span: number, n = 5): number {
 }
 
 export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
-  const W = 720, H = 300, L = 58, R = 18, T = 16, B = 34;
+  const box = useRef<HTMLDivElement>(null);
+  const [W, setW] = useState(720);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setW(Math.max(280, Math.min(720, Math.round(e.contentRect.width)))));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const H = Math.round(Math.max(220, (W * 300) / 720)), L = 58, R = 18, T = 16, B = 34;
   const n = spec.x.length, bars = spec.type === "bar";
   const xText = (x: number | string) => (typeof x === "number" && spec.xFormat ? fmt(x, spec.xFormat) : String(x));
   const all = spec.series.flatMap((s) => s.values).filter((v): v is number => v != null);
@@ -49,7 +62,7 @@ export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
   const Y = (v: number) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
 
   // X labels: every bar's, else about seven evenly spaced.
-  const every = bars ? 1 : Math.max(1, Math.ceil(n / 7));
+  const every = bars ? 1 : Math.max(1, Math.ceil(n / (W < 480 ? 4 : 7)));
   const xl = spec.x.map((_, i) => i).filter((i) => i % every === 0 || (i === n - 1 && i % every >= every / 2));
 
   const paths = spec.series.map((s, k) => {
@@ -69,7 +82,7 @@ export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
   const bw = Math.min(28, (slot * 0.72) / spec.series.length);
 
   return (
-    <div className="lrn-chart">
+    <div className="lrn-chart" ref={box}>
       {spec.series.length > 1 ? (
         <div className="lrn-legend">
           {spec.series.map((s, k) => <span key={s.name}><i className={bars ? "bar" : s.dash ? "dash" : undefined} style={{ "--c": toneOf(s.tone, k) } as React.CSSProperties} />{s.name}</span>)}
