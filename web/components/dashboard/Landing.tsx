@@ -114,8 +114,16 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
             <Shot name="overview" w={2880} h={1800} sizes="(max-width: 1330px) 100vw, 1290px"
               alt="The Dashboard: a one-line answer, net worth today and projected, readiness score, chance of success, retirement income and Social Security" />
           </div>
+          {/* On a phone, the same page in an iPhone: its titanium edge, side
+              buttons and Dynamic Island are drawn here; the status bar and
+              home indicator are in the screenshot. */}
           <div className="dl-phone">
-            <Shot name="phone" w={1170} h={2532} sizes="300px" alt="The Dashboard on a phone: the one-line answer, Update balances and net worth" />
+            <i className="dl-ph-btn dl-ph-act" aria-hidden="true" /><i className="dl-ph-btn dl-ph-up" aria-hidden="true" />
+            <i className="dl-ph-btn dl-ph-dn" aria-hidden="true" /><i className="dl-ph-btn dl-ph-pwr" aria-hidden="true" />
+            <div className="dl-ph-screen">
+              <Shot name="iphone" w={1170} h={2532} sizes="300px" alt="The Dashboard on a phone: the one-line answer, Update balances, net worth, and the tabs along the bottom" />
+              <span className="dl-ph-island" aria-hidden="true" />
+            </div>
           </div>
         </div>
       </div>

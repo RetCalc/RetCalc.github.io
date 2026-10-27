@@ -117,8 +117,19 @@
   .dl-ctas > *{width:100%}
   .dl-stage .dl-window{display:none}
   .dl-stage::before{display:none}
-  .dl-phone{display:block;position:relative;width:78%;height:560px;margin:0 auto;overflow:hidden;
-    border:8px solid var(--ds-text);border-bottom:0;border-radius:36px 36px 0 0;background:var(--ds-ground);box-shadow:var(--ds-float)}
+  /* An iPhone: a black bezel inside a thin titanium edge, side buttons, and
+     the Dynamic Island over the screen, all to an iPhone's proportions. */
+  .dl-phone{display:block;position:relative;width:min(288px,78%);margin:0 auto;padding:10px;border-radius:50px;background:#0b0c0e;
+    box-shadow:inset 0 0 0 1.5px #26282c,0 0 0 1.5px #85878c,0 0 0 3px #3b3d42,0 28px 56px -16px rgb(0 0 0/.4),0 10px 20px -10px rgb(0 0 0/.3)}
+  .dl-ph-screen{position:relative;overflow:hidden;border-radius:40px;background:var(--ds-ground)}
+  .dl-ph-screen img{width:100%;height:auto;vertical-align:top}
+  .dl-ph-island{position:absolute;top:1.4%;left:50%;width:32%;height:4.3%;transform:translateX(-50%);border-radius:999px;background:#000}
+  .dl-ph-btn{position:absolute;width:3.5px;background:linear-gradient(90deg,#4a4c51,#a3a5aa 60%,#5d5f64)}
+  .dl-ph-act,.dl-ph-up,.dl-ph-dn{left:-4px;border-radius:2px 0 0 2px}
+  .dl-ph-act{top:17%;height:5%}
+  .dl-ph-up{top:25%;height:8.5%}
+  .dl-ph-dn{top:35.5%;height:8.5%}
+  .dl-ph-pwr{right:-4px;top:28%;height:12.5%;border-radius:0 2px 2px 0}
   .dl-pic{height:auto;padding-bottom:0}
   .dl-pages{grid-template-columns:1fr}
 }
