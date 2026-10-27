@@ -25,8 +25,8 @@ import { unstarted, useDashboard } from "./store";
 function Shot({ name, w, h, alt, sizes }: { name: string; w: number; h: number; alt: string; sizes: string }) {
   return (
     <>
-      <Image className="dl-lt" src={`/dashboard-landing/${name}-light.png`} width={w} height={h} alt={alt} sizes={sizes} />
-      <Image className="dl-dk" src={`/dashboard-landing/${name}-dark.png`} width={w} height={h} alt={alt} sizes={sizes} />
+      <Image className="dl-lt" src={`/dashboard-landing/v2/${name}-light.png`} width={w} height={h} alt={alt} sizes={sizes} />
+      <Image className="dl-dk" src={`/dashboard-landing/v2/${name}-dark.png`} width={w} height={h} alt={alt} sizes={sizes} />
     </>
   );
 }
@@ -155,15 +155,15 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
 
       <Feature kicker="Net worth" title="Your net worth now, and where it's heading." sub="Your accounts, home and debts added up, then projected through retirement."
         points={["Your own entries over time, then the projection", "The range of 8 in 10 past markets, not one guess", "All in today's dollars, so it compares with what things cost now"]}>
-        <Shot name="networth" w={1734} h={942} sizes="(max-width: 900px) 100vw, 760px" alt="Net worth chart with entries, the projection and the range of past markets" />
+        <Shot name="networth" w={1734} h={982} sizes="(max-width: 900px) 100vw, 760px" alt="Net worth chart with entries, the projection and the range of past markets" />
       </Feature>
       <Feature flip kicker="Income, taxes, spending and savings" title="See where each paycheck goes." sub="Pay, taxes, your budget and your saving are worked out together, so the numbers match on every page."
         points={["Federal, state, Social Security and Medicare taxes worked out for you", "Saving split across your 401(k), HSA, IRA and brokerage", "Shows whether you're getting your full employer match"]}>
-        <Shot name="savings" w={1742} h={732} sizes="(max-width: 900px) 100vw, 760px" alt="Where each month's pay goes: savings, taxes, expenses and unassigned" />
+        <Shot name="savings" w={1742} h={734} sizes="(max-width: 900px) 100vw, 760px" alt="Where each month's pay goes: savings, taxes, expenses and unassigned" />
       </Feature>
       <Feature kicker="Retirement" title="Test your retirement plan against past markets." sub="Choose from 15 withdrawal strategies and see how often your plan lasted in every market since 1926."
-        points={["What you'll have, what you'll spend and the taxes on it", "Social Security for each of you, from the age you claim", "A short explanation of each strategy"]}>
-        <Shot name="retire-tile" w={1512} h={562} sizes="(max-width: 900px) 100vw, 760px" alt="At retirement: savings, chance of success, planned spending, taxes and Social Security, and when each of you claims" />
+        points={["What you'll have, what you'll spend and the taxes on it", "Social Security for each of you, from the age you claim", "Health cover until Medicare, and a bridge to 59½ if you retire early"]}>
+        <Shot name="retire-tile" w={1512} h={612} sizes="(max-width: 900px) 100vw, 760px" alt="At retirement: savings, chance of success, planned spending, taxes and Social Security, and the years of health cover to plan before Medicare" />
       </Feature>
       <Feature flip kicker="Next steps" title="Know what to work on next." sub="A short list of changes, ranked by how much each one improves your plan, with a link to make each one.">
         <Shot name="next" w={1734} h={778} sizes="(max-width: 900px) 100vw, 760px" alt="What to do next: four changes, ranked" />
@@ -173,7 +173,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
         <div className="dl-kicker">Your timeline</div>
         <h2 className="dl-h2">The years ahead, on a timeline.</h2>
         <p className="dl-sub">Retirement, Medicare, Social Security, daycare and college, year by year for each person in your household.</p>
-        <div className="dl-shot dl-wide"><Shot name="timeline" w={2632} h={708} sizes="(max-width: 1330px) 100vw, 1290px" alt="Timeline of retirement, Medicare, Social Security and college for each person" /></div>
+        <div className="dl-shot dl-wide"><Shot name="timeline" w={2632} h={646} sizes="(max-width: 1330px) 100vw, 1290px" alt="Timeline of retirement, Medicare, Social Security and college for each person" /></div>
       </section>
 
       <section className="dl-sec dl-center">
