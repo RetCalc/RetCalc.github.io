@@ -4,9 +4,10 @@
    note, and the way a section asks for what it's missing. */
 
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { InfoIcon, PlusIcon, type LucideIcon } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { ChevronDownIcon, InfoIcon, PlusIcon, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { TipDot } from "@/components/shell/Tooltips";
 import { TIPS, type TipId } from "./tips";
 
@@ -74,5 +75,27 @@ export function PlanFacts({ rows, note, id }: { rows: [ReactNode, ReactNode][]; 
       <dl className="dsh-facts">{rows.map(([k, v], i) => <div key={i}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
       {note ? <p className="dsh-cap dsh-mt6">{note}</p> : null}
     </div>
+  );
+}
+
+/** A section folded to one line: its name and what it comes to, opened
+    for the whole of it. Closed until asked for; everything stays a click
+    away. */
+export function Fold({ icon: Icon, title, summary, id, className, children }: { icon: LucideIcon; title: string; summary: ReactNode; id?: string; className?: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Collapsible open={open} onOpenChange={setOpen} className="dsh-fold" id={id}>
+      <section className="dsh-tile dsh-fold-h">
+        <h2>
+          <CollapsibleTrigger variant="row" className="dsh-fold-t">
+            <span className="dsh-ti"><Icon aria-hidden="true" /></span>
+            <span className="dsh-fold-n"><span className="dsh-fold-title">{title}</span><span className="dsh-cap">{summary}</span></span>
+            <span className="dsh-fold-a" aria-hidden="true">{open ? "Hide" : "Show"}</span>
+            <ChevronDownIcon aria-hidden="true" />
+          </CollapsibleTrigger>
+        </h2>
+      </section>
+      <CollapsibleContent className={className}>{children}</CollapsibleContent>
+    </Collapsible>
   );
 }

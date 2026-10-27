@@ -729,3 +729,15 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
   html.pwa .dsh-top { box-sizing: border-box; padding-top: calc(12px + var(--sb-clear)); }
   html.pwa .dsh { --pin-top: calc(8px + var(--sb-clear)); }
 }
+
+/* A section folded to one line (Plan summary): its name and what it comes
+   to, the whole row the button. Opened, its tiles follow below. */
+.dsh-fold { margin-top: 16px; }
+.dsh-fold-h { padding: 0; overflow: hidden; }
+.dsh-fold-h h2 { margin: 0; font: inherit; }
+.dsh-fold-t.dsh-fold-t { gap: 12px; padding: 14px 18px; min-height: 0; font-weight: 400; }
+.dsh-fold-t .dsh-ti { flex: none; }
+.dsh-fold-n { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.dsh-fold-title { font-size: 14px; font-weight: 600; color: var(--ds-text); }
+.dsh-fold-a { font-size: 13px; color: var(--ds-muted); flex: none; }
+.dsh-fold > [data-slot="collapsible-content"] { margin-top: 16px; }

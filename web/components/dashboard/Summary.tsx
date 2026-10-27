@@ -8,7 +8,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { CalendarDaysIcon, ChartBarIcon, HeartPulseIcon, ListChecksIcon, MilestoneIcon, ReceiptIcon, SunsetIcon } from "lucide-react";
+import { BabyIcon, CalendarDaysIcon, ChartBarIcon, GaugeIcon, HeartPulseIcon, ListChecksIcon, MilestoneIcon, ReceiptIcon, SunsetIcon, TrendingUpIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShareBar } from "@/components/charts/Legend";
 import { SERIES } from "@/lib/hues";
@@ -24,12 +24,12 @@ import { bridgeSummary, earlyRetirees } from "./bridge";
 import { yearlySaving } from "./cover";
 import { budgetFor, flow } from "./flows";
 import { lastedWords, money, pctDown } from "./format";
-import { ageOf, answers, holdings, nowYear, results, spendMonth, type Results } from "./model";
+import { FACTORS, ageOf, answers, areaPoints, holdings, nameOf, nowYear, results, spendMonth, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
 import { Readiness, timeline } from "./Overview";
 import { Timeline } from "./charts";
 import { entryFrom, netWorth, sum, useDashboard, type Entry, type Profile } from "./store";
-import { Note, Tile, TipLabel, To } from "./ui";
+import { Fold, Note, Tile, TipLabel, To } from "./ui";
 import { healthGap, healthWords } from "./health";
 
 /** The answer, from the plan itself: what you'll have at retirement, what
@@ -138,25 +138,32 @@ export function Summary() {
         </Tile>
       </div>
 
+      {/* The rest folds to a line each, opened for the whole of it. */}
       {S ? (
-        <div className="dsh-psum dsh-r4">
+        <Fold icon={TrendingUpIcon} title="Saving to retirement" className="dsh-psum"
+          summary={<>{money(S.atRetire.total)} at {S.retire}, in today&apos;s dollars: your accounts, the climb year by year{S.stages ? " and your life stages" : ""}</>}>
           <PlanAccounts S={S} />
           <Climb S={S} />
-          {S.children ? <ChildrenCost S={S} withoutWords="without children or their college" /> : null}
           {S.stages ? <StageLine S={S} /> : null}
-        </div>
+        </Fold>
+      ) : null}
+      {S?.children ? (
+        <Fold icon={BabyIcon} title="What the children cost" className="dsh-psum"
+          summary={<>{money(S.children.total)} until you retire at {S.retire}, at the most {money(S.children.peak.monthly)} per month</>}>
+          <ChildrenCost S={S} withoutWords="without children or their college" />
+        </Fold>
       ) : null}
 
-      <div className="dsh-r4">
+      <Fold icon={GaugeIcon} title="Readiness score" summary={readinessLine(R)}>
         <Readiness R={R} pr={pr} entries={data.entries} />
-      </div>
+      </Fold>
 
       {tl.lanes.length ? (
-        <div className="dsh-r4">
+        <Fold icon={CalendarDaysIcon} title="Your timeline" summary={timelineLine(pr)}>
           <Tile icon={CalendarDaysIcon} title="Your timeline" right={<span className="dsh-cap">Today is the dashed line</span>}>
             <div className="dsh-mt"><Timeline lanes={tl.lanes} from={tl.from} to={tl.to} now={nowYear()} /></div>
           </Tile>
-        </div>
+        </Fold>
       ) : null}
 
       <div className="dsh-r4">
@@ -170,6 +177,22 @@ export function Summary() {
       </div>
     </Frame>
   );
+}
+
+/** The readiness score in a line, as its tile says it. */
+function readinessLine(R: Results): string {
+  if (R.score == null) return "Not scored yet: it needs at least two of its five areas";
+  const pts = areaPoints(R.parts, R.score);
+  if (!R.partial) return `${R.score} of 100`;
+  const avail = FACTORS.reduce((s, f) => s + (R.parts[f.id] ? f.w : 0), 0), got = FACTORS.reduce((s, f) => s + (pts[f.id] ?? 0), 0);
+  return `${got} of ${avail} so far; ${100 - avail} points not scored yet`;
+}
+
+/** The timeline in a line: when each of you retires. */
+function timelineLine(pr: Profile): string {
+  const two = pr.who === "couple";
+  const parts = (two ? [pr.p1, pr.p2] : [pr.p1]).map((p, i) => (p.by && p.retire ? `${two ? nameOf(pr, i ? 1 : 0) + " retires in " : "You retire in "}${p.by + p.retire}` : null)).filter(Boolean);
+  return parts.length ? parts.join("; ") : "Your household along the years";
 }
 
 /** The years with no job's health plan before Medicare: called out, with
