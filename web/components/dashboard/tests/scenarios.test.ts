@@ -2,7 +2,7 @@
    year's saving and return, the words for it, and reading saved ones. */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { newScenario, nominalAt, readScenarios, scenarioSentence, spanOf, yearChange, type Scenario } from "../scenarios";
+import { lumpAccount, newScenario, nominalAt, ownOn, readScenarios, scenarioSentence, spanOf, withoutOwn, yearChange, type Scenario } from "../scenarios";
 
 const sc = (over: Partial<Scenario>): Scenario => ({ ...newScenario("x", "saving", 34, 0.075), from: 40, until: 0, mode: "amount", amount: 0, ramp: 0, acct: "auto", ...over });
 
@@ -53,13 +53,15 @@ test("later scenarios build on earlier ones", () => {
   assert.equal(yearChange([{ ...raise, on: false }, ease], 45, 65, 4000).cut, 400);
 });
 
-test("a lump sum arrives over its year, a twelfth a month, into its account", () => {
+test("a lump sum is the Calculator's own: it never touches the year's saving", () => {
   const s = { ...newScenario("l", "lump", 34, 0.075), from: 45, amount: 60000, acct: "roth" as const };
-  assert.equal(yearChange([s], 45, 65, 4000).add.roth, 5000);
-  assert.equal(yearChange([s], 46, 65, 4000).add.roth, 0);
+  assert.equal(yearChange([s], 45, 65, 4000).add.roth, 0);
+  assert.deepEqual(yearChange([s], 45, 65, 4000).tags, []);
   assert.deepEqual(spanOf(s, 65), [45, 46]);
-  const out = { ...s, amount: -24000, acct: "auto" as const };
-  assert.equal(yearChange([out], 45, 65, 4000).cut, 2000);
+  assert.equal(lumpAccount(s), "r");
+  assert.equal(lumpAccount({ ...s, acct: "auto" }), "b");
+  assert.ok(ownOn([s]));
+  assert.deepEqual(withoutOwn([s, sc({ id: "a" })]).map((x) => x.id), ["a"]);
 });
 
 test("a return steps or climbs from its age", () => {
@@ -79,7 +81,7 @@ test("each scenario is one sentence", () => {
   assert.equal(scenarioSentence(sc({ amount: 600, acct: "roth", until: 50, ramp: 3 }), 65, 0.075), "Save $600 per month more from 40 until 50, phased in over 3 years, into Roth.");
   assert.equal(scenarioSentence(sc({ mode: "pctYearly", amount: -10, from: 55 }), 65, 0.075), "Save 10% less each year from 55 to retirement, compounding (10% less than the year before, every year), out of brokerage first.");
   assert.equal(scenarioSentence({ ...newScenario("r", "returns", 34, 0.075), from: 44, nominal: 0.09, ramp: 10 }, 65, 0.075), "Returns climb from 7.5% to 9% over 10 years from 44, before inflation.");
-  assert.equal(scenarioSentence({ ...newScenario("l", "lump", 34, 0.075), from: 45, amount: 50000, acct: "brok" }, 65, 0.075), "$50,000 put into brokerage at 45.");
+  assert.equal(scenarioSentence({ ...newScenario("l", "lump", 34, 0.075), from: 45, amount: 50000, acct: "brok" }, 65, 0.075), "$50,000 put into brokerage on the day you turn 45.");
 });
 
 test("saved scenarios are read back, unsound ones dropped", () => {

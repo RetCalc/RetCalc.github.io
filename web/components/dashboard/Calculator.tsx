@@ -20,7 +20,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { GiftIcon, LineChartIcon, PencilIcon, PlusIcon, TrendingUpIcon } from "lucide-react";
 import type { ToolInputs } from "@/components/tools/ToolState";
-import type { StagesInputs } from "@/tools/stages/model";
+import type { LumpAccount, StagesInputs } from "@/tools/stages/model";
 import { CheckToggle } from "@/components/fields/CheckToggle";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Modal, ModalTop } from "@/components/shell/Modal";
@@ -30,7 +30,7 @@ import { sim } from "@/tools/guide/calc";
 import { kidStages } from "@/tools/plan/kids";
 import { COVER_ORDER, type CoverLine } from "@/tools/plan/model";
 import { Frame } from "./Frame";
-import { CALC_LOCKED, CALC_LOCKED_KEYS, calcInputs, calcOwnOf, planKidsOf } from "./calc";
+import { CALC_LOCKED, CALC_LOCKED_KEYS, calcInputs, calcOwnOf, lumpShortfalls, planKidsOf } from "./calc";
 import { ChildCostsDialog, childrenSentence } from "./children";
 import { coverScope, shiftCover } from "./cover";
 import { Choice } from "./fields";
@@ -97,13 +97,30 @@ function planOf(pr: Profile, entries: Entry[]): { fv: number | null; short: numb
 }
 const fvOf = (pr: Profile, entries: Entry[]) => planOf(pr, entries).fv;
 
+/** Why a scenario can't be kept: a saving cut that takes more than is
+    saved from some age (by so much a month), or a lump sum taken out of
+    an account that doesn't hold it that day. */
+type Short = { kind: "save"; from: number; most: number } | { kind: "lump"; from: number; have: number; need: number; acct: LumpAccount };
+
 /** Where a scenario takes more than is saved: the first age it does, and
     the most it falls short by a month, against the plan without it (the
     children's own shortfalls are already the plan's). Null when it fits. */
-function shortfall(withIt: number[], without: number[], age: number): { from: number; most: number } | null {
+function shortfall(withIt: number[], without: number[], age: number): Short | null {
   let from = -1, most = 0;
   withIt.forEach((s, k) => { const d = s - (without[k] ?? 0); if (d > 0.5) { if (from < 0) from = age + k; most = Math.max(most, d); } });
-  return from < 0 ? null : { from, most };
+  return from < 0 ? null : { kind: "save", from, most };
+}
+/** A lump sum taken out that its account can't cover, when `s` is on. */
+function lumpShort(pr: Profile, entries: Entry[], s: Scenario, age: number): Short | null {
+  if (s.kind !== "lump" || !(s.amount < 0)) return null;
+  const l = lumpShortfalls(withRow(pr, { ...s, on: true }), entries, age)[s.id];
+  return l ? { kind: "lump", from: s.from, have: l.have, need: l.need, acct: l.acct } : null;
+}
+const ACCT_WORDS: Record<LumpAccount, string> = { t: "traditional", r: "Roth", b: "brokerage", h: "HSA" };
+/** The shortfall in words. */
+function shortWords(sf: Short): string {
+  if (sf.kind === "save") return `More than you save from ${sf.from}: ${money(sf.most)} per month short. Saving stops at $0 there; lower it or start it later.`;
+  return `Not enough in ${ACCT_WORDS[sf.acct]} on the day you turn ${sf.from}: about ${money(sf.have)} there then, ${money(sf.need)} asked for. Lower it, or take it later.`;
 }
 
 /** The kind's colour, as a class on the row's mark and lane. */
@@ -153,17 +170,19 @@ export function Calculator() {
   // they are: the plan with it against the plan without it. Worked out
   // after the page draws (each is a run of the plan).
   const fxKey = JSON.stringify([pr, entries]);
-  const [fxState, setFxState] = useState<{ key: string; map: Record<string, number>; short: Record<string, { from: number; most: number }> }>({ key: "", map: {}, short: {} });
+  const [fxState, setFxState] = useState<{ key: string; map: Record<string, number>; short: Record<string, Short> }>({ key: "", map: {}, short: {} });
   useEffect(() => {
     const t = setTimeout(() => {
-      const out: Record<string, number> = {}, shorts: Record<string, { from: number; most: number }> = {};
+      const out: Record<string, number> = {}, shorts: Record<string, Short> = {};
       const list = rowsOf(pr), now = planOf(pr, entries);
       if (now.fv != null) {
         for (const r of list) {
           const flipped = planOf(withRow(pr, { ...r, on: !r.on }), entries);
           if (flipped.fv != null) out[r.id] = r.on ? now.fv - flipped.fv : flipped.fv - now.fv;
-          // A saving cut that takes more than is saved, on or off.
-          if (r.kind !== "children") { const sf = shortfall(r.on ? now.short : flipped.short, r.on ? flipped.short : now.short, age); if (sf) shorts[r.id] = sf; }
+          // A saving cut that takes more than is saved, or a lump sum its
+          // account can't cover, on or off.
+          const sf = r.kind === "saving" ? shortfall(r.on ? now.short : flipped.short, r.on ? flipped.short : now.short, age) : r.kind === "lump" ? lumpShort(pr, entries, r, age) : null;
+          if (sf) shorts[r.id] = sf;
         }
         // All the scenarios together (the children are the plan's own).
         if (liveScenarios(list).length) {
@@ -245,7 +264,7 @@ export function Calculator() {
               </div>
               <p className="dsh-sc-sent">{r.kind === "children" ? childrenSentence(pr) + (kidSpan ? " Their costs come out of saving as they change." : "") : scenarioSentence(r, retire, nominal)}</p>
               <div className={"dsh-sc-eff" + (e == null ? " dsh-sc-wait" : e < 0 ? " dsh-dn" : e > 0 ? " dsh-up" : "")}>{e == null ? (stale ? "Working it out…" : "") : <><b>{fx(e)}</b> at retirement{r.on ? "" : " if switched on"}</>}</div>
-              {sf ? <p className="dsh-sc-warn">More than you save from {sf.from}: {money(sf.most)} per month short. Saving stops at $0 there; lower it or start it later.</p> : null}
+              {sf ? <p className="dsh-sc-warn">{shortWords(sf)}</p> : null}
             </li>
           );
         })}
@@ -338,12 +357,12 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
     up(k === "nominal" ? { nominal: n / 100 } : k === "ramp" ? { ramp: Math.max(0, Math.round(n)) } : { amount: n });
   };
   // The effect, with the other scenarios as they are, worked out a moment behind the typing.
-  const [effect, setEffect] = useState<{ fv: number | null; short: { from: number; most: number } | null } | null>(null);
+  const [effect, setEffect] = useState<{ fv: number | null; short: Short | null } | null>(null);
   const sKey = JSON.stringify(s);
   useEffect(() => {
     const t = setTimeout(() => {
       const on = planOf(withRow(pr, { ...s, on: true }), entries), off = planOf(withoutRow(pr, s.id), entries);
-      setEffect({ fv: on.fv != null && off.fv != null ? on.fv - off.fv : null, short: shortfall(on.short, off.short, age) });
+      setEffect({ fv: on.fv != null && off.fv != null ? on.fv - off.fv : null, short: s.kind === "lump" ? lumpShort(pr, entries, s, age) : s.kind === "saving" ? shortfall(on.short, off.short, age) : null });
     }, 150);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the draft as a whole, by its key
@@ -417,7 +436,7 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
       <div className="dsh-sc-preview" aria-live="polite">
         <b>{scenarioSentence(s, retire, nominal)}</b>{where}
         <div className="dsh-sc-pe">At retirement: {effect == null ? <span className="dsh-muted">working it out…</span> : effect.fv == null ? <span className="dsh-muted">not known yet</span> : <b className={effect.fv < 0 ? "dsh-dn" : effect.fv > 0 ? "dsh-up" : ""}>{fx(effect.fv)}</b>} in today&apos;s dollars, with your other scenarios as they are.</div>
-        {effect?.short ? <div className="dsh-sc-pe dsh-sc-warn">You can&apos;t afford this as it stands: from {effect.short.from} it takes {money(effect.short.most)} per month more than you save then. Saving can&apos;t go below $0, and the plan never takes money back out of savings before retirement. Lower the amount, start it later, or end it sooner.</div> : null}
+        {effect?.short ? <div className="dsh-sc-pe dsh-sc-warn">You can&apos;t afford this as it stands. {shortWords(effect.short)}</div> : null}
       </div>
       <div className="formactions mt-4">
         {!fresh ? <Button variant="link" className="mr-auto" onClick={remove}>Remove this scenario</Button> : null}

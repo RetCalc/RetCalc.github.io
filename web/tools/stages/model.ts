@@ -5,7 +5,7 @@
 import type { ToolDef } from "@/components/tools/ToolState";
 import { finishAccounts, growthBlend, seniorsAt, targetRate, withHsaRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
 import { PPY, finalStageSolve, projectSeries } from "@/lib/engine/typed";
-import type { Plan, SeriesGlobals, Stage } from "@/lib/engine/types";
+import type { Plan, Series, SeriesGlobals, Stage } from "@/lib/engine/types";
 import { groupDigits, oneOf, parseNum } from "@/lib/format";
 import type { Household } from "@/lib/household";
 import { PERIODS, pctField } from "@/tools/advanced/model";
@@ -23,10 +23,15 @@ export interface StageInputs {
   glideOn: boolean; glideEnd: string; glideYears: string;
   sTrad?: number; sRoth?: number; sHsa?: number; gRates?: GrowthRates | null;
   cT?: string; cR?: string; cB?: string; cH?: string;
+  /** A one-off amount on the stage's first day, in today's dollars when
+      the stage is adjusted for inflation (negative takes it out), and the
+      account it goes into or comes out of. */
+  lump?: number; lumpTo?: LumpAccount;
 }
+export type LumpAccount = "t" | "r" | "b" | "h";
 
 /** A stage from numbers, as buildStages() showed one. */
-export function stageFields(st: Omit<Stage, "glide"> & { glide?: { on: boolean; endRate?: number; years?: number }; sTrad?: number; sRoth?: number; sHsa?: number; gRates?: GrowthRates }): StageInputs {
+export function stageFields(st: Omit<Stage, "glide"> & { glide?: { on: boolean; endRate?: number; years?: number }; sTrad?: number; sRoth?: number; sHsa?: number; gRates?: GrowthRates; lumpTo?: LumpAccount }): StageInputs {
   const glideOn = !!st.glide?.on;
   return {
     years: String(st.years), contrib: groupDigits(st.contrib, true), period: st.period,
@@ -36,6 +41,7 @@ export function stageFields(st: Omit<Stage, "glide"> & { glide?: { on: boolean; 
     ...(st.sTrad != null ? { sTrad: st.sTrad, sRoth: st.sRoth } : {}),
     ...(st.sHsa ? { sHsa: st.sHsa } : {}),
     ...(st.gRates ? { gRates: st.gRates } : {}),
+    ...(st.lump ? { lump: st.lump, lumpTo: st.lumpTo ?? "b" } : {}),
   };
 }
 
@@ -88,7 +94,7 @@ const rate = (s: string) => parseNum(s) / 100;
 
 /** A stage in numbers: the engine's Stage plus its account split. */
 export interface StageNum extends Stage {
-  sTrad?: number; sRoth?: number; sHsa?: number; gRates?: GrowthRates | null;
+  sTrad?: number; sRoth?: number; sHsa?: number; gRates?: GrowthRates | null; lumpTo?: LumpAccount;
 }
 
 /** Glide years held between 1 and the stage's length, as the field shows
@@ -105,6 +111,7 @@ export function readStage(st: StageInputs): StageNum {
     growth: rate(st.growth), nominal: rate(st.nominal), vol: rate(st.vol), adj: st.adj, name: st.name,
     glide: st.glideOn ? { on: true, endRate: rate(st.glideEnd), years: Math.max(1, Math.round(parseNum(st.glideYears))) } : { on: false },
     sTrad: st.sTrad, sRoth: st.sRoth, sHsa: st.sHsa, gRates: st.gRates,
+    ...(st.lump ? { lump: st.lump, lumpTo: st.lumpTo ?? "b" } : {}),
   };
 }
 
@@ -146,7 +153,8 @@ export function effectiveStages(g: Globals, list: StageNum[]): EffStage[] {
     const factor = st.adj && i > 0 ? Math.pow(1 + infl, start) : 1;
     const mine = st.contrib * factor;
     const mf = matchFactor(g, st, mine, salary);
-    const out: EffStage = { ...st, contrib: mine * mf, mf, mine, salary, nominal: st.nominal - fee };
+    // A lump is restated like the contribution; the match never applies to it.
+    const out: EffStage = { ...st, contrib: mine * mf, mf, mine, salary, nominal: st.nominal - fee, ...(st.lump ? { lump: st.lump * factor } : {}) };
     // the salary a later stage is matched on has had this stage's raises
     salary *= Math.pow(1 + (st.growth || 0), st.years || 0);
     // the glide's end rate is stored as typed, so the fee comes off it here too
@@ -182,6 +190,9 @@ export interface StagesPlan {
   stages: StageNum[];
   eff: EffStage[];
   B: AccountResult | null;
+  /** Each account's own run (split by account type): its balance at every
+      stage's start is `summary[i].start`, in the dollars of that day. */
+  slices: Partial<Record<LumpAccount, Series>> | null;
 }
 
 /** The run the inputs describe. Split by account type, the starting value is
@@ -192,7 +203,7 @@ export function stagesPlan(s: StagesInputs, household: Household | null): Stages
   const g: Globals = { initial: parseNum(s.initial), inflation: rate(s.inflation), withdrawal: rate(s.withdrawal),
     taxRate: rate(s.taxRate), fees: rate(s.fees), inflYears: "" };
   const stages = s.stages.map(readStage);
-  if (!s.saOn) return { g, stages, eff: effectiveStages(g, stages), B: null };
+  if (!s.saOn) return { g, stages, eff: effectiveStages(g, stages), B: null, slices: null };
   for (const st of stages) if (st.gRates) st.growth = stageGrowthBlend(st, g.fees, st.gRates);
   const a = readStageAccounts(s);
   g.initial = a.tradBal + a.rothBal + a.brokBal + a.hsaBal;
@@ -201,24 +212,27 @@ export function stagesPlan(s: StagesInputs, household: Household | null): Stages
   // of every dollar a stage puts in, 1/mf is yours (split three ways) and the rest is match
   const mfOf = (i: number) => eff[i].mf || 1;
   const gOf = (k: "t" | "r" | "b" | "h") => (i: number) => (stages[i].gRates ? withHsaRate(stages[i].gRates!)[k] : eff[i].growth);
-  const slice = (bal: number, share: (i: number) => number, grow?: (i: number) => number) =>
-    projectSeries({ ...g, initial: bal }, eff.map((st, i) => ({ ...st, contrib: st.contrib * share(i), growth: grow ? grow(i) : st.growth })));
-  const T = slice(a.tradBal, (i) => stageSplit(stages[i]).t / mfOf(i), gOf("t"));
-  const Ro = slice(a.rothBal, (i) => stageSplit(stages[i]).r / mfOf(i), gOf("r"));
-  const Br = slice(a.brokBal, (i) => stageSplit(stages[i]).b / mfOf(i), gOf("b"));
+  // Each account's slice of every stage; a stage's lump goes with the account it names.
+  const slice = (bal: number, share: (i: number) => number, grow?: (i: number) => number, acct?: LumpAccount, basis0?: number) =>
+    projectSeries({ ...g, initial: bal, ...(basis0 != null ? { basis0 } : {}) }, eff.map((st, i) => ({ ...st, contrib: st.contrib * share(i), growth: grow ? grow(i) : st.growth, lump: acct && st.lump && (st.lumpTo ?? "b") === acct ? st.lump : 0 })));
+  const basis0 = a.brokBasis == null ? a.brokBal : a.brokBasis;
+  const T = slice(a.tradBal, (i) => stageSplit(stages[i]).t / mfOf(i), gOf("t"), "t");
+  const Ro = slice(a.rothBal, (i) => stageSplit(stages[i]).r / mfOf(i), gOf("r"), "r");
+  const Br = slice(a.brokBal, (i) => stageSplit(stages[i]).b / mfOf(i), gOf("b"), "b", basis0);
   // The HSA's slice only when there's something in it: a plan without one runs as it always did.
-  const anyHsa = a.hsaBal > 0 || stages.some((st) => stageSplit(st).h > 0);
-  const Hs = anyHsa ? slice(a.hsaBal, (i) => stageSplit(stages[i]).h / mfOf(i), gOf("h")) : null;
+  const anyHsa = a.hsaBal > 0 || stages.some((st) => stageSplit(st).h > 0 || (st.lump && st.lumpTo === "h"));
+  const Hs = anyHsa ? slice(a.hsaBal, (i) => stageSplit(stages[i]).h / mfOf(i), gOf("h"), "h") : null;
   const Mt = slice(0, (i) => (mfOf(i) - 1) / mfOf(i));
   const years = T.totalYears;
-  const basis0 = a.brokBasis == null ? a.brokBal : a.brokBasis;
-  const B = finishAccounts(a, { trad: T.fv + Mt.fv, roth: Ro.fv, brok: Br.fv, hsa: Hs ? Hs.fv : 0 }, basis0 + Br.contribTotal,
+  // The brokerage's cost basis follows its contributions, and what a lump put in adds or one taken out carries off.
+  const B = finishAccounts(a, { trad: T.fv + Mt.fv, roth: Ro.fv, brok: Br.fv, hsa: Hs ? Hs.fv : 0 }, Br.basisEnd,
     Math.pow(1 + g.inflation, years), g.withdrawal, seniorsAt(a, years, household));
   B.matchTotal = Mt.contribTotal;
-  B.rothIn = Ro.contribTotal;
+  // Roth contributions, less any taken back out: those come out of contributions first.
+  B.rothIn = Math.max(0, Ro.contribTotal);
   B.years = years;
   g.taxRate = B.effRate;
-  return { g, stages, eff, B };
+  return { g, stages, eff, B, slices: { t: T, r: Ro, b: Br, ...(Hs ? { h: Hs } : {}) } };
 }
 
 /** The tax rate an after-tax income target is figured at. */

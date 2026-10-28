@@ -95,14 +95,19 @@ export interface MCResult { bands: MCBand[]; finals: number[]; trials: number; m
 export interface Stage {
   years: number; contrib: number; period: string; growth: number; nominal: number; vol?: number;
   mix?: number; glide?: Glide; adj?: boolean; name?: string;
+  /** A one-off amount on the stage's first day, in the dollars of that day;
+      negative takes it out. */
+  lump?: number;
 }
-export interface SeriesGlobals { initial: number; inflation: number; withdrawal: number; taxRate: number; fees: number; inflYears?: number | "" }
+export interface SeriesGlobals { initial: number; inflation: number; withdrawal: number; taxRate: number; fees: number; inflYears?: number | "";
+  /** The cost basis of `initial`, for `basisEnd` to follow. */
+  basis0?: number }
 export interface SeriesRow { stage: number; endYear: number; start: number; contrib: number; growth: number; end: number }
 export interface SeriesCalRow { year: number; stageFrom: number; stage: number; start: number; contrib: number; growth: number; end: number; t: number }
 export interface SeriesSummary { stage: number; years: number; endYear: number; start: number; contrib: number; growth: number; end: number; nominal: number }
 export interface Series {
   rows: SeriesRow[]; calRows: SeriesCalRow[]; summary: SeriesSummary[]; chartRows: { year: number; stage: number; end: number }[];
-  totalYears: number; inflYears: number; fv: number; invested: number; contribTotal: number; lastContrib: number;
+  totalYears: number; inflYears: number; fv: number; invested: number; contribTotal: number; lumpTotal: number; basisEnd: number; lastContrib: number;
   lastPeriod: string | null; lastContribReal: number; growth: number; fvReal: number; wd: number; wdReal: number;
   afterTax: number; afterTaxMo: number;
 }

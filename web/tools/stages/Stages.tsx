@@ -657,7 +657,9 @@ function StagesBehind({ s, nums, names, age }: { s: StagesInputs; nums: ReturnTy
     const ages = age != null ? fmtNum(age + start) + " to " + fmtNum(age + from) : "Year " + fmtNum(start) + " – " + fmtNum(from);
     // The rise after inflation: the stage's rate is kept before it.
     const rises = (1 + st.growth) / (1 + infl) - 1;
-    return { i, ages, years: st.years, mo, t: mo * sp.t, r: mo * sp.r, b: mo * sp.b, h: mo * sp.h, nominal: st.nominal, rises, name: names[i] };
+    // A lump sum on the stage's first day, said with the stage's words.
+    const lump = st.lump ? ` · ${money(Math.abs(st.lump))} ${st.lump < 0 ? "taken out of" : "put into"} ${{ t: "traditional", r: "Roth", b: "brokerage", h: "HSA" }[st.lumpTo ?? "b"]} on the first day` : "";
+    return { i, ages, years: st.years, mo, t: mo * sp.t, r: mo * sp.r, b: mo * sp.b, h: mo * sp.h, nominal: st.nominal, rises, name: names[i] + lump };
   });
   return (
     <>

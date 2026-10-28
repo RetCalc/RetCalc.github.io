@@ -88,8 +88,17 @@ export const liveScenarios = (list: Scenario[] | undefined) => (list ?? []).filt
 /** Whether a returns scenario is on: the Calculator then sets the return
     year by year, and its result is the plan's savings at retirement. */
 export const returnsOn = (list: Scenario[] | undefined) => liveScenarios(list).some((s) => s.kind === "returns");
-/** The profile's scenarios without any that change the return. */
-export const withoutReturns = (list: Scenario[] | undefined) => (list ?? []).filter((s) => s.kind !== "returns");
+/** The scenarios only the Calculator's stages can run: a different return,
+    and a lump sum (a one-off amount on the first day of an age, which the
+    plan's own saving year by year can't hold). With one on, the
+    Calculator's result is the plan's savings at retirement. */
+export const ownOn = (list: Scenario[] | undefined) => liveScenarios(list).some((s) => s.kind === "returns" || s.kind === "lump");
+/** The profile's scenarios without the Calculator's own kinds. */
+export const withoutOwn = (list: Scenario[] | undefined) => (list ?? []).filter((s) => s.kind !== "returns" && s.kind !== "lump");
+/** The lump sums on, in order. */
+export const lumpsOn = (list: Scenario[] | undefined) => liveScenarios(list).filter((s) => s.kind === "lump");
+/** A lump's account as the Stages model names it. */
+export const lumpAccount = (s: Scenario): "t" | "r" | "b" | "h" => (s.acct === "trad" ? "t" : s.acct === "roth" ? "r" : s.acct === "hsa" ? "h" : "b");
 
 /** Your ages a scenario runs over: from, and up to (not including). */
 export function spanOf(s: Scenario, end: number): [number, number] {
@@ -114,23 +123,22 @@ export interface YearChange {
 /** What the saving scenarios do in the year you're `t`, on saving of
     `own` a month then (your own, before the children's costs). Later
     scenarios build on earlier ones: a share works on the saving as the
-    ones before it leave it. A lump sum arrives over its year, a twelfth a
-    month. */
+    ones before it leave it. Lump sums aren't here: they're one-offs on
+    the Calculator's stages (calc.ts). */
 export function yearChange(list: Scenario[], t: number, end: number, own: number): YearChange {
   const out: YearChange = { cut: 0, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [] };
   let running = own;
   for (const s of liveScenarios(list)) {
-    if (s.kind === "returns" || !runs(s, t, end)) continue;
+    if (s.kind !== "saving" || !runs(s, t, end)) continue;
     const k = t - s.from;
     let d = 0;
-    if (s.kind === "lump") d = s.amount / 12;
-    else if (s.mode === "amount") d = s.amount * phased(s.ramp, k);
+    if (s.mode === "amount") d = s.amount * phased(s.ramp, k);
     else if (s.mode === "pct") d = (running * s.amount / 100) * phased(s.ramp, k);
     else d = running * (Math.pow(1 + s.amount / 100, k + 1) - 1);
     d = Math.round(d);
     if (d === 0) continue;
     out.tags.push(s.id);
-    if (s.kind !== "lump") running += d;
+    running += d;
     if (d > 0) { out.add[s.acct === "auto" ? "brok" : s.acct] += d; continue; }
     out.cut += -d;
     if (s.acct !== "auto") out.typed[s.acct] = (out.typed[s.acct] ?? 0) + -d;
@@ -166,7 +174,7 @@ export function scenarioSentence(s: Scenario, end: number, baseNominal: number):
   }
   if (s.kind === "lump") {
     const where = s.acct === "auto" ? "brokerage" : acctWord(s.acct);
-    return s.amount < 0 ? `${moneyText(s.amount)} taken out of ${where} at ${s.from}.` : `${moneyText(s.amount)} put into ${where} at ${s.from}.`;
+    return s.amount < 0 ? `${moneyText(s.amount)} taken out of ${where} on the day you turn ${s.from}.` : `${moneyText(s.amount)} put into ${where} on the day you turn ${s.from}.`;
   }
   const [, to] = spanOf(s, end);
   const until = to >= end ? "to retirement" : `until ${to}`;

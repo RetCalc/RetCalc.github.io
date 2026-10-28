@@ -394,8 +394,15 @@ export function fillWholeYears(pts, copy){
   });
   return out;
 }
+/* A stage can carry a one-off `lump`: money put in (or, negative, taken
+   out) on the stage's first day, before any period's growth, in the
+   dollars of that day. It counts in the contribution totals, and `g.basis0`,
+   when given, follows the cost basis: contributions and money put in add
+   to it, money taken out takes its share of it. `lumpTotal` and `basisEnd`
+   come back beside the rest. */
 export function projectSeries(g, stages){
   let bal = g.initial, contribTotal = 0, elapsed = 0, lastContrib = 0, lastPeriod = null, lastAt = 0;
+  let lumpTotal = 0, basis = g.basis0 == null ? 0 : g.basis0;
   const rows = [], summary = [];
   /* `rows` follow each stage's own years, so after a fractional stage they
      land on 16.92, 17.92... (the charts and Monte Carlo bands line up with
@@ -411,7 +418,12 @@ export function projectSeries(g, stages){
     const r = Math.pow(1 + st.nominal, 1 / ppy) - 1;
     let periodicR = r;
     const stageStart = bal;
-    let stageContrib = 0, yearStart = bal, yearContrib = 0, curYear = 1;
+    const lump = st.lump || 0;
+    if (lump){
+      if (lump < 0 && bal > 0) basis *= Math.max(0, 1 + lump / bal); else if (lump > 0) basis += lump;
+      bal += lump; lumpTotal += lump; contribTotal += lump;
+    }
+    let stageContrib = lump, yearStart = stageStart, yearContrib = lump, curYear = 1;
     for (let i = 1; i <= n; i++){
       const yearNo = Math.ceil(i / ppy);
       if (yearNo !== curYear){
@@ -427,10 +439,10 @@ export function projectSeries(g, stages){
       const t = elapsed + i / ppy, calYear = Math.max(1, Math.ceil(t - 1e-9));
       if (!cal || cal.year !== calYear){
         if (cal) calRows.push(cal);
-        cal = {year:calYear, stageFrom:si + 1, stage:si + 1, start:bal, contrib:0, t};
-      }
+        cal = {year:calYear, stageFrom:si + 1, stage:si + 1, start:bal - (i === 1 ? lump : 0), contrib:(i === 1 ? lump : 0), t};
+      } else if (i === 1 && lump){ cal.contrib += lump; }
       bal = bal * (1 + periodicR) + c;
-      contribTotal += c; stageContrib += c; yearContrib += c;
+      contribTotal += c; stageContrib += c; yearContrib += c; basis += c;
       lastContrib = c; lastPeriod = st.period; lastAt = elapsed + yearNo - 1;
       cal.stage = si + 1; cal.contrib += c; cal.end = bal; cal.t = t;
       cal.growth = cal.end - cal.start - cal.contrib;
@@ -458,7 +470,7 @@ export function projectSeries(g, stages){
   return {
     rows, calRows, summary,
     chartRows: fillWholeYears(chartRows, (pt, year) => Object.assign({}, pt, {year})), totalYears, inflYears:inflY,
-    fv:bal, invested: g.initial + contribTotal, contribTotal, lastContrib, lastPeriod,
+    fv:bal, invested: g.initial + contribTotal, contribTotal, lumpTotal, basisEnd: basis, lastContrib, lastPeriod,
     lastContribReal: lastContrib / Math.pow(1 + (g.inflation || 0), lastAt),
     growth: bal - g.initial - contribTotal,
     fvReal, wd: bal * g.withdrawal, wdReal, afterTax, afterTaxMo: afterTax / 12
@@ -548,6 +560,7 @@ export function monteCarlo(g, stages, trials, seed){
     let bal = g.initial, mi = 0;
     for (let si = 0; si < meta.length; si++){
       const mt = meta[si], st = mt.st;
+      bal += st.lump || 0;
       let curYear = 1;
       let m = mt.byYear ? mt.byYear[1].m : mt.m;
       let s = mt.byYear ? mt.byYear[1].s : mt.s;
@@ -1935,7 +1948,7 @@ export function historicalRuns(g, stages){
       const wc = Math.max(0, Math.min(1, w));
       plan.push({stage: si + 1,
                  year: (elapsedM + k) / 12,
-                 amount,
+                 amount, before: k === 1 ? (st.lump || 0) : 0,
                  w: wc, sv: wc * svOf, cash: (1 - wc) * cashOf});
     }
     elapsedM += months;
@@ -1965,7 +1978,7 @@ export function historicalRuns(g, stages){
         ? ((pl.w - pl.sv) * HIST_M_STOCK[idx] + pl.sv * HIST_MA_SV[idx] + (1 - pl.w - pl.cash) * HIST_M_BOND[idx] + pl.cash * HIST_MA_CASH[idx]) / 100
         : (pl.w * HIST_M_STOCK[idx] + (1 - pl.w) * HIST_M_BOND[idx]) / 100) - feeM;
       if (r <= -0.999) r = -0.999;
-      bal = bal * (1 + r) + pl.amount;
+      bal = (bal + pl.before) * (1 + r) + pl.amount;
       cum *= (1 + HIST_M_INFL[idx] / 100);
       if (mi < marks.length && marks[mi] === k){ paths[mi][wi] = bal / cum; mi++; }
     }

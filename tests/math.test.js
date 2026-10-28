@@ -94,6 +94,30 @@ group("Monte Carlo: lognormal draws keep the mean and volatility entered");
   eq(monteCarlo(g, st, 200, 42).median, monteCarlo(g, st, 200, 42).median, "same seed, same result");
 })();
 
+group("Stages: a one-off lump on a stage's first day");
+(function () {
+  var g = { initial: 100000, inflation: 0, withdrawal: .04, taxRate: 0, basis0: 60000 };
+  var a = [{ period: "Monthly", years: 10, contrib: 0, growth: 0, nominal: .06, vol: 0 }];
+  var b = [{ period: "Monthly", years: 10, contrib: 0, growth: 0, nominal: .06, vol: 0, lump: 50000 }];
+  var r = Math.pow(1 + Math.pow(1.06, 1 / 12) - 1, 120);
+  near(projectSeries(g, b).fv, 150000 * r, 1e-6, "money put in grows from the first day");
+  near(projectSeries(g, b).fv - projectSeries(g, a).fv, 50000 * r, 1e-6, "the lump alone earns the full stage");
+  eq(projectSeries(g, b).lumpTotal, 50000, "lumps are counted");
+  near(projectSeries(g, b).contribTotal, 50000, 1e-9, "and are part of the contributions");
+  near(projectSeries(g, b).basisEnd, 110000, 1e-9, "money put in adds to the cost basis");
+  var w = [{ period: "Monthly", years: 10, contrib: 0, growth: 0, nominal: .06, vol: 0, lump: -40000 }];
+  near(projectSeries(g, w).fv, 60000 * r, 1e-6, "money taken out leaves on the first day");
+  near(projectSeries(g, w).basisEnd, 60000 * .6, 1e-9, "and takes its share of the cost basis");
+  var S = projectSeries(g, [a[0], w[0]]);
+  near(S.summary[1].start, 100000 * r, 1e-6, "a stage's start balance is before its lump");
+  near(S.summary[1].contrib, -40000, 1e-9, "the lump is the stage's contribution");
+  near(S.summary[1].growth, S.summary[1].end - S.summary[1].start + 40000, 1e-6, "growth adds up around it");
+  near(monteCarlo(g, b, 20, 1).median, projectSeries(g, b).fvReal, .01, "Monte Carlo at zero volatility carries the lump");
+  var m = [{ period: "Monthly", years: 10, contrib: 500, growth: 0, nominal: .06, vol: 0, lump: 20000 }];
+  var H1 = historicalRuns({ initial: 100000, fees: 0 }, m), H0 = historicalRuns({ initial: 100000, fees: 0 }, [Object.assign({}, m[0], { lump: 0 })]);
+  ok(H1.finals[0] > H0.finals[0] + 20000 * .5, "history mode carries the lump too", H1.finals[0] + " vs " + H0.finals[0]);
+})();
+
 /* ---------------- tax ---------------- */
 group("Tax data: 2026 federal figures (Rev. Proc. 2025-32) and table shape");
 (function () {

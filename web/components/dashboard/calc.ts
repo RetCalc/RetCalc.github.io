@@ -6,11 +6,11 @@
 import { withDefaults } from "@/components/tools/ToolState";
 import { groupDigits, parseNum } from "@/lib/format";
 import { ADVANCED_DEF, type AdvancedInputs } from "@/tools/advanced/model";
-import { STAGES_DEF, stageFields, stagesCompute, type StageInputs, type StagesInputs } from "@/tools/stages/model";
+import { STAGES_DEF, readStage, stageFields, stagesCompute, type LumpAccount, type StageInputs, type StagesInputs } from "@/tools/stages/model";
 import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
 import { flow, growthLines, taxState } from "./flows";
 import { shiftCover } from "./cover";
-import { nominalAt, returnsOn, scenarioName, withoutReturns, yearChange, type Scenario } from "./scenarios";
+import { lumpAccount, lumpsOn, nominalAt, ownOn, scenarioName, withoutOwn, yearChange, type Scenario } from "./scenarios";
 import { KID_BASE } from "@/tools/stages/kids";
 import { ageOf, couple, holdings, realGrowth, results, spendMonth, type Results } from "./model";
 import { OUTSIDE_US, sum, type Entry, type Profile } from "./store";
@@ -78,6 +78,8 @@ interface PlanYear {
   /** The scenarios at work that year (their names), and the return before
       inflation it earns (a returns scenario changes it). */
   tags: string[]; nominal: number;
+  /** A lump sum on the year's first day, in today's dollars, and its account. */
+  lump?: { amount: number; to: LumpAccount };
 }
 
 /** A stage's name without the yearly growth in it ("after the raise" once
@@ -100,8 +102,12 @@ function planYears(R: Results, scen: Scenario[], nominal: number): PlanYear[] {
     // Which scenarios touch the year: the saving ones by what they do to
     // today's saving (a share of nothing is nothing), the returns ones by age.
     const Y = yearChange(scen, t, end, S.monthly), N = nominalAt(scen, t, nominal);
+    // Lump sums land on the year's first day; two the same year into one
+    // account add up (the first one's account when they differ).
+    const L = lumpsOn(scen).filter((x) => x.from === t && x.amount !== 0);
+    const lump = L.length ? { amount: L.reduce((a, x) => a + x.amount, 0), to: lumpAccount(L[0]) } : undefined;
     // A hidden scenario (its id starts with "__") does its work without a name.
-    out.push({ monthly: s.monthly, label: plainLabel(s.label), ...(s.split ? { split: s.split } : {}), tags: [...Y.tags, ...N.tags].filter((id) => !id.startsWith("__")).map(nameOf), nominal: N.nominal });
+    out.push({ monthly: s.monthly, label: plainLabel(s.label), ...(s.split ? { split: s.split } : {}), tags: [...Y.tags, ...N.tags, ...L.map((x) => x.id)].filter((id) => !id.startsWith("__")).map(nameOf), nominal: N.nominal, ...(lump ? { lump } : {}) });
   }
   return out;
 }
@@ -112,13 +118,14 @@ function planYears(R: Results, scen: Scenario[], nominal: number): PlanYear[] {
     puts the same amount in by retirement. */
 function planGroups(years: PlanYear[]) {
   const trend = (i: number) => (i === 0 ? 0 : Math.sign(Math.round(years[i].monthly - years[i - 1].monthly)));
-  const keyOf = (y: PlanYear) => y.label + "|" + y.tags.join(",") + "|" + y.nominal.toFixed(6);
+  const keyOf = (y: PlanYear) => y.label + "|" + y.tags.join(",") + "|" + y.nominal.toFixed(6) + (y.lump ? "|lump" : "");
   const groups: { from: number; to: number; label: string; key: string }[] = [];
   years.forEach((y, i) => {
     const last = groups[groups.length - 1], key = keyOf(y);
     // A rise into the year counts with the year before it, so a stage that
-    // grows starts at its first rise.
-    const same = last && last.key === key && (i - last.from < 2 || trend(i) === trend(i - 1)) && trend(i) >= 0;
+    // grows starts at its first rise. A lump sum's year starts a stage of
+    // its own: the lump lands on a stage's first day.
+    const same = !y.lump && last && last.key === key && (i - last.from < 2 || trend(i) === trend(i - 1)) && trend(i) >= 0;
     if (same) last.to = i + 1;
     else groups.push({ from: i, to: i + 1, label: y.tags.length ? y.label + ", " + y.tags.join(", ") : y.label, key });
   });
@@ -133,7 +140,7 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
   // A returns scenario is the Calculator's own: the plan runs on its one
   // return, and takes the Calculator's result (calcFvOf). The plan is read
   // without it here, so nothing goes round in circles.
-  const scen = pr.scenarios ?? [], retOn = returnsOn(scen), plan = retOn ? { ...pr, scenarios: withoutReturns(scen) } : pr;
+  const scen = pr.scenarios ?? [], retOn = ownOn(scen), plan = retOn ? { ...pr, scenarios: withoutOwn(scen) } : pr;
   const A = shared(plan, entries), own = A.tradC + A.rothC + A.brokC + A.hsaC;
   const R = results(plan, entries), F = A.F;
   // Both employers' match as one rate on what you put in before taxes and to
@@ -154,10 +161,10 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
     const r1 = y.split.r * (1 - hsaOfR), hsa = y.split.r - r1, t = Math.max(0, (y.split.t - p * r1) / (1 + p)), mine = t + y.split.r + y.split.b;
     return { mine, split: mine > 0 ? { sTrad: t / mine, sRoth: r1 / mine, ...(hsa > 0 ? { sHsa: hsa / mine } : {}) } : todaySplit };
   };
-  const stage = (years: number, y: Pick<PlanYear, "monthly" | "split"> & Partial<Pick<PlanYear, "nominal">>, growth: number, name?: string, adj = false): StageInputs => {
+  const stage = (years: number, y: Pick<PlanYear, "monthly" | "split"> & Partial<Pick<PlanYear, "nominal" | "lump">>, growth: number, name?: string, adj = false): StageInputs => {
     const m = mineOf(y);
     return {
-      ...stageFields({ years, contrib: Math.round(m.mine), period: "Monthly", growth: nom(growth), nominal: y.nominal ?? A.nominal, vol: 0.15, adj, ...m.split }),
+      ...stageFields({ years, contrib: Math.round(m.mine), period: "Monthly", growth: nom(growth), nominal: y.nominal ?? A.nominal, vol: 0.15, adj, ...m.split, ...(y.lump ? { lump: Math.round(y.lump.amount), lumpTo: y.lump.to } : {}) }),
       ...(name ? { name } : {}),
     };
   };
@@ -269,7 +276,7 @@ const fvs = new Map<string, number | null>();
     your changes there (or a returns scenario) move it away from the plan's
     own; null otherwise. */
 export function calcFvOf(pr: Profile, entries: Entry[]): number | null {
-  const retOn = returnsOn(pr.scenarios);
+  const retOn = ownOn(pr.scenarios);
   if (!retOn && !ownKeys(pr).length) return null;
   const key = JSON.stringify([pr, entries]);
   if (fvs.has(key)) return fvs.get(key)!;
@@ -280,5 +287,31 @@ export function calcFvOf(pr: Profile, entries: Entry[]): number | null {
   const out = Number.isFinite(fv) && (retOn || Math.abs(fv - was) >= 0.5) ? Math.max(0, fv) : null;
   if (fvs.size > 60) fvs.clear();
   fvs.set(key, out);
+  return out;
+}
+
+/** Lump sums taken out that the account can't cover on the day: by the
+    scenario's id, what the account holds that day and what's asked, both
+    in today's dollars. The Calculator's stages are the only run that
+    knows each account's balance along the way. */
+export function lumpShortfalls(pr: Profile, entries: Entry[], age: number): Record<string, { have: number; need: number; acct: LumpAccount }> {
+  const out: Record<string, { have: number; need: number; acct: LumpAccount }> = {};
+  const lumps = lumpsOn(pr.scenarios).filter((x) => x.amount < 0);
+  if (!lumps.length) return out;
+  const s = calcInputs(pr, entries), P = stagesCompute(s, null).P;
+  if (!P.slices) return out;
+  const infl = parseNum(s.inflation) / 100;
+  let start = 0;
+  s.stages.map(readStage).forEach((st, i) => {
+    if (st.lump && st.lump < 0) {
+      const acct = st.lumpTo ?? "b", run = P.slices![acct];
+      const have = run ? run.summary[i].start / Math.pow(1 + infl, start) : 0;
+      // The year's lumps, as the stage holds them together.
+      const here = lumps.filter((x) => x.from - age === start);
+      const need = here.reduce((a, x) => a + Math.max(0, -x.amount), 0);
+      if (need > have + 0.5) for (const x of here) out[x.id] = { have: Math.max(0, have), need, acct };
+    }
+    start += st.years;
+  });
   return out;
 }
