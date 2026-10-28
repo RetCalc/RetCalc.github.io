@@ -823,3 +823,19 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-sc-list .dsh-sc-row:first-child { padding-top: 4px; }
 .dsh-sc-nm { font-weight: 500; font-size: 14.5px; min-width: 0; flex: 1; }
 .dsh-sc-offtag { color: var(--ds-muted); font-weight: 400; }
+
+/* Changes ahead, the big view: the chart with the changes on, the lanes
+   under it on the same ages, then every change with its switch, words,
+   Edit and Remove (asked twice, in the row). Phones keep the list. */
+.dsh-ch { display: grid; gap: 16px; }
+.dsh-ch-chart { border: 1px solid var(--ds-rule); border-radius: 14px; padding: 12px 14px 8px; }
+.dsh-ch-fig { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.dsh-ch-fig .label { font-size: 12px; color: var(--ds-muted); }
+.dsh-ch-fig b { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.dsh-ch-chart .dsh-sc-lanes { padding: 10px 4px 2px; }
+.dsh-sc-top > [data-checkrow] { flex: 1; min-width: 0; }
+.dsh-sc-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--ds-raised); font-size: 13.5px; }
+.dsh-sc-confirm span { flex: 1; min-width: 12ch; }
+@media (max-width: 640px) {
+  .dsh-ch-chart { display: none; }
+}

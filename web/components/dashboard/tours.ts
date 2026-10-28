@@ -118,14 +118,14 @@ const savings: Tour<DashData> = { name: "Taxes & Savings", title: "Your taxes, a
 
 const calculator: Tour<DashData> = { name: "Calculator", title: "How your savings grow to retirement", read: plan,
   pages: [
-    { title: "Your scenarios", focus: "#btnAddScenario", tasks: () => [
-      { h: "A <b>scenario</b> is something you see coming, in a sentence: saving more or less from an age on, a lump sum put in or taken out, a different return, and your children. Each row shows what it does to your savings at retirement; switch one off to see your plan without it." },
-      { h: "<b>Add a scenario</b> picks a kind and asks for the ages and amounts, in today's dollars, with the effect shown as you type. <b>View or edit</b> opens every scenario with its sentence. One that takes more than you save, or more than an account holds that day, can't be kept." },
-      { h: "Scenarios are saved to your plan, so Retirement, the chance of success and the overview all follow them. Children's costs, and which accounts give up the money for them, are edited from their row. <b>Use the plan's figures</b>, at the top, puts fees and the other settings back." },
+    { title: "Changes ahead", focus: "#btnAddScenario", tasks: () => [
+      { h: "A <b>change</b> is something you see coming: saving more or less from an age on, a lump sum put in or taken out, a different return, and your children. Each row shows what it does to your savings at retirement; switch one off to see your plan without it." },
+      { h: "<b>Add a change</b> picks a kind and asks for a name, ages and amounts, in today's dollars, with the effect shown as you type. <b>View or edit</b> opens the big view: the chart, each change across your ages, and every one with its words, Edit and Remove. A change that takes more than you save, or more than an account holds that day, can't be kept." },
+      { h: "The changes are saved to your plan, so Retirement, the chance of success and the overview all follow them. Children's costs, and which accounts give up the money for them, are edited from their row. <b>Use the plan's figures</b>, at the top, puts fees and the other settings back." },
     ] },
     { title: "The stages behind this", focus: "#btnStagesBehind", tasks: () => [
-      { h: "Your plan and your scenarios, year by year, become <b>stages</b>: stretches of years when you save about the same. A child arriving, college, a line reaching its limit or a scenario starting each begins a new one." },
-      { h: "<b>See the stages</b> lists them by age: what goes into each account a month, how fast it rises after inflation, the return, any lump sum on the stage's first day, and what's going on. They're read, not edited: change a scenario to change them." },
+      { h: "Your plan and the changes ahead, year by year, become <b>stages</b>: stretches of years when you save about the same. A child arriving, college, a line reaching its limit or a change starting each begins a new one." },
+      { h: "<b>See the stages</b> lists them by age: what goes into each account a month, how fast it rises after inflation, the return, any lump sum on the stage's first day, and what's going on. They're read, not edited: change one of the changes ahead to change them." },
     ] },
     { title: "Your savings", focus: "#calcFacts", tasks: () => [
       { h: "Today's balances by account come from your latest entry on Net worth: <b>Traditional</b> (taxed when it comes out), <b>Roth</b> (tax-free), <b>Brokerage</b> with its cost basis, and <b>HSA</b>." },

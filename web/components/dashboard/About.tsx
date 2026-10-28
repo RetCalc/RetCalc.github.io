@@ -299,7 +299,7 @@ export function About() {
               <Group id="calc">
                 <Section id="calculator">
                   <p>Your Calculator is the Stages calculator, filled in from your plan and
-                  driven by <b>scenarios</b>: the things you see coming, each one sentence.
+                  driven by the <b>changes ahead</b>: the things you see coming.
                   <b>Save more or less</b> changes what you save from an age on, by dollars a
                   month or a share of what you&apos;d save then, all at once or phased in, into or
                   out of the account you name (a cut comes out of the accounts in the order
@@ -309,20 +309,22 @@ export function About() {
                   age on, stepped or climbing. <b>Children</b> are the plan&apos;s own row: their
                   costs and <b>How you cover it</b> are edited from it, and switching it off
                   runs the plan without them. Everything is in today&apos;s dollars, and each row
-                  says what it does to your savings at retirement, with the other scenarios as
-                  they are. A scenario that takes more than you save in any year, or a lump sum
+                  says what it does to your savings at retirement, with the other changes as
+                  they are. <b>View or edit</b> opens the big view: the chart, each change
+                  across your ages, and every one with its words, Edit and Remove. A change
+                  that takes more than you save in any year, or a lump sum
                   bigger than its account holds that day, can&apos;t be added or kept: saving
                   never goes below $0, and no tax is counted on a lump taken out (the
                   brokerage&apos;s cost basis at retirement does follow it).</p>
                   <p>Underneath, the stages are the plan&apos;s own saving year by year: every
                   change the plan makes, with children, college years, saving that grows each
-                  year to its limits, both employers&apos; match, and your scenarios on top, so
+                  year to its limits, both employers&apos; match, and the changes ahead on top, so
                   what it reaches at retirement is what your plan has. <b>See the stages</b>
-                  lists them by age, read-only: change a scenario to change them. Today&apos;s
+                  lists them by age, read-only: change one of the changes ahead to change them. Today&apos;s
                   balances and cost basis, pay and the match, filing status, state and
                   inflation are listed, not typed: they&apos;re set on Net worth, Income and
                   Profile. Anything else you change (the goal, fees, the chart&apos;s settings)
-                  is saved to your plan. Saving scenarios run inside the plan itself, so every
+                  is saved to your plan. Changes to saving run inside the plan itself, so every
                   tab follows them; a different return or a lump sum runs only here, and the
                   Calculator&apos;s result is then your savings at retirement everywhere.</p>
                   <p>Stages chains several periods together instead of holding one set of
@@ -335,7 +337,7 @@ export function About() {
                   <dl className="gloss">
                     <dt>The stages behind this</dt>
                     <dd>Each stage is a stretch of years when you save about the same; a child
-                    arriving, college, a line reaching its limit or a scenario starting each
+                    arriving, college, a line reaching its limit or a change starting each
                     begins a new one. The table gives each stage&apos;s ages, saving a month by
                     account (your own money before the match), <b>Rises</b> (how much its saving
                     grows each year after inflation, a steady rate fitted to the plan&apos;s

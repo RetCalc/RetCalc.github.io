@@ -91,8 +91,13 @@ export function Stages() {
   const locked = new Set(scope?.locked ?? []);
   const toast = useToast();
   const seed = useMcSeed();
-  const [mode, setMode] = useState<ChartMode>("band");
-  const [band, setBand] = useState("2");
+  const [modeOwn, setModeOwn] = useState<ChartMode>("band");
+  const [bandOwn, setBandOwn] = useState("2");
+  // The Dashboard keeps the chart's mode and band itself (its changes
+  // rebuild the stages, and the chart stays as it was).
+  const held = dash ? scope?.slots?.chart : undefined;
+  const mode = held ? held.mode : modeOwn, setMode = held ? held.setMode : setModeOwn;
+  const band = held ? held.band : bandOwn, setBand = held ? held.setBand : setBandOwn;
   const stageTable = useRef<HTMLTableElement>(null), yearTable = useRef<HTMLTableElement>(null);
 
   useHouseholdFill("stages", s, setState, (h, c) => {
@@ -145,7 +150,7 @@ export function Stages() {
   // The Dashboard marks where each scenario starts, in place of the stage boundaries.
   const scMarks = dash ? scope?.slots?.marks : undefined;
   const chart = useMemo(() => { const c = chartData(typed, V, mode, parseNum(band) / 100, seed); return scMarks ? { ...c, marks: scMarks } : c; }, [typed, V, mode, band, seed, scMarks]);
-  const markWord = scMarks ? "Scenario starts" : "Stage boundary";
+  const markWord = scMarks ? "A change starts" : "Stage boundary";
   const n = s.stages.length;
   const split = s.saOn;
 
@@ -302,9 +307,10 @@ export function Stages() {
               {/* The Dashboard: its scenarios in place of the stage list; the
                   stages they build are read, not edited. */}
               {dash ? <>
+                {locked.has("savings") ? <><GroupHead first>Your savings</GroupHead>{scope?.slots?.facts}</> : null}
                 {scope?.slots?.scenarios}
                 <GroupHead>The stages behind this</GroupHead>
-                <p className="hint mt-0 mb-2.5">Your plan and your scenarios, year by year, as the {n === 1 ? "stage" : n + " stages"} the calculator runs. Change a scenario to change them.</p>
+                <p className="hint mt-0 mb-2.5">Your plan and the changes ahead, year by year, as the {n === 1 ? "stage" : n + " stages"} the calculator runs. Change one of them to change these.</p>
                 <Button variant="outline" className="w-full" id="btnStagesBehind" disabled={!n} onClick={() => setBehind(true)}>{n === 1 ? "See the stage" : "See the " + n + " stages"}</Button>
                 {behind && n ? (
                   <Modal size="table" onClose={() => setBehind(false)}>
@@ -358,7 +364,7 @@ export function Stages() {
                 <div><span>Total contributed</span><span className="num" id="gTotalContrib">{money(R.contribTotal)}</span></div>
               </div>
 
-              {locked.has("savings") ? <><GroupHead>Your savings</GroupHead>{scope?.slots?.facts}</> : <>
+              {locked.has("savings") ? null : <>
               <GroupHead>Your savings</GroupHead>
               <div className="glidewrap acwrap mt-0">
                 <CheckToggle id="saToggle" on={split} onToggle={toggleAccounts} controls="saFields" tip={<TipDot k="staccttypes" />}>Split by account type</CheckToggle>
@@ -527,7 +533,6 @@ export function Stages() {
             chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100, markWord)} legendExtra={markWord}
             tipHead={(b) => <><b>Year {fmtNum(b.year)}</b> <span className="text-dim">&middot; stage {String(b.stage)}</span></>}
             target={portToday} targetLabel={TARGET_LABEL} />
-          {dash ? scope?.slots?.underChart : null}
         </div>
 
         {/* Milestones at full width, and Take it further under it as a slim

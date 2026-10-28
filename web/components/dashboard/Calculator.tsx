@@ -18,9 +18,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { GiftIcon, LineChartIcon, PencilIcon, PlusIcon, TrendingUpIcon } from "lucide-react";
+import { GiftIcon, LineChartIcon, PencilIcon, PlusIcon, TrendingUpIcon, XIcon } from "lucide-react";
 import type { ToolInputs } from "@/components/tools/ToolState";
-import type { LumpAccount, StagesInputs } from "@/tools/stages/model";
+import { stagesCompute, type LumpAccount, type StagesInputs } from "@/tools/stages/model";
+import { BandChart, type BandPoint } from "@/components/charts/BandChart";
+import { BandTipRows } from "@/components/charts/TipRows";
+import type { ChartMode } from "@/components/tools/Projection";
+import { projectSeries } from "@/lib/engine/typed";
+import { fmtNum } from "@/lib/format";
 import { CheckToggle } from "@/components/fields/CheckToggle";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Modal, ModalTop } from "@/components/shell/Modal";
@@ -43,7 +48,7 @@ import { parseNum } from "@/lib/format";
 import { KID_BASE } from "@/tools/stages/kids";
 import { Hosted } from "./host";
 import { newId, useDashboard, type Entry, type Profile } from "./store";
-import { ACCT_NAMES, CHILDREN_ID, acctWord, liveScenarios, newScenario, pctOf, scenarioName, scenarioSentence, spanOf, type Scenario, type ScenarioKind } from "./scenarios";
+import { ACCT_NAMES, CHILDREN_ID, acctWord, newScenario, pctOf, scenarioName, scenarioSentence, spanOf, type Scenario, type ScenarioKind } from "./scenarios";
 
 const Stages = dynamic(() => import("@/tools/stages/Stages").then((m) => m.Stages), { ssr: false });
 
@@ -95,7 +100,6 @@ function planOf(pr: Profile, entries: Entry[]): { fv: number | null; short: numb
   const a = answers(pr, entries);
   return { fv: a.fvTo ?? sim(a)?.fv ?? null, short: (a.yearly ?? []).map((y) => y.short) };
 }
-const fvOf = (pr: Profile, entries: Entry[]) => planOf(pr, entries).fv;
 
 /** Why a scenario can't be kept: a saving cut that takes more than is
     saved from some age (by so much a month), or a lump sum taken out of
@@ -154,6 +158,10 @@ export function Calculator() {
   // Bumped by "Use the plan's figures", so the calculator opens again from the plan.
   const [rev, setRev] = useState(0);
   const [dlg, setDlg] = useState<{ at: "pick" } | { at: "list" } | { at: "edit"; s: Scenario; fresh: boolean } | { at: "kids" } | null>(null);
+  // The chart's mode and band live here, so the tool starting over (a
+  // change switched on or off rebuilds its stages) never resets them.
+  const [chartMode, setChartMode] = useState<ChartMode>("band");
+  const [band, setBand] = useState("2");
   const { age, retire } = agesOf(pr);
   const nominal = (1 + realGrowth(pr)) * (1 + pr.assume.inflation) - 1;
   const rows = useMemo(() => rowsOf(pr), [pr]);
@@ -166,7 +174,7 @@ export function Calculator() {
     return { from: Math.min(...segs.map((s) => s.from)), to: Math.max(...segs.map((s) => s.to)), peak: -segs.reduce((m, s) => (Math.abs(s.change) > Math.abs(m) ? s.change : m), 0) };
   }, [kids, age, retire]);
 
-  // What each scenario does to savings at retirement, with the others as
+  // What each change does to savings at retirement, with the others as
   // they are: the plan with it against the plan without it. Worked out
   // after the page draws (each is a run of the plan).
   const fxKey = JSON.stringify([pr, entries]);
@@ -183,11 +191,6 @@ export function Calculator() {
           // account can't cover, on or off.
           const sf = r.kind === "saving" ? shortfall(r.on ? now.short : flipped.short, r.on ? flipped.short : now.short, age) : r.kind === "lump" ? lumpShort(pr, entries, r, age) : null;
           if (sf) shorts[r.id] = sf;
-        }
-        // All the scenarios together (the children are the plan's own).
-        if (liveScenarios(list).length) {
-          const f = fvOf({ ...pr, scenarios: (pr.scenarios ?? []).map((s) => (s.kind === "children" ? s : { ...s, on: false })) }, entries);
-          if (f != null) out.all = now.fv - f;
         }
       }
       setFxState({ key: fxKey, map: out, short: shorts });
@@ -209,75 +212,103 @@ export function Calculator() {
   const changed = Object.keys(pr.calcOwn ?? {}).some((k) => !CALC_LOCKED_KEYS.includes(k) && k !== "stages");
   const toggle = (s: Scenario) => setProfile((p) => withRow(p, { ...s, on: !s.on }));
   const edit = (s: Scenario) => setDlg(s.kind === "children" ? { at: "kids" } : { at: "edit", s, fresh: false });
+  const remove = (id: string) => setProfile((p) => withoutRow(p, id));
   const pick = (kind: ScenarioKind, over: Partial<Scenario>) => setDlg({ at: "edit", s: { ...newScenario(newId(), kind, age, nominal), ...over }, fresh: true });
 
-  // Where each scenario starts, on the chart (year 0 is now).
+  // Where each change starts, on the chart (year 0 is now).
   const marks = rows.map((r, i) => ({ r, i })).filter((x) => x.r.on).map(({ r, i }) => ({ year: (r.kind === "children" ? kidSpan?.from ?? age : r.from) - age, label: String(i + 1) })).filter((m) => m.year > 0)
     // Two starting the same year share one mark.
     .reduce<{ year: number; label: string }[]>((acc, m) => { const same = acc.find((x) => x.year === m.year); if (same) same.label += ", " + m.label; else acc.push(m); return acc; }, []);
-  const live = liveScenarios(rows).length, onCount = rows.filter((r) => r.on).length;
+  const onCount = rows.filter((r) => r.on).length;
+
+  /** A row's figure: what it does at retirement, with a marker when it can't be kept. */
+  const figureOf = (r: Scenario) => {
+    const e = effects[r.id], sf = shorts[r.id];
+    return <span className={"dsh-sc-fig" + (e == null ? "" : e < 0 ? " dsh-dn" : e > 0 ? " dsh-up" : "")} aria-live="polite" title={e == null ? undefined : fx(e) + " at retirement" + (r.on ? "" : " if switched on") + (sf ? ". " + shortWords(sf) : "")}>
+      {e == null ? (stale ? "…" : "") : fx(e)}{sf ? <span className="dsh-sc-flag" aria-label="Can't be kept as it stands">!</span> : null}
+    </span>;
+  };
+  const sentenceOf = (r: Scenario) => (r.kind === "children" ? childrenSentence(pr) + (kidSpan ? " Their costs come out of saving as they change." : "") : scenarioSentence(r, retire, nominal));
 
   const panel = (
     <div className="dsh-sc">
-      <h3 className="m-0 mb-1 text-sm font-semibold">Your scenarios</h3>
-      <p className="hint mt-0 mb-2.5">The things you see coming, each a sentence here and stages underneath. Switch one off to see your plan without it; later ones build on earlier ones.</p>
+      <h3 className="m-0 mb-1 text-sm font-semibold">Changes ahead</h3>
+      <p className="hint mt-0 mb-2.5">What you see coming, and what each does to your savings at retirement.</p>
       {rows.length ? (
-        <ol className="dsh-sc-rows" aria-label="Your scenarios">
-          {rows.map((r, i) => {
-            const e = effects[r.id], sf = shorts[r.id];
-            // Each row one line: the switch, the name, and what it does at
-            // retirement (a marker when it takes more than is saved).
-            const figure = <span className={"dsh-sc-fig" + (e == null ? "" : e < 0 ? " dsh-dn" : e > 0 ? " dsh-up" : "")} aria-live="polite" title={e == null ? undefined : fx(e) + " at retirement" + (r.on ? "" : " if switched on") + (sf ? ". More than you save from " + sf.from : "")}>
-              {e == null ? (stale ? "…" : "") : fx(e)}{sf ? <span className="dsh-sc-flag" aria-label="More than you save">!</span> : null}
-            </span>;
-            return (
-              <li key={r.id} className={"dsh-sc-row dsh-sc-line" + (r.on ? "" : " dsh-sc-off")}>
-                <CheckToggle id={"sc-" + r.id} on={r.on} onToggle={() => toggle(r)} tip={figure}><span className={"dsh-sc-mark " + kindClass(r)} aria-hidden="true" /><span className="dsh-sc-n">{i + 1}.&nbsp;</span>{scenarioName(r)}</CheckToggle>
-              </li>
-            );
-          })}
+        <ol className="dsh-sc-rows" aria-label="Changes ahead">
+          {rows.map((r, i) => (
+            <li key={r.id} className={"dsh-sc-row dsh-sc-line" + (r.on ? "" : " dsh-sc-off")}>
+              <CheckToggle id={"sc-" + r.id} on={r.on} onToggle={() => toggle(r)} tip={figureOf(r)}><span className={"dsh-sc-mark " + kindClass(r)} aria-hidden="true" /><span className="dsh-sc-n">{i + 1}.&nbsp;</span>{scenarioName(r)}</CheckToggle>
+            </li>
+          ))}
         </ol>
       ) : (
         <p className="hint mt-0 mb-2.5">None yet. A bigger house at 40, a promotion, easing off before you retire, an inheritance, or a different view on returns: add one and see what it does.{kids ? "" : " Children are added in Profile; they show here once they are."}</p>
       )}
-      {live > 0 && effects.all != null ? <p className={"dsh-sc-all" + (effects.all < 0 ? " dsh-dn" : effects.all > 0 ? " dsh-up" : "")}><b>{fx(effects.all)}</b> at retirement from your {live === 1 ? "scenario" : live + " scenarios"} together</p> : null}
       <div className="dsh-sc-btns">
         {rows.length ? <Button variant="outline" className="flex-1" id="btnViewScenarios" onClick={() => setDlg({ at: "list" })}><PencilIcon aria-hidden="true" />View or edit</Button> : null}
-        <Button variant="outline" className="flex-1" id="btnAddScenario" onClick={() => setDlg({ at: "pick" })}><PlusIcon aria-hidden="true" />Add a scenario</Button>
+        <Button variant="outline" className="flex-1" id="btnAddScenario" onClick={() => setDlg({ at: "pick" })}><PlusIcon aria-hidden="true" />Add a change</Button>
       </div>
     </div>
   );
 
-  /* The pop-up: every scenario with its sentence, its effect and any
-     shortfall, each with its own Edit. */
-  const list = (
-    <Modal size="wide" onClose={() => setDlg(null)}>
-      <ModalTop title="Your scenarios" onClose={() => setDlg(null)} />
-      <ol className="dsh-sc-rows dsh-sc-list" aria-label="Your scenarios">
-        {rows.map((r, i) => {
-          const e = effects[r.id], sf = shorts[r.id];
-          return (
-            <li key={r.id} className={"dsh-sc-row" + (r.on ? "" : " dsh-sc-off")}>
-              <div className="dsh-sc-top">
-                <div className="dsh-sc-nm"><span className={"dsh-sc-mark " + kindClass(r)} aria-hidden="true" /><span className="dsh-sc-n">{i + 1}.&nbsp;</span>{scenarioName(r)}{r.on ? "" : <span className="dsh-sc-offtag"> (off)</span>}</div>
-                <Button variant="outline" size="sm" onClick={() => edit(r)}><PencilIcon aria-hidden="true" />Edit</Button>
-              </div>
-              <p className="dsh-sc-sent">{r.kind === "children" ? childrenSentence(pr) + (kidSpan ? " Their costs come out of saving as they change." : "") : scenarioSentence(r, retire, nominal)}</p>
-              <div className={"dsh-sc-eff" + (e == null ? " dsh-sc-wait" : e < 0 ? " dsh-dn" : e > 0 ? " dsh-up" : "")}>{e == null ? (stale ? "Working it out…" : "") : <><b>{fx(e)}</b> at retirement{r.on ? "" : " if switched on"}</>}</div>
-              {sf ? <p className="dsh-sc-warn">{shortWords(sf)}</p> : null}
-            </li>
-          );
-        })}
-      </ol>
-      <div className="formactions mt-4">
-        <Button variant="outline" className="flex-1" onClick={() => setDlg({ at: "pick" })}><PlusIcon aria-hidden="true" />Add a scenario</Button>
-        <Button className="flex-1" onClick={() => setDlg(null)}>Done</Button>
-      </div>
-    </Modal>
+  const summary = <>{childrenSentence(pr)} <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Change them in Profile</Button></>;
+  return (
+    <Frame current="calculator" title="Calculator" sub="Filled in from your plan. The changes ahead and what you set here are saved to your plan, and its result is your savings at retirement everywhere.">
+      {changed ? (
+        <p className="dsh-cap dsh-mt6">Your own changes here are saved in place of the plan&apos;s figures, and this result is your savings at retirement on every tab.{" "}
+          <Button variant="link" size="inline" onClick={() => { setProfile((p) => ({ ...p, calcOwn: undefined })); setRev((r) => r + 1); }}>Use the plan&apos;s figures</Button></p>
+      ) : null}
+      {/* New child costs or changes build the stages again, from the plan. */}
+      <Hosted key={costsKey(pr) + "|" + JSON.stringify(pr.scenarios ?? []) + "|" + rev} household={null} cover={coverScope(flow(pr))} seed={seed} keep={keep}
+        locked={CALC_LOCKED} slots={{ kidsSummary: summary, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, marks: onCount ? marks : undefined, stagesAge: age, chart: { mode: chartMode, setMode: setChartMode, band, setBand } }}>
+        <Stages />
+      </Hosted>
+      {dlg?.at === "list" ? (
+        <ChangesDialog pr={pr} entries={entries} rows={rows} age={age} retire={retire} band={band} kidSpan={kidSpan} marks={marks}
+          figureOf={figureOf} sentenceOf={sentenceOf} shorts={shorts} toggle={toggle} edit={edit} remove={remove} add={() => setDlg({ at: "pick" })} close={() => setDlg(null)} />
+      ) : null}
+      {dlg?.at === "kids" ? <ChildCostsDialog close={() => setDlg(null)} /> : null}
+      {dlg?.at === "pick" ? <PickKind close={() => setDlg(null)} pick={pick} /> : null}
+      {dlg?.at === "edit" ? (
+        <ScenarioDialog s={dlg.s} fresh={dlg.fresh} pr={pr} entries={entries} age={age} retire={retire} nominal={nominal} close={() => setDlg(null)}
+          save={(s) => { setProfile((p) => withRow(p, s)); setDlg(null); }}
+          remove={() => { remove(dlg.s.id); setDlg(null); }} />
+      ) : null}
+    </Frame>
   );
+}
 
-  const lanes = rows.length ? (
-    <div className="dsh-sc-lanes" role="group" aria-label="Your scenarios across your ages">
+/* ---------- the big view: the chart, the lanes and every change ---------- */
+
+/** The chart's rate-band points for a profile's stages, in today's dollars. */
+function bandPoints(pr: Profile, entries: Entry[], bandPct: number): { pts: BandPoint[]; maxX: number } {
+  const V = stagesCompute(calcInputs(pr, entries), null), { P, R } = V, g = P.g;
+  if (!R.rows.length) return { pts: [], maxX: 0 };
+  const defl = (yr: number) => Math.pow(1 + g.inflation, yr);
+  const shift = (d: number) => P.eff.map((st) => ({ ...st, nominal: Math.max(-0.99, st.nominal + d) }));
+  const hiR = projectSeries(g, shift(bandPct)), loR = projectSeries(g, shift(-bandPct));
+  const pts: BandPoint[] = [{ year: 0, base: g.initial, hi: g.initial, lo: g.initial }, ...R.chartRows.map((r, i) => ({
+    year: r.year, base: r.end / defl(r.year),
+    hi: (hiR.chartRows[i] ? hiR.chartRows[i].end : r.end) / defl(r.year),
+    lo: (loR.chartRows[i] ? loR.chartRows[i].end : r.end) / defl(r.year),
+  }))];
+  return { pts, maxX: R.totalYears };
+}
+
+function ChangesDialog({ pr, entries, rows, age, retire, band, kidSpan, marks, figureOf, sentenceOf, shorts, toggle, edit, remove, add, close }: {
+  pr: Profile; entries: Entry[]; rows: Scenario[]; age: number; retire: number; band: string;
+  kidSpan: { from: number; to: number; peak: number } | null; marks: { year: number; label: string }[];
+  figureOf: (r: Scenario) => ReactNode; sentenceOf: (r: Scenario) => string; shorts: Record<string, Short>;
+  toggle: (r: Scenario) => void; edit: (r: Scenario) => void; remove: (id: string) => void; add: () => void; close: () => void;
+}) {
+  // Which row is asking "remove this?".
+  const [confirm, setConfirm] = useState<string | null>(null);
+  const key = JSON.stringify([pr, entries, band]);
+  const chart = useMemo(() => bandPoints(pr, entries, parseNum(band) / 100), [key]); // eslint-disable-line react-hooks/exhaustive-deps -- by its key
+  const fvNow = chart.pts.length ? chart.pts[chart.pts.length - 1].base : null;
+  const lanes = (
+    <div className="dsh-sc-lanes" role="group" aria-label="Your changes across your ages">
       {rows.map((r, i) => {
         const [f, t] = r.kind === "children" ? [kidSpan?.from ?? age, kidSpan?.to ?? retire] : spanOf(r, retire);
         const left = ((Math.max(age, f) - age) / (retire - age)) * 100, width = ((Math.min(retire, t) - Math.max(age, f)) / (retire - age)) * 100;
@@ -285,8 +316,8 @@ export function Calculator() {
         const fig = laneFigure(r, kidSpan);
         return (
           <div key={r.id} className="dsh-sc-lane">
-            <button type="button" className={"dsh-sc-bar " + kindClass(r) + (r.on ? "" : " dsh-sc-off")} style={{ "--sc-l": left + "%", "--sc-w": width + "%" } as React.CSSProperties} onClick={() => edit(r)}
-              title={scenarioName(r) + ": " + (r.kind === "children" ? childrenSentence(pr) : scenarioSentence(r, retire, nominal))}>
+            <button type="button" className={"dsh-sc-bar " + kindClass(r) + (r.on ? "" : " dsh-sc-off")} style={{ "--sc-l": left + "%", "--sc-w": width + "%" } as React.CSSProperties} onClick={() => toggle(r)}
+              title={scenarioName(r) + ": " + sentenceOf(r) + (r.on ? " Click to switch off." : " Click to switch on.")}>
               <span className="dsh-sc-n">{i + 1}.</span> {scenarioName(r)}{fig ? <span className="dsh-sc-fig">{fig}</span> : null}
             </button>
           </div>
@@ -294,29 +325,46 @@ export function Calculator() {
       })}
       <div className="dsh-sc-axis"><span>Age {age}, today</span><span>{Math.round((age + retire) / 2)}</span><span>Retiring at {retire}</span></div>
     </div>
-  ) : null;
-
-  const summary = <>{childrenSentence(pr)} <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Change them in Profile</Button></>;
+  );
   return (
-    <Frame current="calculator" title="Calculator" sub="Filled in from your plan. Your scenarios and what you change here are saved to your plan, and its result is your savings at retirement everywhere.">
-      {changed ? (
-        <p className="dsh-cap dsh-mt6">Your own changes here are saved in place of the plan&apos;s figures, and this result is your savings at retirement on every tab.{" "}
-          <Button variant="link" size="inline" onClick={() => { setProfile((p) => ({ ...p, calcOwn: undefined })); setRev((r) => r + 1); }}>Use the plan&apos;s figures</Button></p>
-      ) : null}
-      {/* New child costs or scenarios build the stages again, from the plan. */}
-      <Hosted key={costsKey(pr) + "|" + JSON.stringify(pr.scenarios ?? []) + "|" + rev} household={null} cover={coverScope(flow(pr))} seed={seed} keep={keep}
-        locked={CALC_LOCKED} slots={{ kidsSummary: summary, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, underChart: lanes, marks: onCount ? marks : undefined, stagesAge: age }}>
-        <Stages />
-      </Hosted>
-      {dlg?.at === "list" ? list : null}
-      {dlg?.at === "kids" ? <ChildCostsDialog close={() => setDlg(null)} /> : null}
-      {dlg?.at === "pick" ? <PickKind close={() => setDlg(null)} pick={pick} /> : null}
-      {dlg?.at === "edit" ? (
-        <ScenarioDialog s={dlg.s} fresh={dlg.fresh} pr={pr} entries={entries} age={age} retire={retire} nominal={nominal} close={() => setDlg(null)}
-          save={(s) => { setProfile((p) => withRow(p, s)); setDlg(null); }}
-          remove={() => { setProfile((p) => withoutRow(p, dlg.s.id)); setDlg(null); }} />
-      ) : null}
-    </Frame>
+    <Modal size="table" onClose={close}>
+      <ModalTop title="Changes ahead" onClose={close} />
+      <div className="dsh-ch">
+        <div className="dsh-ch-chart">
+          <div className="dsh-ch-fig"><span className="label">Savings at retirement, in today&apos;s dollars</span><b>{fvNow != null ? money(fvNow) : ""}</b></div>
+          {chart.pts.length ? <BandChart id="chg" pts={chart.pts} maxX={chart.maxX} mode="band" enhanced stageMarks={marks} ariaLabel="Your savings over your ages, with the changes switched on"
+            tip={(b) => <><b>Age {fmtNum(age + b.year)}</b><BandTipRows b={b} /></>} /> : null}
+          {lanes}
+        </div>
+        <ol className="dsh-sc-rows dsh-sc-list" aria-label="Changes ahead">
+          {rows.map((r, i) => {
+            const sf = shorts[r.id];
+            return (
+              <li key={r.id} className={"dsh-sc-row" + (r.on ? "" : " dsh-sc-off")}>
+                <div className="dsh-sc-top">
+                  <CheckToggle id={"chg-" + r.id} on={r.on} onToggle={() => toggle(r)} tip={figureOf(r)}><span className={"dsh-sc-mark " + kindClass(r)} aria-hidden="true" /><span className="dsh-sc-n">{i + 1}.&nbsp;</span>{scenarioName(r)}</CheckToggle>
+                  <Button variant="outline" size="sm" onClick={() => edit(r)}><PencilIcon aria-hidden="true" />Edit</Button>
+                  {r.kind === "children" ? null : <Button variant="ghost" size="icon-sm" aria-label={"Remove " + scenarioName(r)} onClick={() => setConfirm(r.id)}><XIcon aria-hidden="true" /></Button>}
+                </div>
+                <p className="dsh-sc-sent">{sentenceOf(r)}</p>
+                {sf ? <p className="dsh-sc-warn">{shortWords(sf)}</p> : null}
+                {confirm === r.id ? (
+                  <div className="dsh-sc-confirm" role="alertdialog" aria-label={"Remove " + scenarioName(r) + "?"}>
+                    <span>Remove <b>{scenarioName(r)}</b>? It can&apos;t be brought back.</span>
+                    <Button variant="destructive" size="sm" onClick={() => { remove(r.id); setConfirm(null); }}>Remove</Button>
+                    <Button variant="outline" size="sm" onClick={() => setConfirm(null)}>Keep</Button>
+                  </div>
+                ) : null}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+      <div className="formactions mt-4">
+        <Button variant="outline" className="flex-1" onClick={add}><PlusIcon aria-hidden="true" />Add a change</Button>
+        <Button className="flex-1" onClick={close}>Done</Button>
+      </div>
+    </Modal>
   );
 }
 
@@ -331,8 +379,8 @@ const KINDS: { kind: ScenarioKind; icon: ReactNode; title: string; sub: string; 
 function PickKind({ close, pick }: { close: () => void; pick: (kind: ScenarioKind, over: Partial<Scenario>) => void }) {
   return (
     <Modal size="wide" onClose={close}>
-      <ModalTop title="Add a scenario" onClose={close} />
-      <p className="hint mt-0 mb-3">What do you see coming? Pick one; you&apos;ll name it and put ages and amounts to it next. Children are added in Profile.</p>
+      <ModalTop title="Add a change" onClose={close} />
+      <p className="hint mt-0 mb-3">What do you see coming? Pick one, then put a name, ages and amounts to it. Children are added in Profile.</p>
       <div className="dsh-choices dsh-sc-kinds">
         {KINDS.map((k) => <Choice key={k.title} on={false} icon={k.icon} title={k.title} sub={k.sub} onClick={() => pick(k.kind, k.over)} />)}
       </div>
@@ -428,18 +476,18 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
   const where = s.kind === "saving" && s.acct !== "auto" && less ? ` The rest comes out of the others in the dashboard's order once ${acctWord(s.acct)} runs out.` : "";
   return (
     <Modal size="wide" onClose={close} focus="#scName">
-      <ModalTop title={fresh ? KINDS.find((k) => k.kind === s.kind)?.title ?? "Add a scenario" : scenarioName(s)} onClose={close} />
+      <ModalTop title={fresh ? KINDS.find((k) => k.kind === s.kind)?.title ?? "Add a change" : scenarioName(s)} onClose={close} />
       <div className="dsh-sc-form">
         {name}
         {form}
       </div>
       <div className="dsh-sc-preview" aria-live="polite">
         <b>{scenarioSentence(s, retire, nominal)}</b>{where}
-        <div className="dsh-sc-pe">At retirement: {effect == null ? <span className="dsh-muted">working it out…</span> : effect.fv == null ? <span className="dsh-muted">not known yet</span> : <b className={effect.fv < 0 ? "dsh-dn" : effect.fv > 0 ? "dsh-up" : ""}>{fx(effect.fv)}</b>} in today&apos;s dollars, with your other scenarios as they are.</div>
+        <div className="dsh-sc-pe">At retirement: {effect == null ? <span className="dsh-muted">working it out…</span> : effect.fv == null ? <span className="dsh-muted">not known yet</span> : <b className={effect.fv < 0 ? "dsh-dn" : effect.fv > 0 ? "dsh-up" : ""}>{fx(effect.fv)}</b>} in today&apos;s dollars, with your other changes as they are.</div>
         {effect?.short ? <div className="dsh-sc-pe dsh-sc-warn">You can&apos;t afford this as it stands. {shortWords(effect.short)}</div> : null}
       </div>
       <div className="formactions mt-4">
-        {!fresh ? <Button variant="link" className="mr-auto" onClick={remove}>Remove this scenario</Button> : null}
+        {!fresh ? <Button variant="link" className="mr-auto" onClick={remove}>Remove this change</Button> : null}
         <Button variant="outline" onClick={close}>Cancel</Button>
         <Button disabled={cant} onClick={() => { if (!cant) save({ ...s, name: s.name.trim() }); }}>{fresh ? "Add it" : "Save"}</Button>
       </div>
