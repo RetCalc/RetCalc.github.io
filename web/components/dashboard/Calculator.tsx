@@ -385,6 +385,10 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
         <option value="0">Retirement</option>
         {ages(s.from + 1, retire - 1).map((a) => <option key={a} value={a}>Age {a}</option>)}
       </SelectField>
+      <Field id="scMode" label="As" className="dsh-sc-full">
+        <Segmented id="scMode" size="fill" attr="data-mode" options={[["amount", "$ per month"], ["pct", "% of saving"], ["pctYearly", "% each year"]] as const} value={s.mode}
+          onChange={(v) => { const m = v as Scenario["mode"]; const a = m === "amount" ? (less ? -500 : 500) : less ? -10 : 10; up({ mode: m, amount: a }); setTxt((c) => ({ ...c, amount: String(a) })); }} />
+      </Field>
       <div className="dsh-sc-amt">
         {s.mode === "amount"
           ? <MoneyField id="scAmount" label={<TipLabel text="Change saving by" id="scAmount" />} unit="/mo" value={txt.amount.replace(/^-/, "")} onValueChange={(v) => typed("amount")((less ? "-" : "") + v)} />
@@ -393,10 +397,6 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
           <Segmented id="scSign" size="fill" attr="data-sign" options={[["more", "More"], ["less", "Less"]] as const} value={less ? "less" : "more"} onChange={(v) => typed("amount")((v === "less" ? "-" : "") + txt.amount.replace(/^-/, ""))} />
         </Field>
       </div>
-      <Field id="scMode" label="As" className="dsh-sc-full">
-        <Segmented id="scMode" size="fill" attr="data-mode" options={[["amount", "$ per month"], ["pct", "% of saving"], ["pctYearly", "% each year"]] as const} value={s.mode}
-          onChange={(v) => { const m = v as Scenario["mode"]; const a = m === "amount" ? (less ? -500 : 500) : less ? -10 : 10; up({ mode: m, amount: a }); setTxt((c) => ({ ...c, amount: String(a) })); }} />
-      </Field>
       {s.mode !== "pctYearly" ? <Field id="scHow" label="How">
         <Segmented id="scHow" size="fill" attr="data-how" options={[["0", "All at once"], ["1", "Phased in"]] as const} value={s.ramp > 0 ? "1" : "0"} onChange={(v) => { const r = v === "1" ? Math.max(1, s.ramp || 3) : 0; up({ ramp: r }); setTxt((c) => ({ ...c, ramp: String(r) })); }} />
       </Field> : null}
