@@ -33,6 +33,8 @@ interface Props<P extends BandPoint> {
   tip: (p: P) => React.ReactNode;
   stageMarks?: { year: number; label: string }[];
   xOffset?: number;
+  /** A taller drawing (height over width) and a narrower left gutter. */
+  aspect?: number; gutter?: number;
   overlay?: { pts: { year: number; value: number }[]; color?: string; dash?: string; width?: number }[];
   traces?: { xs: number[]; lines: (number | null)[][] };
   noLoLine?: boolean;
@@ -68,9 +70,9 @@ export interface ChartGeometry {
 
 
 export function BandChart<P extends BandPoint>(props: Props<P>) {
-  const { id, pts, maxX, mode = "band", ariaLabel, tip, stageMarks = [], xOffset = 0, overlay = [], traces, noLoLine, enhanced, extras, colors, screenOnly: so } = props;
+  const { id, pts, maxX, mode = "band", ariaLabel, tip, stageMarks = [], xOffset = 0, overlay = [], traces, noLoLine, enhanced, extras, colors, screenOnly: so, aspect, gutter } = props;
   const cBase = colors?.base ?? SERIES.plan, cHi = colors?.hi ?? SERIES.teal, cLo = colors?.lo ?? SERIES.rose;
-  const size = useChartSize();
+  const size = useChartSize({ aspect, gutter });
   const uid = useId().replace(/:/g, "");
   const { narrow, W, T, B, L, pw, ph, fs, sw } = size;
 

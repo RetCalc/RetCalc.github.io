@@ -534,7 +534,7 @@ export function Stages() {
               set per stage, in your plan.</>}
             chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100, markWord)} legendExtra={markWord}
             tipHead={(b) => <><b>{age0 != null ? "Age " + fmtNum(age0 + b.year) : "Year " + fmtNum(b.year)}</b> <span className="text-dim">&middot; stage {String(b.stage)}</span></>}
-            target={portToday} targetLabel={TARGET_LABEL} xOffset={age0 ?? 0} />
+            target={portToday} targetLabel={TARGET_LABEL} xOffset={age0 ?? 0} {...(dash ? { layout: "fixed" as const, aspect: 0.5, gutter: 64 } : {})} />
         </div>
 
         {/* Milestones at full width, and Take it further under it as a slim

@@ -12,10 +12,12 @@ import { SERIES } from "@/lib/hues";
 
 export const MONO = "ui-monospace,SF Mono,Menlo,monospace";
 
-export function useChartSize() {
+/** `aspect` is the drawing's height over its width on wider screens (a
+    taller chart); `gutter` its left margin, for the value labels. */
+export function useChartSize(opts?: { aspect?: number; gutter?: number }) {
   const narrow = useNarrow();
-  const W = narrow ? 470 : 900, H = narrow ? 400 : 340;
-  const L = narrow ? 60 : 78, Rp = narrow ? 12 : 14, T = narrow ? 12 : 14, B = narrow ? 34 : 30;
+  const W = narrow ? 470 : 900, H = narrow ? 400 : opts?.aspect ? Math.round(W * opts.aspect) : 340;
+  const L = narrow ? 60 : opts?.gutter ?? 78, Rp = narrow ? 12 : 14, T = narrow ? 12 : 14, B = narrow ? 34 : 30;
   // Label size, in drawing units: the drawing is shown at about 0.85 of its
   // width on a desktop and 0.68 on a phone, so these land near 11px on screen.
   return { narrow, W, H, L, Rp, T, B, fs: narrow ? 16.5 : 13, sw: narrow ? 1.7 : 1, pw: W - L - Rp, ph: H - T - B };

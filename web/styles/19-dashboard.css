@@ -844,3 +844,15 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 @media (max-width: 640px) {
   .dsh-ch-lanes { display: none; }
 }
+
+/* The Calculator's chart: one row of the same height for the mode's own
+   control, so switching modes moves nothing; Full screen over the page
+   on wider screens (not on phones or touch). */
+.dsh-embed .mcbar-fixed { min-height: 72px; align-items: center; padding-top: 10px; }
+.dsh-embed .mcbar-fixed .hint { flex: 1 1 200px; }
+.dsh-embed .mcbar-fixed .chart-fullbtn { margin-left: auto; }
+.dsh-embed .chart-full { position: fixed; inset: 0; z-index: 95; background: var(--ds-ground); padding: 20px 28px; overflow: auto; }
+.dsh-embed .chart-full .chartwrap > svg { max-width: none; }
+@media (max-width: 760px), (hover: none) and (pointer: coarse) {
+  .dsh-embed .chart-fullbtn, .dsh-embed .chart-full { display: none; }
+}

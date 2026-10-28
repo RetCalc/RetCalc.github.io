@@ -6,8 +6,9 @@
    "chart" and "chartS", as the old pages had them. From renderProjection(),
    drawChart(), renderSeries() and drawSeriesChart() in src/js/app/. */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BandChart, type BandPoint } from "@/components/charts/BandChart";
+import { MaximizeIcon, MinimizeIcon } from "lucide-react";
 import { HistBarNote, HistSummary, McSummary } from "@/components/charts/HistNotes";
 import { HistLegend, Legend, McLegend } from "@/components/charts/Legend";
 import { BandTipRows, FanTipRows } from "@/components/charts/TipRows";
@@ -181,52 +182,95 @@ interface PanelProps {
   targetLabel: string;
   /** Added to the years on the x axis: your age at year 0, where it's known. */
   xOffset?: number;
+  /** The Dashboard's layout: the mode switch alone in the header, one row
+      of the same height under it holding the mode's own control (the
+      band, the asset mix, Re-roll), a taller drawing, and Full screen on
+      wider screens. */
+  layout?: "fixed";
+  aspect?: number; gutter?: number;
 }
 
 export function ProjectionChart(props: PanelProps) {
   const { sfx, segId, ariaLabel, mode, setMode, band, setBand, chart, legendExtra, target, targetLabel } = props;
   const toast = useToast();
   const [tracesOn, setTracesOn] = useState(true);
-  return (
+  const fixed = props.layout === "fixed";
+  // Full screen (the fixed layout): the same card over the page, the
+  // drawing as tall as the window allows. Escape closes it.
+  const [full, setFull] = useState(false);
+  const [fullAspect, setFullAspect] = useState(0.5);
+  useEffect(() => {
+    if (!full) return;
+    const fit = () => setFullAspect(Math.max(0.3, Math.min(0.8, (window.innerHeight - 400) / Math.max(400, window.innerWidth - 120))));
+    fit();
+    const key = (e: KeyboardEvent) => { if (e.key === "Escape") setFull(false); };
+    window.addEventListener("resize", fit); window.addEventListener("keydown", key);
+    return () => { window.removeEventListener("resize", fit); window.removeEventListener("keydown", key); };
+  }, [full]);
+  const bandField = (
+    <Affixed prefix="±" suffix="%" className="w-24 max-sm:w-27.5">
+      <NumberInput id={"band" + sfx} nonNeg step={0.5} value={band} onValueChange={setBand} aria-label="Return comparison band, percent" />
+    </Affixed>
+  );
+  const mixField = props.mixButton ?? (
+    <Field id={"histMix" + sfx} label={<Tipped text="Stock mix" k="histmix" />}>
+      <Affixed suffix="%" className="w-26"><NumberInput id={"histMix" + sfx} nonNeg step={5} max={100} value={props.histMix} onValueChange={props.setHistMix} /></Affixed></Field>
+  );
+  const glideField = (
+    <Field id={"histMixEnd" + sfx} wrapId={"histGlideWrap" + sfx} hidden={!props.glides} label={<Tipped text="Glides to" k="histglidemix" />}>
+      <Affixed suffix="%" className="w-26"><NumberInput id={"histMixEnd" + sfx} nonNeg step={5} max={100} value={props.histMixEnd} onValueChange={props.setHistMixEnd} /></Affixed></Field>
+  );
+  const rerollBtn = (
+    <Button variant="outline" id={"btnReroll" + sfx} onClick={() => {
+      reroll();
+      toast("New set of runs");
+    }}>Re-roll</Button>
+  );
+  const body = (aspect: number | undefined, inFull: boolean) => (
     <Card>
       {/* On a phone the controls drop under the title: the switch full
           width in three equal segments, the mode's field after it. */}
       <CardHeader className="max-sm:grid-cols-1"><CardTitle>Balance over time, inflation adjusted</CardTitle>
         <CardAction className="max-sm:col-start-1 max-sm:row-span-1 max-sm:row-start-2 max-sm:w-full max-sm:justify-self-stretch">
-          <Segmented id={segId} size="chart" attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />{"\n          "}
-          <span className="modeopt" id={"optBand" + sfx} hidden={mode !== "band"}>
-            <Affixed prefix="±" suffix="%" className="w-24 max-sm:w-27.5">
-              <NumberInput id={"band" + sfx} nonNeg step={0.5} value={band} onValueChange={setBand} aria-label="Return comparison band, percent" />
-            </Affixed>
-          </span>
+          <Segmented id={segId + (inFull ? "F" : "")} size="chart" attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />{"\n          "}
+          {fixed ? null : <span className="modeopt" id={"optBand" + sfx} hidden={mode !== "band"}>{bandField}</span>}
         </CardAction></CardHeader>
-      <div className="mcbar" id={"histBar" + sfx} hidden={mode !== "hist"}>
-        {props.mixButton ?? (
-          <Field id={"histMix" + sfx} label={<Tipped text="Stock mix" k="histmix" />}>
-            <Affixed suffix="%" className="w-26"><NumberInput id={"histMix" + sfx} nonNeg step={5} max={100} value={props.histMix} onValueChange={props.setHistMix} /></Affixed></Field>
-        )}
-        <Field id={"histMixEnd" + sfx} wrapId={"histGlideWrap" + sfx} hidden={!props.glides} label={<Tipped text="Glides to" k="histglidemix" />}>
-          <Affixed suffix="%" className="w-26"><NumberInput id={"histMixEnd" + sfx} nonNeg step={5} max={100} value={props.histMixEnd} onValueChange={props.setHistMixEnd} /></Affixed></Field>
-        <div className="hint m-0" id={"histNote" + sfx}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div>
-      </div>
-      <div className="mcbar" id={"mcBar" + sfx} hidden={mode !== "mc"}>
-        {props.mcFields}
-        <Button variant="outline" id={"btnReroll" + sfx} onClick={() => {
-          reroll();
-          toast("New set of runs");
-        }}>Re-roll</Button>
-        <div className="hint m-0">{props.mcHint}</div>
-      </div>
-      <BandChart id={sfx} pts={chart.pts} maxX={props.maxX} mode={chart.fan ? "mc" : "band"} stageMarks={chart.marks} enhanced ariaLabel={ariaLabel} xOffset={props.xOffset}
+      {fixed ? (
+        <div className="mcbar mcbar-fixed" id={"modeBar" + sfx + (inFull ? "F" : "")}>
+          {mode === "band" ? <><Field id={"band" + sfx} label="Return band">{bandField}</Field><div className="hint m-0">Every stage&apos;s return this much higher, and this much lower.</div></>
+            : mode === "hist" ? <>{mixField}{glideField}<div className="hint m-0" id={"histNote" + sfx}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div></>
+              : <>{props.mcFields}{rerollBtn}<div className="hint m-0">{props.mcHint}</div></>}
+          <span className="chart-fullbtn"><Button variant="outline" onClick={() => setFull(!inFull)}>{inFull ? <><MinimizeIcon aria-hidden="true" />Close</> : <><MaximizeIcon aria-hidden="true" />Full screen</>}</Button></span>
+        </div>
+      ) : <>
+        <div className="mcbar" id={"histBar" + sfx} hidden={mode !== "hist"}>
+          {mixField}
+          {glideField}
+          <div className="hint m-0" id={"histNote" + sfx}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div>
+        </div>
+        <div className="mcbar" id={"mcBar" + sfx} hidden={mode !== "mc"}>
+          {props.mcFields}
+          {rerollBtn}
+          <div className="hint m-0">{props.mcHint}</div>
+        </div>
+      </>}
+      <BandChart id={inFull ? sfx + "F" : sfx} pts={chart.pts} maxX={props.maxX} mode={chart.fan ? "mc" : "band"} stageMarks={chart.marks} enhanced ariaLabel={ariaLabel} xOffset={props.xOffset}
+        aspect={aspect} gutter={props.gutter}
         traces={chart.traces && tracesOn ? chart.traces : undefined}
         tip={(b) => <>{props.tipHead(b)}{chart.fan ? <FanTipRows b={b} /> : <BandTipRows b={b} />}</>} />
-      {chart.legend === "hist" ? <HistLegend id={"legend" + sfx} tracesOn={tracesOn} onToggleTraces={() => setTracesOn((v) => !v)} extra={legendExtra} />
-        : chart.legend === "mc" ? <McLegend id={"legend" + sfx} extra={legendExtra} />
-          : <Legend id={"legend" + sfx} items={chart.legend === "band" ? props.bandItems : []} />}
-      {mode === "hist" ? <HistSummary id={"mcNote" + sfx} H={chart.H} target={chart.H?.count ? target : 0} label={targetLabel} />
-        : mode === "mc" ? <McSummary id={"mcNote" + sfx} mc={chart.mc} target={target} label={targetLabel} />
-          : <div className="mcnote" id={"mcNote" + sfx} hidden></div>}
+      {chart.legend === "hist" ? <HistLegend id={"legend" + sfx + (inFull ? "F" : "")} tracesOn={tracesOn} onToggleTraces={() => setTracesOn((v) => !v)} extra={legendExtra} />
+        : chart.legend === "mc" ? <McLegend id={"legend" + sfx + (inFull ? "F" : "")} extra={legendExtra} />
+          : <Legend id={"legend" + sfx + (inFull ? "F" : "")} items={chart.legend === "band" ? props.bandItems : []} />}
+      {mode === "hist" ? <HistSummary id={"mcNote" + sfx + (inFull ? "F" : "")} H={chart.H} target={chart.H?.count ? target : 0} label={targetLabel} />
+        : mode === "mc" ? <McSummary id={"mcNote" + sfx + (inFull ? "F" : "")} mc={chart.mc} target={target} label={targetLabel} />
+          : <div className="mcnote" id={"mcNote" + sfx + (inFull ? "F" : "")} hidden></div>}
     </Card>
+  );
+  return (
+    <>
+      {body(props.aspect, false)}
+      {full ? <div className="chart-full" role="dialog" aria-label="Balance over time, full screen">{body(fullAspect, true)}</div> : null}
+    </>
   );
 }
 
