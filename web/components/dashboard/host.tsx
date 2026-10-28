@@ -11,7 +11,7 @@
    household, share links) are never touched. */
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { ToolScopeProvider, type ToolInputs, type ToolScope } from "@/components/tools/ToolState";
 import type { SavedHousehold } from "@/lib/household";
@@ -104,26 +104,39 @@ export function seedFor(pr: Profile, entries: Entry[]): (id: string) => ToolInpu
 /** Runs tools in the Dashboard's scope. `seed` gives each tool's first
     inputs; `keep`, when given, takes its edits into the profile; links
     between tools stay inside the Dashboard. */
-export function Hosted({ seed, keep, household, slots, cover, locked, children }: {
+export function Hosted({ seed, keep, household, slots, cover, locked, seedKey, children }: {
   seed: (id: string) => ToolInputs | undefined; keep?: (id: string, data: ToolInputs) => void;
-  household: SavedHousehold | null; slots?: ToolScope["slots"]; cover?: ToolScope["cover"]; locked?: ToolScope["locked"]; children: ReactNode;
+  household: SavedHousehold | null; slots?: ToolScope["slots"]; cover?: ToolScope["cover"]; locked?: ToolScope["locked"];
+  /** Changes when the page has new inputs for its tools: an open tool reads
+      them again in place (its own state, such as a chart's mode, stays). */
+  seedKey?: string;
+  children: ReactNode;
 }) {
   const router = useRouter();
-  const latest = useRef({ seed, keep, slots, locked });
-  useEffect(() => { latest.current = { seed, keep, slots, locked }; });
-  // One scope for the host's life: the tools read it as they open. What
-  // the page says in them, and what it locks, follow the page as it draws.
-  const [scope] = useState<ToolScope>(() => {
-    const mem = new Map<string, ToolInputs>();
+  const latest = useRef({ seed, keep, slots, locked, household, cover });
+  useEffect(() => { latest.current = { seed, keep, slots, locked, household, cover }; });
+  // One scope for the host's life, made again only when the seed key
+  // changes (the tools then read their inputs again): the tools read it as
+  // they open. What the page says in them, and what it locks, follow the
+  // page as it draws.
+  // A tool reads its inputs as the scope is made (opening, or reading
+  // again on a new key), before the host's own effect has stored the
+  // newest `seed`, so the scope keeps the one it was made with.
+  const scope = useMemo<ToolScope>(() => {
+    const seedNow = seed, mem = new Map<string, ToolInputs>();
     return {
-      name: "dashboard", household, cover,
+      name: "dashboard",
+      get household() { return latest.current.household; },
+      get cover() { return latest.current.cover; },
       get slots() { return latest.current.slots; },
       get locked() { return latest.current.locked; },
-      read: (id) => mem.get(id) ?? latest.current.seed(id),
+      seedKey,
+      read: (id) => mem.get(id) ?? seedNow(id),
       write: (id, data) => { mem.set(id, data); latest.current.keep?.(id, data); },
       go: (path) => { const t = toolFromPath(path); if (t) router.push(toolHref(t)); return true; },
     };
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `seed` is read when the key changes, not on every render
+  }, [seedKey, router]);
   return <ToolScopeProvider value={scope}><div className="dsh-embed">{children}</div></ToolScopeProvider>;
 }
 

@@ -156,7 +156,7 @@ export function Calculator() {
   const [dlg, setDlg] = useState<{ at: "pick" } | { at: "list" } | { at: "edit"; s: Scenario; fresh: boolean } | { at: "kids" } | null>(null);
   // The chart's mode and band, held here so the tool starting over (a
   // change switched on or off rebuilds its stages) keeps them.
-  const [chartHold] = useState<{ mode: ChartMode; band: string }>(() => ({ mode: "band", band: "2" }));
+  const [chartHold] = useState(() => { const h = { mode: "band" as ChartMode, band: "2", keep(mode: ChartMode, band: string) { h.mode = mode; h.band = band; } }; return h; });
   const { age, retire } = agesOf(pr);
   const nominal = (1 + realGrowth(pr)) * (1 + pr.assume.inflation) - 1;
   const rows = useMemo(() => rowsOf(pr), [pr]);
@@ -254,8 +254,9 @@ export function Calculator() {
         <p className="dsh-cap dsh-mt6">Your own changes here are saved in place of the plan&apos;s figures, and this result is your savings at retirement on every tab.{" "}
           <Button variant="link" size="inline" onClick={() => { setProfile((p) => ({ ...p, calcOwn: undefined })); setRev((r) => r + 1); }}>Use the plan&apos;s figures</Button></p>
       ) : null}
-      {/* New child costs or changes build the stages again, from the plan. */}
-      <Hosted key={costsKey(pr) + "|" + JSON.stringify(pr.scenarios ?? []) + "|" + rev} household={null} cover={coverScope(flow(pr))} seed={seed} keep={keep}
+      {/* New child costs or changes build the stages again, from the plan,
+          with the tool open where it is (the page keeps its place). */}
+      <Hosted key={rev} seedKey={costsKey(pr) + "|" + JSON.stringify(pr.scenarios ?? [])} household={null} cover={coverScope(flow(pr))} seed={seed} keep={keep}
         locked={CALC_LOCKED} slots={{ kidsSummary: summary, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, marks: onCount ? marks : undefined, stagesAge: age, chart: chartHold }}>
         <Stages />
       </Hosted>

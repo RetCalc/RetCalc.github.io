@@ -220,6 +220,11 @@ export interface ToolScope {
   name: string;
   /** The scope's copy of a tool's inputs, if it has one. */
   read: (id: string) => ToolInputs | undefined;
+  /** Changes when the page has new inputs for its tools (the Dashboard's
+      Calculator, as its changes ahead are switched): an open tool reads
+      them again in place, keeping its own state otherwise, instead of
+      starting over. */
+  seedKey?: string;
   write: (id: string, data: ToolInputs) => void;
   /** A tool moving to a page ("/stages"): true when the scope took it. */
   go: (path: string) => boolean;
@@ -245,7 +250,7 @@ export interface ToolScope {
     /** The chart's mode and band, kept by the page: a plain holder the tool
         reads when it opens and writes as they change, so the tool starting
         over keeps them. */
-    chart?: { mode: "band" | "hist" | "mc"; band: string } };
+    chart?: { mode: "band" | "hist" | "mc"; band: string; keep: (mode: "band" | "hist" | "mc", band: string) => void } };
   /** Inputs the scope sets itself, by name (or a group's name: "ss" for
       the Drawdown's Social Security), which the tool leaves out: the
       scope's `facts` say them. The Dashboard's figures from its plan. */
@@ -306,6 +311,17 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
     openingRef.current = opening;
   });
   const filled = useRef(false);
+  // The scope's inputs changed under an open tool: read them again.
+  const seeded = useRef(scope?.seedKey);
+  useEffect(() => {
+    if (!scope || scope.seedKey === seeded.current) return;
+    seeded.current = scope.seedKey;
+    const mine = scope.read(def.id);
+    if (!mine) return;
+    filled.current = true;
+    const s = withDefaults(def, mine);
+    setState(openingRef.current ? openingRef.current(s) : s);
+  }, [scope, def]);
   useEffect(() => {
     if (scope) return;
     restoreSession();

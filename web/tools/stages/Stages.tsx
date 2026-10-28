@@ -97,8 +97,8 @@ export function Stages() {
   const held = dash ? scope?.slots?.chart : undefined;
   const [mode, setModeOwn] = useState<ChartMode>(held?.mode ?? "band");
   const [band, setBandOwn] = useState(held?.band ?? "2");
-  const setMode = (m: ChartMode) => { if (held) held.mode = m; setModeOwn(m); };
-  const setBand = (b: string) => { if (held) held.band = b; setBandOwn(b); };
+  const setMode = setModeOwn, setBand = setBandOwn;
+  useEffect(() => { held?.keep(mode, band); }, [held, mode, band]);
   const age0 = dash ? scope?.slots?.stagesAge : undefined;
   const stageTable = useRef<HTMLTableElement>(null), yearTable = useRef<HTMLTableElement>(null);
 
@@ -675,7 +675,7 @@ function StagesBehind({ s, nums, names, age }: { s: StagesInputs; nums: ReturnTy
       <div className="swipehint">Swipe the table sideways to see every column.</div>
       <div className="scroll" tabIndex={0} role="region" aria-label="The stages behind your plan">
         <table id="stagesBehind">
-          <thead><tr><th>Stage</th><th>{age != null ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="stagerises" /></th>{anyLump ? <th><Tipped text="On day one" k="stagelump" /></th> : null}<th>Return</th><th>What&apos;s going on</th></tr></thead>
+          <thead><tr><th>Stage</th><th>{age != null ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="stagerises" /></th>{anyLump ? <th><Tipped text="On day one" k="stagelump" /></th> : null}<th>Return</th><th className="text-center">What&apos;s going on</th></tr></thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.i}><td>{r.i + 1}</td><td>{r.ages}</td><td>{fmtNum(r.years)}</td><td><b>{money(r.mo)}</b></td>
