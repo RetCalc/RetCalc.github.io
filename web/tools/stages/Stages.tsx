@@ -91,13 +91,15 @@ export function Stages() {
   const locked = new Set(scope?.locked ?? []);
   const toast = useToast();
   const seed = useMcSeed();
-  const [modeOwn, setModeOwn] = useState<ChartMode>("band");
-  const [bandOwn, setBandOwn] = useState("2");
-  // The Dashboard keeps the chart's mode and band itself (its changes
-  // rebuild the stages, and the chart stays as it was).
+  // The Dashboard keeps the chart's mode and band in a holder: read when
+  // the tool opens (its changes build the stages again, so it opens
+  // again), written as they change, so the chart stays as it was.
   const held = dash ? scope?.slots?.chart : undefined;
-  const mode = held ? held.mode : modeOwn, setMode = held ? held.setMode : setModeOwn;
-  const band = held ? held.band : bandOwn, setBand = held ? held.setBand : setBandOwn;
+  const [mode, setModeOwn] = useState<ChartMode>(held?.mode ?? "band");
+  const [band, setBandOwn] = useState(held?.band ?? "2");
+  const setMode = (m: ChartMode) => { if (held) held.mode = m; setModeOwn(m); };
+  const setBand = (b: string) => { if (held) held.band = b; setBandOwn(b); };
+  const age0 = dash ? scope?.slots?.stagesAge : undefined;
   const stageTable = useRef<HTMLTableElement>(null), yearTable = useRef<HTMLTableElement>(null);
 
   useHouseholdFill("stages", s, setState, (h, c) => {
@@ -531,8 +533,8 @@ export function Stages() {
             mcHint={<>5,000 simulations per redraw. Volatility is
               set per stage, in your plan.</>}
             chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100, markWord)} legendExtra={markWord}
-            tipHead={(b) => <><b>Year {fmtNum(b.year)}</b> <span className="text-dim">&middot; stage {String(b.stage)}</span></>}
-            target={portToday} targetLabel={TARGET_LABEL} />
+            tipHead={(b) => <><b>{age0 != null ? "Age " + fmtNum(age0 + b.year) : "Year " + fmtNum(b.year)}</b> <span className="text-dim">&middot; stage {String(b.stage)}</span></>}
+            target={portToday} targetLabel={TARGET_LABEL} xOffset={age0 ?? 0} />
         </div>
 
         {/* Milestones at full width, and Take it further under it as a slim

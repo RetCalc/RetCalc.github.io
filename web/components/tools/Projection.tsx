@@ -179,6 +179,8 @@ interface PanelProps {
   /** The portfolio the summary under the chart measures runs against. */
   target: number;
   targetLabel: string;
+  /** Added to the years on the x axis: your age at year 0, where it's known. */
+  xOffset?: number;
 }
 
 export function ProjectionChart(props: PanelProps) {
@@ -215,7 +217,7 @@ export function ProjectionChart(props: PanelProps) {
         }}>Re-roll</Button>
         <div className="hint m-0">{props.mcHint}</div>
       </div>
-      <BandChart id={sfx} pts={chart.pts} maxX={props.maxX} mode={chart.fan ? "mc" : "band"} stageMarks={chart.marks} enhanced ariaLabel={ariaLabel}
+      <BandChart id={sfx} pts={chart.pts} maxX={props.maxX} mode={chart.fan ? "mc" : "band"} stageMarks={chart.marks} enhanced ariaLabel={ariaLabel} xOffset={props.xOffset}
         traces={chart.traces && tracesOn ? chart.traces : undefined}
         tip={(b) => <>{props.tipHead(b)}{chart.fan ? <FanTipRows b={b} /> : <BandTipRows b={b} />}</>} />
       {chart.legend === "hist" ? <HistLegend id={"legend" + sfx} tracesOn={tracesOn} onToggleTraces={() => setTracesOn((v) => !v)} extra={legendExtra} />

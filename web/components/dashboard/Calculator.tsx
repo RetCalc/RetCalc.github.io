@@ -20,12 +20,8 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { GiftIcon, LineChartIcon, PencilIcon, PlusIcon, TrendingUpIcon, XIcon } from "lucide-react";
 import type { ToolInputs } from "@/components/tools/ToolState";
-import { stagesCompute, type LumpAccount, type StagesInputs } from "@/tools/stages/model";
-import { BandChart, type BandPoint } from "@/components/charts/BandChart";
-import { BandTipRows } from "@/components/charts/TipRows";
+import type { LumpAccount, StagesInputs } from "@/tools/stages/model";
 import type { ChartMode } from "@/components/tools/Projection";
-import { projectSeries } from "@/lib/engine/typed";
-import { fmtNum } from "@/lib/format";
 import { CheckToggle } from "@/components/fields/CheckToggle";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Modal, ModalTop } from "@/components/shell/Modal";
@@ -158,10 +154,9 @@ export function Calculator() {
   // Bumped by "Use the plan's figures", so the calculator opens again from the plan.
   const [rev, setRev] = useState(0);
   const [dlg, setDlg] = useState<{ at: "pick" } | { at: "list" } | { at: "edit"; s: Scenario; fresh: boolean } | { at: "kids" } | null>(null);
-  // The chart's mode and band live here, so the tool starting over (a
-  // change switched on or off rebuilds its stages) never resets them.
-  const [chartMode, setChartMode] = useState<ChartMode>("band");
-  const [band, setBand] = useState("2");
+  // The chart's mode and band, held here so the tool starting over (a
+  // change switched on or off rebuilds its stages) keeps them.
+  const [chartHold] = useState<{ mode: ChartMode; band: string }>(() => ({ mode: "band", band: "2" }));
   const { age, retire } = agesOf(pr);
   const nominal = (1 + realGrowth(pr)) * (1 + pr.assume.inflation) - 1;
   const rows = useMemo(() => rowsOf(pr), [pr]);
@@ -261,11 +256,11 @@ export function Calculator() {
       ) : null}
       {/* New child costs or changes build the stages again, from the plan. */}
       <Hosted key={costsKey(pr) + "|" + JSON.stringify(pr.scenarios ?? []) + "|" + rev} household={null} cover={coverScope(flow(pr))} seed={seed} keep={keep}
-        locked={CALC_LOCKED} slots={{ kidsSummary: summary, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, marks: onCount ? marks : undefined, stagesAge: age, chart: { mode: chartMode, setMode: setChartMode, band, setBand } }}>
+        locked={CALC_LOCKED} slots={{ kidsSummary: summary, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, marks: onCount ? marks : undefined, stagesAge: age, chart: chartHold }}>
         <Stages />
       </Hosted>
       {dlg?.at === "list" ? (
-        <ChangesDialog pr={pr} entries={entries} rows={rows} age={age} retire={retire} band={band} kidSpan={kidSpan} marks={marks}
+        <ChangesDialog rows={rows} age={age} retire={retire} kidSpan={kidSpan}
           figureOf={figureOf} sentenceOf={sentenceOf} shorts={shorts} toggle={toggle} edit={edit} remove={remove} add={() => setDlg({ at: "pick" })} close={() => setDlg(null)} />
       ) : null}
       {dlg?.at === "kids" ? <ChildCostsDialog close={() => setDlg(null)} /> : null}
@@ -279,46 +274,32 @@ export function Calculator() {
   );
 }
 
-/* ---------- the big view: the chart, the lanes and every change ---------- */
+/* ---------- the big view: the lanes and every change ---------- */
 
-/** The chart's rate-band points for a profile's stages, in today's dollars. */
-function bandPoints(pr: Profile, entries: Entry[], bandPct: number): { pts: BandPoint[]; maxX: number } {
-  const V = stagesCompute(calcInputs(pr, entries), null), { P, R } = V, g = P.g;
-  if (!R.rows.length) return { pts: [], maxX: 0 };
-  const defl = (yr: number) => Math.pow(1 + g.inflation, yr);
-  const shift = (d: number) => P.eff.map((st) => ({ ...st, nominal: Math.max(-0.99, st.nominal + d) }));
-  const hiR = projectSeries(g, shift(bandPct)), loR = projectSeries(g, shift(-bandPct));
-  const pts: BandPoint[] = [{ year: 0, base: g.initial, hi: g.initial, lo: g.initial }, ...R.chartRows.map((r, i) => ({
-    year: r.year, base: r.end / defl(r.year),
-    hi: (hiR.chartRows[i] ? hiR.chartRows[i].end : r.end) / defl(r.year),
-    lo: (loR.chartRows[i] ? loR.chartRows[i].end : r.end) / defl(r.year),
-  }))];
-  return { pts, maxX: R.totalYears };
-}
-
-function ChangesDialog({ pr, entries, rows, age, retire, band, kidSpan, marks, figureOf, sentenceOf, shorts, toggle, edit, remove, add, close }: {
-  pr: Profile; entries: Entry[]; rows: Scenario[]; age: number; retire: number; band: string;
-  kidSpan: { from: number; to: number; peak: number } | null; marks: { year: number; label: string }[];
+function ChangesDialog({ rows, age, retire, kidSpan, figureOf, sentenceOf, shorts, toggle, edit, remove, add, close }: {
+  rows: Scenario[]; age: number; retire: number;
+  kidSpan: { from: number; to: number; peak: number } | null;
   figureOf: (r: Scenario) => ReactNode; sentenceOf: (r: Scenario) => string; shorts: Record<string, Short>;
   toggle: (r: Scenario) => void; edit: (r: Scenario) => void; remove: (id: string) => void; add: () => void; close: () => void;
 }) {
   // Which row is asking "remove this?".
   const [confirm, setConfirm] = useState<string | null>(null);
-  const key = JSON.stringify([pr, entries, band]);
-  const chart = useMemo(() => bandPoints(pr, entries, parseNum(band) / 100), [key]); // eslint-disable-line react-hooks/exhaustive-deps -- by its key
-  const fvNow = chart.pts.length ? chart.pts[chart.pts.length - 1].base : null;
+  const span = retire - age;
   const lanes = (
     <div className="dsh-sc-lanes" role="group" aria-label="Your changes across your ages">
       {rows.map((r, i) => {
         const [f, t] = r.kind === "children" ? [kidSpan?.from ?? age, kidSpan?.to ?? retire] : spanOf(r, retire);
-        const left = ((Math.max(age, f) - age) / (retire - age)) * 100, width = ((Math.min(retire, t) - Math.max(age, f)) / (retire - age)) * 100;
+        const left = ((Math.max(age, f) - age) / span) * 100, width = ((Math.min(retire, t) - Math.max(age, f)) / span) * 100;
         if (!(width > 0)) return null;
-        const fig = laneFigure(r, kidSpan);
+        const fig = laneFigure(r, kidSpan), text = `${i + 1}. ${scenarioName(r)}${fig ? "  " + fig : ""}`;
+        // The words sit in the bar when it's wide enough for them, and
+        // just after it when it isn't (a lump sum, a short stretch).
+        const inside = width >= Math.min(60, 4 + text.length * 1.1);
         return (
           <div key={r.id} className="dsh-sc-lane">
-            <button type="button" className={"dsh-sc-bar " + kindClass(r) + (r.on ? "" : " dsh-sc-off")} style={{ "--sc-l": left + "%", "--sc-w": width + "%" } as React.CSSProperties} onClick={() => toggle(r)}
-              title={scenarioName(r) + ": " + sentenceOf(r) + (r.on ? " Click to switch off." : " Click to switch on.")}>
-              <span className="dsh-sc-n">{i + 1}.</span> {scenarioName(r)}{fig ? <span className="dsh-sc-fig">{fig}</span> : null}
+            <button type="button" className={"dsh-sc-bar " + kindClass(r) + (r.on ? "" : " dsh-sc-off") + (inside ? "" : " dsh-sc-narrow")} style={{ "--sc-l": left + "%", "--sc-w": width + "%" } as React.CSSProperties} onClick={() => toggle(r)}
+              aria-pressed={r.on} title={scenarioName(r) + ": " + sentenceOf(r) + (r.on ? " Click to switch off." : " Click to switch on.")}>
+              <span className="dsh-sc-lbl"><span className="dsh-sc-n">{i + 1}.</span> {scenarioName(r)}{fig ? <span className="dsh-sc-lfig">{fig}</span> : null}</span>
             </button>
           </div>
         );
@@ -330,12 +311,7 @@ function ChangesDialog({ pr, entries, rows, age, retire, band, kidSpan, marks, f
     <Modal size="table" onClose={close}>
       <ModalTop title="Changes ahead" onClose={close} />
       <div className="dsh-ch">
-        <div className="dsh-ch-chart">
-          <div className="dsh-ch-fig"><span className="label">Savings at retirement, in today&apos;s dollars</span><b>{fvNow != null ? money(fvNow) : ""}</b></div>
-          {chart.pts.length ? <BandChart id="chg" pts={chart.pts} maxX={chart.maxX} mode="band" enhanced stageMarks={marks} ariaLabel="Your savings over your ages, with the changes switched on"
-            tip={(b) => <><b>Age {fmtNum(age + b.year)}</b><BandTipRows b={b} /></>} /> : null}
-          {lanes}
-        </div>
+        <div className="dsh-ch-lanes">{lanes}</div>
         <ol className="dsh-sc-rows dsh-sc-list" aria-label="Changes ahead">
           {rows.map((r, i) => {
             const sf = shorts[r.id];
@@ -344,7 +320,7 @@ function ChangesDialog({ pr, entries, rows, age, retire, band, kidSpan, marks, f
                 <div className="dsh-sc-top">
                   <CheckToggle id={"chg-" + r.id} on={r.on} onToggle={() => toggle(r)} tip={figureOf(r)}><span className={"dsh-sc-mark " + kindClass(r)} aria-hidden="true" /><span className="dsh-sc-n">{i + 1}.&nbsp;</span>{scenarioName(r)}</CheckToggle>
                   <Button variant="outline" size="sm" onClick={() => edit(r)}><PencilIcon aria-hidden="true" />Edit</Button>
-                  {r.kind === "children" ? null : <Button variant="ghost" size="icon-sm" aria-label={"Remove " + scenarioName(r)} onClick={() => setConfirm(r.id)}><XIcon aria-hidden="true" /></Button>}
+                  {r.kind === "children" ? <span className="dsh-sc-xgap" aria-hidden="true" /> : <Button variant="ghost" size="icon-sm" aria-label={"Remove " + scenarioName(r)} onClick={() => setConfirm(r.id)}><XIcon aria-hidden="true" /></Button>}
                 </div>
                 <p className="dsh-sc-sent">{sentenceOf(r)}</p>
                 {sf ? <p className="dsh-sc-warn">{shortWords(sf)}</p> : null}

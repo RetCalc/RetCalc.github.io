@@ -242,9 +242,10 @@ export interface ToolScope {
         under the chart, the chart's marks (where each scenario starts) and
         your age at year 0, so the stages read by age. */
     scenarios?: ReactNode; marks?: { year: number; label: string }[]; stagesAge?: number;
-    /** The chart's mode and band, kept by the page so the tool starting
-        over never resets them. */
-    chart?: { mode: "band" | "hist" | "mc"; setMode: (m: "band" | "hist" | "mc") => void; band: string; setBand: (b: string) => void } };
+    /** The chart's mode and band, kept by the page: a plain holder the tool
+        reads when it opens and writes as they change, so the tool starting
+        over keeps them. */
+    chart?: { mode: "band" | "hist" | "mc"; band: string } };
   /** Inputs the scope sets itself, by name (or a group's name: "ss" for
       the Drawdown's Social Security), which the tool leaves out: the
       scope's `facts` say them. The Dashboard's figures from its plan. */

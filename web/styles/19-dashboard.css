@@ -787,7 +787,13 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-sc-bar:hover { filter: brightness(1.08); }
 .dsh-sc-bar:focus-visible { outline: 2px solid var(--ds-text); outline-offset: 2px; }
 .dsh-sc-bar .dsh-sc-n { color: inherit; opacity: .8; }
-.dsh-sc-bar .dsh-sc-fig { font-weight: 400; opacity: .85; }
+.dsh-sc-bar .dsh-sc-lbl { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.dsh-sc-bar .dsh-sc-lfig { font-weight: 400; opacity: .92; }
+/* A bar too short for its words: they sit just after it, in the page's ink. */
+.dsh-sc-bar.dsh-sc-narrow { overflow: visible; padding: 0; justify-content: flex-start; }
+.dsh-sc-bar.dsh-sc-narrow .dsh-sc-lbl { position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%); color: var(--ds-text); }
+.dsh-sc-bar.dsh-sc-narrow .dsh-sc-lfig { color: var(--ds-muted); opacity: 1; }
+.dsh-sc-bar.dsh-sc-narrow .dsh-sc-n { color: var(--ds-muted); opacity: 1; }
 .dsh-sc-bar.dsh-sc-off { background: transparent; color: var(--ds-muted); box-shadow: inset 0 0 0 1px var(--ds-rule-strong); }
 .dsh-sc-axis { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11.5px; color: var(--ds-muted); font-variant-numeric: tabular-nums; }
 
@@ -828,14 +834,13 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
    under it on the same ages, then every change with its switch, words,
    Edit and Remove (asked twice, in the row). Phones keep the list. */
 .dsh-ch { display: grid; gap: 16px; }
-.dsh-ch-chart { border: 1px solid var(--ds-rule); border-radius: 14px; padding: 12px 14px 8px; }
-.dsh-ch-fig { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
-.dsh-ch-fig .label { font-size: 12px; color: var(--ds-muted); }
-.dsh-ch-fig b { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.dsh-ch-chart .dsh-sc-lanes { padding: 10px 4px 2px; }
+.dsh-ch-lanes { border: 1px solid var(--ds-rule); border-radius: 14px; padding: 6px 14px 4px; }
+.dsh-ch-lanes .dsh-sc-lanes { padding: 10px 4px 2px; }
+.dsh-sc-xgap { width: 36px; flex: none; }
+@media (hover: none) and (pointer: coarse) { .dsh-sc-xgap { width: 44px; } }
 .dsh-sc-top > [data-checkrow] { flex: 1; min-width: 0; }
 .dsh-sc-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--ds-raised); font-size: 13.5px; }
 .dsh-sc-confirm span { flex: 1; min-width: 12ch; }
 @media (max-width: 640px) {
-  .dsh-ch-chart { display: none; }
+  .dsh-ch-lanes { display: none; }
 }
