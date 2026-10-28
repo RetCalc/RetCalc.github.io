@@ -136,7 +136,7 @@ export function Calculator() {
   const pr = data.profile, entries = data.entries;
   // Bumped by "Use the plan's figures", so the calculator opens again from the plan.
   const [rev, setRev] = useState(0);
-  const [dlg, setDlg] = useState<{ at: "pick" } | { at: "edit"; s: Scenario; fresh: boolean } | { at: "kids" } | null>(null);
+  const [dlg, setDlg] = useState<{ at: "pick" } | { at: "list" } | { at: "edit"; s: Scenario; fresh: boolean } | { at: "kids" } | null>(null);
   const { age, retire } = agesOf(pr);
   const nominal = (1 + realGrowth(pr)) * (1 + pr.assume.inflation) - 1;
   const rows = useMemo(() => rowsOf(pr), [pr]);
@@ -205,16 +205,15 @@ export function Calculator() {
       {rows.length ? (
         <ol className="dsh-sc-rows" aria-label="Your scenarios">
           {rows.map((r, i) => {
-            const e = effects[r.id];
+            const e = effects[r.id], sf = shorts[r.id];
+            // Each row one line: the switch, the name, and what it does at
+            // retirement (a marker when it takes more than is saved).
+            const figure = <span className={"dsh-sc-fig" + (e == null ? "" : e < 0 ? " dsh-dn" : e > 0 ? " dsh-up" : "")} aria-live="polite" title={e == null ? undefined : fx(e) + " at retirement" + (r.on ? "" : " if switched on") + (sf ? ". More than you save from " + sf.from : "")}>
+              {e == null ? (stale ? "…" : "") : fx(e)}{sf ? <span className="dsh-sc-flag" aria-label="More than you save">!</span> : null}
+            </span>;
             return (
-              <li key={r.id} className={"dsh-sc-row" + (r.on ? "" : " dsh-sc-off")}>
-                <div className="dsh-sc-top">
-                  <CheckToggle id={"sc-" + r.id} on={r.on} onToggle={() => toggle(r)}><span className={"dsh-sc-mark " + kindClass(r)} aria-hidden="true" /><span className="dsh-sc-n">{i + 1}.&nbsp;</span>{scenarioName(r)}</CheckToggle>
-                  <Button variant="ghost" size="icon-sm" aria-label={"Change " + scenarioName(r)} onClick={() => edit(r)}><PencilIcon aria-hidden="true" /></Button>
-                </div>
-                <p className="dsh-sc-sent">{r.kind === "children" ? childrenSentence(pr) + (kidSpan ? " Their costs come out of saving as they change." : "") : scenarioSentence(r, retire, nominal)}</p>
-                <div className={"dsh-sc-eff" + (e == null ? " dsh-sc-wait" : e < 0 ? " dsh-dn" : e > 0 ? " dsh-up" : "")} aria-live="polite">{e == null ? (stale ? "Working it out…" : "") : <><b>{fx(e)}</b> at retirement{r.on ? "" : " if switched on"}</>}</div>
-                {shorts[r.id] ? <p className="dsh-sc-warn">More than you save from {shorts[r.id].from}: {money(shorts[r.id].most)} per month short. Saving stops at $0 there; lower it or start it later.</p> : null}
+              <li key={r.id} className={"dsh-sc-row dsh-sc-line" + (r.on ? "" : " dsh-sc-off")}>
+                <CheckToggle id={"sc-" + r.id} on={r.on} onToggle={() => toggle(r)} tip={figure}><span className={"dsh-sc-mark " + kindClass(r)} aria-hidden="true" /><span className="dsh-sc-n">{i + 1}.&nbsp;</span>{scenarioName(r)}</CheckToggle>
               </li>
             );
           })}
@@ -223,8 +222,39 @@ export function Calculator() {
         <p className="hint mt-0 mb-2.5">None yet. A bigger house at 40, a promotion, easing off before you retire, an inheritance, or a different view on returns: add one and see what it does.{kids ? "" : " Children are added in Profile; they show here once they are."}</p>
       )}
       {live > 0 && effects.all != null ? <p className={"dsh-sc-all" + (effects.all < 0 ? " dsh-dn" : effects.all > 0 ? " dsh-up" : "")}><b>{fx(effects.all)}</b> at retirement from your {live === 1 ? "scenario" : live + " scenarios"} together</p> : null}
-      <Button variant="outline" className="mt-1 w-full" id="btnAddScenario" onClick={() => setDlg({ at: "pick" })}><PlusIcon aria-hidden="true" />Add a scenario</Button>
+      <div className="dsh-sc-btns">
+        {rows.length ? <Button variant="outline" className="flex-1" id="btnViewScenarios" onClick={() => setDlg({ at: "list" })}><PencilIcon aria-hidden="true" />View or edit</Button> : null}
+        <Button variant="outline" className="flex-1" id="btnAddScenario" onClick={() => setDlg({ at: "pick" })}><PlusIcon aria-hidden="true" />Add a scenario</Button>
+      </div>
     </div>
+  );
+
+  /* The pop-up: every scenario with its sentence, its effect and any
+     shortfall, each with its own Edit. */
+  const list = (
+    <Modal size="wide" onClose={() => setDlg(null)}>
+      <ModalTop title="Your scenarios" onClose={() => setDlg(null)} />
+      <ol className="dsh-sc-rows dsh-sc-list" aria-label="Your scenarios">
+        {rows.map((r, i) => {
+          const e = effects[r.id], sf = shorts[r.id];
+          return (
+            <li key={r.id} className={"dsh-sc-row" + (r.on ? "" : " dsh-sc-off")}>
+              <div className="dsh-sc-top">
+                <div className="dsh-sc-nm"><span className={"dsh-sc-mark " + kindClass(r)} aria-hidden="true" /><span className="dsh-sc-n">{i + 1}.&nbsp;</span>{scenarioName(r)}{r.on ? "" : <span className="dsh-sc-offtag"> (off)</span>}</div>
+                <Button variant="outline" size="sm" onClick={() => edit(r)}><PencilIcon aria-hidden="true" />Edit</Button>
+              </div>
+              <p className="dsh-sc-sent">{r.kind === "children" ? childrenSentence(pr) + (kidSpan ? " Their costs come out of saving as they change." : "") : scenarioSentence(r, retire, nominal)}</p>
+              <div className={"dsh-sc-eff" + (e == null ? " dsh-sc-wait" : e < 0 ? " dsh-dn" : e > 0 ? " dsh-up" : "")}>{e == null ? (stale ? "Working it out…" : "") : <><b>{fx(e)}</b> at retirement{r.on ? "" : " if switched on"}</>}</div>
+              {sf ? <p className="dsh-sc-warn">More than you save from {sf.from}: {money(sf.most)} per month short. Saving stops at $0 there; lower it or start it later.</p> : null}
+            </li>
+          );
+        })}
+      </ol>
+      <div className="formactions mt-4">
+        <Button variant="outline" className="flex-1" onClick={() => setDlg({ at: "pick" })}><PlusIcon aria-hidden="true" />Add a scenario</Button>
+        <Button className="flex-1" onClick={() => setDlg(null)}>Done</Button>
+      </div>
+    </Modal>
   );
 
   const lanes = rows.length ? (
@@ -259,6 +289,7 @@ export function Calculator() {
         locked={CALC_LOCKED} slots={{ kidsSummary: summary, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, underChart: lanes, marks: onCount ? marks : undefined, stagesAge: age }}>
         <Stages />
       </Hosted>
+      {dlg?.at === "list" ? list : null}
       {dlg?.at === "kids" ? <ChildCostsDialog close={() => setDlg(null)} /> : null}
       {dlg?.at === "pick" ? <PickKind close={() => setDlg(null)} pick={pick} /> : null}
       {dlg?.at === "edit" ? (

@@ -806,3 +806,20 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
   .dsh-sc-form, .dsh-sc-amt { grid-template-columns: 1fr; }
   .dsh-sc-lanes { padding: 10px 12px 12px; }
 }
+
+/* Scenario rows as one line each: the switch's box holds the name and,
+   on the right, what the scenario does at retirement. The sentences live
+   in the View or edit pop-up. */
+.dsh-sc-line { padding: 5px 0; }
+.dsh-sc-line [data-checkrow] { padding-top: 7px; padding-bottom: 7px; }
+.dsh-sc-line .glidebtn-txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsh-sc-fig { margin-left: auto; flex: none; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ds-muted); display: inline-flex; align-items: center; gap: 5px; }
+.dsh-sc-fig.dsh-up { color: var(--ds-gain); } .dsh-sc-fig.dsh-dn { color: var(--ds-loss); }
+.dsh-sc-off .dsh-sc-fig { color: var(--ds-muted); font-weight: 500; }
+.dsh-sc-flag { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--ds-loss); color: #fff; font-size: 11px; font-weight: 700; line-height: 1; }
+.dsh-sc-btns { display: flex; gap: 8px; margin-top: 6px; }
+.dsh-sc-list { border-top: 0; margin-bottom: 0; }
+.dsh-sc-list .dsh-sc-row { padding: 12px 0; }
+.dsh-sc-list .dsh-sc-row:first-child { padding-top: 4px; }
+.dsh-sc-nm { font-weight: 500; font-size: 14.5px; min-width: 0; flex: 1; }
+.dsh-sc-offtag { color: var(--ds-muted); font-weight: 400; }
