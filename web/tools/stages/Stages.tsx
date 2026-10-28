@@ -649,26 +649,28 @@ function bandLegend(band: number, markWord = "Stage boundary"): [string, string]
     month by account (your own, before the match), return and what's going
     on, as the plan and the scenarios build them. */
 function StagesBehind({ s, nums, names, age }: { s: StagesInputs; nums: ReturnType<typeof readStage>[]; names: string[]; age?: number }) {
-  const split = s.saOn, hsa = split && nums.some((st) => stageSplit(st).h > 0);
+  const split = s.saOn, hsa = split && nums.some((st) => stageSplit(st).h > 0), infl = parseNum(s.inflation) / 100;
   const starts = nums.reduce<number[]>((acc, st) => [...acc, acc[acc.length - 1] + st.years], [0]);
   const rows = nums.map((st, i) => {
     const start = starts[i], from = starts[i + 1];
     const ppy = (PPY as Record<string, number>)[st.period] ?? 12, mo = (st.contrib * ppy) / 12, sp = stageSplit(st);
     const ages = age != null ? fmtNum(age + start) + " to " + fmtNum(age + from) : "Year " + fmtNum(start) + " – " + fmtNum(from);
-    return { i, ages, years: st.years, mo, t: mo * sp.t, r: mo * sp.r, b: mo * sp.b, h: mo * sp.h, nominal: st.nominal, growth: st.growth, name: names[i] };
+    // The rise after inflation: the stage's rate is kept before it.
+    const rises = (1 + st.growth) / (1 + infl) - 1;
+    return { i, ages, years: st.years, mo, t: mo * sp.t, r: mo * sp.r, b: mo * sp.b, h: mo * sp.h, nominal: st.nominal, rises, name: names[i] };
   });
   return (
     <>
-      <p className="hint mt-0 mb-3">Amounts are a month, in today&apos;s dollars, your own money before the match. Saving that grows within a stage shows its yearly rise.</p>
+      <p className="hint mt-0 mb-3">Amounts are a month, in today&apos;s dollars, your own money before the match. Rises is how much a stage&apos;s saving grows each year, after inflation.</p>
       <div className="swipehint">Swipe the table sideways to see every column.</div>
       <div className="scroll" tabIndex={0} role="region" aria-label="The stages behind your plan">
         <table id="stagesBehind">
-          <thead><tr><th>Stage</th><th>{age != null ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th>Rises</th><th>Return</th><th>What&apos;s going on</th></tr></thead>
+          <thead><tr><th>Stage</th><th>{age != null ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="stagerises" /></th><th>Return</th><th>What&apos;s going on</th></tr></thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.i}><td>{r.i + 1}</td><td>{r.ages}</td><td>{fmtNum(r.years)}</td><td><b>{money(r.mo)}</b></td>
                 {split ? <><td>{money(r.t)}</td><td>{money(r.r)}</td><td>{money(r.b)}</td>{hsa ? <td>{money(r.h)}</td> : null}</> : null}
-                <td>{Math.abs(r.growth) < 0.00005 ? DASH : pctStr(r.growth, 2) + "/yr"}</td><td>{pctStr(r.nominal, 2)}</td><td className="text-left whitespace-normal">{r.name}</td></tr>
+                <td>{Math.abs(r.rises) < 0.0005 ? "none" : pctStr(r.rises, 1) + "/yr"}</td><td>{pctStr(r.nominal, 2)}</td><td className="text-left whitespace-normal">{r.name}</td></tr>
             ))}
           </tbody>
         </table>

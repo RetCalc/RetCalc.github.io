@@ -37,7 +37,7 @@ import { Choice } from "./fields";
 import { budgetFor, flow, taxFor } from "./flows";
 import { ageOf, answers, holdings, realGrowth } from "./model";
 import { money } from "./format";
-import { PlanFacts, To } from "./ui";
+import { PlanFacts, TipLabel, To } from "./ui";
 import { STATE_OPTIONS } from "@/lib/states";
 import { parseNum } from "@/lib/format";
 import { KID_BASE } from "@/tools/stages/kids";
@@ -87,11 +87,23 @@ function withRow(pr: Profile, s: Scenario): Profile {
 }
 const withoutRow = (pr: Profile, id: string): Profile => ({ ...pr, scenarios: (pr.scenarios ?? []).filter((x) => x.id !== id) });
 
-/** Savings at retirement in today's dollars under a profile: the plan's,
-    or the Calculator's own when a returns scenario or its own changes set it. */
-function fvOf(pr: Profile, entries: Entry[]): number | null {
+/** The plan under a profile: savings at retirement in today's dollars (the
+    plan's, or the Calculator's own when a returns scenario or its own
+    changes set it), and what each year falls short by, a month, where the
+    costs come to more than the saving. */
+function planOf(pr: Profile, entries: Entry[]): { fv: number | null; short: number[] } {
   const a = answers(pr, entries);
-  return a.fvTo ?? sim(a)?.fv ?? null;
+  return { fv: a.fvTo ?? sim(a)?.fv ?? null, short: (a.yearly ?? []).map((y) => y.short) };
+}
+const fvOf = (pr: Profile, entries: Entry[]) => planOf(pr, entries).fv;
+
+/** Where a scenario takes more than is saved: the first age it does, and
+    the most it falls short by a month, against the plan without it (the
+    children's own shortfalls are already the plan's). Null when it fits. */
+function shortfall(withIt: number[], without: number[], age: number): { from: number; most: number } | null {
+  let from = -1, most = 0;
+  withIt.forEach((s, k) => { const d = s - (without[k] ?? 0); if (d > 0.5) { if (from < 0) from = age + k; most = Math.max(most, d); } });
+  return from < 0 ? null : { from, most };
 }
 
 /** The kind's colour, as a class on the row's mark and lane. */
@@ -141,27 +153,29 @@ export function Calculator() {
   // they are: the plan with it against the plan without it. Worked out
   // after the page draws (each is a run of the plan).
   const fxKey = JSON.stringify([pr, entries]);
-  const [fxState, setFxState] = useState<{ key: string; map: Record<string, number> }>({ key: "", map: {} });
+  const [fxState, setFxState] = useState<{ key: string; map: Record<string, number>; short: Record<string, { from: number; most: number }> }>({ key: "", map: {}, short: {} });
   useEffect(() => {
     const t = setTimeout(() => {
-      const out: Record<string, number> = {};
-      const list = rowsOf(pr), now = fvOf(pr, entries);
-      if (now != null) {
+      const out: Record<string, number> = {}, shorts: Record<string, { from: number; most: number }> = {};
+      const list = rowsOf(pr), now = planOf(pr, entries);
+      if (now.fv != null) {
         for (const r of list) {
-          const f = fvOf(withRow(pr, { ...r, on: !r.on }), entries);
-          if (f != null) out[r.id] = r.on ? now - f : f - now;
+          const flipped = planOf(withRow(pr, { ...r, on: !r.on }), entries);
+          if (flipped.fv != null) out[r.id] = r.on ? now.fv - flipped.fv : flipped.fv - now.fv;
+          // A saving cut that takes more than is saved, on or off.
+          if (r.kind !== "children") { const sf = shortfall(r.on ? now.short : flipped.short, r.on ? flipped.short : now.short, age); if (sf) shorts[r.id] = sf; }
         }
         // All the scenarios together (the children are the plan's own).
         if (liveScenarios(list).length) {
           const f = fvOf({ ...pr, scenarios: (pr.scenarios ?? []).map((s) => (s.kind === "children" ? s : { ...s, on: false })) }, entries);
-          if (f != null) out.all = now - f;
+          if (f != null) out.all = now.fv - f;
         }
       }
-      setFxState({ key: fxKey, map: out });
+      setFxState({ key: fxKey, map: out, short: shorts });
     }, 0);
     return () => clearTimeout(t);
-  }, [fxKey, pr, entries]);
-  const effects = fxState.map, stale = fxState.key !== fxKey;
+  }, [fxKey, pr, entries, age]);
+  const effects = fxState.map, shorts = fxState.short, stale = fxState.key !== fxKey;
 
   // Read when a tool opens: the stages are worked out then, not on every change.
   const seed = (id: string): ToolInputs | undefined =>
@@ -200,6 +214,7 @@ export function Calculator() {
                 </div>
                 <p className="dsh-sc-sent">{r.kind === "children" ? childrenSentence(pr) + (kidSpan ? " Their costs come out of saving as they change." : "") : scenarioSentence(r, retire, nominal)}</p>
                 <div className={"dsh-sc-eff" + (e == null ? " dsh-sc-wait" : e < 0 ? " dsh-dn" : e > 0 ? " dsh-up" : "")} aria-live="polite">{e == null ? (stale ? "Working it out…" : "") : <><b>{fx(e)}</b> at retirement{r.on ? "" : " if switched on"}</>}</div>
+                {shorts[r.id] ? <p className="dsh-sc-warn">More than you save from {shorts[r.id].from}: {money(shorts[r.id].most)} per month short. Saving stops at $0 there; lower it or start it later.</p> : null}
               </li>
             );
           })}
@@ -295,22 +310,24 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
     up(k === "nominal" ? { nominal: n / 100 } : k === "ramp" ? { ramp: Math.max(0, Math.round(n)) } : { amount: n });
   };
   // The effect, with the other scenarios as they are, worked out a moment behind the typing.
-  const [effect, setEffect] = useState<number | null>(null);
+  const [effect, setEffect] = useState<{ fv: number | null; short: { from: number; most: number } | null } | null>(null);
   const sKey = JSON.stringify(s);
   useEffect(() => {
     const t = setTimeout(() => {
-      const on = fvOf(withRow(pr, { ...s, on: true }), entries), off = fvOf(withoutRow(pr, s.id), entries);
-      setEffect(on != null && off != null ? on - off : null);
+      const on = planOf(withRow(pr, { ...s, on: true }), entries), off = planOf(withoutRow(pr, s.id), entries);
+      setEffect({ fv: on.fv != null && off.fv != null ? on.fv - off.fv : null, short: shortfall(on.short, off.short, age) });
     }, 150);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the draft as a whole, by its key
-  }, [sKey, pr, entries]);
+  }, [sKey, pr, entries, age]);
+  // A cut that takes more than is saved can't be kept: saving never goes below $0.
+  const cant = !!effect?.short;
   const less = s.amount < 0;
   const acctOpts = (lead: string) => <>
     <option value="auto">{lead}</option>
     {COVER_ORDER.map((k: CoverLine) => <option key={k} value={k}>{ACCT_NAMES[k]}</option>)}
   </>;
-  const from = <SelectField id="scFrom" label={s.kind === "lump" ? "At age" : "Starting at age"} value={String(s.from)} onChange={(v) => up({ from: parseNum(v), until: s.until > parseNum(v) || s.until === 0 ? s.until : 0 })}>
+  const from = <SelectField id="scFrom" label={<TipLabel text={s.kind === "lump" ? "At age" : "Starting at age"} id="scFrom" />} value={String(s.from)} onChange={(v) => up({ from: parseNum(v), until: s.until > parseNum(v) || s.until === 0 ? s.until : 0 })}>
     {ages(age, retire - 1).map((a) => <option key={a} value={a}>{a}</option>)}
   </SelectField>;
   const name = <Field id="scName" label="Name" className="dsh-sc-full"><Input id="scName" value={s.name} placeholder={scenarioName(s)} onChange={(e) => up({ name: e.target.value })} /></Field>;
@@ -318,7 +335,7 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
   if (s.kind === "returns") {
     form = <>
       {from}
-      <NumberField id="scNominal" label="Return, before inflation" unit="%" step={0.25} value={txt.nominal} onValueChange={typed("nominal")} />
+      <NumberField id="scNominal" label={<TipLabel text="Return, before inflation" id="scReturn" />} unit="%" step={0.25} value={txt.nominal} onValueChange={typed("nominal")} />
       <Field id="scHow" label="How">
         <Segmented id="scHow" size="fill" attr="data-how" options={[["0", "All at once"], ["1", "Climb over"]] as const} value={s.ramp > 0 ? "1" : "0"} onChange={(v) => { const r = v === "1" ? Math.max(1, s.ramp || 10) : 0; up({ ramp: r }); setTxt((c) => ({ ...c, ramp: String(r) })); }} />
       </Field>
@@ -327,11 +344,11 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
   } else if (s.kind === "lump") {
     form = <>
       {from}
-      <MoneyField id="scAmount" label="Amount" value={txt.amount.replace(/^-/, "")} onValueChange={(v) => typed("amount")((less ? "-" : "") + v)} />
+      <MoneyField id="scAmount" label={<TipLabel text="Amount" id="scLump" />} value={txt.amount.replace(/^-/, "")} onValueChange={(v) => typed("amount")((less ? "-" : "") + v)} />
       <Field id="scSign" label="Which way">
         <Segmented id="scSign" size="fill" attr="data-sign" options={[["in", "Put in"], ["out", "Taken out"]] as const} value={less ? "out" : "in"} onChange={(v) => typed("amount")((v === "out" ? "-" : "") + txt.amount.replace(/^-/, ""))} />
       </Field>
-      <SelectField id="scAcct" label={less ? "Taken out of" : "Put into"} value={s.acct} onChange={(v) => up({ acct: v as Scenario["acct"] })}>{acctOpts("Brokerage")}</SelectField>
+      <SelectField id="scAcct" label={<TipLabel text={less ? "Taken out of" : "Put into"} id="scAcct" />} value={s.acct} onChange={(v) => up({ acct: v as Scenario["acct"] })}>{acctOpts("Brokerage")}</SelectField>
     </>;
   } else {
     form = <>
@@ -342,8 +359,8 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
       </SelectField>
       <div className="dsh-sc-amt">
         {s.mode === "amount"
-          ? <MoneyField id="scAmount" label="Change saving by" unit="/mo" value={txt.amount.replace(/^-/, "")} onValueChange={(v) => typed("amount")((less ? "-" : "") + v)} />
-          : <NumberField id="scAmount" label="Change saving by" unit="%" value={txt.amount.replace(/^-/, "")} onValueChange={(v) => typed("amount")((less ? "-" : "") + v)} />}
+          ? <MoneyField id="scAmount" label={<TipLabel text="Change saving by" id="scAmount" />} unit="/mo" value={txt.amount.replace(/^-/, "")} onValueChange={(v) => typed("amount")((less ? "-" : "") + v)} />
+          : <NumberField id="scAmount" label={<TipLabel text="Change saving by" id="scPct" />} unit="%" max={100} value={txt.amount.replace(/^-/, "")} onValueChange={(v) => typed("amount")((less ? "-" : "") + v)} />}
         <Field id="scSign" label="Which way">
           <Segmented id="scSign" size="fill" attr="data-sign" options={[["more", "More"], ["less", "Less"]] as const} value={less ? "less" : "more"} onChange={(v) => typed("amount")((v === "less" ? "-" : "") + txt.amount.replace(/^-/, ""))} />
         </Field>
@@ -356,7 +373,7 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
         <Segmented id="scHow" size="fill" attr="data-how" options={[["0", "All at once"], ["1", "Phased in"]] as const} value={s.ramp > 0 ? "1" : "0"} onChange={(v) => { const r = v === "1" ? Math.max(1, s.ramp || 3) : 0; up({ ramp: r }); setTxt((c) => ({ ...c, ramp: String(r) })); }} />
       </Field> : null}
       {s.mode !== "pctYearly" && s.ramp > 0 ? <NumberField id="scRamp" label="Over" unit="years" value={txt.ramp} onValueChange={typed("ramp")} /> : null}
-      <SelectField id="scAcct" label={less ? "Comes out of" : "Goes into"} value={s.acct} onChange={(v) => up({ acct: v as Scenario["acct"] })} className="dsh-sc-full">
+      <SelectField id="scAcct" label={<TipLabel text={less ? "Comes out of" : "Goes into"} id="scAcct" />} value={s.acct} onChange={(v) => up({ acct: v as Scenario["acct"] })} className="dsh-sc-full">
         {acctOpts(less ? "Brokerage first, then the others" : "Brokerage")}
       </SelectField>
     </>;
@@ -371,12 +388,13 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
       </div>
       <div className="dsh-sc-preview" aria-live="polite">
         <b>{scenarioSentence(s, retire, nominal)}</b>{where}
-        <div className="dsh-sc-pe">At retirement: {effect == null ? <span className="dsh-muted">working it out…</span> : <b className={effect < 0 ? "dsh-dn" : effect > 0 ? "dsh-up" : ""}>{fx(effect)}</b>} in today&apos;s dollars, with your other scenarios as they are.</div>
+        <div className="dsh-sc-pe">At retirement: {effect == null ? <span className="dsh-muted">working it out…</span> : effect.fv == null ? <span className="dsh-muted">not known yet</span> : <b className={effect.fv < 0 ? "dsh-dn" : effect.fv > 0 ? "dsh-up" : ""}>{fx(effect.fv)}</b>} in today&apos;s dollars, with your other scenarios as they are.</div>
+        {effect?.short ? <div className="dsh-sc-pe dsh-sc-warn">You can&apos;t afford this as it stands: from {effect.short.from} it takes {money(effect.short.most)} per month more than you save then. Saving can&apos;t go below $0, and the plan never takes money back out of savings before retirement. Lower the amount, start it later, or end it sooner.</div> : null}
       </div>
       <div className="formactions mt-4">
         {!fresh ? <Button variant="link" className="mr-auto" onClick={remove}>Remove this scenario</Button> : null}
         <Button variant="outline" onClick={close}>Cancel</Button>
-        <Button onClick={() => save({ ...s, name: s.name.trim() })}>{fresh ? "Add it" : "Save"}</Button>
+        <Button disabled={cant} onClick={() => { if (!cant) save({ ...s, name: s.name.trim() }); }}>{fresh ? "Add it" : "Save"}</Button>
       </div>
     </Modal>
   );

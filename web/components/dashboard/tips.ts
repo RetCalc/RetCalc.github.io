@@ -4,6 +4,13 @@
    fits (fra, ssclaim, match, effrate). */
 
 export const TIPS = {
+  /* Calculator scenarios */
+  scFrom: "Your age when it starts. The plan counts whole years of age from today, so a scenario starting at 47 changes saving from the year you turn 47 to retirement, or to the age you set under Until.",
+  scAmount: "In today's dollars, like every figure on your dashboard: $500 per month means what $500 buys today, every year it runs. Saving more goes into the account you pick; saving less comes out of the accounts in the order shown, and the plan keeps the tax it frees in mind.",
+  scPct: "A share of what you save that year, after the scenarios before this one. Each year compounds: 10% less each year is 90% of the year before, every year it runs.",
+  scAcct: "Where the money goes in, or which account gives up saving first. When that account runs out, the rest comes out of the others in the dashboard's order: the brokerage first, then the 401(k) beyond the match, the IRA and the HSA, and the 401(k) up to the match last. Saving can't go below nothing: the plan never takes money back out of savings before retirement.",
+  scLump: "One amount, in today's dollars, put in or taken out over the year you turn that age. Money put in goes into the account you pick; money taken out comes from that account's saving that year, and can't take more than you save.",
+  scReturn: "The return your savings earn from that age on, before inflation, in place of the plan's. Stepped, it changes at once; climbing, it moves a little each year until it gets there. Only the Calculator runs returns year by year, so with a returns scenario on, its result is your plan's savings at retirement.",
   /* Dashboard */
   kidCostNow: "What your plan counts per month for the children you have, at their ages now, from the costs in Profile. It's already part of your spending. As they move into an age that costs more or less, or leave home, the difference comes out of (or goes back to) your saving.",
   netWorth: "What you have, less what you owe: every account, your home and anything else you listed, minus your debts. It comes from your latest entry on Net worth.",

@@ -772,6 +772,8 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-sc-eff.dsh-dn b, .dsh-sc-all.dsh-dn b { color: var(--ds-loss); }
 .dsh-sc-off .dsh-sc-sent { opacity: .75; }
 .dsh-sc-all { margin: 0 0 8px; font-size: 13px; color: var(--ds-muted); }
+.dsh-sc-warn { margin: 4px 0 0 28px; font-size: 13px; line-height: 1.4; color: var(--ds-loss); }
+.dsh-sc-preview .dsh-sc-warn { margin-left: 0; margin-top: 8px; }
 .dsh-sc-children { background: var(--ds-series-lavender); }
 .dsh-sc-up { background: var(--ds-series-teal); }
 .dsh-sc-down { background: var(--ds-series-rose); }
