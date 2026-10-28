@@ -14,12 +14,7 @@
 "advanced": {
 "h1": "Advanced Retirement Calculator",
 "title": "Advanced Retirement Calculator: Taxes, Fees & History",
-"desc": "Project retirement savings with fees, account types, employer match and 2026 taxes, then test it against every market since 1926 or 5,000 random ones."
-},
-"stages": {
-"h1": "Multi-Stage Retirement Savings Calculator",
-"title": "Multi-Stage Retirement Savings Calculator | RetCalc",
-"desc": "Plan retirement savings in stages, each with its own contribution, raises and return, chained into one projection tested against real market history."
+"desc": "Project retirement savings with fees, account types, employer match and 2026 taxes, add the changes you see coming, then test it against every market since 1926."
 },
 "guide": {
 "h1": "Retirement Readiness Guide",

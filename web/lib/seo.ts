@@ -41,13 +41,13 @@ function appName(title: string): string {
 
 /** The page's place in the site, for the BreadcrumbList: the strategy pages
     sit under the Drawdown Simulator, /72t and /rmd under the tool they open,
-    Advanced and Stages under the Calculator, the other tools under Tools. */
+    Advanced under the Calculator, the other tools under Tools. */
 function crumbs(slug: Slug): Slug[] {
   if (slug === "home") return [];
   if (isStrategyPage(slug)) return ["home", "drawdown", slug];
   if (slug === "72t") return ["home", "tools", "bridge", slug];
   if (slug === "rmd") return ["home", "tools", "roth", slug];
-  if (slug === "advanced" || slug === "stages") return ["home", "calculator", slug];
+  if (slug === "advanced") return ["home", "calculator", slug];
   if (TOOL_SUB[slug]) return ["home", "tools", slug];
   return ["home", slug];
 }

@@ -21,12 +21,12 @@ import { setRailHidden, useRailHidden } from "@/lib/tool-rail";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const CALC: CalcMode[] = ["simple", "single", "series"];
+const CALC: CalcMode[] = ["simple", "single"];
 const GUIDES = [{ href: "/guide", name: "Readiness Guide" }, { href: "/guide/paycheck", name: "Paycheck to Retirement" }];
 
 /** The pages the sidebar stands beside: the calculator's modes, Compare and every tool's page. */
 export function hasRail(slug: Slug): boolean {
-  return !!TOOL_SUB[slug] || slug === "calculator" || slug === "advanced" || slug === "stages" || (slug as string) === "compare";
+  return !!TOOL_SUB[slug] || slug === "calculator" || slug === "advanced" || (slug as string) === "compare";
 }
 
 export function ToolRail() {

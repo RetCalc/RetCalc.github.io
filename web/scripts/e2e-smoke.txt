@@ -23,8 +23,6 @@ desktop | optimizer.spec.ts | the optimizer charts show the age under the pointe
 desktop | rentbuy.spec.ts | rent vs. buy clears without a price
 desktop | roth.spec.ts | the Roth chart switches to tax paid
 desktop | share.spec.ts | a tool without a summary offers only its link
-desktop | stages.spec.ts | Advanced hands its plan to Stages
-desktop | stages.spec.ts | a stage can be renamed
 desktop | tooltips.spec.ts | a ? shows its explanation
 desktop | tooltips.spec.ts | the footer shows the real email address
 phone | about.spec.ts | the contact address is put together in the browser
@@ -45,7 +43,5 @@ phone | optimizer.spec.ts | a search can be stopped
 phone | rentbuy.spec.ts | rent vs. buy clears without a price
 phone | roth.spec.ts | the Roth chart switches to tax paid
 phone | share.spec.ts | a tool without a summary offers only its link
-phone | stages.spec.ts | Advanced hands its plan to Stages
-phone | stages.spec.ts | a stage can be renamed
 phone | tooltips.spec.ts | a ? shows its explanation
 phone | tooltips.spec.ts | the footer shows the real email address

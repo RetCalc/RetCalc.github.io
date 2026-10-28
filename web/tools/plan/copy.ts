@@ -13,6 +13,5 @@ export function copyToTools(p: PlanState): string[] {
   if (tax) { TAB_STORE.write("tax", tax); done.push("Income Tax"); }
   if (p.tools.budget) { TAB_STORE.write("budget", { ...toolOf(p, "budget"), view: "budget" }); done.push("Budget"); }
   if (p.tools.advanced) { TAB_STORE.write("advanced", toolOf(p, "advanced")); done.push("Advanced"); }
-  if (p.stagesOn && p.tools.stages) { TAB_STORE.write("stages", toolOf(p, "stages")); done.push("Stages"); }
   return done;
 }

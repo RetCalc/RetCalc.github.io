@@ -2,8 +2,9 @@
    paycheck from gross pay down to each account, the spending by group, and
    the plan at retirement with its balance by age, account by account.
    Every figure comes from the tools' own code (paycheckRun, budgetGroups,
-   advancedCompute, stagesCompute); the balance by account is the same run
-   once per account, as Stages does for its split. No React. */
+   advancedCompute, and Advanced's changes ahead run as stages); the
+   balance by account is the same run once per account, as the stages do
+   for their split. No React. */
 import { NEWEST_YEAR, projectSeries } from "@/lib/engine/typed";
 import type { Series, Stage } from "@/lib/engine/types";
 import { parseNum } from "@/lib/format";
@@ -12,9 +13,12 @@ import { advancedCompute, advancedPlan } from "@/tools/advanced/model";
 import { annualize, budgetCompute } from "@/tools/budget/model";
 import { PC_LINES, PC_STEPS, rowRole, type PcStep } from "@/tools/budget/paycheck-math";
 import { CHILD_SOURCE, childCost } from "@/tools/guide/schedule";
-import { stageSplit, stagesCompute } from "@/tools/stages/model";
-import { freedOf, paycheckOf, planAges, toolOf } from "./flow";
-import { STEP, coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
+import { stageSplit } from "@/tools/stages/model";
+import { KID_BASE } from "@/tools/stages/kids";
+import { changesCompute, changesOn, liveChanges, withChange } from "@/tools/advanced/changes";
+import { CHILDREN_ID } from "@/components/dashboard/scenarios";
+import { paycheckOf, planAges, toolOf } from "./flow";
+import { ONE_FOR_ONE, STEP, coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
 import type { PlanState } from "./model";
 
 export type Acct = "trad" | "roth" | "brok" | "hsa";
@@ -99,19 +103,22 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
   if (!pc || !ages || !p.tools.advanced) return null;
   const { pi, r } = pc, per = pi.two ? "month" : "check";
   const b = toolOf(p, "budget"), adv = toolOf(p, "advanced");
-  const useStages = p.stagesOn && !!p.tools.stages;
+  // Advanced's changes ahead, when any are on: the plan runs as their stages.
+  const useStages = changesOn(adv);
+  // The children are Advanced's own, while their change is on.
+  const kidsP = liveChanges(adv).some((c) => c.kind === "children") ? adv.kids : null;
   const lines = PC_STEPS.filter((s) => s !== "ef" || pi.efOn).map((id) => ({
     id, name: PC_LINES[id].name, v: pi.amounts[id],
     roth: (id === "match" && pi.roth.match) || (id === "k401max" && pi.roth.k401max) || (id === "rothIra" && pi.roth.rothIra),
   })).filter((l) => l.v > 0.004);
 
-  // The plan: Stages when the walkthrough went on there, else Advanced.
+  // The plan: its stages with changes ahead on, else Advanced's own run.
   let climb: ClimbRow[] = [], fv = 0, total = 0, afterTax = 0, byAcct: Record<Acct, number> | null = null;
   let infl = 0, years = 0, taxRate = 0, withdrawal = 0, made = { start: 0, own: 0, match: 0, growth: 0 }, inReal = 0;
   let assumptions: PlanSummary["assumptions"];
   let stages: PlanSummary["stages"] = null;
   if (useStages) {
-    const st = toolOf(p, "stages"), V = stagesCompute(st, household), P = V.P, g = P.g;
+    const { C, V } = changesCompute(adv, household), P = V.P, g = P.g;
     infl = g.inflation; years = V.R.totalYears; fv = V.R.fv; total = V.R.fvReal; afterTax = V.R.afterTax; taxRate = g.taxRate; withdrawal = g.withdrawal;
     const mt = P.B?.matchTotal ?? 0;
     made = { start: g.initial, own: V.R.contribTotal - mt, match: mt, growth: V.R.fv - g.initial - V.R.contribTotal };
@@ -129,20 +136,16 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
       hsa: run(a.hsaBal, (i) => stageSplit(P.stages[i]).h / mf(i)),
     } : { trad: [], roth: [], brok: run(g.initial, () => 1), hsa: [] };
     climb = sliceRows(slices, a ? { trad: a.tradBal, roth: a.rothBal, brok: a.brokBal, hsa: a.hsaBal } : { trad: 0, roth: 0, brok: g.initial, hsa: 0 }, years, ages.age, infl);
-    let at = ages.age;
-    stages = P.stages.map((s, i) => {
-      const from = at, to = at + s.years;
-      at = to;
-      const mine = P.eff[i].mine, perYr = { Weekly: 52, "Bi-Weekly": 26, Monthly: 12, Quarterly: 4, Annually: 1 }[s.period] ?? 12;
-      const kids = p.kids ? kidList(p.kids, ages.age) : [];
-      return { name: s.name || "Stage " + (i + 1), from, to, monthly: real((mine * perYr) / 12, i > 0 && s.adj ? infl : 0, from - ages.age),
-        kidCost: Math.round(kidCostAt(kids, from)), change: 0, take: null as Monthly | null, short: 0, taxUp: 0, matchLost: 0 };
-    });
-    // The children's stages, as built: their cost and how each was covered.
-    const ks = kidStages(p.kids, ages.age, ages.age + years), AP = advancedPlan(adv, household), today = monthlyByAccount(AP, AP.p.period), F = freedOf(p);
-    if (ks.length === stages.length) stages = stages.map((s, i) => {
-      const c = coverStage(ks[i].change, today, p.cover[stageKey(ks[i])], F);
-      return { ...s, kidCost: ks[i].cost, change: ks[i].change, take: ks[i].change !== 0 ? c.take : null, short: c.short, taxUp: c.taxUp, matchLost: c.matchLost };
+    // The stages as Advanced lists them: what's going on, by age, and for the
+    // children's, their cost then and how it's covered.
+    const ks = kidsP ? kidStages(kidsP, ages.age, ages.age + Math.max(1, Math.round(years))) : [];
+    const AP = advancedPlan(adv, household), today = monthlyByAccount(AP, AP.p.period);
+    stages = C.shown.map((x) => {
+      const from = ages.age + x.from, to = ages.age + x.to, seg = ks.find((k) => from >= k.from && from < k.to);
+      const change = seg?.change ?? 0, key = seg ? stageKey({ from: seg.from - ages.age + KID_BASE, to: seg.to - ages.age + KID_BASE }) : "";
+      const c = seg && change !== 0 ? coverStage(change, today, adv.acOn ? (adv.kidCover ?? {})[key] : undefined, ONE_FOR_ONE) : null;
+      return { name: x.names.join(", ") || "Saving", from, to, monthly: x.monthly.brok + x.monthly.roth + x.monthly.trad + x.monthly.hsa,
+        kidCost: seg?.cost ?? 0, change, take: c ? c.take : null, short: c?.short ?? 0, taxUp: c?.taxUp ?? 0, matchLost: c?.matchLost ?? 0 };
     });
     const s0 = P.stages[0];
     assumptions = { nominal: s0 ? s0.nominal : 0, inflation: g.inflation, fees: g.fees, growth: s0 ? s0.growth : 0, withdrawal: g.withdrawal, vol: s0?.vol ?? 0 };
@@ -165,7 +168,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
   const retireAge = ages.age + Math.round(years);
   // The children, once there are stages built around them.
   let children: PlanSummary["children"] = null;
-  const kl = p.kids ? kidList(p.kids, ages.age) : [];
+  const kl = kidsP ? kidList(kidsP, ages.age) : [];
   if (stages && kl.length) {
     const rows = kl.map((c, i) => {
       const bands: { from: number; to: number; monthly: number; early: boolean }[] = [];
@@ -176,7 +179,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
       }
       return { label: "Child " + (i + 1), born: c.born, planned: c.planned, bands };
     }).filter((r) => r.bands.length);
-    const together = kidStages(p.kids, ages.age, retireAge).filter((s) => s.cost > 0).map((s) => ({ from: s.from, to: s.to, monthly: s.cost }));
+    const together = kidStages(kidsP, ages.age, retireAge).filter((s) => s.cost > 0).map((s) => ({ from: s.from, to: s.to, monthly: s.cost }));
     let total = 0, peak = { age: ages.age, monthly: 0 };
     for (let t = ages.age; t < retireAge; t += STEP) {
       const m = kidCostAt(kl, t);
@@ -188,7 +191,8 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
       rows, together, total, peak,
       fromSaving: stages.reduce((t, s) => t + (s.take ? Math.max(0, s.change - s.short) * yrs(s) : 0), 0),
       fromSpending: stages.reduce((t, s) => t + s.short * yrs(s), 0),
-      without: advancedCompute(adv, household).R.fvReal,
+      without: ((x) => (changesOn(x) ? changesCompute(x, household).V.R.fvReal : advancedCompute(x, household).R.fvReal))(
+        withChange(adv, { ...(adv.changes ?? []).find((c) => c.id === CHILDREN_ID)!, on: false })),
     };
   }
   const milestones: PlanSummary["milestones"] = [];
@@ -197,7 +201,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
     const hit = climb.find((c) => c.total >= v);
     if (hit && hit.year > 0) milestones.push({ label, age: hit.age });
   }
-  const kids = p.kids ? kidList(p.kids, ages.age).map((c) => ({ born: c.born, planned: c.planned })) : [];
+  const kids = kidsP ? kidList(kidsP, ages.age).map((c) => ({ born: c.born, planned: c.planned })) : [];
   const g: Record<string, number> = {};
   for (const row of b.rows) if (rowRole(b, row) === "count" && annualize(row) > 0) g[row.group || "Custom"] = (g[row.group || "Custom"] || 0) + annualize(row);
   const groups = Object.entries(g).map(([group, yr]) => ({ group, yr })).sort((x, y) => y.yr - x.yr);

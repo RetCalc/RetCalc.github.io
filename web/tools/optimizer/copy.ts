@@ -1,6 +1,6 @@
-/* "Copy from Advanced or Stages": whichever has its savings split by account
-   type. Each is worked out from its inputs as last left, so the numbers are
-   the ones on its screen. From opSources(), opSourceSaving() and opCopy() in
+/* "Copy from Advanced": once its savings are split by account type, worked
+   out from its inputs as last left (with its changes ahead, when any are
+   on), so the numbers are the ones on its screen. From opSources(), opSourceSaving() and opCopy() in
    src/js/app/31b-plan-optimizer.js. */
 import { toolInputs } from "@/components/tools/ToolState";
 import { matchPer, type AccountResult, type Accounts } from "@/lib/accounts";
@@ -9,7 +9,7 @@ import { fmtNum, groupDigits, money, pctStr } from "@/lib/format";
 import type { Household } from "@/lib/household";
 import { STATE_OPTIONS } from "@/lib/states";
 import { ADVANCED_DEFAULTS, advancedPlan } from "@/tools/advanced/model";
-import { STAGES_DEFAULTS, stageSplit, stagesPlan } from "@/tools/stages/model";
+import { changesCompute, changesOn } from "@/tools/advanced/changes";
 import { type OptimizerInputs } from "./model";
 import { opCompact } from "./words";
 
@@ -24,30 +24,18 @@ export function opSources(profile: Household | null): Source[] {
   const out: Source[] = [];
   const adv = toolInputs("advanced", ADVANCED_DEFAULTS);
   if (adv.acOn) {
-    const { p, a, B } = advancedPlan(adv, profile);
+    const { p, a, B: B0 } = advancedPlan(adv, profile);
+    // With changes ahead on, the balances at retirement are the ones they make.
+    const on = changesOn(adv), B = on ? changesCompute(adv, profile).V.P.B : B0;
     if (a && B) {
       const ppy = (PPY as Record<string, number>)[p.period], mo = (v: number) => (v * ppy) / 12;
       const notes = [];
       if (Math.abs(p.growth - p.inflation) > 0.0025) notes.push("Advanced raises your saving " + pctStr(p.growth, 1) + " per year; here it keeps pace with inflation");
       if (p.glide?.on) notes.push("the glide path isn't carried over");
       if (a.hsaBal > 0 || a.hsaC > 0) notes.push("the HSA isn't carried over (it's kept for health care)");
+      if (on) notes.push("your changes ahead are in the balances at retirement; Today mode starts from today's saving");
       out.push({ label: "Advanced", B, a, years: p.years, defl: Math.pow(1 + p.inflation, p.years), notes,
         saving: { t: mo(a.tradC + matchPer(a, ppy)), r: mo(a.rothC), b: mo(a.brokC), real: (1 + p.nominal) / (1 + p.inflation) - 1 } });
-    }
-  }
-  const st = toolInputs("stages", STAGES_DEFAULTS);
-  if (st.saOn) {
-    const { g, stages, eff, B } = stagesPlan(st, profile);
-    if (B && g.acct) {
-      const years = B.years ?? 0, e = eff[0];
-      let saving = { t: 0, r: 0, b: 0, real: 0.045 };
-      if (e) {
-        const ppy = (PPY as Record<string, number>)[e.period], sp = stageSplit(stages[0]), mine = Math.max(0, e.mine), mo = (v: number) => (v * ppy) / 12;
-        saving = { t: mo(mine * sp.t + mine * (e.mf - 1)), r: mo(mine * sp.r), b: mo(mine * sp.b), real: (1 + e.nominal) / (1 + g.inflation) - 1 };
-      }
-      const notes = stages.length > 1 ? ["only stage 1's saving comes across; Retirement day mode keeps every stage"] : [];
-      if (B.real.hsa > 0) notes.push("the HSA isn't carried over (it's kept for health care)");
-      out.push({ label: "Stages", B, a: g.acct, years, defl: Math.pow(1 + g.inflation, years), saving, notes });
     }
   }
   return out;

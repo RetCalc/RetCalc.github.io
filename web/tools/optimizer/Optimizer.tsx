@@ -115,12 +115,12 @@ export function Optimizer() {
   const setMode = (to: "ret" | "now") => {
     if (to === s.mode) return;
     setState((c) => opSetMode(c, to));
-    toast(to === "ret" ? "Enter what you'll have on the day you retire, or copy it from Advanced or Stages"
-      : "Enter what you have today and what you save each month, or copy them from Advanced or Stages");
+    toast(to === "ret" ? "Enter what you'll have on the day you retire, or copy it from Advanced"
+      : "Enter what you have today and what you save each month, or copy them from Advanced");
   };
   const copy = async () => {
     const src = opSources(profile);
-    if (!src.length) { toast("Turn on Split by account type in Advanced or Stages first, then copy it here", "warn"); return; }
+    if (!src.length) { toast("Turn on Split by account type in Advanced first, then copy it here", "warn"); return; }
     let i = 0;
     if (src.length > 1) {
       i = await showPopup(v.now ? "Copy today's savings from which plan?" : "Copy your balances at retirement from which plan?",
@@ -223,9 +223,9 @@ export function Optimizer() {
 
               <div className="mt-1 mb-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border pt-4">
                 <h3 className="m-0 mr-auto text-sm font-semibold" id="opBalHead">{v.now ? "Saved for retirement today" : "Saved on the day you retire"}</h3>
-                <Button variant="outline" size="sm" id="opCopy" onClick={copy}>Copy from Advanced or Stages</Button>
-                <p className="m-0 basis-full text-label text-muted-foreground" id="opBalNote">{v.now ? "Today's balances. Advanced or Stages can fill these in, with what you save each month."
-                  : "In today's dollars. Advanced or Stages can project these for you, account by account."}</p>
+                <Button variant="outline" size="sm" id="opCopy" onClick={copy}>Copy from Advanced</Button>
+                <p className="m-0 basis-full text-label text-muted-foreground" id="opBalNote">{v.now ? "Today's balances. Advanced can fill these in, with what you save each month."
+                  : "In today's dollars. Advanced can project these for you, account by account."}</p>
               </div>
               <MoneyField id="opTrad" label={<Tipped text="Traditional 401(k) / IRA" k="optrad" />} value={s.trad} onValueChange={set("trad")} />
               <div className="two bottomalign max-sm:grid-cols-2">

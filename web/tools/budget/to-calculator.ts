@@ -1,5 +1,5 @@
-/* The Paycheck tab's saving, carried into Advanced or Stages with their
-   savings split by account type: what goes into each account (the "You
+/* The Paycheck tab's saving, carried into Advanced with its savings split
+   by account type: what goes into each account (the "You
    add" amounts), on your pay schedule, and the employer match. Balances
    aren't touched; the emergency fund stays behind (it's cash).
 
@@ -15,7 +15,6 @@
 import { dollarsField, groupDigits, parseNum } from "@/lib/format";
 import { TAX_DEFAULTS, type TaxInputs } from "@/tools/tax/model";
 import { ADVANCED_DEFAULTS, type AdvancedInputs } from "@/tools/advanced/model";
-import { STAGES_DEFAULTS, stagesLookEdited, type StageInputs, type StagesInputs } from "@/tools/stages/model";
 import { paycheckRun, pcSplit, type PcInput, type PcRun } from "./paycheck-math";
 
 const SCHEDULES: Record<number, string> = { 52: "Weekly", 26: "Bi-Weekly", 12: "Monthly" };
@@ -62,11 +61,6 @@ export function advancedHasSaving(s: AdvancedInputs): boolean {
   return !s.acOn && parseNum(s.contrib) > 0 && parseNum(s.contrib) !== parseNum(ADVANCED_DEFAULTS.contrib);
 }
 
-/** Whether Stages' first stage (or its match) is already set up. */
-export function stagesHasSaving(s: StagesInputs): boolean {
-  return stagesLookEdited(s.stages) || (s.saOn && filled(s.saMatchPct));
-}
-
 /** Retirement tax settings for an account split turned on here, as the
     household's, else the paycheck's). */
 export interface TaxSeed { status: string; state: string }
@@ -81,25 +75,6 @@ export function intoAdvanced(s: AdvancedInputs, c: PcCopy, t: TaxSeed): Advanced
     ...s, ...start, acOn: true, period: c.period,
     tradC: centsField(c.trad), rothC: centsField(c.roth), brokC: centsField(c.brok), hsaC: centsField(c.hsa),
     salary: dollarsField(c.salary), matchPct: pctText(c.matchPct), matchCap: pctText(c.matchCap),
-  };
-}
-
-/** Stages with the copy in its first stage (one is added, its years left
-    to fill in, when there are none). */
-export function intoStages(s: StagesInputs, c: PcCopy, t: TaxSeed): StagesInputs {
-  const blank = !filled(s.saTradBal, s.saRothBal, s.saBrokBal, s.saHsaBal);
-  const start = !s.saOn && blank
-    ? { saTradBal: dollarsField(parseNum(s.initial)), saRothBal: "0", saBrokBal: "0", saHsaBal: "0", saBrokBasis: "", saStatus: t.status, saState: t.state } : {};
-  const sum = c.trad + c.roth + c.brok + c.hsa;
-  const first: StageInputs = s.stages[0] ?? STAGES_DEFAULTS.stages[0];
-  const { cT: _t, cR: _r, cB: _b, cH: _h, ...rest } = first;
-  const stage: StageInputs = {
-    ...rest, ...(s.stages[0] ? {} : { years: "" }), contrib: centsField(sum), period: c.period,
-    ...(sum > 0 ? { sTrad: c.trad / sum, sRoth: c.roth / sum, sHsa: c.hsa / sum } : { sTrad: 1, sRoth: 0, sHsa: 0 }),
-  };
-  return {
-    ...s, ...start, saOn: true, stages: [stage, ...s.stages.slice(1)],
-    saSalary: dollarsField(c.salary), saMatchPct: pctText(c.matchPct), saMatchCap: pctText(c.matchCap),
   };
 }
 

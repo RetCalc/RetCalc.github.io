@@ -1,6 +1,7 @@
 "use client";
 
-/* The Advanced and Stages calculators' printed summary and image card: one
+/* The printed summary and image card of Advanced (with or without its
+   changes ahead) and of the Dashboard's Calculator (its stages): one
    template for both, as on the old site. From buildSheet() in
    src/js/app/10-summary-sheets.js and the projection card in 25-share-card.js. */
 
@@ -8,14 +9,14 @@ import { SheetPage, SheetSection, SheetTable, sampled, type SheetRows } from "@/
 import { copyChart, type ShareKit } from "@/components/shell/share";
 import { milestoneRows } from "@/components/common/Milestones";
 import type { Accounts } from "@/lib/accounts";
-import { coastFire, goalSolve, solveYears } from "@/lib/engine/typed";
 import type { Plan, Projection, Series } from "@/lib/engine/types";
+import type { Household } from "@/lib/household";
 import { fmtNum, fmtYears, money, parseNum, pctStr } from "@/lib/format";
 import { PERIOD_ADV } from "@/lib/periods";
 import { MC_RUNS } from "@/lib/mc-seed";
 import type { EffStage } from "@/tools/stages/model";
-import type { AdvancedPlan } from "./model";
-import { solvePlan } from "./model";
+import type { AdvancedInputs, AdvancedPlan } from "./model";
+import { coastAnswer, retireAnswer } from "./changes";
 
 /* Split by account type, the starting balances rather than one total (the
    HSA's when it has one). */
@@ -24,12 +25,16 @@ const startRows = (a: Accounts | null | undefined, total: number): SheetRows =>
     ...(a.hsaBal > 0 ? [["HSA balance", money(a.hsaBal)] as [string, string]] : [])] : [["Starting value", money(total)]];
 
 export type ProjectionView =
-  | { kind: "advanced"; P: AdvancedPlan; R: Projection; target: string; solveFor: string; mode: string }
+  /** Advanced: its run (the stages' when changes are on, named in
+      `changes`), and the portfolio its target needs. */
+  | { kind: "advanced"; P: AdvancedPlan; R: Projection | Series; s: AdvancedInputs; household: Household | null; changes: string[]; need: number; mode: string }
   | { kind: "stages"; g: { initial: number; inflation: number; withdrawal: number; taxRate: number; fees: number; acct?: Accounts }; eff: EffStage[]; R: Series; mode: string };
 
 export function projectionShare(v: ProjectionView): ShareKit {
   const series = v.kind === "stages";
   const chartSel = series ? "#chartS" : "#chart";
+  // Advanced's run is a stages run once a change is on.
+  const staged = (R: Projection | Series): R is Series => "calRows" in R;
   return {
     sheet: () => {
       const R = v.R, years = series ? (v.R as Series).totalYears : (v as { P: AdvancedPlan }).P.p.years;
@@ -50,24 +55,26 @@ export function projectionShare(v: ProjectionView): ShareKit {
           ["Time period", fmtNum(p.years) + " years"], ["Rate of return", pctStr(p.gross, 2)]];
         if (p.fees > 0) inputs.push(["Fees", "−" + pctStr(p.fees, 2)]);
         inputs.push(["Inflation", pctStr(p.inflation, 2)], ["Withdrawal rate", pctStr(p.withdrawal, 2)], [a ? "Tax on withdrawals, calculated" : "Effective tax rate", pctStr(p.taxRate, 2)]);
+        if (v.changes.length) inputs.push(["Changes ahead", v.changes.join(", ")]);
       }
-      const lastPer = series ? (R as Series).lastPeriod : (v as { P: AdvancedPlan }).P.p.period;
+      const lastPer = staged(R) ? R.lastPeriod : (v as { P: AdvancedPlan }).P.p.period;
       const out: SheetRows = [["Amount invested", money(R.invested)], ["Growth", money(R.growth)],
         ["Final contribution, inflation adj.", lastPer ? money(R.lastContribReal) + " " + PERIOD_ADV[lastPer] : money(0)],
         ["Future value", money(R.fv)], ["Inflation adjusted", money(R.fvReal)], ["Annual withdrawal", money(R.wdReal) + " (adj.)"],
         ["After tax, per year", money(R.afterTax)], ["After tax, per month", money(R.afterTaxMo)]];
-      const rows = series ? (R as Series).calRows.map((r) => ({ year: r.year, end: r.end, growth: r.growth, contrib: r.contrib }))
-        : (R as Projection).years.map((y) => ({ year: y.year, end: y.end, growth: y.growth, contrib: y.contrib }));
-      // Goal-solve and Coast FIRE, single run only: where they live on screen.
+      const rows = staged(R) ? R.calRows.map((r) => ({ year: r.year, end: r.end, growth: r.growth, contrib: r.contrib }))
+        : R.years.map((y) => ({ year: y.year, end: y.end, growth: y.growth, contrib: y.contrib }));
+      // Reach your target, Advanced only: the two answers on its screen.
       let goal: SheetRows | null = null;
       if (v.kind === "advanced") {
-        const p = v.P.p, t = parseNum(v.target), S = goalSolve(solvePlan(v.P, v.solveFor, t), v.solveFor, t), C = coastFire(p, S.portFuture), Y = solveYears(p, S.portToday);
-        goal = [["Target", v.solveFor === "After-Tax Withdrawal" ? money(t) + "/yr after tax" : money(t)], ["Portfolio needed", money(S.portToday)],
-          ["Raise contribution to", money(S.perPeriod, 2) + " " + p.period.toLowerCase()], ["Or extend timeline to", Y.reached ? fmtYears(Y.years) : "Not reached in 100 yrs"],
-          ["Coast FIRE", C.state === "already" ? "Already there" : C.state === "reachable" ? fmtYears(C.years) : "Not on track"]];
+        const t = parseNum(v.s.target), age = Math.round(parseNum(v.s.age)), aged = v.s.age.trim() !== "" && age > 0;
+        const C = coastAnswer(v.s, v.household), Y = retireAnswer(v.s, v.household);
+        goal = [["Target", v.s.solveFor === "After-Tax Withdrawal" ? money(t) + "/yr after tax" : money(t)], ["Portfolio needed", money(v.need)],
+          ["Stop saving", !C ? "—" : C.at == null ? "Not before the end" : C.at === 0 ? "Today" : aged ? "At " + (age + C.at) : "After " + fmtYears(C.at)],
+          ["Retire", !Y ? "—" : Y.years == null ? "Not within 100 yrs" : aged ? "At " + (age + Y.years) : "In " + fmtYears(Y.years)]];
       }
       return (
-        <SheetPage title="Investment Projection" sub={<>{series ? "Stages" : "Advanced"} &middot; {fmtNum(years)} years &middot; {v.mode === "mc" ? "Monte Carlo, " + MC_RUNS.toLocaleString() + " runs" : "Projection"}</>}
+        <SheetPage title="Investment Projection" sub={<>{series ? "Calculator" : "Advanced"} &middot; {fmtNum(years)} years &middot; {v.mode === "mc" ? "Monte Carlo, " + MC_RUNS.toLocaleString() + " runs" : "Projection"}</>}
           big={[["Future value", money(R.fv), "after " + fmtNum(years) + " years"], ["Inflation adjusted", money(R.fvReal), "in today's spending power"],
             ["After-tax income / yr", money(R.afterTax), "first year of retirement"]]}
           chart={copyChart(chartSel)}
@@ -88,8 +95,9 @@ export function projectionShare(v: ProjectionView): ShareKit {
       const R = v.R;
       const years = series ? (R as Series).totalYears : (v as { P: AdvancedPlan }).P.p.years;
       const contrib = series ? v.eff[0] : (v as { P: AdvancedPlan }).P.p;
+      const changed = v.kind === "advanced" && v.changes.length > 0;
       const gross = series ? (v.eff[0]?.nominal ?? 0) : ((v as { P: AdvancedPlan }).P.p as Plan & { gross: number }).gross;
-      return { title: series ? "My staged retirement plan" : "My retirement projection", bigLabel: "Inflation-adjusted value", big: money(R.fvReal),
+      return { title: series || changed ? "My retirement plan" : "My retirement projection", bigLabel: "Inflation-adjusted value", big: money(R.fvReal),
         sub: fmtYears(years) + " · " + money(contrib?.contrib ?? 0, 0) + " " + (PERIOD_ADV[contrib?.period ?? ""] ?? "") + " · " + pctStr(gross, 2) + " return",
         rows: [["Future value", money(R.fv)], ["Inflation adjusted", money(R.fvReal)], ["After-tax income / yr", money(R.afterTax)],
           ["I put in", money(R.contribTotal)], ["Growth added", money(R.growth)]],

@@ -4,7 +4,7 @@
    children planned. `node --import ./scripts/test-hooks.mjs tools/plan/tests/fixture.ts > plan.json` */
 import { BUDGET_DEFAULTS } from "@/tools/budget/model";
 import { paycheckInput, pcAmountKey, pcPlanApply, PC_STEPS } from "@/tools/budget/paycheck-math";
-import { seedAdvanced, seedStages, toolOf } from "../flow";
+import { seedAdvanced, seedChanges, toolOf } from "../flow";
 import { NO_KIDS, PLAN_DEFAULTS, type PlanState } from "../model";
 
 /** The Start step's answers, in the Paycheck tab's fields. */
@@ -25,7 +25,7 @@ export function samplePlan(stages = true): PlanState {
     pcMatchRoth: roth.match, pcK401maxRoth: roth.k401max, pcIraRoth: roth.rothIra, pcPlan: "usual" } } };
   p = seedAdvanced(p, null);
   p = { ...p, tools: { ...p.tools, advanced: { ...toolOf(p, "advanced"), tradBal: "38,000", rothBal: "12,500", brokBal: "8,000", hsaBal: "3,200" } } };
-  if (stages) p = seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 2 } }, null);
+  if (stages) p = seedChanges({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 2 } });
   return { ...p, step: "summary", reached: "summary" };
 }
 

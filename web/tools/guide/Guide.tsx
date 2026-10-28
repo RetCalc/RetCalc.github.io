@@ -257,7 +257,7 @@ export function Guide() {
       }
       x.back = { step: "adjust", undo, undoSrc, msg: "Applied. Your plan now has you " + ch.join(", ").replace(/, ([^,]*)$/, " and $1") +
         ". Your projection, success rate, score and household bar all use it now, and it lasted in <b>" + pctStr(success, 0) + "</b> of historical retirements.",
-      see: ok(y.stopAge) ? { trip: "stages", label: "See it in Stages" } : { trip: "basic", label: "See it in Basic" } };
+      see: ok(y.stopAge) ? { trip: "advanced", label: "See it in Advanced" } : { trip: "basic", label: "See it in Basic" } };
     });
     setTune((t) => { t.sel = null; t.draft = null; });
     sync();

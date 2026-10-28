@@ -107,7 +107,7 @@ export const STEPS: StepDecl[] = [
     needs: (a) => splitNeeds(a) ?? need((pos(a.rothNow) ? a.rothNow : 0) + (pos(a.brokNow) ? a.brokNow : 0) <= (ok(a.saved) ? a.saved : 0) + 0.5,
       "Roth and brokerage can't add up to more than your savings") },
 
-  { id: "changes", chapter: 3, title: "Changes ahead", type: "question", pace: "full", minutes: 4, tripMinutes: 10, tool: "stages", sync: true, teaches: ["not-flat"],
+  { id: "changes", chapter: 3, title: "Changes ahead", type: "question", pace: "full", minutes: 4, tripMinutes: 10, tool: "advanced", sync: true, teaches: ["not-flat"],
     needs: (a) => need(!(a.events || []).some((e) => ("to" in e && "from" in e && e.to != null && e.to <= e.from)), "Each change needs an end age after its start") },
 
   /* 4 · What retirement costs */
@@ -120,7 +120,7 @@ export const STEPS: StepDecl[] = [
   { id: "lasting", chapter: 5, title: "Tested against history", type: "readout", pace: "quick", minutes: 0.5, tool: "drawdown", teaches: ["sequence"] },
 
   /* 6 · Make it stronger (deeper; Adjust joins the Quick check when the plan falls short) */
-  { id: "adjust", chapter: 6, title: "Adjust your plan", type: "decision", pace: "full", minutes: 2, tool: "stages", teaches: ["levers"],
+  { id: "adjust", chapter: 6, title: "Adjust your plan", type: "decision", pace: "full", minutes: 2, tool: "advanced", teaches: ["levers"],
     promote: (_a, f) => !!f.behind },
   { id: "strategy", chapter: 6, title: "How you'll draw it down", type: "decision", pace: "full", minutes: 2, tripMinutes: 10, tool: "drawdown", teaches: ["flexible"] },
   { id: "health", chapter: 6, title: "Healthcare before 65", type: "decision", pace: "full", minutes: 1, tripMinutes: 4, tool: "healthcare", teaches: ["cliff"],

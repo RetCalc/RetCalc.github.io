@@ -8,14 +8,15 @@ import { readStored, writeStored } from "@/lib/storage";
 
 export const PLAN_STORE = { key: "paycheck-plan", version: 1 } as const;
 
-/** The steps, in order. Life stages is optional. (Taxes was a step of its
+/** The steps, in order. Changes ahead (its id still "stages", from when it
+    was Life stages on the Stages calculator) is optional. (Taxes was a step of its
     own until Start asked the pay; a plan saved on it opens at Start.) */
 export const STEPS = [
   { id: "start", name: "Start" },
   { id: "budget", name: "Budget" },
   { id: "paycheck", name: "Paycheck" },
   { id: "plan", name: "Your plan" },
-  { id: "stages", name: "Life stages" },
+  { id: "stages", name: "Changes ahead" },
   { id: "summary", name: "Summary" },
 ] as const;
 export type StepId = (typeof STEPS)[number]["id"];
@@ -66,9 +67,10 @@ export interface PlanState {
   /** What each later step was last filled in from, so a step is filled
       again only when what it's built on changed. */
   from: { paycheck?: string; advanced?: string; stages?: string };
-  /** Whether the plan goes on into Life stages. */
+  /** Whether the plan went on into Changes ahead. */
   stagesOn: boolean;
-  /** The children, once asked (null until then). */
+  /** The children, as Life stages asked them before Changes ahead was on
+      Advanced: carried into Advanced once (flow.ts seedChanges), then null. */
   kids: PlanKids | null;
   /** How each stage covers its children, by stage ("from-to"): a month
       taken from each account, where typed over. */

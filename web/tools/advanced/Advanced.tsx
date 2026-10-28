@@ -7,7 +7,7 @@
    04-charts.js, 06-solve.js and 07-converter.js, and the Advanced parts of
    src/main/02-calculator-inputs.html and 03-calculator-results.html. */
 
-import { useDeferredValue, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { CheckToggle, SignFlip } from "@/components/fields/CheckToggle";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
@@ -32,7 +32,8 @@ import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { useShareKit } from "@/components/shell/share";
 import { projectionShare } from "./share";
 import { ADVANCED_DEF, ADVANCED_DEFAULTS, advancedCompute, advancedPlan, glideNote, glideYearsFor, type AdvancedInputs } from "./model";
-import { changesCompute, changesOn, type Compiled } from "./changes";
+import { changesCompute, changesOn, liveChanges, type Compiled } from "./changes";
+import { scenarioName } from "@/components/dashboard/scenarios";
 import { ChangesAhead, ReachCard, ageOf } from "./ChangesAhead";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,8 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon } from "lucide-react";
+import { ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, XIcon } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Series } from "@/lib/engine/types";
 import { SERIES } from "@/lib/hues";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -62,6 +64,16 @@ export function Advanced() {
   const [band, setBand] = useState("2");
   const [dialog, setDialog] = useState<"conv" | "growth" | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
+  // Arriving from an old Stages link (/stages sends here): say where it went.
+  const [fromStages, setFromStages] = useState(false);
+  useEffect(() => {
+    const u = new URL(window.location.href);
+    if (u.searchParams.get("from") !== "stages") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from the address, which is then tidied
+    setFromStages(true);
+    u.searchParams.delete("from");
+    window.history.replaceState(window.history.state, "", u.pathname + u.search + u.hash);
+  }, []);
 
   useHouseholdFill("advanced", s, setState, (h, c) => {
     // A walkthrough fills these in from its own steps.
@@ -102,7 +114,7 @@ export function Advanced() {
   const CH = useMemo(() => (on ? changesCompute(typed, profile) : null), [on, typed, profile]);
   const R: Series | typeof V.R = CH ? CH.V.R : V.R;
   const age = ageOf(typed);
-  useShareKit(ADVANCED_DEF.id, CH ? projectionShare({ kind: "stages", g: CH.V.P.g, eff: CH.V.P.eff, R: CH.V.R, mode }) : projectionShare({ kind: "advanced", P, R: V.R, target: typed.target, solveFor: typed.solveFor, mode }));
+  useShareKit(ADVANCED_DEF.id, projectionShare({ kind: "advanced", P, R, s: typed, household: profile, changes: CH ? liveChanges(typed).map(scenarioName) : [], need: CH ? CH.V.portToday : V.S.portToday, mode }));
   const chart = useMemo(() => {
     if (!CH) return chartData(typed, V, mode, parseNum(band) / 100, seed);
     const c = changesChart(typed, CH.C, CH.V, mode, parseNum(band) / 100, seed);
@@ -240,6 +252,16 @@ export function Advanced() {
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
+      {fromStages ? (
+        <Alert role="status" className="col-span-full" id="fromStages">
+          <AlertDescription>
+            <div className="flex items-center gap-3">
+              <span className="min-w-0 flex-1">The Stages calculator is part of Advanced now. Add what you see coming (a raise, children, easing off, a lump sum) under <b>Changes ahead</b>, and the plan changes from there.</span>
+              <Button size="icon-sm" variant="ghost" aria-label="Dismiss" title="Dismiss" onClick={() => setFromStages(false)}><XIcon aria-hidden="true" /></Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      ) : null}
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}

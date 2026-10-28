@@ -22,9 +22,13 @@ const nextConfig: NextConfig = {
       // The Dashboard's Taxes tab became part of Taxes & Savings.
       { source: "/dashboard/taxes", destination: "/dashboard/savings", permanent: true },
       { source: "/single", destination: "/advanced", permanent: true },
-      { source: "/series", destination: "/stages", permanent: true },
+      // Stages became Advanced's changes ahead; Advanced says so to anyone
+      // arriving from an old link.
+      { source: "/stages", destination: "/advanced?from=stages", permanent: true },
+      { source: "/stages.html", destination: "/advanced?from=stages", permanent: true },
+      { source: "/series", destination: "/advanced?from=stages", permanent: true },
       { source: "/single.html", destination: "/advanced", permanent: true },
-      { source: "/series.html", destination: "/stages", permanent: true },
+      { source: "/series.html", destination: "/advanced?from=stages", permanent: true },
       { source: "/:slug.html", destination: "/:slug", permanent: true },
     ];
   },

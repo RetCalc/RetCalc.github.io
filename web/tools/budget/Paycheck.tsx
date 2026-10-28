@@ -32,12 +32,11 @@ import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { BracketsCard, StateRulesCard } from "@/tools/tax/TaxTables";
 import { NEWEST_YEAR, yearData } from "@/lib/engine/typed";
 import { ADVANCED_DEFAULTS } from "@/tools/advanced/model";
-import { STAGES_DEFAULTS } from "@/tools/stages/model";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { PERIOD_ADV } from "@/lib/periods";
-import { advancedHasSaving, intoAdvanced, intoStages, paycheckCopy, stagesHasSaving, taxFromPaycheck } from "./to-calculator";
+import { advancedHasSaving, intoAdvanced, paycheckCopy, taxFromPaycheck } from "./to-calculator";
 import { annualize, type BudgetInputs } from "./model";
 import {
   PC_LINES, PC_PLANS, PC_STEPS, PC_ZERO, healthRowMonthly, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcMost,
@@ -308,34 +307,21 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
   // In a walkthrough its next step does the copying, in order.
   const scope = useToolScope();
   const store = useToolStore(), go = useToolNav(), toast = useToast(), showPopup = usePopup(), { profile } = useHousehold();
-  /* Copy to a calculator: the saving, account by account, into Advanced or
-     Stages split by account type (asking first if that would replace
-     saving already there), then on to it. */
+  /* Copy to Advanced: the saving, account by account, split by account
+     type (asking first if that would replace saving already there), then
+     on to it. */
   const copyOut = async () => {
     const c = paycheckCopy(pi), total = c.trad + c.roth + c.brok + c.hsa;
     if (!(total > 0)) { toast("Nothing is going into an account yet"); return; }
     const amount = money(total, 2) + " " + PERIOD_ADV[c.period];
-    const i = await showPopup("Copy your saving into which calculator?", [
-      { label: "Advanced", desc: amount + ", split by account type" },
-      { label: "Stages", desc: amount + ", in the first stage" },
-    ]);
-    if (i < 0) return;
     // Taxes in retirement, if the split starts here: the household's, else this paycheck's.
     const seed = { status: profile?.status || pi.status, state: profile?.state || pi.state };
-    const to = i === 0 ? { id: "advanced", name: "Advanced", path: "/advanced" } : { id: "stages", name: "Stages", path: "/stages" };
-    if (i === 0) {
-      const cur = store.read("advanced", ADVANCED_DEFAULTS);
-      if (advancedHasSaving(cur) && await showPopup("Replace the saving in Advanced?", [
-        { label: "Replace it", desc: "Its \u201cYou add\u201d amounts and employer match. Balances stay as they are." }]) < 0) return;
-      store.write("advanced", intoAdvanced(cur, c, seed));
-    } else {
-      const cur = store.read("stages", STAGES_DEFAULTS);
-      if (stagesHasSaving(cur) && await showPopup("Replace the saving in Stages?", [
-        { label: "Replace it", desc: "The first stage's contribution and the employer match. Balances and other stages stay as they are." }]) < 0) return;
-      store.write("stages", intoStages(cur, c, seed));
-    }
-    go(to.path);
-    toast("Copied " + amount + " into " + to.name);
+    const cur = store.read("advanced", ADVANCED_DEFAULTS);
+    if (advancedHasSaving(cur) && await showPopup("Replace the saving in Advanced?", [
+      { label: "Replace it", desc: "Its \u201cYou add\u201d amounts and employer match. Balances stay as they are." }]) < 0) return;
+    store.write("advanced", intoAdvanced(cur, c, seed));
+    go("/advanced");
+    toast("Copied " + amount + " into Advanced, split by account type");
   };
   /** Set one line by hand: the plan no longer describes it. */
   const setLine = (k: PcStep, v: number) => setState((c) => ({ ...c, [pcAmountKey(k)]: amountText(Math.max(0, v)), pcPlan: "" }));
@@ -358,7 +344,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
       <CardHeader>
         <CardTitle>Where the rest goes</CardTitle>
         <CardAction>
-          {scope ? null : <Button variant="outline" size="sm" id="pcCopyOut" disabled={empty} title="Copy what goes into each account into Advanced or Stages" onClick={copyOut}>Copy to a calculator</Button>}
+          {scope ? null : <Button variant="outline" size="sm" id="pcCopyOut" disabled={empty} title="Copy what goes into each account into Advanced" onClick={copyOut}>Copy to Advanced</Button>}
         </CardAction>
       </CardHeader>
       <CardContent>

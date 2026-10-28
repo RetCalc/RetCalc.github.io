@@ -43,6 +43,8 @@ test("a 0% withdrawal rate explains why there's no answer", async ({ page }) => 
   await page.goto(NEW + "/advanced");
   await page.locator("#withdrawal").fill("0");
   await expect(page.locator("#payWarnText")).toContainText("0% withdrawal rate");
-  await expect(page.locator("#btnApply")).toBeDisabled();
+  // Reach your target has no answer to offer, so neither button shows.
+  await expect(page.locator("#reachCard")).toBeVisible();
+  await expect(page.locator("#btnCoast, #btnRetire")).toHaveCount(0);
   await noBadText(page);
 });

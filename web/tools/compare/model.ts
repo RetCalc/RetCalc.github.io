@@ -1,19 +1,20 @@
-/* Compare: saved Basic, Advanced and Stages scenarios side by side. Read
+/* Compare: saved Basic and Advanced scenarios side by side. Read
    only by design: every figure comes from a saved scenario, run through the
    same math its own calculator uses, and nothing is written back. From
    src/js/app/05-compare.js. */
 import { readScenarios, withDefaults, type ToolInputs } from "@/components/tools/ToolState";
-import { project, projectBasic, projectSeries } from "@/lib/engine/typed";
+import { project, projectBasic } from "@/lib/engine/typed";
 import { fmtNum, fmtYears, money, pctStr } from "@/lib/format";
 import type { Household } from "@/lib/household";
 import { PERIOD_ADV } from "@/lib/periods";
 import { ADVANCED_DEF, advancedPlan } from "@/tools/advanced/model";
 import { BASIC_DEF, basicInput } from "@/tools/basic/model";
-import { STAGES_DEF, stagesPlan } from "@/tools/stages/model";
+import { changesCompute, changesOn, liveChanges } from "@/tools/advanced/changes";
+import { scenarioName } from "@/components/dashboard/scenarios";
 
-export type CmpMode = "basic" | "advanced" | "stages";
-export const CMP_MODES: CmpMode[] = ["basic", "advanced", "stages"];
-export const CMP_MODE_LABEL: Record<CmpMode, string> = { basic: "Basic", advanced: "Advanced", stages: "Stages" };
+export type CmpMode = "basic" | "advanced";
+export const CMP_MODES: CmpMode[] = ["basic", "advanced"];
+export const CMP_MODE_LABEL: Record<CmpMode, string> = { basic: "Basic", advanced: "Advanced" };
 export const CMP_LETTERS = ["A", "B", "C"];
 
 export type Kind = "money" | "money2" | "pct" | "years" | "int";
@@ -57,40 +58,29 @@ export function cmpRun(mode: CmpMode, name: string, household: Household | null)
         ["Contribution", money(p.contrib, 2) + " " + PERIOD_ADV[p.period]], ["Growth after inflation", pctStr(p.real, 2)]],
     };
   }
-  if (mode === "stages") {
-    const P = stagesPlan(withDefaults(STAGES_DEF, sc.data as ToolInputs), household);
-    if (!P.stages.length) return null;
-    const R = projectSeries(P.g, P.eff);
-    if (!R.rows.length) return null;
-    const g = P.g, defl = (yr: number) => Math.pow(1 + g.inflation, yr);
-    const inp: [string, string][] = [["Starting value", money(g.initial)], ["Inflation", pctStr(g.inflation, 2)],
-      ["Withdrawal rate", pctStr(g.withdrawal, 2)], ["Effective tax rate", pctStr(g.taxRate, 2)], ["Fees", pctStr(g.fees || 0, 2)]];
-    P.stages.forEach((st, i) => {
-      const nm = st.name || "Stage " + (i + 1);
-      inp.push([nm + " · years", fmtNum(st.years)]);
-      inp.push([nm + " · contribution", money(st.contrib, 2) + " " + PERIOD_ADV[st.period]]);
-      inp.push([nm + " · contribution growth", pctStr(st.growth || 0, 2)]);
-      inp.push([nm + " · rate of return", pctStr(st.nominal, 2)]);
-    });
-    return {
-      years: R.totalYears,
-      pts: [{ year: 0, value: g.initial }, ...R.rows.map((r) => ({ year: r.endYear, value: r.end / defl(r.endYear) }))],
-      out: [row("Future value", R.fv), row("Inflation adjusted", R.fvReal), row("After-tax income, per year", R.afterTax),
-        row("After-tax income, per month", R.afterTaxMo), row("Amount invested", R.invested), row("Growth", R.growth),
-        row("Total contributions", R.contribTotal), row("Final contribution, inflation adj.", R.lastContribReal),
-        row("Total years", R.totalYears, "years"), row("Stages", P.stages.length, "int")],
-      inp,
-    };
-  }
-  const p = advancedPlan(withDefaults(ADVANCED_DEF, sc.data as ToolInputs), household).p;
+  const adv = withDefaults(ADVANCED_DEF, sc.data as ToolInputs);
+  const p = advancedPlan(adv, household).p;
   if (!(p.years > 0)) return null;
-  const R = project(p);
   const defl = (yr: number) => Math.pow(1 + p.inflation, yr);
   const inp: [string, string][] = [["Starting value", money(p.initial || 0)], ["Contribution", money(p.contrib || 0, 2) + " " + PERIOD_ADV[p.period]],
     ["Contribution growth", pctStr(p.growth || 0, 2)], ["Time period", fmtYears(p.years)], ["Rate of return", pctStr(p.gross, 2)],
     ["Fees", pctStr(p.fees || 0, 2)], ["Return net of fees", pctStr(p.nominal, 2)], ["Inflation", pctStr(p.inflation, 2)],
     ["Withdrawal rate", pctStr(p.withdrawal, 2)], ["Effective tax rate", pctStr(p.taxRate, 2)]];
   if (p.glide.on) inp.push(["Glide", pctStr(p.glide.endRate!, 2) + " over the final " + fmtYears(p.glide.years!)]);
+  // With changes ahead on, the plan runs as the stages they make.
+  if (changesOn(adv)) {
+    const S = changesCompute(adv, household).V.R;
+    inp.push(["Changes ahead", liveChanges(adv).map(scenarioName).join(", ")]);
+    return {
+      years: p.years,
+      pts: [{ year: 0, value: p.initial }, ...S.chartRows.map((r) => ({ year: r.year, value: r.end / defl(r.year) }))],
+      out: [row("Future value", S.fv), row("Inflation adjusted", S.fvReal), row("After-tax income, per year", S.afterTax),
+        row("After-tax income, per month", S.afterTaxMo), row("Amount invested", S.invested), row("Growth", S.growth),
+        row("Total contributions", S.contribTotal), row("Final contribution, inflation adj.", S.lastContribReal)],
+      inp,
+    };
+  }
+  const R = project(p);
   return {
     years: p.years,
     pts: [{ year: 0, value: p.initial }, ...R.years.map((y) => ({ year: y.year, value: y.end / defl(y.year) }))],
@@ -122,7 +112,7 @@ export function cmpDelta(a: number | null, b: number | null, kind: Kind): { t: s
 /** The slots as Compare opens: every one on the calculator it was opened
     from, the first two on different saved scenarios where there are two. */
 export function openingSlots(from: string): Slot[] {
-  const mode: CmpMode = from === "basic" || from === "stages" ? from : "advanced";
+  const mode: CmpMode = from === "basic" ? from : "advanced";
   const names = savedNames(mode);
   const [a, b, c] = compareSlots.list.map((sl) => ({ ...sl, mode }));
   if (!names.includes(a.name)) a.name = names[0] || "";

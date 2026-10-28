@@ -62,7 +62,7 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
 }
 
 /** Children planned, childcare and college: their costs come out of what
-    you save in the years they run, as the Guide and Stages count them. */
+    you save in the years they run, as the Guide and the Calculator count them. */
 function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
   const put = (v: Partial<P["planned"]>) => set((p) => ({ ...p, planned: { ...p.planned, ...v } }));
   const any = pr.kids > 0 || pr.planned.count > 0;

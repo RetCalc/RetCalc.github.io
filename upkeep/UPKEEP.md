@@ -80,7 +80,7 @@ year's figures live in their own file, `web/lib/engine/data/<year>.js`, and
 the engine reads them through `yearData(year)`. The Income Tax tool is the
 only place that offers older years: its Tax year picker appears on its own
 once there are two years, and defaults to the newest. Every other tool
-(Healthcare, Roth, Bridge, Optimizer, Drawdown, Advanced, Stages, the Guide)
+(Healthcare, Roth, Bridge, Optimizer, Drawdown, Advanced, the Guide)
 always uses the newest year and names it from the data.
 
 1. Gather the coming year's figures once they're published: the IRS revenue

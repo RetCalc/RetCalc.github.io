@@ -18,8 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 /** The calculator's three modes, named over their tool. */
 const CALC_HEAD: Partial<Record<Slug, { title: string; desc: string }>> = {
   calculator: { title: "Basic calculator", desc: "Answer these questions to see what you could have at retirement." },
-  advanced: { title: "Advanced calculator", desc: "Inflation, fees, taxes and account types, worked back from a target." },
-  stages: { title: "Stages calculator", desc: "A plan in stages, each with its own contribution, return and length." },
+  advanced: { title: "Advanced calculator", desc: "Inflation, fees, taxes and account types, the changes you see coming, worked back from a target." },
 };
 
 export function PageShell({ slug, children }: { slug: Slug; children: React.ReactNode }) {

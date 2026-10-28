@@ -20,7 +20,7 @@ import { chromium } from "@playwright/test";
 
 const BASE = process.env.BASE ?? "http://localhost:3200";
 const PAGES = {
-  home: "/", calculator: "/calculator", advanced: "/advanced", stages: "/stages", tools: "/tools", drawdown: "/drawdown", incometax: "/incometax",
+  home: "/", calculator: "/calculator", advanced: "/advanced", tools: "/tools", drawdown: "/drawdown", incometax: "/incometax",
   mortgage: "/mortgage", fire: "/fire", budget: "/budget", guide: "/guide", about: "/about",
 };
 const MAX_TABS = Number(process.env.MAX_TABS ?? 160);

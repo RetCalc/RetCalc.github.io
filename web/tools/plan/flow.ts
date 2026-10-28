@@ -10,17 +10,19 @@
    - Your plan (Advanced), from Paycheck: the saving by account type, the
      match, and the years from your ages; the first time, your spending as
      the target.
-   - Life stages, from Advanced and the children (kids.ts). */
+   - Changes ahead: Advanced's own, the walkthrough's children carried in once. */
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { dollarsField, groupDigits, parseNum } from "@/lib/format";
 import type { Household } from "@/lib/household";
-import { ADVANCED_DEFAULTS, advancedPlan, glideYearsFor, type AdvancedInputs } from "@/tools/advanced/model";
+import { ADVANCED_DEFAULTS, glideYearsFor, type AdvancedInputs } from "@/tools/advanced/model";
 import { BUDGET_DEFAULTS, budgetCompute, type BudgetInputs } from "@/tools/budget/model";
 import { paycheckInput, paycheckRun, type PcInput, type PcRun } from "@/tools/budget/paycheck-math";
 import { intoAdvanced, paycheckCopy, taxFromPaycheck } from "@/tools/budget/to-calculator";
 import { STAGES_DEFAULTS, type StagesInputs } from "@/tools/stages/model";
 import { TAX_DEFAULTS, itemized, preBuckets, type TaxInputs } from "@/tools/tax/model";
-import { ONE_FOR_ONE, kidStages, paycheckFreed, stagesFromKids, type Freed } from "./kids";
+import { ONE_FOR_ONE, paycheckFreed, type Freed } from "./kids";
+import { KID_BASE } from "@/tools/stages/kids";
+import { CHILDREN_ID, newScenario } from "@/components/dashboard/scenarios";
 import { stepIndex, type PlanState, type PlanTool } from "./model";
 
 const DEFAULTS = { tax: TAX_DEFAULTS, budget: BUDGET_DEFAULTS, advanced: ADVANCED_DEFAULTS, stages: STAGES_DEFAULTS } as const;
@@ -110,7 +112,8 @@ export function seedAdvanced(p: PlanState, household: Household | null): PlanSta
   // traditional, as Advanced's own switch starts), else nothing yet.
   if (first) adv = { ...adv, initial: dollarsField(household?.saved ?? 0) };
   adv = { ...intoAdvanced(adv, c, fact), acStatus: fact.status, acState: fact.state };
-  if (ages) adv = { ...adv, years: String(ages.years), ...(adv.glideOn ? { glideYears: glideYearsFor(String(ages.years), adv.glideYears) } : {}) };
+  // Your age too, so the changes ahead read by age.
+  if (ages) adv = { ...adv, years: String(ages.years), age: String(ages.age), ...(adv.glideOn ? { glideYears: glideYearsFor(String(ages.years), adv.glideYears) } : {}) };
   if (first) {
     const spend = budgetCompute(toolOf(p, "budget")).spentYr;
     if (spend > 0) adv = { ...adv, solveFor: "After-Tax Withdrawal", target: dollarsField(Math.round(spend)) };
@@ -124,17 +127,23 @@ export function freedOf(p: PlanState): Freed {
   return pc ? paycheckFreed(pc.pi) : ONE_FOR_ONE;
 }
 
-/* ---- Your plan + children → Life stages ---- */
-/** The stages from Advanced and the children, when either changed since. */
-export function seedStages(p: PlanState, household: Household | null): PlanState {
-  const ages = planAges(p);
-  if (!p.stagesOn || !ages || !p.tools.advanced) return p;
-  const adv = toolOf(p, "advanced"), years = Math.max(1, Math.round(parseNum(adv.years)));
-  const fp = JSON.stringify([adv, p.kids, p.cover, ages.age, p.tools.budget ?? null, p.tools.tax?.state ?? null]);
-  if (p.tools.stages && p.from.stages === fp) return p;
-  const segs = kidStages(p.kids, ages.age, ages.age + years);
-  const stages = stagesFromKids(advancedPlan(adv, household), adv, toolOf(p, "stages"), segs, p.cover, freedOf(p));
-  return { ...withTool(p, "stages", stages), from: { ...p.from, stages: fp } };
+/* ---- Changes ahead ---- */
+/** The children the walkthrough asked before Changes ahead was a step on
+    Advanced (its Life stages step built Stages from them), carried into
+    Advanced once as its Children change, their cover amounts with them. */
+export function seedChanges(p: PlanState): PlanState {
+  const ages = planAges(p), k = p.kids;
+  if (!p.tools.advanced || !ages || !k || (!k.now.length && !k.planned)) return p;
+  const adv = toolOf(p, "advanced");
+  if (adv.kids) return { ...p, kids: null, cover: {} };
+  // Advanced counts the children from KID_BASE, the walkthrough from your age.
+  const shift = KID_BASE - ages.age, kidCover: AdvancedInputs["kidCover"] = {};
+  for (const [key, v] of Object.entries(p.cover)) {
+    const [f, t] = key.split("-").map(Number);
+    if (isFinite(f) && isFinite(t)) kidCover[(f + shift) + "-" + (t + shift)] = v;
+  }
+  const row = { ...newScenario(CHILDREN_ID, "children", 0, 0), on: true };
+  return { ...withTool(p, "advanced", { ...adv, kids: k, kidCover, changes: [row, ...(adv.changes ?? []).filter((c) => c.kind !== "children")] }), kids: null, cover: {} };
 }
 
 /* ---- the running figures under the step rail ---- */

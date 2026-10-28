@@ -68,7 +68,7 @@ export function Hero({ S, stages }: { S: PlanSummary; stages: boolean }) {
     <Card size="flush" className="col-span-full">
       <HeroReading tone="answer"
         hero={{ label: "At " + S.retire + ", in today's dollars", id: "ppTotal", value: money(A.total),
-          note: (stages ? "With your life stages, " : "") + money(A.fv) + " in future dollars, after " + Math.round(S.years) + " years of saving" }}
+          note: (stages ? "With your changes ahead, " : "") + money(A.fv) + " in future dollars, after " + Math.round(S.years) + " years of saving" }}
         figures={[
           { label: "A year to spend, after tax", id: "ppSpend", value: money(A.afterTax), note: "A " + pctStr(A.withdrawal, 1) + " withdrawal, taxed at " + pctStr(A.taxRate, 1) },
           ...(want != null ? [{ label: S.goal.fromBudget ? "Your budget, per year" : "Your spending goal", id: "ppWant", value: money(want), tone: meets ? "gain" as const : "loss" as const,
@@ -215,7 +215,7 @@ export function Climb({ S }: { S: PlanSummary }) {
     <Card className="col-span-full">
       <CardHeader><CardTitle>The climb</CardTitle>
         <CardDescription>Your balance at each age{future ? ", in the dollars of each year" : ", in today's dollars"}, by account. <span className="dsh-mouse">Point at any age for the figures.</span><span className="dsh-touch">Tap any age, or drag along the chart, for the figures.</span>
-          {S.stages ? " Numbers along the top are your life stages." : ""}</CardDescription>
+          {S.stages ? " Numbers along the top are the stages your changes ahead make." : ""}</CardDescription>
         <CardAction><Segmented size="compact" attr="data-ppreal" options={[["today", "Today's dollars"], ["future", "Future dollars"]] as const} value={future ? "future" : "today"} onChange={(v) => setFuture(v === "future")} /></CardAction>
       </CardHeader>
       <CardContent>
@@ -276,7 +276,7 @@ export function Climb({ S }: { S: PlanSummary }) {
         </div>
         <div className="min-w-0">
           {S.stages ? <>
-            <div className="text-label text-muted-foreground">Life stages</div>
+            <div className="text-label text-muted-foreground">Stages</div>
             <ol className="m-0 mt-1 list-none p-0">{S.stages.map((st, i) => (
               <li key={st.from} className="flex gap-2 py-0.5"><span className="w-4 flex-none text-muted-foreground tabular-nums">{i + 1}</span><span className="flex-1">{st.name}</span>
                 <span className="text-muted-foreground tabular-nums">{ageSpan(st.from, st.to).replace(" to ", "–")}</span></li>))}</ol>
@@ -400,7 +400,7 @@ export function StageLine({ S }: { S: PlanSummary }) {
   const st = S.stages!, total = st.reduce((t, s) => t + (s.to - s.from), 0) || 1;
   return (
     <Card className="col-span-full">
-      <CardHeader><CardTitle>Your life stages</CardTitle><CardDescription>Each stretch of years and what you save in it, per month in today&apos;s dollars.</CardDescription></CardHeader>
+      <CardHeader><CardTitle>Your stages</CardTitle><CardDescription>Each stretch of years and what you save in it, per month in today&apos;s dollars.</CardDescription></CardHeader>
       <CardContent>
         {/* The years to scale, then each stage in full. */}
         <div className="flex h-7 w-full overflow-hidden rounded-md" aria-hidden="true">

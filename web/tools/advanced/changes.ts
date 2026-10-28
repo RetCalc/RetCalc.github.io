@@ -55,6 +55,9 @@ export interface Compiled {
   shown: ShownStage[];
   /** Where each change starts, in years from now. */
   starts: { id: string; year: number }[];
+  /** Your own saving a month in each whole year from now, today's dollars
+      (the Readiness Guide reads edits back from it). */
+  perYear: number[];
 }
 
 const ZERO = (): Monthly => ({ brok: 0, roth: 0, trad: 0, hsa: 0 });
@@ -200,7 +203,8 @@ export function compileChanges(s: AdvancedInputs, household: Household | null): 
     .concat(kidsOn && kidSegs.length ? [{ id: CHILDREN_ID, year: kidSegs.find((x) => x.change !== 0)?.from ?? 0 }] : []);
   const firstShort = slices.find((x) => x.cutShort > 0.5);
   const cutShort = firstShort ? { from: firstShort.a, most: Math.max(...slices.map((x) => x.cutShort)) } : null;
-  return { inputs: { ...next, stages, kids: null, kidCover: {} }, shown, starts, glideAt, cutShort };
+  const perYear = slices.filter((x) => Number.isInteger(x.a)).map((x) => sum(x.monthly));
+  return { inputs: { ...next, stages, kids: null, kidCover: {} }, shown, starts, glideAt, cutShort, perYear };
 }
 
 /** The plan's results under the changes: the Stages engine's. */
@@ -256,7 +260,8 @@ const withoutChange = (s: AdvancedInputs, id: string): AdvancedInputs => ({ ...s
 export interface CoastAnswer { at: number | null; need: number; keep: number; stop: number | null }
 export function coastAnswer(s: AdvancedInputs, household: Household | null, run: (s: AdvancedInputs) => { fv: number; need: number } = (x) => reach(x, household)): CoastAnswer | null {
   const base = withoutChange(s, COAST_ID), now = run(base);
-  if (!(now.need > 0) || !isFinite(now.fv)) return null;
+  // A goal no portfolio pays (a 0% withdrawal rate) has no answer.
+  if (!(now.need > 0) || !isFinite(now.need) || !isFinite(now.fv)) return null;
   const end = Math.max(1, Math.ceil(parseNum(s.years)));
   const short: CoastAnswer = { at: null, need: now.need, keep: now.fv, stop: null };
   if (now.fv < now.need) return short;
@@ -278,7 +283,7 @@ export function retireAnswer(s: AdvancedInputs, household: Household | null, run
   const at = (y: number) => run(yearsTo(s, y));
   const now = Math.max(1, Math.round(parseNum(s.years)));
   const cur = at(now);
-  if (!(cur.need > 0)) return null;
+  if (!(cur.need > 0) || !isFinite(cur.need)) return null;
   const tried = new Map<number, { fv: number; need: number }>([[now, cur]]);
   const get = (y: number) => { if (!tried.has(y)) tried.set(y, at(y)); return tried.get(y)!; };
   const ok = (y: number) => get(y).fv >= get(y).need;

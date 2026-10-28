@@ -11,7 +11,7 @@ import { debtDate, PPY, projectBasic, BASIC_INFL } from "@/lib/engine/typed";
 import { bridgeRun, budgetNums, debtNums, hcPrem, housing, on, q, text } from "@/lib/tool-reads";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
-import { advancedFields } from "@/tools/advanced/model";
+import { advancedFields, type AdvancedInputs } from "@/tools/advanced/model";
 import { basicInput, RISK_OPTIONS, type BasicInputs } from "@/tools/basic/model";
 import { annualize, slotRow, type BudgetInputs, type BudgetRow } from "@/tools/budget/model";
 import { collegeInput, collegeMonthly, type CollegeInputs } from "@/tools/college/model";
@@ -23,11 +23,11 @@ import { escapeHtml } from "@/tools/drawdown/text";
 import type { FireInputs } from "@/tools/fire/model";
 import type { HealthcareInputs } from "@/tools/healthcare/model";
 import type { Inputs as MortgageInputs } from "@/tools/mortgage/model";
-import { stageFields, type StagesInputs } from "@/tools/stages/model";
+import { compileChanges } from "@/tools/advanced/changes";
+import { editsFrom, guideChanges, guideSchedule } from "./toAdvanced";
 import { runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
 import { bridgeSpend, bridgeSplit, coastNow, ddOpts, gdM, gross, mar, minSpend, mixFor, ok, pensionItems, pos, riskLabel, saveMo, saveNow, sim, stratName } from "./calc";
-import { hasChanges, schedule } from "./schedule";
-import type { Answers, Capture, ChangeEvent, Trip } from "./store";
+import type { Answers, Capture, Trip } from "./store";
 
 export interface Task { h: string; ok?: boolean }
 type Inputs = Record<string, unknown>;
@@ -52,21 +52,15 @@ interface TripDef<S = Inputs> {
 
 const g = (v: number) => groupDigits(Math.round(v || 0), true);
 
-/* Advanced and Stages are filled from the guide once per version of the
+/* Advanced is filled from the guide once per version of the
    plan, so a second tour keeps whatever you changed there, but a plan
    adjusted in the guide since then comes through. */
 const filled: Record<string, string | boolean> = {};
-/** Changes ahead's schedule, when the answers have one. */
-function guideSchedule(a: Answers) {
-  if (!hasChanges(a) || !ok(a.age) || !ok(a.retire) || !(a.retire > a.age)) return null;
-  const stop = ok(a.stopAge) && a.stopAge < a.retire ? Math.max(a.age, a.stopAge) : null;
-  const L = schedule(a, { monthly: saveMo(a), stop });
-  return L.length ? L : null;
-}
 export function planSig(a: Answers) {
   return [a.age, a.retire, a.saved, saveMo(a), a.stopAge, a.risk, a.retSpend, a.debtMonths, a.debtMin, a.collegeMo, a.kidAge].join("|");
 }
-let stagesFrom = "", stagesN = 1;
+/** The changes the last Advanced trip wrote, by name. */
+let advFrom: string[] = [];
 
 function basicNow(s: BasicInputs) {
   const p = basicInput(s);
@@ -246,7 +240,7 @@ const TRIPS: Record<string, TripDef<never>> = {
       const tried = !!b && (Math.round(n.monthly) !== Math.round(b.monthly) || n.retire !== b.retire);
       return [
         { h: "Your age, retirement age, savings and monthly saving (yours plus your employer's) are filled in on the left." +
-          (ok(a.stopAge) && a.stopAge < a.retire! && !coastNow(a) ? " Basic saves right up to retirement, so it doesn't show your plan to stop at " + fmtNum(a.stopAge) + ": its figure runs higher. The <b>Stages</b> calculator shows the coast." : "") },
+          (ok(a.stopAge) && a.stopAge < a.retire! && !coastNow(a) ? " Basic saves right up to retirement, so it doesn't show your plan to stop at " + fmtNum(a.stopAge) + ": its figure runs higher. The <b>Advanced</b> calculator shows the coast, as one of its changes ahead." : "") },
         { h: "<b>Value at retirement</b> is what your savings could grow to, in today's dollars, so you can compare it with prices now." },
         { h: "Raise <b>How much do you save</b> by $100 or $200 and watch it move. Then try retiring a year or two later.", ok: tried },
         { h: "The shaded band on the chart is the same plan in better and worse markets." },
@@ -505,122 +499,50 @@ const TRIPS: Record<string, TripDef<never>> = {
   },
 
   advanced: {
-    prefill: (a: Answers, s: Inputs) => {
+    prefill: (a: Answers, s: AdvancedInputs, trip: Trip) => {
+      const sched = guideSchedule(a), sig = planSig(a) + (sched ? "|" + JSON.stringify(sched.map((x) => [x.from, x.to, x.monthly])) : "");
       // Only the first time per version of the plan, so going back to tweak
       // it keeps your changes; and never over an account-type split.
-      if (filled.advanced === planSig(a) || s.acOn || !ok(a.age) || !ok(a.retire) || !(a.retire > a.age)) return s;
-      filled.advanced = planSig(a);
+      if (filled.advanced === sig) return s;
+      advFrom = [];
+      if (s.acOn || !ok(a.age) || !ok(a.retire) || !(a.retire > a.age)) return s;
+      filled.advanced = sig;
       const infl = BASIC_INFL as number, grossR = (1 + (a.risk || 0.045)) * (1 + infl) - 1;
-      const next = { ...s, ...advancedFields({ initial: a.saved || 0, contrib: Math.round(saveMo(a)), period: "Monthly", growth: infl, gross: grossR, nominal: grossR,
-        inflation: infl, years: Math.round(a.retire - a.age), withdrawal: 0.04, taxRate: 0.1, vol: 0.15, fees: 0 }) };
+      const age = Math.round(a.age), yrs = Math.round(a.retire - a.age), mo = Math.round(saveMo(a));
+      const next: AdvancedInputs = { ...s, ...advancedFields({ initial: a.saved || 0, contrib: mo, period: "Monthly", growth: infl, gross: grossR, nominal: grossR,
+        inflation: infl, years: yrs, withdrawal: 0.04, taxRate: 0.1, vol: 0.15, fees: 0 }), age: String(age) };
       if (pos(a.retSpend)) Object.assign(next, { solveFor: "After-Tax Withdrawal", target: gdM(a.retSpend) });
-      return next;
+      const out = guideChanges(a, next);
+      advFrom = out.made;
+      // What the trip wrote, year by year, so edits there come back.
+      trip.base = { age, perYear: compileChanges(out.s, null).perYear };
+      return out.s;
     },
-    tasks: ({ a, s }: Ctx<Inputs>) => {
+    tasks: ({ a, s }: Ctx<AdvancedInputs>) => {
       const mode = q("#segSingle [data-mode].on");
+      const n = (s.changes ?? []).length;
       return [
-        { h: "Your plan is carried over: savings as <b>Starting value</b>, your monthly saving, <b>Time period</b> until retirement, and a <b>Rate of return</b> for your mix, before inflation. Figures are in future dollars unless marked <b>inflation adjusted</b>." },
-        { h: "Plainly: Advanced leaves out Social Security and the guide's year-by-year taxes and health premiums, using one flat tax rate instead, so its numbers are for your savings alone. The guide's number stays the one for the retirement years." +
-          (ok(a.stopAge) && a.stopAge < a.retire! ? " It also saves right up to retirement; your plan to stop at " + fmtNum(a.stopAge) + " shows in <b>Stages</b>." : "") +
-          (hasChanges(a) ? " It saves one flat amount; your changes ahead show in <b>Stages</b>." : "") },
+        { h: "Your plan is carried over: savings as <b>Starting value</b>, your monthly saving, your age, <b>Time period</b> until retirement, and a <b>Rate of return</b> for your mix, before inflation. Figures are in future dollars unless marked <b>inflation adjusted</b>." +
+          (advFrom.length ? " Your changes from the guide are under <b>Changes ahead</b>: " + advFrom.map((x) => x.toLowerCase()).join(", ") + "." : "") },
+        { h: "Plainly: Advanced leaves out Social Security and the guide's year-by-year taxes and health premiums, using one flat tax rate instead, so its numbers are for your savings alone. The guide's number stays the one for the retirement years." },
+        { h: "Under <b>Changes ahead</b>, <b>Add a change</b> for the next big one: a promotion, a paid-off car, going part-time, children. Change what you save there and it comes back to the guide as your own edit, with an undo.", ok: n > advFrom.length ? true : undefined },
         { h: "<b>Contribution growth</b> raises what you save each year. It's set to match inflation; try 4% or 5% if you expect raises." },
         { h: "Turn on <b>Split by account type</b> to enter traditional, Roth, brokerage and HSA balances separately, plus your employer match. The <b>By account type</b> table then shows the tax on what you'd withdraw.", ok: s.acOn ? true : undefined },
         { h: "Set <b>Fees</b> to your funds' expense ratio (about 0.05% for index funds, 0.5% to 1% for managed ones) to see what they cost over decades.", ok: parseNum(String(s.fees)) > 0 ? true : undefined },
-        { h: "<b>Work backwards from a target</b> starts at your retirement spending. It shows the contribution, or the timeline, that gets you there; <b>Use this contribution</b> applies it." },
+        { h: "<b>Reach your target</b> starts at your retirement spending: when you could stop saving and still get there, and when you could retire." + (ok(a.stopAge) && a.stopAge < a.retire! ? " Your plan to stop at " + fmtNum(a.stopAge) + " is one of your changes." : "") },
         { h: "Above the chart, switch <b>Rate band</b> to <b>Historical</b> or <b>Monte Carlo</b> to see the plan in real and random markets.", ok: mode ? mode.getAttribute("data-mode") !== "band" : undefined },
       ];
     },
     chip: () => { const t = text("#rFVreal"); return t && t !== "—" ? "Inflation adjusted<br><b>" + escapeHtml(t) + "</b>" : ""; },
-    capture: () => ({ set: { advSeen: true }, msg: "Back from Advanced. Your guide answers are unchanged, and whatever you set up there stays in Advanced for next time." }),
-  },
-
-  stages: {
-    prefill: (a: Answers, s: StagesInputs, trip: Trip) => {
-      const sched = guideSchedule(a), sig = planSig(a) + (sched ? "|" + JSON.stringify(sched.map((x) => [x.from, x.to, x.monthly])) : "");
-      if (filled.stages === sig) return s;
-      stagesFrom = "";
-      if (s.saOn || !ok(a.age) || !ok(a.retire) || !(a.retire > a.age)) return s;
-      filled.stages = sig;
-      const yrs = Math.round(a.retire - a.age), mo = Math.round(saveMo(a)), infl = BASIC_INFL as number;
-      const grossR = (1 + (a.risk || 0.045)) * (1 + infl) - 1;
-      const st = (name: string, years: number, contrib: number, adj?: boolean) => ({ ...stageFields({ years, contrib, period: "Monthly", growth: infl, nominal: grossR, vol: 0.15, adj: !!adj }), name });
-      // Changes ahead's schedule, stage by stage and named as the guide names
-      // them, each in today's dollars ("Inflation adjusted"), so Stages shows
-      // the guide's own number (doc 3, phase 4).
-      if (sched) {
-        const list = sched.map((x, i) => st(x.label, x.to - x.from, x.monthly, i > 0));
-        stagesFrom = "your " + sched.length + " stages from Changes ahead: " + sched.map((x) => x.label.toLowerCase() + " (" + money(x.monthly) + "/mo)").join(", ");
-        stagesN = list.length;
-        trip.base = { sched: sched.map((x) => ({ from: x.from, to: x.to, monthly: x.monthly })) };
-        return { ...s, initial: g(a.saved || 0), inflation: String(+(infl * 100).toFixed(6)), withdrawal: "4", taxRate: "10", fees: "0", stages: list,
-          solveFor: "After-Tax Withdrawal", target: pos(a.retSpend) ? g(a.retSpend) : s.target };
-      }
-      let list;
-      const dy = pos(a.debtMonths) ? Math.ceil(a.debtMonths / 12) : 0;
-      const cy = a.college === "yes" && ok(a.kidAge) && pos(a.collegeMo) ? Math.max(1, Math.round(22 - a.kidAge)) : 0;
-      const sy = ok(a.stopAge) && a.stopAge < a.retire ? Math.max(0, Math.round(a.stopAge - a.age)) : null;
-      // Start from a real turning point in the answers when there is one:
-      // a plan to stop saving, the debt paid off freeing its minimums, or
-      // college ending freeing that saving.
-      if (sy === 0) {
-        list = [st("Coasting", yrs, 0)];
-        stagesFrom = "one stage with no new saving, since your plan is to coast from here";
-      } else if (sy != null) {
-        list = [st("Saving", sy, mo), st("Coasting", yrs - sy, 0)];
-        stagesFrom = "two stages: saving " + money(mo) + "/mo until " + fmtNum(a.stopAge!) + ", then coasting with no new saving until you retire at " + fmtNum(a.retire);
-      } else if (dy && dy < yrs && pos(a.debtMin)) {
-        list = [st("Paying off debt", dy, mo), st("Debt-free", yrs - dy, mo + Math.round(a.debtMin), true)];
-        stagesFrom = "two stages: saving " + money(mo) + "/mo while you pay off debt, then adding the " + money(a.debtMin) + "/mo of minimums once it's gone";
-      } else if (cy && cy < yrs) {
-        list = [st("Kids at home", cy, mo), st("After college", yrs - cy, mo + Math.round(a.collegeMo!), true)];
-        stagesFrom = "two stages: saving " + money(mo) + "/mo until your youngest finishes college, then adding the " + money(a.collegeMo!) + "/mo you'd been putting toward it";
-      } else {
-        list = [st("Until retirement", yrs, mo)];
-        stagesFrom = "one stage: " + money(mo) + "/mo for " + yrs + " years";
-      }
-      stagesN = list.length;
-      return { ...s, initial: g(a.saved || 0), inflation: String(+(infl * 100).toFixed(6)), withdrawal: "4", taxRate: "10", fees: "0", stages: list,
-        solveFor: "After-Tax Withdrawal", target: pos(a.retSpend) ? g(a.retSpend) : s.target };
-    },
-    tasks: ({ s }: Ctx<StagesInputs>) => {
-      const mode = q("#segSeries [data-mode].on");
-      return [
-        { h: "Stages splits your working years into chapters, each with its own contribution, raises and return." + (stagesFrom ? " From your answers we started with " + stagesFrom + "." : "") },
-        { h: "Click <b>Add stage</b> for the next big change: a promotion, a paid-off car, going part-time. Give it <b>Years</b> and a <b>Contribution</b>.", ok: s.stages.length > stagesN },
-        { h: "Tick <b>Inflation adjusted</b> on a later stage to type its contribution in today's dollars; it's grown by inflation up to that stage's start." },
-        { h: "Each stage can have its own <b>Rate of return</b>, and the last one can glide toward bonds as retirement nears." },
-        { h: "<b>Stage by stage</b>, under the chart, shows what each chapter adds, and the chart marks every boundary." },
-        { h: "Switch the chart to <b>Historical</b> to see the whole multi-stage plan in real markets.", ok: mode ? mode.getAttribute("data-mode") !== "band" : undefined },
-      ];
-    },
-    chip: () => { const t = text("#xFVreal"); return t && t !== "—" ? "Inflation adjusted<br><b>" + escapeHtml(t) + "</b>" : ""; },
-    capture: ({ a, s, trip }: Ctx<StagesInputs>) => {
-      const base = (trip.base as { sched?: { from: number; to: number; monthly: number }[] } | undefined)?.sched;
-      const quiet = { set: { stagesSeen: true }, msg: "Back from Stages. Your guide answers are unchanged, and your stages stay there for next time." };
-      if (!base || !base.length || !ok(a.age)) return quiet;
-      // Each year's saving in today's dollars, as Stages now has it.
-      const infl = BASIC_INFL as number, age0 = base[0].from, now: number[] = [];
-      let t = 0;
-      for (const x of s.stages) {
-        const n = Math.max(0, Math.round(parseNum(x.years))), per = ((PPY as Record<string, number>)[x.period] || 12) / 12, c = parseNum(x.contrib) * per;
-        const real = x.adj || t === 0 ? c : c / Math.pow(1 + infl, t);
-        for (let k = 0; k < n; k++) now.push(Math.round(real));
-        t += n;
-      }
-      const was: number[] = [];
-      for (const x of base) for (let y = x.from; y < x.to; y++) was.push(x.monthly);
-      const edits: ChangeEvent[] = [];
-      for (let i = 0; i < was.length && i < now.length;) {
-        if (now[i] === was[i]) { i++; continue; }
-        let j = i;
-        while (j < was.length && j < now.length && now[j] - was[j] === now[i] - was[i]) j++;
-        edits.push({ id: "stg-" + (age0 + i) + "-" + (age0 + j), kind: "custom", from: age0 + i, to: age0 + j, delta: now[i] - was[i], label: "" });
-        i = j;
-      }
+    capture: ({ a, s, trip }: Ctx<AdvancedInputs>) => {
+      const base = trip.base as { age?: number; perYear?: number[] } | undefined;
+      const quiet = { set: { advSeen: true }, msg: "Back from Advanced. Your guide answers are unchanged, and whatever you set up there stays in Advanced for next time." };
+      if (!base?.perYear?.length || base.age == null || !ok(a.age) || s.acOn) return quiet;
+      const edits = editsFrom(base.perYear, compileChanges(s, null).perYear, base.age);
       if (!edits.length) return quiet;
-      const events = [...(a.events || []).filter((e) => !e.id.startsWith("stg-")), ...edits];
-      return { set: { stagesSeen: true, events }, undo: { events: a.events ?? null },
-        msg: "From Stages: " + edits.map((e) => (e.kind === "custom" ? "ages " + e.from + " to " + e.to + ", " + (e.delta > 0 ? "+" : "−") + money(Math.abs(e.delta)) + "/mo" : "")).join("; ") +
+      const events = [...(a.events || []).filter((e) => !e.id.startsWith("adv-")), ...edits];
+      return { set: { advSeen: true, events }, undo: { events: a.events ?? null },
+        msg: "From Advanced: " + edits.map((e) => (e.kind === "custom" ? "ages " + e.from + " to " + e.to + ", " + (e.delta > 0 ? "+" : "−") + money(Math.abs(e.delta)) + "/mo" : "")).join("; ") +
           ". They're on Changes ahead now as your own edits, and your number uses them." };
     },
   },

@@ -8,7 +8,6 @@
 
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { HeroReading } from "@/components/common/Reading";
-import { Button } from "@/components/ui/button";
 import { CircleCheckIcon } from "lucide-react";
 import { riskLabel, target, withGuess, yearsList, type Sim } from "../calc";
 import { PlanChart, series } from "../chart";
@@ -70,13 +69,10 @@ export function NumberCard() {
           {src.defaults.length ? <>, and defaults for {and(src.defaults)}</> : null}. Each is marked where it&apos;s asked, and any of them can be changed.</p>
       </Means>
       {g.pace === "full" ? (
-        // The Full walkthrough hands off to Stages first, with the guide's own
-        // stages written in, and Advanced beside it (decided 7 Oct; doc 1).
-        <>
-          <Task id="stages" head="See your saving stage by stage in Stages" label={a.stagesSeen ? "Open Stages again" : null}
-            after={<After>Optional. Stages and Advanced go deeper on the saving years; the guide&apos;s number stays the one for retirement.</After>} />
-          <p className="hint mt-2">Or <Button variant="quiet" size="inline" data-trip="advanced" data-from="number" onClick={() => G.trip("advanced", "number")}>try fees, raises and account types in Advanced</Button>.</p>
-        </>
+        // The Full walkthrough hands off to Advanced, with the guide's own
+        // changes ahead written in (Stages was folded into it, 28 Oct).
+        <Task id="advanced" head="See your saving year by year in Advanced" label={a.advSeen ? "Open Advanced again" : null}
+          after={<After>Optional. Advanced goes deeper on the saving years, with fees, raises, account types and your changes ahead; the guide&apos;s number stays the one for retirement.</After>} />
       ) : <Task id="basic" head="See it in the Basic calculator" after={<After>Optional. Any change you make there can come back with you.</After>} />}
     </>
   );

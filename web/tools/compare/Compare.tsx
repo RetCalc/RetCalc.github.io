@@ -37,12 +37,12 @@ import { buttonVariants } from "@/components/ui/button";
 const LINK = buttonVariants({ variant: "link", size: "inline" });
 import { cn } from "@/lib/utils";
 
-const HELP = "Comparison reads saved scenarios only, exactly as they were saved. Nothing here changes the numbers on the Basic, Advanced or Stages tabs.";
+const HELP = "Comparison reads saved scenarios only, exactly as they were saved. Nothing here changes the numbers on the Basic or Advanced tabs.";
 
 /* The Results row each slot's reading shows: the balance in today's
    dollars, as the chart draws it. */
-const KEY_ROW: Record<CmpMode, string> = { basic: "Value at retirement", advanced: "Inflation adjusted", stages: "Inflation adjusted" };
-const KEY_LABEL: Record<CmpMode, string> = { basic: "Value at retirement", advanced: "Future value, inflation adjusted", stages: "Future value, inflation adjusted" };
+const KEY_ROW: Record<CmpMode, string> = { basic: "Value at retirement", advanced: "Inflation adjusted" };
+const KEY_LABEL: Record<CmpMode, string> = { basic: "Value at retirement", advanced: "Future value, inflation adjusted" };
 
 /* Saved scenarios live in this browser, so the page fills in once it's here. */
 export function Compare() {
@@ -114,7 +114,7 @@ function CompareSaved() {
           {enough ? null : <>
             <InfoIcon className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <p className="m-0 max-w-copy">You have {total ? "one saved scenario" : "no saved scenarios"}. Compare needs at least two: set up a plan
-              on <Link href="/calculator" className={LINK}>Basic</Link>, <Link href="/advanced" className={LINK}>Advanced</Link> or <Link href="/stages" className={LINK}>Stages</Link>, save
+              on <Link href="/calculator" className={LINK}>Basic</Link> or <Link href="/advanced" className={LINK}>Advanced</Link>, save
               it with Save or delete (the disk button in the bar above), then change it and save again.</p>
           </>}
         </div>

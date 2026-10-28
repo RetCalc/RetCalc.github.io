@@ -2,7 +2,7 @@
 
 /* The site header, one row pinned whole: the logo (a link home), the tabs
    (Guide with its Readiness / Paycheck menu, Calculator with its Basic /
-   Advanced / Stages menu, Tools, About), and on the right the household
+   Advanced menu, Tools, About), and on the right the household
    button and the theme button.
    Ported from src/js/app/09-navigation.js. A tool's own controls (its saved
    scenarios) are in its header or tool bar, not here.
@@ -33,8 +33,7 @@ const TABS: { tab: Tab; label: string; href: string; controls: string }[] = [
 ];
 const MODES: { mode: CalcMode; desc: string }[] = [
   { mode: "simple", desc: "Five questions for a quick answer" },
-  { mode: "single", desc: "Every assumption, taxes and fees, one timeline" },
-  { mode: "series", desc: "Chain periods together as your plans change" },
+  { mode: "single", desc: "Every assumption, taxes and fees, and the changes you see coming" },
 ];
 
 /** The Guide's two walkthroughs: the whole picture, or straight to the numbers. */

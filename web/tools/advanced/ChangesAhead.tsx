@@ -238,7 +238,7 @@ function StagesTable({ shown: list, Y, split }: { shown: ShownStage[]; Y: Years;
       <div className="swipehint">Swipe the table sideways to see every column.</div>
       <div className="scroll" tabIndex={0} role="region" aria-label="The stages behind your plan">
         <table id="stagesBehindA">
-          <thead><tr><th>Stage</th><th>{Y.ages ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="stagerises" /></th>{anyLump ? <th><Tipped text="On day one" k="stagelump" /></th> : null}<th>Return</th><th className="text-center">What&apos;s going on</th></tr></thead>
+          <thead><tr><th>Stage</th><th>{Y.ages ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="advrises" /></th>{anyLump ? <th><Tipped text="On day one" k="advlump" /></th> : null}<th>Return</th><th className="text-center">What&apos;s going on</th></tr></thead>
           <tbody>
             {list.map((x, i) => (
               <tr key={i}><td>{i + 1}</td><td>{span(x)}</td><td>{fmtNum(Math.round((x.to - x.from) * 100) / 100)}</td><td className="whitespace-nowrap"><b>{money(total(x.monthly))}</b>{Math.abs(total(x.monthlyEnd) - total(x.monthly)) >= 1 ? <> → <b>{money(total(x.monthlyEnd))}</b></> : null}</td>

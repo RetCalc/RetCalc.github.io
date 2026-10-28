@@ -285,25 +285,16 @@ test("Changes ahead: two children planned turn into a schedule, and the number m
   await expect(page.locator('[data-move="college-overlap"]')).toBeVisible({ timeout: 30_000 });
 });
 
-test("the Full walkthrough hands off to Stages with the guide's stages, and its figure is the guide's number", async ({ page }) => {
+test("the Full walkthrough hands off to Advanced with the guide's changes ahead, and its figure is the guide's number", async ({ page }) => {
   test.setTimeout(120_000);
   await seeded(page, { ...stateWith("full", "number"), a: { ...PRIYA, kidsPlanned: 2, firstIn: 3, spacing: 3 } });
   const fv = (await page.locator("#gdOutFv").textContent())!;
   expect(fv).toBe("$6,998,824");
-  await page.locator('#gdCard [data-trip="stages"]').click();
-  await expect(page.locator("#gdCoach")).toBeVisible();
-  await expect(page.locator("#xFVreal")).toHaveText(fv);
-  // nine stages are edited in the pop-up; a changed stage comes back as your own edit, with an undo
-  await page.locator("#btnEditStages").click();
-  await expect(page.locator("#stageList [data-name='0']")).toHaveText("Before children");
-  await page.fill('#stageList [data-f="contrib"][data-i="1"]', "8,000");
-  await page.keyboard.press("Escape");
-  await page.locator("#gdCoachBack").click();
-  await expect(page.locator("#gdCard .gd-callout.ok")).toContainText("From Stages: ages 35 to 38, +$300/mo");
-  await expect(page.locator('#gdCard [data-gd="undo"]')).toBeVisible();
-  // and Advanced, beside it, goes there and back
   await page.locator('#gdCard [data-trip="advanced"]').click();
   await expect(page.locator("#gdCoach")).toBeVisible();
+  await expect(page.locator("#rFVreal")).toHaveText(fv);
+  // the guide's schedule is written in as changes ahead
+  await expect(page.locator(".dsh-sc-row").first()).toBeVisible();
   await page.locator("#gdCoachBack").click();
   await expect(page.locator("#gdCard .gd-callout.ok")).toContainText("Back from Advanced");
 });
@@ -311,7 +302,7 @@ test("the Full walkthrough hands off to Stages with the guide's stages, and its 
 test("the Quick check hands off to Basic from Your number", async ({ page }) => {
   await seeded(page, stateWith("quick", "number"));
   await expect(page.locator('#gdCard [data-trip="basic"]')).toBeVisible();
-  await expect(page.locator('#gdCard [data-trip="stages"]')).toHaveCount(0);
+  await expect(page.locator('#gdCard [data-trip="advanced"]')).toHaveCount(0);
 });
 
 /* ---------- Saved guides and links ---------- */

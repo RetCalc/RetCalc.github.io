@@ -54,7 +54,6 @@ export const has = (v: number | null): v is number => v != null && isFinite(v);
 export const HOUSEHOLD_TOOLS: { id: string; name: string; takes: (h: Household) => boolean }[] = [
   { id: "basic", name: "Basic", takes: (h) => !!(h.age || h.retire || has(h.saved) || has(h.monthly)) },
   { id: "advanced", name: "Advanced", takes: (h) => !!((h.age && h.retire && h.retire > h.age) || has(h.saved) || has(h.monthly) || (h.spend != null && h.spend > 0)) },
-  { id: "stages", name: "Stages", takes: (h) => has(h.saved) || (h.spend != null && h.spend > 0) },
   { id: "fire", name: "FIRE", takes: (h) => !!(h.age || h.retire || has(h.saved) || has(h.monthly) || (h.spend != null && h.spend > 0)) },
   { id: "drawdown", name: "Drawdown", takes: (h) => !!((h.retire && h.retire > 0 && h.retire < 120) || has(h.income)) },
   { id: "roth", name: "Roth", takes: () => true },

@@ -1,6 +1,6 @@
 "use client";
 
-/* The header over the calculator's pages (Basic, Advanced, Stages), which
+/* The header over the calculator's pages (Basic, Advanced), which
    have no tool header: the mode's name and what it does on the left, its
    saved scenarios with Save, Share and Reset on the right. Other tools carry
    their saved scenarios in their own header (ToolHeader). Pages without a

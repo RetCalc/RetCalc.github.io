@@ -3,7 +3,8 @@
 /* Paycheck to Retirement (PAYCHECK_PLAN_BRIEF.md): from gross pay to a
    retirement plan in one place. A step rail, the running figures under it,
    then the step: Start (your ages, pay, filing status and state), then the
-   real Budget, Paycheck tab, Advanced and Stages screens, each on the walkthrough's own copy of its
+   real Budget, Paycheck tab and Advanced screens (Advanced again for its
+   changes ahead), each on the walkthrough's own copy of its
    inputs (a tool scope), and the Summary. Moving between steps fills each
    later one from the ones before (flow.ts). */
 
@@ -19,14 +20,12 @@ import { DASH, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Advanced } from "@/tools/advanced/Advanced";
 import { Budget } from "@/tools/budget/Budget";
-import { Stages } from "@/tools/stages/Stages";
-import { fromOldTaxes, seedAdvanced, seedStages, startDone, strip } from "./flow";
+import { fromOldTaxes, seedAdvanced, seedChanges, startDone, strip } from "./flow";
 import { PLAN_DEFAULTS, PLAN_STORE, STEPS, loadPlan, planHasWork, readPlan, rereadPlan, setPlan, stepIndex, subscribePlan, type PlanState, type PlanTool, type StepId } from "./model";
-import { KidsCard } from "./KidsDialog";
 import { StartStep, StepHead } from "./steps";
 import { Summary } from "./Summary";
 
-const PLAN_TOOLS: string[] = ["tax", "budget", "advanced", "stages"] satisfies PlanTool[];
+const PLAN_TOOLS: string[] = ["tax", "budget", "advanced"] satisfies PlanTool[];
 
 /** The walkthrough as a tool, for the header's Save, Share and Reset. */
 const PLAN_DEF: ToolDef<ToolInputs> = {
@@ -36,7 +35,7 @@ const PLAN_DEF: ToolDef<ToolInputs> = {
 
 /** Where a tool's move to another page lands in the walkthrough. */
 const PATH_STEP: Record<string, StepId> = {
-  "/budget": "budget", "/budget#paycheck": "paycheck", "/advanced": "plan", "/stages": "stages",
+  "/budget": "budget", "/budget#paycheck": "paycheck", "/advanced": "plan",
 };
 
 const NONE = () => null;
@@ -57,7 +56,7 @@ export function Walkthrough() {
       const i = stepIndex(to);
       if (i >= stepIndex("plan")) n = seedAdvanced(n, profile);
       if (to === "stages") n = { ...n, stagesOn: true };
-      if (i >= stepIndex("stages")) n = seedStages(n, profile);
+      if (i >= stepIndex("stages")) n = seedChanges(n);
       // The Budget step is the Budget tab, the Paycheck step its Paycheck tab.
       if ((to === "budget" || to === "paycheck") && n.tools.budget) n = { ...n, tools: { ...n.tools, budget: { ...n.tools.budget, view: to === "budget" ? "budget" : "paycheck" } } };
       return { ...n, step: to, reached: i > stepIndex(n.reached) ? to : n.reached };
@@ -119,7 +118,7 @@ export function Walkthrough() {
   if (!plan) return <div className="min-h-96" aria-busy="true"></div>;
   const step = plan.step, idx = stepIndex(step);
   // A step redraws its tool when the walkthrough itself refilled it.
-  const key = step + ":" + rev + ":" + (step === "stages" ? plan.from.stages ?? "" : step === "plan" ? plan.from.advanced ?? "" : "");
+  const key = step + ":" + rev + ":" + (step === "plan" || step === "stages" ? plan.from.advanced ?? "" : "");
 
   return (
     <>
@@ -146,7 +145,7 @@ function Header({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => void }) 
       <nav aria-label="Steps" className="-mx-1 min-w-0 max-w-full overflow-x-auto pb-1">
         <ol className="m-0 flex min-w-max list-none gap-1 p-0">
           {STEPS.map((s, i) => {
-            // Life stages, skipped, stays open to go into but isn't ticked off.
+            // Changes ahead, skipped, stays open to go into but isn't ticked off.
             const skipped = s.id === "stages" && !plan.stagesOn;
             const on = i === cur, done = !skipped && (i < cur || (i <= reached && i !== cur)), can = i <= reached && !(skipped && i > cur);
             return (
@@ -209,9 +208,18 @@ function Body({ step, plan, goTo }: { step: StepId; plan: PlanState; goTo: (s: S
     case "budget": return <Budget />;
     case "paycheck": return <Budget />;
     case "plan": return <Advanced />;
-    case "stages": return <><KidsCard plan={plan} /><Stages /></>;
+    case "stages": return <ChangesStep />;
     case "summary": return <Summary plan={plan} goTo={goTo} />;
   }
+}
+
+/** Changes ahead: the plan's own Advanced, opened at its changes. */
+function ChangesStep() {
+  useEffect(() => {
+    const t = setTimeout(() => document.getElementById("btnAddChange")?.closest(".dsh-sc-btns")?.scrollIntoView({ block: "center", behavior: "smooth" }), 350);
+    return () => clearTimeout(t);
+  }, []);
+  return <Advanced />;
 }
 
 /* ---- Back and Next ---- */
@@ -226,9 +234,9 @@ function Foot({ plan, idx, goTo }: { plan: PlanState; idx: number; goTo: (s: Ste
         {prev ? <Button variant="outline" size="lg" onClick={() => goTo(prev)}><i className="arw back" aria-hidden="true"></i>Back</Button> : null}
         <span className="flex-1"></span>
         {blocked ? <span className="text-note text-muted-foreground">{blocked}</span> : null}
-        {step === "paycheck" ? <Button variant="outline" size="lg" disabled={!!blocked} onClick={() => goTo("stages")}>Skip to Life stages</Button> : null}
+        {step === "paycheck" ? <Button variant="outline" size="lg" disabled={!!blocked} onClick={() => goTo("stages")}>Skip to Changes ahead</Button> : null}
         {step === "plan" ? <>
-          <Button variant="outline" size="lg" onClick={() => goTo("stages")}>{plan.stagesOn ? "Back to Life stages" : "Plan for kids and other changes"}</Button>
+          <Button variant="outline" size="lg" onClick={() => goTo("stages")}>{plan.stagesOn ? "Back to Changes ahead" : "Plan for kids and other changes"}</Button>
           <Button size="lg" onClick={() => { if (plan.stagesOn) setPlan((p) => ({ ...p, stagesOn: false })); goTo("summary"); }}>See your summary<i className="arw" aria-hidden="true"></i></Button>
         </> : (
           <Button size="lg" disabled={!!blocked} onClick={() => goTo(step === "stages" ? "summary" : STEPS[idx + 1].id)}>

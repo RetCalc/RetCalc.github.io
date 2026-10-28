@@ -1,30 +1,22 @@
 "use client";
 
-/* Life stages' children: the card over Stages that says what's built in,
-   the pop-up that asks about the children (the Guide's questions and
-   costs), and "How will you cover this?", which takes each stage's cost
-   out of the accounts, the brokerage first. Saving them rebuilds the
-   stages (flow.ts seedStages). */
+/* The children's pop-ups: the one that asks about the children (the
+   Guide's questions and costs), and "How will you cover this?", which
+   takes each stage's cost out of the accounts, the brokerage first.
+   Advanced's Children change, the Dashboard and Stages use them. */
 
 import { useState } from "react";
-import { ChevronDownIcon } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useHousehold } from "@/components/household/HouseholdProvider";
 import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { Segmented } from "@/components/common/Readout";
 import { Modal } from "@/components/shell/Modal";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { PER_YEAR } from "@/lib/engine/typed";
 import { groupDigits, money, parseNum } from "@/lib/format";
-import { advancedPlan } from "@/tools/advanced/model";
 import { CARE_AREAS, CHILD_COST, CHILD_SOURCE, MAX_KIDS, type CareArea } from "@/tools/guide/schedule";
 import { CountedBoxes } from "@/components/fields/CountedBoxes";
-import { freedOf, planAges, seedStages, toolOf } from "./flow";
-import { ageSpan, coverStage, kidDefaults, kidList, kidStages, monthlyByAccount, stageKey, type Cover, type Freed, type KidStage, type Monthly } from "./kids";
-import { COVER_ORDER, NO_KIDS, setPlan, type CoverLine, type PlanKids, type PlanState } from "./model";
+import { ageSpan, coverStage, kidDefaults, kidList, kidStages, stageKey, type Cover, type Freed, type KidStage, type Monthly } from "./kids";
+import { COVER_ORDER, NO_KIDS, type CoverLine, type PlanKids } from "./model";
 
 const ACCT: Record<CoverLine, string> = { brok: "Brokerage", roth: "Roth", trad: "Traditional", hsa: "HSA" };
 const ages = (from: number, to: number) => (to - from <= 1 && Number.isInteger(from) && Number.isInteger(to) ? "Age " : "Ages ") + ageSpan(from, to);
@@ -36,12 +28,6 @@ export const spanText = (from: number, to: number, base?: number) => base == nul
 const half = (v: number) => Math.round(v * 2) / 2;
 const cents = (v: number) => groupDigits(String(Math.round(v * 100) / 100), true);
 
-/** Your age and the retirement age the plan in Advanced runs to. */
-function span(plan: PlanState) {
-  const a = planAges(plan), years = Math.max(1, Math.round(parseNum(toolOf(plan, "advanced").years)));
-  return a ? { age: a.age, retire: a.age + years } : null;
-}
-
 /** What the children come to, in a line: "Two planned, the first in 2 years; childcare before school." */
 export function kidsLine(k: PlanKids): string {
   const parts: string[] = [];
@@ -52,55 +38,6 @@ export function kidsLine(k: PlanKids): string {
   return s.charAt(0).toUpperCase() + s.slice(1) + (k.childcare ? "; paid childcare before school." : "; no paid childcare.");
 }
 
-export function KidsCard({ plan }: { plan: PlanState }) {
-  const { profile } = useHousehold();
-  const [open, setOpen] = useState<"kids" | "cover" | null>(plan.kids == null ? "kids" : null);
-  const sp = span(plan);
-  const k = plan.kids;
-  const segs = sp ? kidStages(k, sp.age, sp.retire) : [];
-  const costly = segs.filter((s) => s.change !== 0);
-  const rebuild = () => setPlan((p) => seedStages(p, profile));
-  return (
-    <>
-      <Card className="col-span-full">
-        <CardHeader>
-          <CardTitle>Children</CardTitle>
-          <CardDescription>{k ? kidsLine(k) : "Tell us about any children you have or are planning, and the stages are built from them."}</CardDescription>
-          <CardAction><div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={() => setOpen("kids")}>{k ? "Edit children" : "Add children"}</Button>
-            {costly.length ? <Button variant="outline" size="sm" onClick={() => setOpen("cover")}>How you cover it</Button> : null}
-          </div></CardAction>
-        </CardHeader>
-        {costly.length ? (
-          <CardContent>
-            {/* Folded until wanted, like the year-by-year table. */}
-            <Collapsible>
-              <CardTitle><CollapsibleTrigger>How each stage covers them<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
-              <CollapsibleContent className="mt-3">
-            <CoverTable plan={plan} segs={costly} />
-            <p className="hint mt-3">Each stage below runs these years at this saving, in today&apos;s dollars. Change any stage&apos;s saving or return
-              to plan for other changes too: a raise, a move, part-time years. Changing your children or how you cover them rebuilds the stages.</p>
-              </CollapsibleContent>
-            </Collapsible>
-          </CardContent>
-        ) : null}
-      </Card>
-      {open === "kids" && sp ? (
-        <KidsDialog kids={k ?? NO_KIDS} age={sp.age} retire={sp.retire} close={() => setOpen(null)}
-          save={(next) => {
-            const changes = kidStages(next, sp.age, sp.retire).some((s) => s.change !== 0);
-            setPlan((p) => ({ ...p, kids: next }));
-            if (changes) setOpen("cover");
-            else { setOpen(null); rebuild(); }
-          }} />
-      ) : null}
-      {open === "cover" && sp ? (
-        <CoverDialog plan={plan} age={sp.age} retire={sp.retire} close={() => { setOpen(null); rebuild(); }}
-          save={(cover) => { setPlan((p) => ({ ...p, cover })); setOpen(null); rebuild(); }} />
-      ) : null}
-    </>
-  );
-}
 
 /* ---- the children ---- */
 /** `base`: count the stages in years from now (from this age) rather than
@@ -235,55 +172,6 @@ export function KidsDialog({ kids, age, retire, base, cover = true, close, save,
       </div>
     </Modal>
   );
-}
-
-/* ---- How will you cover this? ---- */
-
-/** Today's saving, and what each stage takes from each account. */
-function useCover(plan: PlanState, typed: Record<string, Partial<Monthly>>) {
-  const { profile } = useHousehold();
-  const adv = toolOf(plan, "advanced"), P = advancedPlan(adv, profile), period = P.p.period;
-  const today = monthlyByAccount(P, period), ppy = PER_YEAR[period] ?? 12;
-  const F = freedOf(plan);
-  return { today, ppy, per: (m: number) => (m * 12) / ppy, cover: (s: KidStage) => coverStage(s.change, today, typed[stageKey(s)], F) };
-}
-
-/** The stages with their cost and what each account gives, for the card. */
-function CoverTable({ plan, segs }: { plan: PlanState; segs: KidStage[] }) {
-  const C = useCover(plan, plan.cover);
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-150 text-note tabular-nums">
-        <thead><tr className="text-label text-muted-foreground">
-          <th className="text-left font-medium">Stage</th><th className="text-right font-medium">Children cost</th>
-          {COVER_ORDER.map((k) => <th key={k} className="text-right font-medium">{ACCT[k]}</th>)}<th className="text-right font-medium">From spending</th>
-        </tr></thead>
-        <tbody>
-          {segs.map((s) => {
-            const c = C.cover(s);
-            return (
-              <tr key={stageKey(s)} className="border-t border-border">
-                <td className="py-1.5"><b className="font-medium">{s.label}</b> <span className="text-muted-foreground">{ages(s.from, s.to)}</span></td>
-                <td className="text-right">{(s.change < 0 ? "−" : "+") + money(Math.abs(s.change))} per month</td>
-                {COVER_ORDER.map((k) => <td key={k} className="text-right">{c.take[k] > 0.004 ? "−" + money(c.take[k]) : c.take[k] < -0.004 ? "+" + money(-c.take[k]) : "–"}
-                  {k === "trad" && c.matchLost > 0.5 ? <span className="block text-label text-loss">−{money(c.matchLost)} match</span> : null}</td>)}
-                <td className={"text-right" + (c.short > 0 ? " text-loss" : "")}>{c.short > 0 ? "−" + money(c.short) : "–"}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function CoverDialog({ plan, age, retire, close, save }: {
-  plan: PlanState; age: number; retire: number; close: () => void; save: (c: PlanState["cover"]) => void;
-}) {
-  const { profile } = useHousehold();
-  const adv = toolOf(plan, "advanced"), P = advancedPlan(adv, profile), period = P.p.period;
-  return <CoverStagesDialog segs={kidStages(plan.kids, age, retire).filter((s) => s.change !== 0)} today={monthlyByAccount(P, period)}
-    ppy={PER_YEAR[period] ?? 12} F={freedOf(plan)} initial={plan.cover} close={close} save={save} />;
 }
 
 /** "How will you cover this?" for any saving: `today` by account, paid

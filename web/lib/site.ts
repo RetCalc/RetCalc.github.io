@@ -10,10 +10,11 @@ export interface PageMeta { h1?: string; title: string; desc: string }
 export const PAGES = pageMeta.pages as Record<Slug, PageMeta>;
 export const SLUGS = Object.keys(PAGES) as Slug[];
 
-/** The three Calculator modes and their addresses. */
-export type CalcMode = "simple" | "single" | "series";
-export const CALC_PATHS: Record<CalcMode, string> = { simple: "/calculator", single: "/advanced", series: "/stages" };
-export const CALC_MODE_NAMES: Record<CalcMode, string> = { simple: "Basic", single: "Advanced", series: "Stages" };
+/** The Calculator's two modes and their addresses (Stages is part of
+    Advanced now, as its changes ahead). */
+export type CalcMode = "simple" | "single";
+export const CALC_PATHS: Record<CalcMode, string> = { simple: "/calculator", single: "/advanced" };
+export const CALC_MODE_NAMES: Record<CalcMode, string> = { simple: "Basic", single: "Advanced" };
 
 /** The tab each page belongs to (lights up in the navigation bar). */
 export type Tab = "guide" | "calc" | "tools" | "about";
@@ -49,7 +50,7 @@ export const TOOL_SUB: Partial<Record<Slug, ToolSub>> = {
 };
 
 /** Old addresses, sent on to their new ones. */
-export const ALIASES: Record<string, Slug> = { single: "advanced", series: "stages" };
+export const ALIASES: Record<string, Slug> = { single: "advanced", series: "advanced", stages: "advanced" };
 
 /** Each strategy page's line under its heading, after the page's name. */
 const STRATEGY_LEDE: Partial<Record<Slug, string>> = {
@@ -77,12 +78,12 @@ export function strategyLede(slug: Slug): string | null {
 }
 
 /** Pages laid out in one column (the rest put inputs beside results). */
-// The homepage, Basic, Advanced, Stages, the Drawdown Simulator (with its strategy
+// The homepage, Basic, Advanced, the Drawdown Simulator (with its strategy
 // pages), Income Tax, the Retirement Plan Optimizer, the Early Retirement Bridge (with
 // /72t), Roth Conversion (with /rmd), College Savings and Rent vs. Buy lay out their own columns (components/home/Home.tsx, tools/basic/Basic.tsx,
-// tools/advanced/Advanced.tsx, tools/stages/Stages.tsx, tools/drawdown/Drawdown.tsx,
+// tools/advanced/Advanced.tsx, tools/drawdown/Drawdown.tsx,
 // tools/tax/Tax.tsx, tools/optimizer/Optimizer.tsx, tools/bridge/Bridge.tsx, tools/roth/Roth.tsx).
-const SOLO = new Set<string>(["home", "calculator", "advanced", "stages", "incometax", "optimizer", "social-security", "bridge", "72t", "roth", "rmd", "healthcare", "fire", "backtest", "college", "rentbuy", "tools", "guide", "about", "budget", "debt", "mortgage", "compare", "account", "privacy", "guide/report", "guide/paycheck", "guide/paycheck/report", "financial-dashboard"]);
+const SOLO = new Set<string>(["home", "calculator", "advanced", "incometax", "optimizer", "social-security", "bridge", "72t", "roth", "rmd", "healthcare", "fire", "backtest", "college", "rentbuy", "tools", "guide", "about", "budget", "debt", "mortgage", "compare", "account", "privacy", "guide/report", "guide/paycheck", "guide/paycheck/report", "financial-dashboard"]);
 export function isSolo(slug: Slug): boolean {
   return SOLO.has(slug) || TOOL_SUB[slug] === "drawdown";
 }
@@ -92,7 +93,7 @@ export function tabFor(slug: Slug): Tab | null {
   if (slug === "home" || slug === "financial-dashboard") return null;
   if (slug === "guide" || (slug as string).startsWith("guide/")) return "guide";
   if (slug === "about" || slug === "privacy") return "about";
-  if (slug === "calculator" || slug === "advanced" || slug === "stages" || (slug as string) === "compare") return "calc";
+  if (slug === "calculator" || slug === "advanced" || (slug as string) === "compare") return "calc";
   return "tools";
 }
 
@@ -103,7 +104,7 @@ export function hasToolControls(slug: Slug): boolean {
 }
 
 export function calcModeFor(slug: Slug): CalcMode | null {
-  return slug === "calculator" ? "simple" : slug === "advanced" ? "single" : slug === "stages" ? "series" : null;
+  return slug === "calculator" ? "simple" : slug === "advanced" ? "single" : null;
 }
 
 /** The page an address shows ("/" is the homepage). */

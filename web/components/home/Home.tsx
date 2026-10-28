@@ -65,7 +65,7 @@ export function Home({ data }: { data: HomeData }) {
             <div className="hm-split">
               <div>
                 <h3 className="hm-h3">See what your savings grow to.</h3>
-                <p>Put in your age, what you&apos;ve saved and what you add each month. Advanced mode adds taxes and fees; Stages lets the plan change over time.</p>
+                <p>Put in your age, what you&apos;ve saved and what you add each month. Advanced adds taxes, fees and the changes you see coming.</p>
                 <div className="hm-readout">
                   <div className="k">At 65, in today&apos;s dollars</div>
                   <CountUp className="v amber" to={fv} format={fmtMoney} />

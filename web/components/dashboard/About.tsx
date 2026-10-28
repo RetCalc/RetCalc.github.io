@@ -298,8 +298,8 @@ export function About() {
 
               <Group id="calc">
                 <Section id="calculator">
-                  <p>Your Calculator is the Stages calculator, filled in from your plan and
-                  driven by the <b>changes ahead</b>: the things you see coming.
+                  <p>Your Calculator is filled in from your plan and driven by the{" "}
+                  <b>changes ahead</b>: the things you see coming.
                   <b>Save more or less</b> changes what you save from an age on, by dollars a
                   month or a share of what you&apos;d save then, all at once or phased in, into or
                   out of the account you name (a cut comes out of the accounts in the order
@@ -310,8 +310,9 @@ export function About() {
                   costs and <b>How you cover it</b> are edited from it, and switching it off
                   runs the plan without them. Everything is in today&apos;s dollars, and each row
                   says what it does to your savings at retirement, with the other changes as
-                  they are. <b>View or edit</b> opens the big view: the chart, each change
-                  across your ages, and every one with its words, Edit and Remove. A change
+                  they are. <b>View or edit</b> opens the big view: each change across your
+                  ages, and every one with its words; a click on one opens it, and the X
+                  removes it. A change
                   that takes more than you save in any year, or a lump sum
                   bigger than its account holds that day, can&apos;t be added or kept: saving
                   never goes below $0, and no tax is counted on a lump taken out (the
@@ -327,12 +328,6 @@ export function About() {
                   is saved to your plan. Changes to saving run inside the plan itself, so every
                   tab follows them; a different return or a lump sum runs only here, and the
                   Calculator&apos;s result is then your savings at retirement everywhere.</p>
-                  <p>Stages chains several periods together instead of holding one set of
-                  assumptions for the whole timeline. Use it for a raise partway through your
-                  career, a stretch of lighter contributions, or shifting toward a more
-                  conservative mix as retirement nears, anything that changes partway
-                  through the plan. Each stage has its own length, contribution, growth rate
-                  and return, and builds on whatever balance the stage before it left behind.</p>
                   <p>A few things worth knowing:</p>
                   <dl className="gloss">
                     <dt>The stages behind this</dt>
@@ -342,8 +337,7 @@ export function About() {
                     account (your own money before the match), <b>Rises</b> (how much its saving
                     grows each year after inflation, a steady rate fitted to the plan&apos;s
                     year-by-year figures), <b>On day one</b> (a lump sum, when a stage has one),
-                    the return, and what&apos;s going on. On the site&apos;s own Stages calculator the
-                    stages are typed by hand; here they&apos;re built.</dd>
+                    the return, and what&apos;s going on.</dd>
 
                     <dt>Inflation adjusted <Badge variant="outline" className="ml-1.25">stage 2 onward</Badge></dt>
                     <dd>Restates the contribution you typed into that stage&apos;s future dollars.
@@ -407,13 +401,13 @@ export function About() {
                     <dt>Where it starts</dt>
                     <dd><b>Retirement day</b>, the default, starts from the balances you&apos;ll have
                     when you retire, by account type, in today&apos;s dollars. Type them in, or use{" "}
-                    <b>Copy from Advanced or Stages</b> once either has <b>Split by account
-                    type</b> turned on: they project each account to retirement with their own
-                    contribution growth, fees, employer match, glide path and stages, and the
-                    optimizer takes it from there. <b>Today</b> starts from what you have now and
-                    what you save each month, and grows each account to retirement at a steady
-                    return after inflation first; its copy button brings over Advanced&apos;s or
-                    Stages&apos; current balances, monthly saving and return.</dd>
+                    <b>Copy from Advanced</b> once it has <b>Split by account type</b> turned on:
+                    it projects each account to retirement with its own contribution growth,
+                    fees, employer match, glide path and changes ahead, and the optimizer takes
+                    it from there. <b>Today</b> starts from what you have now and what you save
+                    each month, and grows each account to retirement at a steady return after
+                    inflation first; its copy button brings over Advanced&apos;s current balances,
+                    monthly saving and return.</dd>
 
                     <dt>What it tries</dt>
                     <dd>Every claiming age from 62 to 70 for each of you (never before you

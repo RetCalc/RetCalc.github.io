@@ -1,14 +1,13 @@
-/* The Paycheck tab's saving, copied into Advanced and Stages: each account's
+/* The Paycheck tab's saving, copied into Advanced: each account's
    amount on the right schedule, the match to the same dollars, and the HSA
    kept for health care in the account math. Run with `npm run test:budget`. */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { PER_YEAR } from "@/lib/engine/typed";
 import { ADVANCED_DEFAULTS, advancedPlan } from "@/tools/advanced/model";
-import { STAGES_DEFAULTS, stageSplit, stagesPlan } from "@/tools/stages/model";
 import { BUDGET_DEFAULTS, type BudgetInputs } from "../model";
 import { paycheckInput, paycheckRun } from "../paycheck-math";
-import { advancedHasSaving, intoAdvanced, intoStages, paycheckCopy, stagesHasSaving } from "../to-calculator";
+import { advancedHasSaving, intoAdvanced, paycheckCopy } from "../to-calculator";
 
 const T = { status: "s", state: "IL" };
 const near = (a: number, b: number, tol = 0.01) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
@@ -43,10 +42,6 @@ test("two incomes: combined match terms come to the same dollars", () => {
   assert.equal(c.salary, 155000);
   const P = advancedPlan(intoAdvanced(ADVANCED_DEFAULTS, c, T), null);
   near(P.B!.match! * PER_YEAR[c.period], yearMatch, 0.5);
-  // Stages: the first stage's match too.
-  const S = stagesPlan(intoStages(STAGES_DEFAULTS, c, T), null);
-  const e = S.eff[0];
-  near((e.contrib - e.mine) * PER_YEAR[c.period], yearMatch, 0.5);
 });
 
 test("one income short of its match, with an IRA: terms that don't count the IRA", () => {
@@ -56,25 +51,10 @@ test("one income short of its match, with an IRA: terms that don't count the IRA
   near(P.B!.match!, paycheckRun(pi).match);
 });
 
-test("Stages: the first stage takes the amounts and its split", () => {
-  const c = paycheckCopy(pay({ pcMatch: "219.23", pcHsa: "100", pcRothIra: "150", pcBrok: "50" }));
-  const s = intoStages(STAGES_DEFAULTS, c, T), st = s.stages[0];
-  assert.equal(s.saOn, true); assert.equal(st.period, "Bi-Weekly");
-  near(parseFloat(st.contrib.replace(/,/g, "")), 219.23 + 150 + 50 + 100);
-  const sp = stageSplit(st);
-  near(sp.h * 519.23, 100); near(sp.b * 519.23, 50); near(sp.r * 519.23, 150);
-  assert.equal(s.stages.length, STAGES_DEFAULTS.stages.length);
-  // No stages: one is added, its years left blank.
-  const none = intoStages({ ...STAGES_DEFAULTS, stages: [] }, c, T);
-  assert.equal(none.stages.length, 1); assert.equal(none.stages[0].years, "");
-});
-
 test("what counts as saving already there", () => {
   assert.equal(advancedHasSaving(ADVANCED_DEFAULTS), false);
-  assert.equal(stagesHasSaving(STAGES_DEFAULTS), false);
   const c = paycheckCopy(pay({ pcMatch: "219.23" }));
   assert.equal(advancedHasSaving(intoAdvanced(ADVANCED_DEFAULTS, c, T)), true);
-  assert.equal(stagesHasSaving(intoStages(STAGES_DEFAULTS, c, T)), true);
 });
 
 test("the HSA grows with the rest but nothing is withdrawn from it", () => {

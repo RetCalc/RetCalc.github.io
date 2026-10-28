@@ -16,7 +16,7 @@ export function hrefIn(mode: LearnMode, href: string, from?: string): string {
   const slug = path.slice(1) as Slug;
   const sub = TOOL_SUB[slug];
   if (sub) return `/dashboard/tools/${sub}${from ? "?from=" + encodeURIComponent(from) : ""}${hash ? "#" + hash : ""}`;
-  if (slug === "calculator" || slug === "advanced" || slug === "stages") return "/dashboard/calculator";
+  if (slug === "calculator" || slug === "advanced") return "/dashboard/calculator";
   if (slug === "guide") return "/dashboard";
   return href;
 }

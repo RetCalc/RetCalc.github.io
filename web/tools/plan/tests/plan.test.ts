@@ -5,10 +5,10 @@ import assert from "node:assert/strict";
 import { parseNum } from "@/lib/format";
 import { advancedCompute, advancedPlan } from "@/tools/advanced/model";
 import { BUDGET_DEFAULTS } from "@/tools/budget/model";
-import { stagesCompute } from "@/tools/stages/model";
+import { changesCompute, compileChanges } from "@/tools/advanced/changes";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
-import { coverStage, kidList, kidStages, monthlyByAccount, stagesFromKids } from "../kids";
-import { freedOf, fromOldTaxes, paycheckOf, planAges, seedAdvanced, seedStages, startDone, strip, taxOfPaycheck, toolOf } from "../flow";
+import { coverStage, kidList, kidStages, monthlyByAccount } from "../kids";
+import { freedOf, fromOldTaxes, paycheckOf, planAges, seedAdvanced, seedChanges, startDone, strip, taxOfPaycheck, toolOf } from "../flow";
 import { NO_KIDS, PLAN_DEFAULTS, type PlanState } from "../model";
 
 const near = (a: number, b: number, tol = 0.01) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
@@ -136,32 +136,27 @@ test("covering a stage from pre-tax accounts: a cut frees less than itself, and 
   assert.ok(all.freed < today.trad * 0.85);
 });
 
-test("Life stages: one per children's stage, saving less what each stage takes, the years adding up", () => {
+test("Changes ahead: the walkthrough's children go into Advanced once, as its Children change, and the plan runs as their stages", () => {
   let p = seedAdvanced(plan(), null);
   const adv = toolOf(p, "advanced");
   // A brokerage line to take from: $400 per check.
   p = { ...p, tools: { ...p.tools, advanced: { ...adv, brokC: "400" } } };
-  p = seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 1, firstIn: 2 } }, null);
-  const st = toolOf(p, "stages");
-  assert.equal(st.stages.length, 5);
-  assert.equal(st.stages.reduce((t, s) => t + parseNum(s.years), 0), 31);
-  assert.equal(st.stages[1].name, "A child in childcare");
-  const P = advancedPlan(toolOf(p, "advanced"), null), today = monthlyByAccount(P, "Bi-Weekly");
-  // Childcare at $2,500 per month: the brokerage ($866.67 per month) and then the traditional 401(k) give.
-  const per = (m: number) => (m * 12) / 26;
-  near(parseNum(st.stages[0].contrib), per(today.brok + today.trad), 0.02);
-  near(parseNum(st.stages[1].contrib), 0, 0.02);
-  assert.equal(st.stages[1].adj, true);
+  p = seedChanges({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 1, firstIn: 2 } });
+  const a = toolOf(p, "advanced");
+  assert.equal(p.kids, null);
+  assert.equal(a.kids?.planned, 1);
+  assert.deepEqual(a.changes.map((c) => [c.kind, c.on]), [["children", true]]);
+  // Carried once: a second time changes nothing.
+  assert.deepEqual(seedChanges(p), p);
+  const C = compileChanges(a, null);
+  assert.equal(C.shown.reduce((t, x) => t + (x.to - x.from), 0), 31);
+  assert.ok(C.shown.some((x) => x.names.includes("A child in childcare")));
   // The run works, and costs less at retirement than the plan without children.
-  const R = stagesCompute(st, null).R, A = advancedCompute(toolOf(p, "advanced"), null).R;
+  const R = changesCompute(a, null).V.R, A = advancedCompute({ ...a, changes: [] }, null).R;
   assert.ok(R.fv > 0 && R.fv < A.fv);
-  // With no children, one stage that matches Advanced.
-  const one = stagesFromKids(P, toolOf(p, "advanced"), st, kidStages(null, 29, 60), {});
-  assert.equal(one.stages.length, 1);
-  near(stagesCompute(one, null).R.fv, A.fv, A.fv * 0.001);
 });
 
-test("summary: the balance by account adds up to the plan's own figure, with Advanced or Stages", async () => {
+test("summary: the balance by account adds up to the plan's own figure, with or without changes ahead", async () => {
   const { planSummary } = await import("../results");
   let p = seedAdvanced(plan(), null);
   p = { ...p, tools: { ...p.tools, advanced: { ...toolOf(p, "advanced"), tradBal: "20,000", rothBal: "5,000", brokC: "200" } } };
@@ -179,7 +174,7 @@ test("summary: the balance by account adds up to the plan's own figure, with Adv
   near(MR.start + MR.own + MR.match + MR.growth, A.atRetire.total, 1);
   near(MR.start, 25000);
   assert.ok(MR.own < M.own && MR.growth < M.growth);
-  const S = planSummary(seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 1 } }, null), null)!;
+  const S = planSummary(seedChanges({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 1 } }), null)!;
   assert.ok(S.stages && S.stages.length > 2);
   near(S.climb[S.climb.length - 1].total, S.atRetire.total, S.atRetire.total * 1e-6);
   assert.ok(S.atRetire.total < A.atRetire.total);
@@ -202,7 +197,7 @@ test("summary: what the children cost, child by child, and what it does to the b
   const { planSummary } = await import("../results");
   let p = seedAdvanced(plan(), null);
   p = { ...p, tools: { ...p.tools, advanced: { ...toolOf(p, "advanced"), brokC: "400" } } };
-  const S = planSummary(seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 2 } }, null), null)!;
+  const S = planSummary(seedChanges({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 2 } }), null)!;
   const K = S.children!;
   assert.equal(K.rows.length, 2);
   // Child 1, born at 31: childcare to 36 at $2,500, then school at $1,500 to 49.
@@ -235,10 +230,10 @@ test("children spaced in half years: 2.5 years apart stays 2.5, and stages can s
   const { ageSpan } = await import("../kids");
   assert.equal(ageSpan(31, 34), "31 to 33");
   assert.equal(ageSpan(33.5, 36), "33½ to 36");
-  // Built into Stages: the years add up, a stage of 2.5 years among them.
+  // In Advanced's changes ahead: the years add up, a stage starting mid-year among them.
   let p = seedAdvanced(plan(), null);
-  p = seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 2, spacing: 2.5 } }, null);
-  const st = toolOf(p, "stages").stages;
-  near(st.reduce((t, s) => t + parseNum(s.years), 0), 31);
-  assert.ok(st.some((s) => !Number.isInteger(parseNum(s.years))));
+  p = seedChanges({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 2, spacing: 2.5 } });
+  const st = compileChanges(toolOf(p, "advanced"), null).shown;
+  near(st.reduce((t, s) => t + (s.to - s.from), 0), 31);
+  assert.ok(st.some((s) => !Number.isInteger(s.from)));
 });

@@ -20,7 +20,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
    behind them, then sharing and the limits. Each section's id is
    "about-" + its key, so a link to /about#about-roth opens Roth's. */
 const GROUPS = [
-  { key: "calculator", label: "Calculator and Guide", sections: [["projection", "How the projection works"], ["basic", "Basic"], ["advanced", "Advanced"], ["stages", "Stages"], ["guide", "Retirement Readiness Guide"], ["paycheck", "Paycheck to Retirement"]] },
+  { key: "calculator", label: "Calculator and Guide", sections: [["projection", "How the projection works"], ["basic", "Basic"], ["advanced", "Advanced"], ["guide", "Retirement Readiness Guide"], ["paycheck", "Paycheck to Retirement"]] },
   { key: "retirement", label: "Retirement income", sections: [["optimizer", "Retirement Plan Optimizer"], ["drawdown", "Drawdown Simulator"], ["social", "Social Security Calculator"], ["bridge", "Early Retirement Bridge"], ["roth", "Roth Conversion Calculator"], ["healthcare", "Healthcare Cost Planner"]] },
   { key: "saving", label: "Saving and investing", sections: [["fire", "FIRE Calculator"], ["backtest", "Portfolio Backtest"], ["college", "College Savings"], ["rentbuy", "Rent vs. Buy"]] },
   { key: "everyday", label: "Everyday money", sections: [["tax", "Income Tax"], ["budget", "Budget"], ["debt", "Debt Payoff"], ["mortgage", "Mortgage Calculator"]] },
@@ -140,16 +140,16 @@ export function About({ states }: { states: StateOption[] }) {
             Retirement goes straight to the numbers, from your pay and its taxes to your
             budget, where each paycheck&apos;s saving goes, and what that adds up to by
             retirement.</p>
-            <p>The core retirement planner, under the Calculator tab, has three modes for
-            different levels of detail, from a six-question starting point (Basic) to a
-            full multi-stage model (Stages). The Tools tab
+            <p>The core retirement planner, under the Calculator tab, has two modes for
+            different levels of detail, from a six-question starting point (Basic) to every
+            assumption and the changes you see coming (Advanced). The Tools tab
             extends that with calculators for taxes, mortgage, college savings, rent vs.
             buy, drawdown, FIRE planning, budget, and more. Each tool is described in
             its own section below.</p>
             <p><b>Your household</b>, set up from the top of every page (on a phone, from the account menu), holds the facts most
             tools ask for: ages, when you plan to retire, state, savings, income and
             retirement spending. Saving it fills those numbers into Basic, Advanced,
-            Stages, Drawdown, Roth Conversion, Healthcare, Income Tax, Budget and FIRE,
+            Drawdown, Roth Conversion, Healthcare, Income Tax, Budget and FIRE,
             and it fills them in again each time you open the site or reset a tool. It&apos;s
             a one-way fill: changing a number inside a tool never changes the household or
             any other tool. When a tool isn&apos;t using your household&apos;s numbers, it offers them.
@@ -259,12 +259,13 @@ export function About({ states }: { states: StateOption[] }) {
             tax rate that Basic ignores, so the income figure will drop.</p>
           </Section>
           <Section id="advanced">
-            <p>The Advanced tab holds one set of assumptions for the whole period, but
-            goes further than Basic in almost every direction: return and inflation as
-            two separate figures instead of one blended real rate, an effective tax
-            rate, fees, volatility for Monte Carlo, and two routes to solve backwards
-            from a target. It&apos;s also where the historical comparison band, the Monte
-            Carlo fan, and a Coast FIRE date once you&apos;ve set a target all live.</p>
+            <p>The Advanced tab goes further than Basic in almost every direction: return
+            and inflation as two separate figures instead of one blended real rate, an
+            effective tax rate, fees, volatility for Monte Carlo, account types, and the
+            changes you see coming (a raise, children, easing off, a lump sum). It
+            answers two questions about your target: when you could stop saving, and
+            when you could retire. It&apos;s also where the historical comparison band and
+            the Monte Carlo fan live.</p>
             <dl className="gloss">
               <dt>Starting value</dt>
               <dd>What the account is worth today. Zero is fine.</dd>
@@ -283,6 +284,11 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>Time period</dt>
               <dd>Years until you start drawing on the money.</dd>
+
+              <dt>Your age <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
+              <dd>With it, the changes ahead and the chart read by age (from 45, retire at
+              58); without it, by years from now (from year 10). It doesn&apos;t change the
+              figures.</dd>
 
               <dt>Rate of return</dt>
               <dd>Expected average annual return before inflation. For context, broad US
@@ -345,11 +351,32 @@ export function About({ states }: { states: StateOption[] }) {
               them; enter what you actually put in. Switching back to one total
               carries the totals and the calculated rate across, so the answer doesn&apos;t jump.</dd>
 
+              <dt>Changes ahead <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
+              <dd>Everything above is where the plan starts; a change moves it from a given
+              year. There are four kinds: <b>Save more or less</b> (dollars a month in
+              today&apos;s dollars, a share of what you save, or a share more or less each year;
+              all at once or phased in; until an age or to retirement), <b>A lump sum</b>{" "}
+              put in or taken out on one day, <b>Different returns</b> from an age on
+              (stepped or climbing), and <b>Children</b>, set up with the children you have or
+              plan and what they cost as they grow, out of what you save. With <b>Split by
+              account type</b> on, a change also says which account it goes into or comes
+              out of. Each change shows what it does to your savings at the end and can be
+              switched off without losing it; <b>View or edit</b> shows them all across
+              the years, and a click on one opens it. A cut can&apos;t take saving below
+              nothing, and a lump sum can&apos;t take out more than is there that day: the
+              calculator says so instead.</dd>
+
+              <dt>The stages behind this</dt>
+              <dd>Once a change is added, the plan runs as stages, a new one wherever
+              what&apos;s going on changes. This lists them: when each runs, what it saves a
+              month in its first year and its last, how that rises, its return, any lump
+              sum and what&apos;s going on. With no change on, the plan is the one above
+              exactly; a change that changes nothing leaves every figure where it was.</dd>
+
               <dt>Target</dt>
               <dd>What you&apos;re aiming for, in today&apos;s dollars, either an after-tax income
               or a portfolio balance, your choice. It drives the two solve routes, the
-              Coast FIRE figure, and the Monte Carlo success rate. On the Stages tab the
-              solve changes <i>the final stage only</i>; see that section.</dd>
+              two answers in Reach your target, and the Monte Carlo success rate.</dd>
             </dl>
             <p>Once you&apos;ve got a projection, here&apos;s what the results panel is showing:</p>
             <dl className="gloss">
@@ -369,64 +396,16 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>Crossover</dt>
               <dd>The year your portfolio&apos;s growth first exceeds what you put in that year.
               After it, the account is doing more of the work than you are.</dd>
-              <dt>Work backwards from a target</dt>
-              <dd>Two routes to the same goal: raise the contribution, or extend the
-              timeline. Either button applies its change to your inputs. On the Stages tab
-              both routes act on the final stage. Both follow a glide if you have one
-              set, and the timeline route re-anchors it: land on 26 years with a 5-year
-              glide and the ramp runs years 22 through 26, not 26 through 30.</dd>
-              <dt>Coast FIRE</dt>
-              <dd>How far you are from the point where contributions could stop entirely
-              and growth alone would still reach your target on schedule.</dd>
-            </dl>
-          </Section>
-          <Section id="stages">
-            <p>Stages chains several periods together instead of holding one set of
-            assumptions for the whole timeline. Use it for a raise partway through your
-            career, a stretch of lighter contributions, or shifting toward a more
-            conservative mix as retirement nears, anything that changes partway
-            through the plan. Each stage has its own length, contribution, growth rate
-            and return, and builds on whatever balance the stage before it left behind.</p>
-            <p>Every input and result works the same way it does on the Advanced tab;
-            see that section for what each one means. A few things are specific
-            to Stages:</p>
-            <dl className="gloss">
-              <dt>Editing stages</dt>
-              <dd>The panel lists your stages, each with its length and contribution, under
-              a bar that draws every stage at its share of the years. <b>Edit stages</b>,
-              or a click on a stage or its part of the bar, opens the stage editor, one
-              stage to a row. <b>Add stage</b> copies the stage before it as a starting
-              point, and a stage&apos;s name can be clicked to rename it.</dd>
-
-              <dt>Inflation adjusted <Badge variant="outline" className="ml-1.25">stage 2 onward</Badge></dt>
-              <dd>Restates the contribution you typed into that stage&apos;s future dollars.
-              Type $3,000 for a stage starting in year 5 at 2.5% inflation and it&apos;s
-              modeled as $3,394, the amount that <i>feels like</i> $3,000 by
-              then. The stage&apos;s own growth rate compounds from there. Turn it off to
-              use the number exactly as typed. In the editor it&apos;s the <b>Inf. Adj.</b> box
-              under the contribution, with the amount it becomes beside it.</dd>
-
-              <dt>Glide path <Badge variant="outline" className="ml-1.25">final stage only</Badge></dt>
-              <dd>Available on the last stage only, since that&apos;s the one closest to
-              retirement; earlier stages don&apos;t get the option. Works the same
-              way as on the Advanced tab: holds steady, then blends down to an end rate
-              over however many final years you choose within that stage.</dd>
-
-              <dt>Target <Badge variant="outline" className="ml-1.25">solving</Badge></dt>
-              <dd>The solve, and &quot;Work backwards from a target&quot; on the results side,
-              change <i>the final stage only</i>. Everything before it is treated as
-              settled, which is what makes the answer meaningful when stages carry
-              different assumptions.</dd>
-
-              <dt>Split by account type <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
-              <dd>Works like the Advanced version, spread across stages. Starting
-              balances, the employer match and your filing status and state are set once
-              for the whole run; each stage then says how much of its contribution goes
-              into each of traditional, Roth, the taxable brokerage account and the HSA. That lets a plan go Roth early in a career
-              and traditional later, and the tax on your retirement income reflects the
-              mix you end up with. The employer match works as on Advanced, from your
-              salary, the match rate and the share of salary it applies to; your salary is
-              assumed to grow at each stage&apos;s contribution growth rate.</dd>
+              <dt>Reach your target</dt>
+              <dd>Two answers, with your changes ahead as they are. <b>When you could stop
+              saving</b> is the earliest year you could put nothing more in, the match
+              included, and growth alone would still reach your target by the end (Coast
+              FIRE); its button adds that as a Stop saving change, and updates the same
+              change when the answer moves. <b>When you could retire</b> is the fewest years
+              that reach your target, sooner or later than planned; its button sets the
+              time period, and a Back button undoes it. A glide moves with the time
+              period: land on 26 years with a 5-year glide and the ramp runs years 22
+              through 26.</dd>
             </dl>
           </Section>
           <Section id="guide">
@@ -542,8 +521,8 @@ export function About({ states }: { states: StateOption[] }) {
             whole financial picture, Paycheck to Retirement goes straight to the numbers:
             what you take home after taxes, what you spend, where the rest of each
             paycheck goes, and where that saving gets you by the age you want to retire.
-            Each step is one of the site&apos;s own calculators (Budget, its Paycheck tab,
-            Advanced and Stages), filled in from the step before it, so a change early on
+            Each step is one of the site&apos;s own calculators (Budget, its Paycheck tab and
+            Advanced), filled in from the step before it, so a change early on
             carries through to the end.</p>
             <p>What you type stays in the walkthrough. The calculators keep their own numbers
             until you choose <b>Copy into my tools</b> at the end. Your plan is saved in this
@@ -577,27 +556,22 @@ export function About({ states }: { states: StateOption[] }) {
               time through, your spending becomes the target income. Add what you&apos;ve
               already saved in each account, and check the return and inflation.</dd>
 
-              <dt>Step 4: Life stages <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
-              <dd>Stages, built from your plan in step 3 and your children. Tell it the ages
-              of the children you have, how many you&apos;re planning, when the first arrives and
-              how far apart the rest are (to the half year), and whether you&apos;ll pay for
-              childcare before school. It works out what they cost each year until you
-              retire and starts a new stage wherever that cost changes, named for what&apos;s
-              happening then. The costs are the ones described under the Guide&apos;s
-              children, and any of them can be changed. With no children it&apos;s one stage.
-              Children are the only change it builds stages from, but any stage&apos;s saving
-              or return can be edited, and stages added, for a raise, a move or part-time
-              years.</dd>
+              <dt>Step 4: Changes ahead <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
+              <dd>The plan from step 3 again, opened at its <b>Changes ahead</b>: add what you
+              see coming, and it changes from there. <b>Children</b> asks the ages of the
+              children you have, how many you&apos;re planning, when the first arrives and how
+              far apart the rest are (to the half year), and whether you&apos;ll pay for
+              childcare before school, then works out what they cost each year until you
+              retire. The costs are the ones described under the Guide&apos;s children, and any
+              of them can be changed. A raise, a move, part-time years, an inheritance or a
+              different return are changes too, as described under Advanced.</dd>
 
               <dt>How will you cover this?</dt>
-              <dd>For each stage, where the children&apos;s extra cost comes from. By default it
-              comes out of the brokerage first, then Roth, then traditional, then the HSA,
-              each only as far as it goes. You can type your own amount for any account.
-              Cutting a traditional 401(k) or HSA contribution frees less than the full
-              amount, because that money is taxed as pay again, so each cut is sized to
-              free what the stage needs after tax. A cut that drops below what earns the
-              full employer match is marked with the match you&apos;d give up, and anything
-              saving can&apos;t cover is shown as coming out of spending.</dd>
+              <dd>With the account split on, for each stretch the children change, where
+              their extra cost comes from. By default it comes out of the brokerage first,
+              then Roth, then traditional, then the HSA, each only as far as it goes. You can
+              type your own amount for any account. Anything saving can&apos;t cover is shown
+              as coming out of spending.</dd>
 
               <dt>Summary</dt>
               <dd>The plan on one page: what you&apos;ll have at retirement and the income it
@@ -626,13 +600,13 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>Where it starts</dt>
               <dd><b>Retirement day</b>, the default, starts from the balances you&apos;ll have
               when you retire, by account type, in today&apos;s dollars. Type them in, or use{" "}
-              <b>Copy from Advanced or Stages</b> once either has <b>Split by account
-              type</b> turned on: they project each account to retirement with their own
-              contribution growth, fees, employer match, glide path and stages, and the
-              optimizer takes it from there. <b>Today</b> starts from what you have now and
-              what you save each month, and grows each account to retirement at a steady
-              return after inflation first; its copy button brings over Advanced&apos;s or
-              Stages&apos; current balances, monthly saving and return.</dd>
+              <b>Copy from Advanced</b> once it has <b>Split by account type</b> turned on:
+              it projects each account to retirement with its own contribution growth,
+              fees, employer match, glide path and changes ahead, and the optimizer takes
+              it from there. <b>Today</b> starts from what you have now and what you save
+              each month, and grows each account to retirement at a steady return after
+              inflation first; its copy button brings over Advanced&apos;s current balances,
+              monthly saving and return.</dd>
 
               <dt>What it tries</dt>
               <dd>Every claiming age from 62 to 70 for each of you (never before you
@@ -1479,11 +1453,10 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>Federal brackets and state rules</dt>
               <dd>Under the itemized paycheck, as on Income Tax: each federal bracket and
               what you pay in it, then your state&apos;s rules and what the figures leave out.</dd>
-              <dt>Copy to a calculator</dt>
-              <dd>Puts what goes into each account, and the match, into Advanced or Stages,
-              split by account type, so the projection starts from this paycheck. Stages
-              gets it as its first stage. It asks before replacing saving that&apos;s already
-              there.</dd>
+              <dt>Copy to Advanced</dt>
+              <dd>Puts what goes into each account, and the match, into Advanced, split by
+              account type, so the projection starts from this paycheck. It asks before
+              replacing saving that&apos;s already there.</dd>
             </dl>
             <p>Like the other tools, a budget can be saved, and Save/Delete act on both tabs
             together. It keeps its own separate list.</p>
@@ -1663,7 +1636,7 @@ export function About({ states }: { states: StateOption[] }) {
               device you&apos;re using, and clearing site data removes them.</dd>
 
               <dt>The dropdown</dt>
-              <dd>Each mode and tool keeps its own saved list (Basic, Advanced, Stages,
+              <dd>Each mode and tool keeps its own saved list (Basic, Advanced,
               every tool in the Tools tab, and both Guide walkthroughs), and the dropdown shows whichever list belongs to
               the one you&apos;re on. It remembers which scenario you loaded or saved as you
               move between tabs, and marks it &quot;(edited)&quot; once your current numbers no
@@ -1675,8 +1648,8 @@ export function About({ states }: { states: StateOption[] }) {
               scenarios side by side: their balances on one chart, then every result and
               every input in tables, with differing inputs highlighted. It reads saved
               scenarios only and changes nothing, so set your inputs and save them first.
-              Each slot picks a mode (Basic, Advanced or Stages) and then a saved
-              scenario from that mode&apos;s own list.</dd>
+              Each slot picks a mode (Basic or Advanced) and then a saved scenario from
+              that mode&apos;s own list. An Advanced scenario runs with its changes ahead.</dd>
 
               <dt>Delete</dt>
               <dd>Removes the selected scenario. It doesn&apos;t change the numbers on screen,
@@ -1684,7 +1657,7 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>Reset</dt>
               <dd>Returns just the tool or mode you&apos;re currently viewing to its
-              defaults: Basic, Advanced and Stages each reset separately, and
+              defaults: Basic and Advanced each reset separately, and
               so does each tool in the Tools tab. Saved scenarios are untouched.</dd>
 
               <dt>Share</dt>
@@ -1707,7 +1680,7 @@ export function About({ states }: { states: StateOption[] }) {
               &quot;success&quot; there means reaching a number, not that it lasts. The Drawdown
               Simulator is the tool that answers whether the money actually holds up once
               you start spending it.</li>
-              <li>Tax in Basic, and in Advanced and Stages unless you split by account
+              <li>Tax in Basic, and in Advanced unless you split by account
               type, is a single flat rate. Split by account type works it out with the
               Income Tax tool&apos;s 2026 rules, but for the first year of retirement only, and
               without Social Security or other income.</li>

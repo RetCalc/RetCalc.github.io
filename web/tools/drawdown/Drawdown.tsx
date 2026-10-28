@@ -16,7 +16,7 @@ import { toolInputs, useToolState } from "@/components/tools/ToolState";
 import { HeroReading, PinnedReading, type HeroTone, type ReadingFigure } from "@/components/common/Reading";
 import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
-import { project, projectBasic, projectSeries } from "@/lib/engine/typed";
+import { project, projectBasic } from "@/lib/engine/typed";
 import {
   HIST_START, HIST_STOCK, ddOptsFromState, ddScorecard, ddWindows, historicalBacktest,
   type DdMC, type DdOpts, type DdPrep,
@@ -26,7 +26,7 @@ import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
 import { useStoredText } from "@/lib/useStoredText";
 import { ADVANCED_DEFAULTS, advancedPlan } from "@/tools/advanced/model";
 import { BASIC_INPUTS, basicInput } from "@/tools/basic/model";
-import { STAGES_DEFAULTS, stagesPlan } from "@/tools/stages/model";
+import { changesCompute, changesOn } from "@/tools/advanced/changes";
 import { CompareView } from "./CompareView";
 import { DrawdownDialogs, type Dialog } from "./Dialogs";
 import { DRAWDOWN_DEF, ddLanding, ddRaw, ddWrite, drawdownSetup, type DrawdownState } from "./fields";
@@ -149,13 +149,12 @@ export function Drawdown({ landing }: { landing?: string }) {
     s, set: set as DDView["set"], setState, ...base, comfortNote: comfortNote(o, P, age),
     mode, inputs, setInputs: setStoredInputs, lastMonthly: o.monthly, tracesOn, toggleTraces: () => setTracesOn((x) => !x), detailTable,
     copyFromPlan: async () => {
-      // the three calculators' results, from their inputs as last left
-      const b = basicInput(toolInputs("basic", BASIC_INPUTS));
-      const sp = stagesPlan(toolInputs("stages", STAGES_DEFAULTS), profile);
+      // the calculators' results, from their inputs as last left (Advanced
+      // with its changes ahead, when any are on)
+      const b = basicInput(toolInputs("basic", BASIC_INPUTS)), adv = toolInputs("advanced", ADVANCED_DEFAULTS);
       const sources = [
         { label: "Basic", value: b.years > 0 ? projectBasic(b).fv : 0 },
-        { label: "Advanced", value: project(advancedPlan(toolInputs("advanced", ADVANCED_DEFAULTS), profile).p).fvReal },
-        { label: "Stages", value: projectSeries(sp.g, sp.eff).fvReal },
+        { label: "Advanced", value: changesOn(adv) ? changesCompute(adv, profile).V.R.fvReal : project(advancedPlan(adv, profile).p).fvReal },
       ].filter((x) => x.value > 0);
       if (!sources.length) {
         toast("Run a retirement projection first");

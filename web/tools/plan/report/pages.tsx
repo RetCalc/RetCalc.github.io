@@ -1,7 +1,7 @@
 /* The Paycheck to Retirement report's pages: the Guide report's system
    (black band, Public Sans, US Letter sheets, 17-report.css) telling this
    walkthrough's story in order: the cover, the paycheck, the spending, the
-   saving, the road to retirement, the life stages (when there are any),
+   saving, the road to retirement, the stages your changes ahead make (when there are any),
    and the assumptions behind it all. */
 
 import { money, pctStr } from "@/lib/format";
@@ -45,7 +45,7 @@ function Cover({ R, pages }: { R: PlanReport; pages: Page[] }) {
         <div className="rp-legend low"><h5>Your savings, age {S.age} to {S.retire}</h5>
           {ACCTS.filter((a) => S.climb.some((r) => r[a] > 1)).map((a) => <div key={a}><i style={{ "--sw": ACCT_PRINT[a] } as React.CSSProperties} />{ACCT_NAMES[a]}</div>)}
           <div><i className="line" style={{ "--sw": C.trail } as React.CSSProperties} />Everything together</div>
-          {S.stages ? <div><span className="rp-num">1</span>Each life stage, numbered</div> : null}</div></div>
+          {S.stages ? <div><span className="rp-num">1</span>Each stage, numbered</div> : null}</div></div>
       <div className="rp-cols">
         <div><h5>Your pay</h5><div className="rp-fig">{money(S.pay.takeHome * S.p)}</div>
           <p>per year reaches your bank from {money(S.pay.gross * S.p)} of pay: {money(S.pay.takeHome)} {per(S)}, after {money(S.pay.taxes * S.p)} in taxes and what goes into accounts before it.</p>
@@ -56,7 +56,7 @@ function Cover({ R, pages }: { R: PlanReport; pages: Page[] }) {
             {S.pay.left > 0.5 ? " " + money(S.pay.left * S.p) + " per year is still unassigned." : " Every dollar of pay has a job."}</p>
           <h5 className="gap">Spending</h5><div className="rp-fig">{money(S.spendYear / 12)}</div><p>per month, from your budget.</p></div>
         <div><h5>At {S.retire}</h5><div className="rp-fig">{money(A.total)}</div>
-          <p>in today&apos;s dollars ({money(A.fv)} in future dollars){S.stages ? ", with your life stages" : ""}.</p>
+          <p>in today&apos;s dollars ({money(A.fv)} in future dollars){S.stages ? ", with your changes ahead" : ""}.</p>
           <h5 className="gap">To spend in retirement</h5><div className="rp-fig">{money(A.afterTax)}</div>
           <p>per year after tax, from a {pctStr(A.withdrawal, 1)} withdrawal{S.goal.v > 0
             ? (A.afterTax >= S.goal.v ? ", more than " : ", against ") + (S.goal.fromBudget ? "the " + money(S.goal.v) + " your budget spends per year" : "your goal of " + money(S.goal.v)) + (A.afterTax >= S.goal.v ? "." : ": " + money(S.goal.v - A.afterTax) + " short.")
@@ -182,7 +182,7 @@ function Road({ R, p }: { R: PlanReport; p: Page }) {
     <Sheet R={R} p={p}>
       <Lead h={<>{money(A.total)} at {S.retire}, in today&apos;s dollars.</>}>
         {Math.round(S.years)} years of saving at {pctStr(a.nominal, 1)} per year before {pctStr(a.inflation, 1)} inflation{a.fees > 0 ? " and " + pctStr(a.fees, 2) + " in fees" : ""}.
-        {" "}Withdrawing {pctStr(A.withdrawal, 1)} the first year gives {money(A.afterTax)} after tax{S.stages ? ", with the life stages on page " + (p.n + 1) + " in it" : ""}.
+        {" "}Withdrawing {pctStr(A.withdrawal, 1)} the first year gives {money(A.afterTax)} after tax{S.stages ? ", with the stages on page " + (p.n + 1) + " in it" : ""}.
       </Lead>
       <Sec>Your savings by age, by account</Sec>
       <ClimbChart S={S} h={340} />
@@ -286,7 +286,7 @@ export function planPages(S: PlanSummary): Page[] {
     ...spendChunks(S).map((_, i) => ({ id: "spend" + i, title: i ? "Your spending, continued" : "Your spending", because: "Step 1: what you spend" })),
     { id: "save", title: "Your saving", because: "Step 2: where each paycheck goes" },
     { id: "road", title: "The road to retirement", because: "Step 3: where that gets you" },
-    ...(S.stages ? Array.from({ length: stagePages(S) }, (_, i) => ({ id: "stages" + i, title: i ? "Your life stages, continued" : "Your life stages", because: "Step 4: children and other changes" })) : []),
+    ...(S.stages ? Array.from({ length: stagePages(S) }, (_, i) => ({ id: "stages" + i, title: i ? "Your stages, continued" : "Your stages", because: "Step 4: changes ahead" })) : []),
     { id: "method", title: "Assumptions and method" },
   ];
   return list.map((p, i) => ({ ...p, n: i + 1 }));
