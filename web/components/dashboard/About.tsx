@@ -259,7 +259,7 @@ export function About() {
                     plus childcare where you live. A second or later child costs a share of the
                     first. These costs come out of saving in the years they run, from the
                     accounts you choose in <b>How you cover it</b> (in Profile, or the
-                    Calculator&apos;s <b>Edit child costs</b>). Where you haven&apos;t chosen, they come
+                    Calculator&apos;s children row). Where you haven&apos;t chosen, they come
                     out of the brokerage first, then the 401(k) beyond the match, the IRA and
                     the HSA, and the 401(k) up to the match last, so the match is kept as long
                     as it can be. A cut from pre-tax saving is taxed as pay again, so it&apos;s
@@ -298,16 +298,33 @@ export function About() {
 
               <Group id="calc">
                 <Section id="calculator">
-                  <p>Your Calculator is the Stages calculator, filled in from your plan. Its
-                  stages are the plan&apos;s own saving: every change the plan makes, with
-                  children, college years, saving that grows each year to its limits, and both
-                  employers&apos; match, so what it reaches at retirement is what your plan has.
-                  The children&apos;s costs are changed there with <b>Edit child costs</b>, and
-                  saved to your profile. Today&apos;s balances and cost basis, pay and the match,
-                  filing status, state and inflation are listed, not typed: they&apos;re set on Net
-                  worth, Income and Profile. Anything else you change (the stages, returns,
-                  fees) is saved to your plan, and the Calculator&apos;s result is then your
-                  savings at retirement everywhere.</p>
+                  <p>Your Calculator is the Stages calculator, filled in from your plan and
+                  driven by <b>scenarios</b>: the things you see coming, each one sentence.
+                  <b>Save more or less</b> changes what you save from an age on, by dollars a
+                  month or a share of what you&apos;d save then, all at once or phased in, into or
+                  out of the account you name (a cut comes out of the accounts in the order
+                  below once that one runs out). <b>A lump sum</b> is one amount put into or
+                  taken out of an account on the day you turn an age: an inheritance, a home
+                  sale, a down payment. <b>Different returns</b> changes the return from an
+                  age on, stepped or climbing. <b>Children</b> are the plan&apos;s own row: their
+                  costs and <b>How you cover it</b> are edited from it, and switching it off
+                  runs the plan without them. Everything is in today&apos;s dollars, and each row
+                  says what it does to your savings at retirement, with the other scenarios as
+                  they are. A scenario that takes more than you save in any year, or a lump sum
+                  bigger than its account holds that day, can&apos;t be added or kept: saving
+                  never goes below $0, and no tax is counted on a lump taken out (the
+                  brokerage&apos;s cost basis at retirement does follow it).</p>
+                  <p>Underneath, the stages are the plan&apos;s own saving year by year: every
+                  change the plan makes, with children, college years, saving that grows each
+                  year to its limits, both employers&apos; match, and your scenarios on top, so
+                  what it reaches at retirement is what your plan has. <b>See the stages</b>
+                  lists them by age, read-only: change a scenario to change them. Today&apos;s
+                  balances and cost basis, pay and the match, filing status, state and
+                  inflation are listed, not typed: they&apos;re set on Net worth, Income and
+                  Profile. Anything else you change (the goal, fees, the chart&apos;s settings)
+                  is saved to your plan. Saving scenarios run inside the plan itself, so every
+                  tab follows them; a different return or a lump sum runs only here, and the
+                  Calculator&apos;s result is then your savings at retirement everywhere.</p>
                   <p>Stages chains several periods together instead of holding one set of
                   assumptions for the whole timeline. Use it for a raise partway through your
                   career, a stretch of lighter contributions, or shifting toward a more
@@ -316,12 +333,15 @@ export function About() {
                   and return, and builds on whatever balance the stage before it left behind.</p>
                   <p>A few things worth knowing:</p>
                   <dl className="gloss">
-                    <dt>Editing stages</dt>
-                    <dd>The panel lists your stages, each with its length and contribution, under
-                    a bar that draws every stage at its share of the years. <b>Edit stages</b>,
-                    or a click on a stage or its part of the bar, opens the stage editor, one
-                    stage to a row. <b>Add stage</b> copies the stage before it as a starting
-                    point, and a stage&apos;s name can be clicked to rename it.</dd>
+                    <dt>The stages behind this</dt>
+                    <dd>Each stage is a stretch of years when you save about the same; a child
+                    arriving, college, a line reaching its limit or a scenario starting each
+                    begins a new one. The table gives each stage&apos;s ages, saving a month by
+                    account (your own money before the match), <b>Rises</b> (how much its saving
+                    grows each year after inflation, a steady rate fitted to the plan&apos;s
+                    year-by-year figures), <b>On day one</b> (a lump sum, when a stage has one),
+                    the return, and what&apos;s going on. On the site&apos;s own Stages calculator the
+                    stages are typed by hand; here they&apos;re built.</dd>
 
                     <dt>Inflation adjusted <Badge variant="outline" className="ml-1.25">stage 2 onward</Badge></dt>
                     <dd>Restates the contribution you typed into that stage&apos;s future dollars.
