@@ -98,3 +98,15 @@ test("saved scenarios are read back, unsound ones dropped", () => {
   assert.equal(list[1].on, false);
   assert.deepEqual(readScenarios(null), []);
 });
+
+test("stopping saving takes all of it, whatever other changes add, before or after it", () => {
+  const raise = sc({ id: "r", amount: 6000, from: 41 }), stop = sc({ id: "c", mode: "pct", amount: -100, from: 45 });
+  for (const list of [[raise, stop], [stop, raise]]) {
+    assert.equal(yearChange(list, 44, 65, 4000).add.brok, 6000);
+    const y = yearChange(list, 45, 65, 4000);
+    assert.equal(y.cut, 4000);
+    assert.deepEqual(y.add, { brok: 0, roth: 0, trad: 0, hsa: 0 });
+    assert.ok(y.tags.includes("c"));
+  }
+  assert.equal(scenarioSentence(stop, 65, 0.07), "Stop saving from 45 to retirement: nothing more goes in, the employer match included.");
+});

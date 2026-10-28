@@ -856,3 +856,8 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 @media (max-width: 760px), (hover: none) and (pointer: coarse) {
   .dsh-embed .chart-fullbtn, .dsh-embed .chart-full { display: none; }
 }
+
+/* When you could stop saving (the Calculator, in place of Reach your
+   target): the answer and its sentence beside three figures. */
+.dsh-coast { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 8px 40px; align-items: center; }
+@media (max-width: 760px) { .dsh-coast { grid-template-columns: minmax(0, 1fr); } }

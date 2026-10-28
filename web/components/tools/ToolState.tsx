@@ -247,6 +247,9 @@ export interface ToolScope {
         under the chart, the chart's marks (where each scenario starts) and
         your age at year 0, so the stages read by age. */
     scenarios?: ReactNode; marks?: { year: number; label: string }[]; stagesAge?: number;
+    /** In place of "Reach your target": the Dashboard's own card (when you
+        could stop saving). */
+    reach?: ReactNode;
     /** The chart's mode and band, kept by the page: a plain holder the tool
         reads when it opens and writes as they change, so the tool starting
         over keeps them. */

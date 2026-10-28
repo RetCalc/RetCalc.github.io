@@ -493,20 +493,20 @@ export function Stages() {
           {P.B ? <AccountTable id="saResults" B={P.B} years={P.B.years ?? R.totalYears} /> : null}
         </Card>
 
-        <Card hidden={!n}>
+        {dash && scope?.slots?.reach ? <div className="min-w-0" hidden={!n}>{scope.slots.reach}</div> : <Card hidden={!n}>
           <CardHeader><CardTitle>Reach your target</CardTitle></CardHeader>
           <div className="grid grid-cols-1 border-t border-border sm:grid-cols-2">
             <SolveOption label="Change the final stage's contribution" id="tPerPeriod" value={F ? money(F.perPeriod / mf, 2) : DASH} sized={!!F} noteId="tPerPeriodNote"
               note={F && last ? "Stage " + dn + ", paid " + PERIOD_ADV[last.period] + " for " + fmtYears(last.years) + (mf > 1 ? ", plus the match" : "") : ""}>
               <KV k="Per year" id="tPerYear" v={F ? money(F.perYear / mf) : ""} />
               <StageChange F={F} contrib={P.eff[dn - 1]?.contrib ?? 0} mf={mf} />
-              {dash ? null : <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyS" disabled={!n || noPay} onClick={applyContribution}>Use this contribution</Button>}
+              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyS" disabled={!n || noPay} onClick={applyContribution}>Use this contribution</Button>
             </SolveOption>
             <SolveOption label="Change the final stage's length" id="tYears" value={!F ? DASH : F.reached ? fmtYears(F.stageYears!) : "Out of reach"} sized={!!F} noteId="tYearsNote" className="max-sm:border-t sm:border-l"
               note={!F ? "" : F.reached ? "Keeping " + money(P.eff[dn - 1].contrib / mf, 2) + " " + PERIOD_ADV[last.period] : "Not reached within 100 years at this contribution."}>
               <KV k="Final stage now" id="tYearsNow" v={F && last ? fmtYears(last.years) : ""} />
               <KV k="Whole run becomes" id="tYearsTotal" v={!F ? "" : F.reached ? fmtYears(F.totalIfStretched!) : DASH} />
-              {dash ? null : <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYearsS" disabled={!n || (!!F && !F.reached) || noPay} onClick={applyYears}>Use this length</Button>}
+              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYearsS" disabled={!n || (!!F && !F.reached) || noPay} onClick={applyYears}>Use this length</Button>
             </SolveOption>
           </div>
           <div className="-mb-1 border-t border-border px-4.5 pt-1 max-sm:px-3.5">
@@ -522,7 +522,7 @@ export function Stages() {
               </div>
             </div>
           </div>
-        </Card>
+        </Card>}
 
         <div className="min-w-0" hidden={!n}>
           <ProjectionChart sfx="S" segId="segSeries" ariaLabel="Projected inflation-adjusted balance across stages"

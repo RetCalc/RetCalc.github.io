@@ -107,6 +107,8 @@ export function spanOf(s: Scenario, end: number): [number, number] {
 }
 const runs = (s: Scenario, t: number, end: number) => { const [a, b] = spanOf(s, end); return t >= a && t < b; };
 
+/** A change that stops saving outright (100% less, fully phased in by its k-th year). */
+const stops = (s: Scenario, k: number) => s.mode === "pct" && s.amount <= -100 && phased(s.ramp, k) >= 1;
 /** The share of a change in by its k-th year (k from 0), phased in over `ramp` years. */
 const phased = (ramp: number, k: number) => (ramp > 0 ? Math.min(1, (k + 1) / ramp) : 1);
 
@@ -127,10 +129,11 @@ export interface YearChange {
     the Calculator's stages (calc.ts). */
 export function yearChange(list: Scenario[], t: number, end: number, own: number): YearChange {
   const out: YearChange = { cut: 0, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [] };
-  let running = own;
+  let running = own, stopped: string | null = null;
   for (const s of liveScenarios(list)) {
     if (s.kind !== "saving" || !runs(s, t, end)) continue;
     const k = t - s.from;
+    if (stops(s, k)) { stopped = s.id; continue; }
     let d = 0;
     if (s.mode === "amount") d = s.amount * phased(s.ramp, k);
     else if (s.mode === "pct") d = (running * s.amount / 100) * phased(s.ramp, k);
@@ -143,6 +146,8 @@ export function yearChange(list: Scenario[], t: number, end: number, own: number
     out.cut += -d;
     if (s.acct !== "auto") out.typed[s.acct] = (out.typed[s.acct] ?? 0) + -d;
   }
+  // Saving stopped: nothing goes in, whatever the other changes add.
+  if (stopped) return { cut: own, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [...out.tags, stopped] };
   return out;
 }
 
@@ -180,6 +185,7 @@ export function scenarioSentence(s: Scenario, end: number, baseNominal: number):
   const until = to >= end ? "to retirement" : `until ${to}`;
   const less = s.amount < 0;
   const where = less ? (s.acct === "auto" ? "out of brokerage first" : `out of ${acctWord(s.acct)} first`) : (s.acct === "auto" ? "into brokerage" : `into ${acctWord(s.acct)}`);
+  if (s.mode === "pct" && s.amount <= -100) return `Stop saving from ${s.from} ${until}: nothing more goes in, the employer match included.`;
   if (s.mode === "pctYearly") return `Save ${pctText(s.amount)} ${less ? "less" : "more"} each year from ${s.from} ${until}, compounding (${pctText(s.amount)} ${less ? "less" : "more"} than the year before, every year), ${where}.`;
   const amt = s.mode === "amount" ? `${moneyText(s.amount)} per month` : `${pctText(s.amount)} of what you'd save then`;
   const how = s.ramp > 0 ? `, phased in over ${s.ramp} ${s.ramp === 1 ? "year" : "years"}` : "";

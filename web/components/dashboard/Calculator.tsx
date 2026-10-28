@@ -18,9 +18,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { GiftIcon, LineChartIcon, PencilIcon, PlusIcon, TrendingUpIcon, XIcon } from "lucide-react";
+import { CheckIcon, GiftIcon, LineChartIcon, PencilIcon, PlusIcon, TrendingUpIcon, XIcon } from "lucide-react";
 import type { ToolInputs } from "@/components/tools/ToolState";
-import type { LumpAccount, StagesInputs } from "@/tools/stages/model";
+import { stagesCompute, type LumpAccount, type StagesInputs } from "@/tools/stages/model";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { KV } from "@/components/common/Readout";
 import type { ChartMode } from "@/components/tools/Projection";
 import { CheckToggle } from "@/components/fields/CheckToggle";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
@@ -95,6 +97,75 @@ const withoutRow = (pr: Profile, id: string): Profile => ({ ...pr, scenarios: (p
 function planOf(pr: Profile, entries: Entry[]): { fv: number | null; short: number[] } {
   const a = answers(pr, entries);
   return { fv: a.fvTo ?? sim(a)?.fv ?? null, short: (a.yearly ?? []).map((y) => y.short) };
+}
+
+/** The one change "When you could stop saving" adds, replaced each time
+    it's used again: no saving at all from an age, the match included. */
+const COAST_ID = "coast";
+const coastRow = (from: number): Scenario => ({ ...newScenario(COAST_ID, "saving", from, 0), name: "Stop saving", from, until: 0, mode: "pct", amount: -100 });
+
+/** When you could stop saving and still reach the target at retirement,
+    with the changes on as they are (the stop-saving change itself left
+    out). `at` is null when saving has to go on to retirement; `keep` is
+    savings at retirement saving as you are, `stop` with saving stopped at
+    `at`, and `target` what's needed then (the tax on the accounts moves
+    it a little, so it's the one for `at` when there is one). All in
+    today's dollars. */
+interface Coast { at: number | null; target: number; keep: number; stop: number | null }
+function coastOf(pr: Profile, entries: Entry[], age: number, retire: number): Coast | null {
+  const run = (p: Profile) => ({ fv: planOf(p, entries).fv, target: stagesCompute(calcInputs(p, entries), null).portToday });
+  const base = withoutRow(pr, COAST_ID), now = run(base);
+  if (!(now.target > 0) || now.fv == null) return null;
+  const short = { at: null, target: now.target, keep: now.fv, stop: null };
+  if (now.fv < now.target) return short;
+  // Stopping later never leaves less, so the earliest age is a search: each
+  // try is a run of the plan.
+  const tried = new Map<number, { fv: number; target: number; ok: boolean }>();
+  const at = (a: number) => {
+    if (!tried.has(a)) { const r = run(withRow(base, coastRow(a))), fv = r.fv ?? -Infinity; tried.set(a, { fv, target: r.target, ok: fv >= r.target }); }
+    return tried.get(a)!;
+  };
+  const found = (a: number) => ({ at: a, target: at(a).target, keep: now.fv!, stop: at(a).fv });
+  if (at(age).ok) return found(age);
+  let lo = age, hi = retire;
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (at(mid).ok) hi = mid; else lo = mid; }
+  return hi >= retire ? short : found(hi);
+}
+
+/** The card in place of "Reach your target": the age you could stop
+    saving, and a button that puts it in your changes. */
+function CoastCard({ coast, busy, row, age, retire, onUse, onRemove }: { coast: Coast | null | undefined; busy: boolean; row: Scenario | undefined; age: number; retire: number; onUse: (at: number) => void; onRemove: () => void }) {
+  const at = coast?.at ?? null;
+  const has = !!row && row.on && at != null && row.from === at;
+  const head = coast === undefined ? "Working it out…" : !coast ? "Not known yet" : at == null ? (coast.keep < coast.target ? "Not before " + retire : "Keep saving to " + retire) : at <= age ? "You could stop today" : "Stop saving at " + at;
+  const note = !coast ? "Once your plan has your savings and what you'll spend, this says the earliest age you could stop saving."
+    : at == null && row ? "Your change to stop saving at " + row.from + " no longer gets you there: saving as you are, you reach " + money(coast.keep) + " of the " + money(coast.target) + " you need by " + retire + "."
+    : at == null ? (coast.keep < coast.target ? "Saving as you are, you reach " + money(coast.keep) + " of the " + money(coast.target) + " you need by " + retire + "." : "Saving as you are, you only just reach your target by " + retire + ".")
+      : (at <= age ? "Put nothing more in from now on" : "Put nothing more in from " + at) + ", the match included, and your savings still grow to " + money(coast.stop ?? 0) + " by " + retire + ", enough for your target.";
+  return (
+    <Card id="coastCard">
+      <CardHeader><CardTitle>When you could stop saving</CardTitle>
+        {at != null ? <CardAction>
+          <Button variant="outline" id="btnCoast" disabled={has || busy} onClick={() => onUse(at)}>
+            {has ? <><CheckIcon aria-hidden="true" />In your changes</> : row ? "Update my change" : <><PlusIcon aria-hidden="true" />Add to my changes</>}</Button>
+        </CardAction> : row && coast ? <CardAction>
+          {/* The change added before, from an age that no longer gets there. */}
+          <Button variant="outline" id="btnCoast" disabled={busy} onClick={onRemove}><XIcon aria-hidden="true" />Remove my change</Button>
+        </CardAction> : null}
+      </CardHeader>
+      <CardContent><div className="dsh-coast">
+        <div className="min-w-0">
+          <div className="text-3xl leading-tight font-medium tabular-nums" aria-live="polite">{head}</div>
+          <p className="hint mt-1.5 mb-0">{note}</p>
+        </div>
+        {coast ? <div className="min-w-0">
+          <KV k="Your target, today's dollars" v={money(coast.target)} />
+          <KV k={"Saving to " + retire} v={money(coast.keep)} />
+          {at != null ? <KV k={at <= age ? "Stopping now" : "Stopping at " + at} v={money(coast.stop ?? 0)} /> : null}
+        </div> : null}
+      </div></CardContent>
+    </Card>
+  );
 }
 
 /** Why a scenario can't be kept: a saving cut that takes more than is
@@ -184,7 +255,7 @@ export function Calculator() {
           if (flipped.fv != null) out[r.id] = r.on ? now.fv - flipped.fv : flipped.fv - now.fv;
           // A saving cut that takes more than is saved, or a lump sum its
           // account can't cover, on or off.
-          const sf = r.kind === "saving" ? shortfall(r.on ? now.short : flipped.short, r.on ? flipped.short : now.short, age) : r.kind === "lump" ? lumpShort(pr, entries, r, age) : null;
+          const sf = r.id === COAST_ID ? null : r.kind === "saving" ? shortfall(r.on ? now.short : flipped.short, r.on ? flipped.short : now.short, age) : r.kind === "lump" ? lumpShort(pr, entries, r, age) : null;
           if (sf) shorts[r.id] = sf;
         }
       }
@@ -193,6 +264,17 @@ export function Calculator() {
     return () => clearTimeout(t);
   }, [fxKey, pr, entries, age]);
   const effects = fxState.map, shorts = fxState.short, stale = fxState.key !== fxKey;
+
+  // When you could stop saving: a few runs of the plan, after the page draws too.
+  const [coastState, setCoastState] = useState<{ key: string; coast: Coast | null } | null>(null);
+  useEffect(() => {
+    const t = setTimeout(() => setCoastState({ key: fxKey, coast: coastOf(pr, entries, age, retire) }), 0);
+    return () => clearTimeout(t);
+  }, [fxKey, pr, entries, age, retire]);
+  const coastRowNow = (pr.scenarios ?? []).find((x) => x.id === COAST_ID);
+  // The last answer shows until the new one is in, but can't be added then.
+  const applyCoast = (at: number) => setProfile((p) => withRow(p, coastRow(at)));
+  const reach = <CoastCard coast={coastState?.coast} busy={coastState?.key !== fxKey} row={coastRowNow} age={age} retire={retire} onUse={applyCoast} onRemove={() => setProfile((p) => withoutRow(p, COAST_ID))} />;
 
   // Read when a tool opens: the stages are worked out then, not on every change.
   const seed = (id: string): ToolInputs | undefined =>
@@ -257,7 +339,7 @@ export function Calculator() {
       {/* New child costs or changes build the stages again, from the plan,
           with the tool open where it is (the page keeps its place). */}
       <Hosted key={rev} seedKey={costsKey(pr) + "|" + JSON.stringify(pr.scenarios ?? [])} household={null} cover={coverScope(flow(pr))} seed={seed} keep={keep}
-        locked={CALC_LOCKED} slots={{ kidsSummary: summary, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, marks: onCount ? marks : undefined, stagesAge: age, chart: chartHold }}>
+        locked={CALC_LOCKED} slots={{ kidsSummary: summary, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, marks: onCount ? marks : undefined, stagesAge: age, chart: chartHold, reach }}>
         <Stages />
       </Hosted>
       {dlg?.at === "list" ? (
