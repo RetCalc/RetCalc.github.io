@@ -170,26 +170,30 @@ const pctText = (v: number) => String(Math.round(Math.abs(v) * 100) / 100) + "%"
 const moneyText = (v: number) => "$" + Math.round(Math.abs(v)).toLocaleString("en-US");
 export const pctOf = (r: number) => (r * 100).toFixed(2).replace(/\.?0+$/, "") + "%";
 
-/** A scenario as one sentence, in today's dollars. */
-export function scenarioSentence(s: Scenario, end: number, baseNominal: number): string {
+/** A scenario as one sentence, in today's dollars. `years`: the plan
+    counts years from now, not ages ("from year 5", "at the start of year
+    5"), and `pot`: there's one pot, no accounts to name. */
+export function scenarioSentence(s: Scenario, end: number, baseNominal: number, opts: { years?: boolean; pot?: boolean } = {}): string {
   if (s.kind === "children") return "";
+  const Y = !!opts.years, at = (n: number) => (Y ? (n === 0 ? "now" : `year ${n}`) : String(n));
   if (s.kind === "returns") {
     const how = s.ramp > 0 ? `climb from ${pctOf(baseNominal)} to ${pctOf(s.nominal)} over ${s.ramp} ${s.ramp === 1 ? "year" : "years"}` : `change to ${pctOf(s.nominal)}`;
-    return `Returns ${how} from ${s.from}, before inflation.`;
+    return `Returns ${how} from ${at(s.from)}, before inflation.`;
   }
   if (s.kind === "lump") {
-    const where = s.acct === "auto" ? "brokerage" : acctWord(s.acct);
-    return s.amount < 0 ? `${moneyText(s.amount)} taken out of ${where} on the day you turn ${s.from}.` : `${moneyText(s.amount)} put into ${where} on the day you turn ${s.from}.`;
+    const where = opts.pot ? "your savings" : s.acct === "auto" ? "brokerage" : acctWord(s.acct);
+    const day = Y ? (s.from === 0 ? "today" : `at the start of year ${s.from}`) : `on the day you turn ${s.from}`;
+    return s.amount < 0 ? `${moneyText(s.amount)} taken out of ${where} ${day}.` : `${moneyText(s.amount)} put into ${where} ${day}.`;
   }
   const [, to] = spanOf(s, end);
-  const until = to >= end ? "to retirement" : `until ${to}`;
+  const until = to >= end ? "to retirement" : `until ${at(to)}`;
   const less = s.amount < 0;
-  const where = less ? (s.acct === "auto" ? "out of brokerage first" : `out of ${acctWord(s.acct)} first`) : (s.acct === "auto" ? "into brokerage" : `into ${acctWord(s.acct)}`);
-  if (s.mode === "pct" && s.amount <= -100) return `Stop saving from ${s.from} ${until}: nothing more goes in, the employer match included.`;
-  if (s.mode === "pctYearly") return `Save ${pctText(s.amount)} ${less ? "less" : "more"} each year from ${s.from} ${until}, compounding (${pctText(s.amount)} ${less ? "less" : "more"} than the year before, every year), ${where}.`;
+  const where = opts.pot ? "" : ", " + (less ? (s.acct === "auto" ? "out of brokerage first" : `out of ${acctWord(s.acct)} first`) : (s.acct === "auto" ? "into brokerage" : `into ${acctWord(s.acct)}`));
+  if (s.mode === "pct" && s.amount <= -100) return `Stop saving from ${at(s.from)} ${until}: nothing more goes in${opts.pot ? "" : ", the employer match included"}.`;
+  if (s.mode === "pctYearly") return `Save ${pctText(s.amount)} ${less ? "less" : "more"} each year from ${at(s.from)} ${until}, compounding (${pctText(s.amount)} ${less ? "less" : "more"} than the year before, every year)${where}.`;
   const amt = s.mode === "amount" ? `${moneyText(s.amount)} per month` : `${pctText(s.amount)} of what you'd save then`;
   const how = s.ramp > 0 ? `, phased in over ${s.ramp} ${s.ramp === 1 ? "year" : "years"}` : "";
-  return `Save ${amt} ${less ? "less" : "more"} from ${s.from} ${until}${how}, ${where}.`;
+  return `Save ${amt} ${less ? "less" : "more"} from ${at(s.from)} ${until}${how}${where}.`;
 }
 
 /** The kind's usual name when the typed one is blank. */

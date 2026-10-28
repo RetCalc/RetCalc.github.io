@@ -16,24 +16,26 @@ import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
-import { ProjectionChart, ProjectionReading, SolveOption, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
+import { ProjectionChart, ProjectionReading, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
 import { useToolNav, useToolScope, useToolState, useToolStore } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
-import { KV } from "@/components/common/Readout";
 import { growthBlend, matchPer, spreadTotal, withHsaRate, type GrowthRates } from "@/lib/accounts";
-import { goalSolve, historicalRuns, monteCarlo, project, PER_YEAR } from "@/lib/engine/typed";
-import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
+import { historicalRuns, monteCarlo, project, projectSeries, PER_YEAR } from "@/lib/engine/typed";
+import { dollarsField, fmtNum, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
-import { PERIOD_ADV, PERIOD_SHORT, PeriodOptions } from "@/lib/periods";
+import { PERIOD_SHORT, PeriodOptions } from "@/lib/periods";
 import { has } from "@/lib/household";
 import { STATE_OPTIONS } from "@/lib/states";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { useShareKit } from "@/components/shell/share";
 import { projectionShare } from "./share";
-import { ADVANCED_DEF, ADVANCED_DEFAULTS, advancedCompute, advancedPlan, glideNote, glideYearsFor, solvePlan, type AdvancedInputs } from "./model";
+import { ADVANCED_DEF, ADVANCED_DEFAULTS, advancedCompute, advancedPlan, glideNote, glideYearsFor, type AdvancedInputs } from "./model";
 import { toStages } from "./toStages";
+import { changesCompute, changesOn, type Compiled } from "./changes";
+import { ChangesAhead, ReachCard, ageOf } from "./ChangesAhead";
+import { stagesLookEdited, STAGES_DEFAULTS, type StagesInputs } from "@/tools/stages/model";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
 import { InputGroupInput } from "@/components/ui/input-group";
@@ -44,6 +46,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
 import { ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon } from "lucide-react";
+import type { Series } from "@/lib/engine/types";
 import { SERIES } from "@/lib/hues";
 import { NativeSelect } from "@/components/ui/native-select";
 
@@ -70,6 +73,7 @@ export function Advanced() {
     const yrs = age && retire && retire > age ? Math.min(100, retire - age) : null;
     const next = { ...c };
     if (yrs) next.years = String(yrs);
+    if (age && c.age.trim() === "") next.age = String(age);
     if (c.acOn) {
       // the split is the tool's own; only the facts about you carry in
       if (has(h.income)) next.salary = dollarsField(h.income!);
@@ -93,9 +97,23 @@ export function Advanced() {
   const typed = useDeferredValue(s);
   useBusy(typed !== s);
   const V = useMemo(() => advancedCompute(typed, profile), [typed, profile]);
-  const { P, p, R, S, C, Y } = V;
-  useShareKit(ADVANCED_DEF.id, projectionShare({ kind: "advanced", P, R, target: typed.target, solveFor: typed.solveFor, mode }));
-  const chart = useMemo(() => chartData(typed, V, mode, parseNum(band) / 100, seed), [typed, V, mode, band, seed]);
+  const { P, p, S, C } = V;
+  // With a change ahead on, the plan runs as the stages the changes make;
+  // with none, it's Advanced's own (the two agree to the cent).
+  const on = changesOn(typed);
+  const CH = useMemo(() => (on ? changesCompute(typed, profile) : null), [on, typed, profile]);
+  const R: Series | typeof V.R = CH ? CH.V.R : V.R;
+  const age = ageOf(typed);
+  useShareKit(ADVANCED_DEF.id, CH ? projectionShare({ kind: "stages", g: CH.V.P.g, eff: CH.V.P.eff, R: CH.V.R, mode }) : projectionShare({ kind: "advanced", P, R: V.R, target: typed.target, solveFor: typed.solveFor, mode }));
+  const chart = useMemo(() => {
+    if (!CH) return chartData(typed, V, mode, parseNum(band) / 100, seed);
+    const c = changesChart(typed, CH.C, CH.V, mode, parseNum(band) / 100, seed);
+    // Where each change starts, numbered as the list numbers them.
+    const order = [...(typed.changes ?? []).filter((x) => x.kind === "children"), ...(typed.changes ?? []).filter((x) => x.kind !== "children")];
+    const marks = CH.C.starts.filter((m) => m.year > 0).map((m) => ({ year: m.year, label: String(order.findIndex((x) => x.id === m.id) + 1) }))
+      .reduce<{ year: number; label: string }[]>((acc, m) => { const same = acc.find((x) => x.year === m.year); if (same) same.label += ", " + m.label; else acc.push(m); return acc; }, []);
+    return { ...c, marks };
+  }, [typed, V, CH, mode, band, seed]);
 
   const acOn = s.acOn;
   const blended = acOn && !!s.gRates;
@@ -148,30 +166,17 @@ export function Advanced() {
     return { ...c, tradC: dollarsField(t.trad), rothC: dollarsField(t.roth), brokC: dollarsField(t.brok), hsaC: dollarsField(t.hsa) };
   };
 
-  const applyContribution = () => {
-    // Split by account, the new contribution shifts the tax the target
-    // needs, so a few passes settle it.
-    let c = s, rounded = 0;
-    for (let pass = 0; pass < (c.acOn ? 5 : 1); pass++) {
-      const P1 = advancedPlan(c, profile), t = parseNum(c.target);
-      rounded = Math.round(goalSolve(solvePlan(P1, c.solveFor, t), c.solveFor, t).perPeriod);
-      c = withTotal(c, rounded);
-    }
-    setState(() => c);
-    toast("Contribution set to " + money(rounded) + " " + PERIOD_ADV[s.period]);
-  };
-  const applyYears = () => {
-    if (!Y.reached) {
-      toast("That target isn't reachable within 100 years");
+  const handToStages = () => {
+    if (CH) {
+      // The stages the changes make, in place of what's on the Stages tab.
+      const cur = store.read<StagesInputs>("stages", STAGES_DEFAULTS);
+      if (stagesLookEdited(cur.stages) && !confirm("Replace the stages currently on the Stages tab with these?")) return;
+      store.write("stages", { ...cur, ...CH.C.inputs });
+      go("/stages");
+      toast("Copied into " + CH.C.inputs.stages.length + " stages");
       return;
     }
-    setState((c) => ({ ...c, years: String(Y.years) }));
-    toast("Timeline set to " + fmtYears(Y.years));
-  };
-
-  const handToStages = (coast: boolean) => {
-    const now = advancedCompute(s, profile);
-    const out = toStages(now.P, s, coast ? now.C.years : null, store);
+    const out = toStages(V.P, s, null, store);
     if (!out) return;
     go("/stages");
     toast(out);
@@ -218,7 +223,7 @@ export function Advanced() {
       </Affixed>
     </div>
   );
-  const a = P.a, B = P.B;
+  const a = P.a, B = CH ? CH.V.P.B : P.B;
   const mine = a ? a.tradC + a.rothC + a.brokC + a.hsaC : 0;
   // The calculated rate stays in its (hidden) field after the split is
   // turned off, as it did on the old site.
@@ -228,7 +233,11 @@ export function Advanced() {
   // FIRE state below says the same in full).
   const target = parseNum(typed.target);
   const income = typed.solveFor === "After-Tax Withdrawal";
-  const onTrack = C.state !== "never";
+  // The portfolio the goal needs, and what it pays after tax.
+  const need = CH ? CH.V.portToday : S.portToday;
+  const pays = income ? (CH ? need * CH.V.P.g.withdrawal * (1 - CH.V.rate) : S.pays) : null;
+  const onTrack = CH ? R.fvReal >= need - 0.5 : C.state !== "never";
+  const already = !CH && C.state === "already";
   // The target as it comes, before anyone has set one: no verdict on a
   // goal you didn't choose.
   const exampleTarget = s.target === ADVANCED_DEFAULTS.target && s.solveFor === ADVANCED_DEFAULTS.solveFor;
@@ -305,6 +314,10 @@ export function Advanced() {
                 {acOn ? null : growthField}
                 <NumberField id="years" className={acOn ? "col-span-2" : undefined} label="Time period" unit="yrs" max={100} negative value={s.years} onValueChange={setTiming("years")} />
               </div>
+              <div className="two bottomalign max-sm:grid-cols-2">
+                <NumberField id="age" label={<>Your age <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="yrs" max={119} value={s.age} onValueChange={set("age")} />
+                <div className="hint mb-3.5 self-end" id="ageHint">{age != null ? "Retiring at " + (age + Math.round(parseNum(s.years))) + ". Changes ahead read by age." : "With it, the changes ahead read by age."}</div>
+              </div>
 
               <GroupHead>Markets</GroupHead>
               <Field id="nominal" label={<Tipped text="Rate of return" k="nominalreturn" />}>
@@ -326,14 +339,16 @@ export function Advanced() {
               </div>
               <div className="derived mt-0 mb-1">
                 <div><span>Return net of fees</span><span className="num" id="dNetRate">{pctStr(p.nominal, 2) + (p.fees > 0 ? "  (" + pctStr(p.gross, 2) + " − " + pctStr(p.fees, 2) + ")" : "")}</span></div>
-                <div><span><Tipped text="Real rate of return" k="realreturn" /></span><span className="num" id="dRealRate">{pctStr(R.realReturn)}</span></div>
+                <div><span><Tipped text="Real rate of return" k="realreturn" /></span><span className="num" id="dRealRate">{pctStr(V.R.realReturn)}</span></div>
                 <details className="calcdetails">
                   <summary>Calculation details</summary>
-                  <div><span>Periods per year</span><span className="num" id="dPPY">{R.ppy}</span></div>
-                  <div><span>Rate per period</span><span className="num" id="dPeriodic">{pctStr(R.periodicRate, 4)}</span></div>
-                  <div><span>Periods modeled</span><span className="num" id="dPeriods">{R.periods.toLocaleString("en-US")}</span></div>
+                  <div><span>Periods per year</span><span className="num" id="dPPY">{V.R.ppy}</span></div>
+                  <div><span>Rate per period</span><span className="num" id="dPeriodic">{pctStr(V.R.periodicRate, 4)}</span></div>
+                  <div><span>Periods modeled</span><span className="num" id="dPeriods">{V.R.periods.toLocaleString("en-US")}</span></div>
                 </details>
               </div>
+
+              <ChangesAhead s={s} setState={setState} household={profile} />
 
               <GroupHead>Your goal</GroupHead>
               <div className="two bottomalign">
@@ -369,14 +384,14 @@ export function Advanced() {
       </div>
 
       <div className="stack min-w-0 lg:col-span-2" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-single">
-        <ProjectionReading p="r" R={R} lastPeriod={p.period} fvNote={"After " + p.years + " years at " + pctStr(p.nominal, 2)}
+        <ProjectionReading p="r" R={R} lastPeriod={CH ? CH.V.R.lastPeriod : p.period} fvNote={CH ? "Across " + CH.C.shown.length + (CH.C.shown.length === 1 ? " stage, " : " stages, ") + fmtNum(p.years) + " years" : "After " + p.years + " years at " + pctStr(p.nominal, 2)}
           realNote={"Inflation of " + pctStr(p.inflation, 2) + " over " + R.inflYears + " years"}>
           {target > 0 ? (
             <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-note">
               <span className="text-muted-foreground">Your target</span>
               <span className="font-medium whitespace-nowrap tabular-nums">{money(target) + (income ? " per year, after tax" : " portfolio, in today's dollars")}</span>
               {exampleTarget ? <span className="text-muted-foreground">an example: set your own under Your goal to see if you&apos;re on track</span>
-                : <Badge variant={onTrack ? "positive" : "destructive"}><VerdictIcon aria-hidden="true" />{C.state === "already" ? "Already there" : onTrack ? "On track" : "Not on track"}</Badge>}
+                : <Badge variant={onTrack ? "positive" : "destructive"}><VerdictIcon aria-hidden="true" />{already ? "Already there" : onTrack ? "On track" : "Not on track"}</Badge>}
             </div>
           ) : null}
         </ProjectionReading>
@@ -385,63 +400,23 @@ export function Advanced() {
           {B ? <AccountTable id="acResults" B={B} years={p.years} /> : null}
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Reach your target</CardTitle></CardHeader>
-          <div className="grid grid-cols-1 border-t border-border sm:grid-cols-2">
-            <SolveOption label="Change your contribution" id="sPerPeriod" value={money(S.perPeriod, 2)} noteId="sPerPeriodNote"
-              note={"Paid " + p.period.toLowerCase() + " for " + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " per year"}>
-              <KV k="Per year" id="sPerYear" v={money(S.perYear)} />
-              <KV k="Change from current" id="sChange" v={(S.change >= 0 ? "+" : "") + money(S.change, 2)} />
-              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApply" disabled={noPay} onClick={applyContribution}>Use this contribution</Button>
-            </SolveOption>
-            <SolveOption label="Change your timeline" id="sYears" value={Y.reached ? fmtYears(Y.years) : "Out of reach"} noteId="sYearsNote" className="max-sm:border-t sm:border-l"
-              note={Y.reached
-                ? "Keeping " + money(p.contrib, 2) + " " + p.period.toLowerCase() + ", growing " + pctStr(p.growth, 1) + " per year"
-                : "Not reached within 100 years at " + money(p.contrib, 2) + " " + p.period.toLowerCase() + "."}>
-              <KV k="Your plan now" id="sYearsNow" v={fmtYears(p.years)} />
-              <YearsDiff Y={Y} years={p.years} />
-              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYears" disabled={!Y.reached || noPay} onClick={applyYears}>Use this timeline</Button>
-            </SolveOption>
-          </div>
-          <div className="-mb-1 border-t border-border px-4.5 pt-1 max-sm:px-3.5">
-            <div className="flex flex-col gap-x-5 sm:flex-row sm:items-center">
-              <div className="kv min-w-0 flex-1 border-b-0">
-                <span className="k text-foreground"><Tipped text="Coast FIRE" k="coast" /><span className="mssub" id="sCoastNote">{
-                  C.state === "already" ? "Your starting value alone reaches the target by year " + fmtNum(p.years) + "."
-                    : C.state === "reachable" ? "Stop contributing then and growth alone still reaches " + money(S.portToday) + " by year " + fmtNum(p.years) + "."
-                      : "This plan doesn't reach the target by year " + fmtNum(p.years) + ", so there's nothing to coast on yet."}</span></span>
-                <span className={cn("v inline-flex items-center gap-1.5 self-center font-semibold", onTrack && "pos")} id="sCoast">
-                  {exampleTarget && C.state === "never" ? <span className="font-normal text-muted-foreground">Set your target first</span>
-                    : <><VerdictIcon className="size-4" aria-hidden="true" />{C.state === "already" ? "Already there" : C.state === "reachable" ? fmtYears(C.years) : "Not on track"}</>}</span>
-              </div>
-              <div id="sCoastAction" className="empty:hidden max-sm:mb-1">{C.state === "reachable"
-                && !scope ? <Button variant="outline" className="w-full sm:w-auto" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</Button> : null}</div>
-            </div>
-            <div className="grid2 mt-1 border-t border-border pt-1">
-              <div>
-                <KV k="Portfolio needed, inflation adjusted" id="sPortToday" v={money(S.portToday)} />
-                <KV k="That pays, after tax" id="sPays" v={money(S.pays) + " per year"} />
-              </div>
-              <div>
-                <KV k="Portfolio needed at retirement" id="sPortFuture" v={money(S.portFuture)} />
-                <KV k="Your starting value grows to" id="sInitGrows" v={money(S.initGrows)} />
-              </div>
-            </div>
-          </div>
-        </Card>
+        <ReachCard s={typed} setState={setState} household={profile} need={need} pays={pays} />
 
         <ProjectionChart sfx="" segId="segSingle" ariaLabel="Projected inflation-adjusted balance at three rates of return"
           mode={mode} setMode={setMode} band={band} setBand={setBand}
           histMix={s.histMix} setHistMix={set("histMix")} histMixEnd={s.histMixEnd} setHistMixEnd={set("histMixEnd")} glides={p.glide.on}
           mcFields={<Field id="volatility" label={<Tipped text="Volatility" k="volatility" />}><Affixed suffix="%/yr" className="w-26"><NumberInput id="volatility" nonNeg value={s.vol} onValueChange={set("vol")} /></Affixed></Field>}
           mcHint="Each redraw runs 5,000 simulations."
-          chart={chart} maxX={p.years} bandItems={bandLegend(p.nominal, parseNum(band) / 100)}
-          tipHead={(b) => <b>Year {fmtNum(b.year)}</b>} target={S.portToday} targetLabel={TARGET_LABEL} />
+          chart={chart} maxX={p.years} bandItems={CH ? changesLegend(parseNum(band) / 100, chart.marks.length > 0) : bandLegend(p.nominal, parseNum(band) / 100)} legendExtra={CH && chart.marks.length ? "A change starts" : undefined}
+          tipHead={(b) => <b>{age != null ? "Age " + fmtNum(age + b.year) : "Year " + fmtNum(b.year)}</b>} target={need} targetLabel={TARGET_LABEL}
+          xOffset={age ?? 0} layout="fixed" aspect={0.5} gutter={64} bandHint={CH ? "Every year's return this much higher, and this much lower." : "Your return this much higher, and this much lower."} />
 
         <div className={cn("grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5", !scope && "wide:grid-cols-2")}>
           <Card>
             <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
-            <CardContent id="msBody"><Milestones rows={R.years} infl={p.inflation} feeCost={V.feeCost} horizon={p.years} /></CardContent>
+            <CardContent id="msBody">{CH
+              ? <Milestones rows={CH.V.R.rows.map((r) => ({ year: r.endYear, end: r.end, growth: r.growth, contrib: r.contrib }))} infl={p.inflation} feeCost={CH.V.feeCost} horizon={p.years} wholeYears />
+              : <Milestones rows={V.R.years} infl={p.inflation} feeCost={V.feeCost} horizon={p.years} />}</CardContent>
           </Card>
 
           <Card hidden={!!scope}>
@@ -451,11 +426,9 @@ export function Advanced() {
                 drawing on it. This carries your inflation-adjusted balance into the
                 Drawdown Simulator.</p>
               <Button variant="outline" id="toDrawdown" onClick={toDrawdown}>Test withdrawals</Button>
-              <p className="hint mt-5 border-t border-border pt-3.5">The Stages tab lets you change your
-                contribution, return, or timeline partway through the plan. This will carry
-                your current numbers over as the first stage, then add a second stage with
-                the same numbers running 10 years longer.</p>
-              <Button variant="outline" id="btnToStages" onClick={() => handToStages(false)}>Model these numbers in Stages</Button>
+              <p className="hint mt-5 border-t border-border pt-3.5">{CH ? "The Stages tab lets you edit stages by hand. This carries the stages your changes make over to it."
+                : "The Stages tab lets you change your contribution, return, or timeline partway through the plan. This will carry your current numbers over as the first stage, then add a second stage with the same numbers running 10 years longer."}</p>
+              <Button variant="outline" id="btnToStages" onClick={handToStages}>Model these numbers in Stages</Button>
             </CardContent>
           </Card>
         </div>
@@ -471,7 +444,7 @@ export function Advanced() {
               <table id="yearTable" ref={tableRef}>
                 <thead><tr><th>Year</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
                 <tbody>
-                  {R.years.map((y) => (
+                  {(CH ? CH.V.R.calRows : V.R.years).map((y) => (
                     <tr key={y.year}><td>{y.year}</td><td>{money(y.start)}</td><td>{money(y.contrib)}</td><td className="pos">{money(y.growth)}</td>
                       <td>{money(y.end)}</td><td>{money(y.end / Math.pow(1 + p.inflation, y.year))}</td></tr>
                   ))}
@@ -507,16 +480,6 @@ function AcHead({ note, rule, children }: { note?: string; rule?: boolean; child
   );
 }
 
-function YearsDiff({ Y, years }: { Y: { reached: boolean; years: number }; years: number }) {
-  if (!Y.reached) return <KV k="Difference" id="sYearsDiff" cls="" v={DASH} />;
-  const d = Y.years - years;
-  return (
-    <KV k="Difference" id="sYearsDiff"
-      v={Math.abs(d) < 0.005 ? "on track" : (d > 0 ? "+" : "−") + fmtYears(Math.abs(d))} />
-  );
-}
-
-
 function bandLegend(nominal: number, band: number): [string, string][] {
   const lbl = bandLabel(band);
   return [
@@ -526,7 +489,48 @@ function bandLegend(nominal: number, band: number): [string, string][] {
   ];
 }
 
+/** With changes on, the band moves every year's return together. */
+function changesLegend(band: number, marks: boolean): [string, string][] {
+  const lbl = bandLabel(band);
+  return [
+    [SERIES.teal, band > 0 ? "Every year +" + lbl + "%" : "Higher"],
+    [SERIES.plan, "As entered"],
+    [SERIES.rose, band > 0 ? "Every year −" + lbl + "%" : "Lower"],
+    ...(marks ? [["var(--stageline)", "A change starts"] as [string, string]] : []),
+  ];
+}
+
 /* ---- the numbers ---- */
+
+/** What the chart draws with changes on: the stages' run, as Stages draws
+    it. A glide split year by year moves historical mode's mix along with it. */
+function changesChart(s: AdvancedInputs, C: Compiled, V: ReturnType<typeof changesCompute>["V"], mode: ChartMode, band: number, seed: number): ChartData {
+  const { P, R } = V, g = P.g;
+  if (!R.rows.length) return emptyChart();
+  const defl = (yr: number) => Math.pow(1 + g.inflation, yr);
+  const start = { year: 0, stage: 1, base: g.initial, hi: g.initial, lo: g.initial, p25: g.initial, p75: g.initial };
+  if (mode === "hist") {
+    const mix = fraction(s.histMix), endMix = fraction(s.histMixEnd);
+    const H = historicalRuns({ initial: g.initial, fees: g.fees }, P.eff.map((st, i) => {
+      const at = C.glideAt[i];
+      return { ...st, mix: at == null ? mix : mix + (endMix - mix) * at, ...(st.glide?.on ? { glide: { ...st.glide, endMix } } : {}) };
+    }));
+    return histChart(start, H);
+  }
+  if (mode === "mc") {
+    const mc = monteCarlo(g, P.eff, MC_RUNS, seed);
+    const pts = fanPoints({ ...start, det: g.initial }, mc.bands, (b, i) => ({ det: R.chartRows[i] ? R.chartRows[i].end / defl(R.chartRows[i].year) : b.p50 }));
+    return { ...emptyChart(true), pts, legend: "mc", mc };
+  }
+  const shift = (d: number) => P.eff.map((st) => ({ ...st, nominal: Math.max(-0.99, st.nominal + d) }));
+  const hiR = projectSeries(g, shift(band)), loR = projectSeries(g, shift(-band));
+  const pts = [{ year: 0, base: g.initial, hi: g.initial, lo: g.initial }, ...R.chartRows.map((r, i) => ({
+    year: r.year, base: r.end / defl(r.year),
+    hi: (hiR.chartRows[i] ? hiR.chartRows[i].end : r.end) / defl(r.year),
+    lo: (loR.chartRows[i] ? loR.chartRows[i].end : r.end) / defl(r.year),
+  }))];
+  return { ...emptyChart(), pts, legend: "band" };
+}
 
 /** What the chart draws in each mode. */
 function chartData(s: AdvancedInputs, V: ReturnType<typeof advancedCompute>, mode: ChartMode, band: number, seed: number): ChartData {

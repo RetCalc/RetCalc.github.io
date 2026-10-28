@@ -44,6 +44,12 @@ export interface ShownStage {
 export interface Compiled {
   /** The Stages tool's inputs: Advanced's figures and the stages. */
   inputs: StagesInputs;
+  /** For each stage inside a glide that had to be split year by year, how
+      far through the glide it is (0 to 1): historical mode's mix follows. */
+  glideAt: (number | null)[];
+  /** Where saving cuts take more than is saved: the first year, and the
+      most they fall short by a month. */
+  cutShort: { from: number; most: number } | null;
   shown: ShownStage[];
   /** Where each change starts, in years from now. */
   starts: { id: string; year: number }[];
@@ -54,15 +60,16 @@ const sum = (m: Monthly) => m.brok + m.roth + m.trad + m.hsa;
 
 /** A cut in saving taken from `m` to the cent: the amounts named for an
     account first, then the rest in COVER_ORDER, each as far as it goes. */
-function cutFrom(m: Monthly, cut: number, typed: Partial<Monthly>) {
+function cutFrom(m: Monthly, cut: number, typed: Partial<Monthly>): number {
   let left = cut;
   for (const k of COVER_ORDER) if (typed[k] != null) { const c = Math.min(m[k], typed[k]!, left); m[k] -= c; left -= c; }
   for (const k of COVER_ORDER) { if (left <= 0) break; const c = Math.min(m[k], left); m[k] -= c; left -= c; }
+  return Math.max(0, left);
 }
 
 /** A slice of the plan with one thing going on: the saving at its start,
     its return and what's at work. */
-interface Slice { a: number; b: number; monthly: Monthly; nominal: number; tags: string[]; kid: string; lump: ShownStage["lump"]; short: number; lumpIds: string[] }
+interface Slice { a: number; b: number; monthly: Monthly; nominal: number; tags: string[]; kid: string; lump: ShownStage["lump"]; short: number; lumpIds: string[]; cutShort: number }
 
 /** The plan's stages under the changes, with the inputs in `s`. */
 export function compileChanges(s: AdvancedInputs, household: Household | null): Compiled {
@@ -107,12 +114,13 @@ export function compileChanges(s: AdvancedInputs, household: Household | null): 
     }
     // Then the saving changes, on your own saving before the children.
     const Y = yearChange(changes, yr, Math.ceil(T), own);
-    if (Y.cut > 0) cutFrom(m, Y.cut, a ? Y.typed : {});
+    // A cut can't take saving below nothing: what it can't take is said, not run.
+    const cutShort = Y.cut > 0 ? cutFrom(m, Y.cut, a ? Y.typed : {}) : 0;
     for (const k of COVER_ORDER) m[k] += a ? Y.add[k] : (k === "brok" ? sum(Y.add) : 0);
     const N = nominalAt(changes, yr, p.gross);
     const L = Number.isInteger(at) ? changes.filter((c) => c.kind === "lump" && c.from === at && c.amount !== 0) : [];
     const lump = L.length ? { amount: L.reduce((t, c) => t + c.amount, 0), to: a ? lumpAccount(L[0]) : ("b" as const) } : null;
-    slices.push({ a: at, b: edges[i + 1], monthly: m, nominal: N.nominal, tags: [...Y.tags, ...N.tags], kid, lump, short, lumpIds: L.map((c) => c.id) });
+    slices.push({ a: at, b: edges[i + 1], monthly: m, nominal: N.nominal, tags: [...Y.tags, ...N.tags], kid, lump, short, lumpIds: L.map((c) => c.id), cutShort });
   }
 
   // Slices run together while nothing new happens and each account's saving
@@ -166,33 +174,55 @@ export function compileChanges(s: AdvancedInputs, household: Household | null): 
   // them is its own stage at that year's rate.
   const glide = p.glide.on ? { endRate: p.glide.endRateGross ?? (p.glide.endRate ?? 0) + p.fees, years: p.glide.years ?? 1 } : null;
   const gStart = glide ? T - glide.years : T;
-  const stages: StageInputs[] = [];
+  const stages: StageInputs[] = [], glideAt: (number | null)[] = [];
   groups.forEach((g, gi) => {
     const last = gi === groups.length - 1;
-    if (!glide || g.to <= gStart) { stages.push(stageOf(g.from, g.to, g.first, g.first.nominal)); return; }
+    if (!glide || g.to <= gStart) { stages.push(stageOf(g.from, g.to, g.first, g.first.nominal)); glideAt.push(null); return; }
     if (last && g.from <= gStart) {
       // The glide's years are counted within this stage.
       stages.push(stageOf(g.from, g.to, g.first, g.first.nominal, { endRate: glide.endRate, years: Math.min(glide.years, Math.max(1, Math.round(g.to - g.from))) }));
+      glideAt.push(null);
       return;
     }
     // Split at the glide's start, then year by year at the glide's rate.
     let at = g.from;
-    if (at < gStart) { stages.push(stageOf(at, gStart, g.first, g.first.nominal)); at = gStart; }
+    if (at < gStart) { stages.push(stageOf(at, gStart, g.first, g.first.nominal)); glideAt.push(null); at = gStart; }
     for (const x of slices.filter((y) => y.a >= at && y.a < g.to)) {
-      const rate = glideAnnualRate(Math.floor(x.a) + 1, T, glide.years, x.nominal, glide.endRate);
-      stages.push(stageOf(x.a, x.b, x, rate));
+      const yearNo = Math.floor(x.a) + 1;
+      stages.push(stageOf(x.a, x.b, x, glideAnnualRate(yearNo, T, glide.years, x.nominal, glide.endRate)));
+      glideAt.push(glideAnnualRate(yearNo, T, glide.years, 0, 1));
     }
   });
 
   const starts = list.filter((c) => c.kind !== "children").map((c) => ({ id: c.id, year: c.from }))
     .concat(kidsOn && kidSegs.length ? [{ id: CHILDREN_ID, year: kidSegs.find((x) => x.change !== 0)?.from ?? 0 }] : []);
-  return { inputs: { ...next, stages, kids: null, kidCover: {} }, shown, starts };
+  const firstShort = slices.find((x) => x.cutShort > 0.5);
+  const cutShort = firstShort ? { from: firstShort.a, most: Math.max(...slices.map((x) => x.cutShort)) } : null;
+  return { inputs: { ...next, stages, kids: null, kidCover: {} }, shown, starts, glideAt, cutShort };
 }
 
 /** The plan's results under the changes: the Stages engine's. */
 export function changesCompute(s: AdvancedInputs, household: Household | null) {
   const C = compileChanges(s, household);
   return { C, V: stagesCompute(C.inputs, household) };
+}
+
+/** A lump sum taken out of more than its account holds that day: the
+    year, what's there then and what's asked for, today's dollars. */
+export interface LumpShort { from: number; have: number; need: number; acct: "t" | "r" | "b" | "h" | null }
+export function lumpShorts(C: Compiled, V: ReturnType<typeof stagesCompute>): LumpShort[] {
+  const out: LumpShort[] = [], infl = V.P.g.inflation;
+  let start = 0;
+  C.inputs.stages.forEach((st, i) => {
+    const lump = st.lump ?? 0;
+    if (lump < 0) {
+      const series = V.P.slices && st.lumpTo ? V.P.slices[st.lumpTo] : null;
+      const at = (series ?? V.R).summary[i]?.start ?? 0, real = at / Math.pow(1 + infl, start);
+      if (-lump > real + 0.5) out.push({ from: start, have: Math.max(0, real), need: -lump, acct: series ? st.lumpTo! : null });
+    }
+    start += parseNum(st.years);
+  });
+  return out;
 }
 
 /* ---------- the answers: when you could stop saving, when you could retire ---------- */

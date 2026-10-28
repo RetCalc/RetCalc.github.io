@@ -188,6 +188,8 @@ interface PanelProps {
       wider screens. */
   layout?: "fixed";
   aspect?: number; gutter?: number;
+  /** The fixed layout's words beside the return band. */
+  bandHint?: string;
 }
 
 export function ProjectionChart(props: PanelProps) {
@@ -248,7 +250,7 @@ export function ProjectionChart(props: PanelProps) {
         </CardAction></CardHeader>
       {fixed ? (
         <div className="mcbar mcbar-fixed" id={"modeBar" + sfx + (inFull ? "F" : "")}>
-          {mode === "band" ? <><Field id={"band" + sfx} label="Return band">{bandField}</Field><div className="hint m-0">Every stage&apos;s return this much higher, and this much lower.</div></>
+          {mode === "band" ? <><Field id={"band" + sfx} label="Return band">{bandField}</Field><div className="hint m-0">{props.bandHint ?? "Every stage's return this much higher, and this much lower."}</div></>
             : mode === "hist" ? <>{mixField}{glideField}<div className="hint m-0" id={"histNote" + sfx}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div></>
               : <>{props.mcFields}{rerollBtn}<div className="hint m-0">{props.mcHint}</div></>}
           <span className="chart-fullbtn"><Button variant="outline" size="icon" onClick={() => setFull(!inFull)} aria-label={inFull ? "Close full screen" : "Full screen"} title={inFull ? "Close full screen" : "Full screen"}>{inFull ? <MinimizeIcon aria-hidden="true" /> : <MaximizeIcon aria-hidden="true" />}</Button></span>
