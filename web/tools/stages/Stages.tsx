@@ -657,22 +657,25 @@ function StagesBehind({ s, nums, names, age }: { s: StagesInputs; nums: ReturnTy
     const ages = age != null ? fmtNum(age + start) + " to " + fmtNum(age + from) : "Year " + fmtNum(start) + " – " + fmtNum(from);
     // The rise after inflation: the stage's rate is kept before it.
     const rises = (1 + st.growth) / (1 + infl) - 1;
-    // A lump sum on the stage's first day, said with the stage's words.
-    const lump = st.lump ? ` · ${money(Math.abs(st.lump))} ${st.lump < 0 ? "taken out of" : "put into"} ${{ t: "traditional", r: "Roth", b: "brokerage", h: "HSA" }[st.lumpTo ?? "b"]} on the first day` : "";
-    return { i, ages, years: st.years, mo, t: mo * sp.t, r: mo * sp.r, b: mo * sp.b, h: mo * sp.h, nominal: st.nominal, rises, name: names[i] + lump };
+    // A lump sum on the stage's first day, and the account it moves.
+    const lump = st.lump ? { v: st.lump, acct: { t: "traditional", r: "Roth", b: "brokerage", h: "HSA" }[st.lumpTo ?? "b"] } : null;
+    return { i, ages, years: st.years, mo, t: mo * sp.t, r: mo * sp.r, b: mo * sp.b, h: mo * sp.h, nominal: st.nominal, rises, name: names[i], lump };
   });
+  const anyLump = rows.some((r) => r.lump);
   return (
     <>
-      <p className="hint mt-0 mb-3">Amounts are a month, in today&apos;s dollars, your own money before the match. Rises is how much a stage&apos;s saving grows each year, after inflation.</p>
+      <p className="hint mt-0 mb-3">Amounts are a month, in today&apos;s dollars, your own money before the match. Rises is how much a stage&apos;s saving grows each year, after inflation.{anyLump ? " On day one is a lump sum put in or taken out on the stage's first day." : ""}</p>
       <div className="swipehint">Swipe the table sideways to see every column.</div>
       <div className="scroll" tabIndex={0} role="region" aria-label="The stages behind your plan">
         <table id="stagesBehind">
-          <thead><tr><th>Stage</th><th>{age != null ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="stagerises" /></th><th>Return</th><th>What&apos;s going on</th></tr></thead>
+          <thead><tr><th>Stage</th><th>{age != null ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="stagerises" /></th>{anyLump ? <th><Tipped text="On day one" k="stagelump" /></th> : null}<th>Return</th><th>What&apos;s going on</th></tr></thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.i}><td>{r.i + 1}</td><td>{r.ages}</td><td>{fmtNum(r.years)}</td><td><b>{money(r.mo)}</b></td>
                 {split ? <><td>{money(r.t)}</td><td>{money(r.r)}</td><td>{money(r.b)}</td>{hsa ? <td>{money(r.h)}</td> : null}</> : null}
-                <td>{Math.abs(r.rises) < 0.0005 ? "none" : pctStr(r.rises, 1) + "/yr"}</td><td>{pctStr(r.nominal, 2)}</td><td className="text-left whitespace-normal">{r.name}</td></tr>
+                <td>{Math.abs(r.rises) < 0.0005 ? "none" : pctStr(r.rises, 1) + "/yr"}</td>
+                {anyLump ? <td className={r.lump ? (r.lump.v < 0 ? "neg" : "pos") : undefined}>{r.lump ? <><b>{(r.lump.v < 0 ? "−" : "+") + money(Math.abs(r.lump.v))}</b> {r.lump.v < 0 ? "out of" : "into"} {r.lump.acct}</> : DASH}</td> : null}
+                <td>{pctStr(r.nominal, 2)}</td><td className="text-left whitespace-normal">{r.name}</td></tr>
             ))}
           </tbody>
         </table>

@@ -38,6 +38,7 @@ export const GLOSS: Record<string, string> = {
   inflation: "How fast prices rise. Long-run US inflation has averaged roughly 2\u20133%; the Federal Reserve targets 2%.",
   coast: "The point where your balance is big enough that, with no further contributions, growth alone reaches your goal on time.",
   crossover: "The year your portfolio's growth first exceeds what you contribute that year. After it, the account is doing more work than you are.",
+  stagelump: "A one-off amount on the stage's first day, in today's dollars: money put into an account (an inheritance, a home sale) or taken out of one (a down payment). It moves that account's balance that day and isn't part of the monthly saving. No tax is counted on a sale; the brokerage's cost basis at retirement follows it.",
   stagerises: "How much this stage's saving rises each year after inflation, one steady rate fitted so the stage puts in the same total as your plan's year-by-year saving does. It comes from how each saving line grows on the Savings tab and from your scenarios, not from a field here. None means the stage saves the same amount, in today's dollars, every year.",
   fees: "Expense ratios plus any advisory fee, taken off your return every year. Index funds often charge under 0.10%; advisors commonly around 1%. Leave at 0 to ignore fees.",
   ltv: "Loan divided by home value. Above 80% (less than 20% down), lenders usually require mortgage insurance.",
