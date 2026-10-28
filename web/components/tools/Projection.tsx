@@ -6,7 +6,7 @@
    "chart" and "chartS", as the old pages had them. From renderProjection(),
    drawChart(), renderSeries() and drawSeriesChart() in src/js/app/. */
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { BandChart, type BandPoint } from "@/components/charts/BandChart";
 import { MaximizeIcon, MinimizeIcon } from "lucide-react";
 import { HistBarNote, HistSummary, McSummary } from "@/components/charts/HistNotes";
@@ -196,16 +196,27 @@ export function ProjectionChart(props: PanelProps) {
   const [tracesOn, setTracesOn] = useState(true);
   const fixed = props.layout === "fixed";
   // Full screen (the fixed layout): the same card over the page, the
-  // drawing as tall as the window allows. Escape closes it.
+  // drawing drawn at the size of the space it gets, as wide as the window
+  // and as tall as the rest of the card leaves room for. Escape closes it.
   const [full, setFull] = useState(false);
-  const [fullAspect, setFullAspect] = useState(0.5);
+  const [fullPx, setFullPx] = useState<{ w: number; h: number } | undefined>();
+  const fullRef = useRef<HTMLDivElement>(null);
+  const fitFull = () => {
+    const box = fullRef.current, svg = box?.querySelector<SVGSVGElement>(".chartwrap > svg"), card = box?.firstElementChild as HTMLElement | null;
+    if (!box || !svg || !card) return;
+    const wrap = svg.parentElement as HTMLElement, cs = getComputedStyle(wrap), bs = getComputedStyle(box);
+    const w = Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+    const rest = card.offsetHeight - svg.getBoundingClientRect().height;
+    const h = Math.floor(Math.max(320, box.clientHeight - parseFloat(bs.paddingTop) - parseFloat(bs.paddingBottom) - rest));
+    setFullPx((p) => (p && Math.abs(p.w - w) < 2 && Math.abs(p.h - h) < 2 ? p : { w, h }));
+  };
+  // Again after every render: switching modes changes what sits around the drawing.
+  useLayoutEffect(() => { if (full) fitFull(); });
   useEffect(() => {
     if (!full) return;
-    const fit = () => setFullAspect(Math.max(0.3, Math.min(0.8, (window.innerHeight - 400) / Math.max(400, window.innerWidth - 120))));
-    fit();
     const key = (e: KeyboardEvent) => { if (e.key === "Escape") setFull(false); };
-    window.addEventListener("resize", fit); window.addEventListener("keydown", key);
-    return () => { window.removeEventListener("resize", fit); window.removeEventListener("keydown", key); };
+    window.addEventListener("resize", fitFull); window.addEventListener("keydown", key);
+    return () => { window.removeEventListener("resize", fitFull); window.removeEventListener("keydown", key); };
   }, [full]);
   const bandField = (
     <Affixed prefix="±" suffix="%" className="w-24 max-sm:w-27.5">
@@ -226,7 +237,7 @@ export function ProjectionChart(props: PanelProps) {
       toast("New set of runs");
     }}>Re-roll</Button>
   );
-  const body = (aspect: number | undefined, inFull: boolean) => (
+  const body = (aspect: number | undefined, inFull: boolean, px?: { w: number; h: number }) => (
     <Card>
       {/* On a phone the controls drop under the title: the switch full
           width in three equal segments, the mode's field after it. */}
@@ -240,7 +251,7 @@ export function ProjectionChart(props: PanelProps) {
           {mode === "band" ? <><Field id={"band" + sfx} label="Return band">{bandField}</Field><div className="hint m-0">Every stage&apos;s return this much higher, and this much lower.</div></>
             : mode === "hist" ? <>{mixField}{glideField}<div className="hint m-0" id={"histNote" + sfx}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div></>
               : <>{props.mcFields}{rerollBtn}<div className="hint m-0">{props.mcHint}</div></>}
-          <span className="chart-fullbtn"><Button variant="outline" onClick={() => setFull(!inFull)}>{inFull ? <><MinimizeIcon aria-hidden="true" />Close</> : <><MaximizeIcon aria-hidden="true" />Full screen</>}</Button></span>
+          <span className="chart-fullbtn"><Button variant="outline" size="icon" onClick={() => setFull(!inFull)} aria-label={inFull ? "Close full screen" : "Full screen"} title={inFull ? "Close full screen" : "Full screen"}>{inFull ? <MinimizeIcon aria-hidden="true" /> : <MaximizeIcon aria-hidden="true" />}</Button></span>
         </div>
       ) : <>
         <div className="mcbar" id={"histBar" + sfx} hidden={mode !== "hist"}>
@@ -255,7 +266,7 @@ export function ProjectionChart(props: PanelProps) {
         </div>
       </>}
       <BandChart id={inFull ? sfx + "F" : sfx} pts={chart.pts} maxX={props.maxX} mode={chart.fan ? "mc" : "band"} stageMarks={chart.marks} enhanced ariaLabel={ariaLabel} xOffset={props.xOffset}
-        aspect={aspect} gutter={props.gutter}
+        aspect={aspect} gutter={props.gutter} px={px}
         traces={chart.traces && tracesOn ? chart.traces : undefined}
         tip={(b) => <>{props.tipHead(b)}{chart.fan ? <FanTipRows b={b} /> : <BandTipRows b={b} />}</>} />
       {chart.legend === "hist" ? <HistLegend id={"legend" + sfx + (inFull ? "F" : "")} tracesOn={tracesOn} onToggleTraces={() => setTracesOn((v) => !v)} extra={legendExtra} />
@@ -269,7 +280,7 @@ export function ProjectionChart(props: PanelProps) {
   return (
     <>
       {body(props.aspect, false)}
-      {full ? <div className="chart-full" role="dialog" aria-label="Balance over time, full screen">{body(fullAspect, true)}</div> : null}
+      {full ? <div className="chart-full" ref={fullRef} role="dialog" aria-label="Balance over time, full screen">{body(props.aspect, true, fullPx)}</div> : null}
     </>
   );
 }
