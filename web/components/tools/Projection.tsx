@@ -7,6 +7,7 @@
    drawChart(), renderSeries() and drawSeriesChart() in src/js/app/. */
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { BandChart, type BandPoint } from "@/components/charts/BandChart";
 import { MaximizeIcon, MinimizeIcon } from "lucide-react";
 import { HistBarNote, HistSummary, McSummary } from "@/components/charts/HistNotes";
@@ -282,7 +283,8 @@ export function ProjectionChart(props: PanelProps) {
   return (
     <>
       {body(props.aspect, false)}
-      {full ? <div className="chart-full" ref={fullRef} role="dialog" aria-label="Balance over time, full screen">{body(props.aspect, true, fullPx)}</div> : null}
+      {/* On the page's top layer, so the site's own header can't sit over it. */}
+      {full ? createPortal(<div className="chart-full" ref={fullRef} role="dialog" aria-label="Balance over time, full screen">{body(props.aspect, true, fullPx)}</div>, document.body) : null}
     </>
   );
 }

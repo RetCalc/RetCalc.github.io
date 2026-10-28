@@ -73,11 +73,13 @@ function todayMonthly(s: AdvancedInputs, household: Household | null): Monthly {
   return P.a ? { brok: mo(P.a.brokC), roth: mo(P.a.rothC), trad: mo(P.a.tradC), hsa: mo(P.a.hsaC) } : { brok: mo(P.p.contrib), roth: 0, trad: 0, hsa: 0 };
 }
 
-type Dlg = { at: "pick" } | { at: "list" } | { at: "edit"; c: Scenario; fresh: boolean } | { at: "kids" } | { at: "cover"; k: PlanKids } | { at: "stages" } | null;
+/** The open window; `back`: opened from the big view, so done goes back to it. */
+type Dlg = { at: "pick"; back?: boolean } | { at: "list" } | { at: "edit"; c: Scenario; fresh: boolean; back?: boolean } | { at: "kids"; back?: boolean } | { at: "cover"; k: PlanKids; back?: boolean } | { at: "stages" } | null;
 
 /** The Changes ahead group, under the inputs. */
 export function ChangesAhead({ s, setState, household }: { s: AdvancedInputs; setState: SetState; household: Household | null }) {
   const [dlg, setDlg] = useState<Dlg>(null);
+  const done = () => setDlg((d) => (d && "back" in d && d.back ? { at: "list" } : null));
   const Y = yearsOf(s), rows = rowsOf(s), acOn = s.acOn;
   const nominal = parseNum(s.nominal) / 100;
   const kidSpan = useMemo(() => kidSpanOf(s, Y), [s, Y]);
@@ -126,23 +128,23 @@ export function ChangesAhead({ s, setState, household }: { s: AdvancedInputs; se
 
   const toggle = (r: Scenario) => setState((c) => withChange(c, { ...r, on: !r.on }));
   const remove = (id: string) => setState((c) => ({ ...withoutChange(c, id), ...(id === CHILDREN_ID ? { kids: null, kidCover: {} } : {}) }));
-  const edit = (r: Scenario) => setDlg(r.kind === "children" ? { at: "kids" } : { at: "edit", c: shown(r, Y), fresh: false });
-  const pick = (k: Kind) => {
-    if (k.kind === "children") { setDlg({ at: "kids" }); return; }
+  const edit = (r: Scenario, back = false) => setDlg(r.kind === "children" ? { at: "kids", back } : { at: "edit", c: shown(r, Y), fresh: false, back });
+  const pick = (k: Kind, back = false) => {
+    if (k.kind === "children") { setDlg({ at: "kids", back }); return; }
     const c = { ...newScenario(newId(), k.kind, Y.base, nominal), ...k.over };
     c.from = Math.min(c.from, Y.end - 1);
-    setDlg({ at: "edit", c, fresh: true });
+    setDlg({ at: "edit", c, fresh: true, back });
   };
   // The children: saved with their row switched on.
   const keepKids = (k: PlanKids, cover: Record<string, Partial<Monthly>>) => {
-    setDlg(null);
+    done();
     const empty = !k.now.length && !k.planned;
     setState((c) => empty ? { ...withoutChange(c, CHILDREN_ID), kids: null, kidCover: {} }
       : { ...withChange(c, { ...newScenario(CHILDREN_ID, "children", 0, 0), on: true }), kids: k, kidCover: cover });
   };
   const savedKids = (k: PlanKids) => {
     const costly = kidStages(k, KID_BASE, KID_BASE + (Y.end - Y.base)).some((x) => x.change > 0);
-    if (acOn && costly && (k.now.length || k.planned)) setDlg({ at: "cover", k });
+    if (acOn && costly && (k.now.length || k.planned)) setDlg((d) => ({ at: "cover", k, back: !!(d && "back" in d && d.back) }));
     else keepKids(k, {});
   };
 
@@ -193,25 +195,25 @@ export function ChangesAhead({ s, setState, household }: { s: AdvancedInputs; se
       {dlg?.at === "list" ? (
         <ChangesDialog rows={rows.map((r) => shown(r, Y))} years={Y} kidSpan={kidSpan}
           figureOf={(r) => figureOf(stored(r, Y))} sentenceOf={(r) => sentenceOf(stored(r, Y))} warnOf={(r) => warns[r.id] ?? null}
-          toggle={(r) => toggle(stored(r, Y))} edit={(r) => edit(stored(r, Y))} remove={remove} add={() => setDlg({ at: "pick" })} close={() => setDlg(null)} />
+          edit={(r) => edit(stored(r, Y), true)} remove={remove} add={() => setDlg({ at: "pick", back: true })} close={() => setDlg(null)} />
       ) : null}
       {dlg?.at === "pick" ? (
-        <PickKind kinds={[SAVING_KIND, LUMP_KIND, RETURNS_KIND, CHILDREN_KIND]} close={() => setDlg(null)} pick={pick}
+        <PickKind kinds={[SAVING_KIND, LUMP_KIND, RETURNS_KIND, CHILDREN_KIND]} close={done} pick={(k) => pick(k, dlg.back)}
           note={"What do you see coming? Pick one, then put a name, " + (Y.ages ? "ages" : "years") + " and amounts to it." + (Y.ages ? "" : " Your age, under Your savings, lets the changes read by age.")} />
       ) : null}
       {dlg?.at === "edit" ? (
         <ChangeDialog s={dlg.c} fresh={dlg.fresh} years={Y} accounts={acOn} label={tipLabel} effectOf={effectOf}
           sentence={(x) => scenarioSentence(x, Y.end, nominal, { years: !Y.ages, pot: !acOn })}
           where={(k) => `The rest comes out of the others once ${acctWord(k)} runs out: brokerage, Roth, traditional, then the HSA.`}
-          close={() => setDlg(null)} save={(x) => { setState((c) => withChange(c, stored(x, Y))); setDlg(null); }}
-          remove={() => { remove(dlg.c.id); setDlg(null); }} />
+          close={done} save={(x) => { setState((c) => withChange(c, stored(x, Y))); done(); }}
+          remove={() => { remove(dlg.c.id); done(); }} />
       ) : null}
       {dlg?.at === "kids" ? (
-        <KidsDialog kids={s.kids ?? NO_KIDS} age={KID_BASE} retire={KID_BASE + (Y.end - Y.base)} base={KID_BASE} cover={acOn} close={() => setDlg(null)} save={savedKids} saveLabel={acOn ? undefined : s.kids ? "Save" : "Add them"} />
+        <KidsDialog kids={s.kids ?? NO_KIDS} age={KID_BASE} retire={KID_BASE + (Y.end - Y.base)} base={KID_BASE} cover={acOn} close={done} save={savedKids} saveLabel={acOn ? undefined : s.kids ? "Save" : "Add them"} />
       ) : null}
       {dlg?.at === "cover" ? (
         <CoverStagesDialog segs={kidStages(dlg.k, KID_BASE, KID_BASE + (Y.end - Y.base)).filter((x) => x.change !== 0)} today={todayMonthly(s, household)} ppy={12}
-          initial={s.kidCover ?? {}} base={KID_BASE} close={() => setDlg(null)} save={(cover) => keepKids(dlg.k, cover)} saveLabel={s.kids ? "Save" : "Add them"} />
+          initial={s.kidCover ?? {}} base={KID_BASE} close={done} save={(cover) => keepKids(dlg.k, cover)} saveLabel={s.kids ? "Save" : "Add them"} />
       ) : null}
       {dlg?.at === "stages" && C ? (
         <Modal size="table" onClose={() => setDlg(null)}>

@@ -220,7 +220,9 @@ export function Calculator() {
   const pr = data.profile, entries = data.entries;
   // Bumped by "Use the plan's figures", so the calculator opens again from the plan.
   const [rev, setRev] = useState(0);
-  const [dlg, setDlg] = useState<{ at: "pick" } | { at: "list" } | { at: "edit"; s: Scenario; fresh: boolean } | { at: "kids" } | null>(null);
+  // `back`: opened from the big view, so done goes back to it.
+  const [dlg, setDlg] = useState<{ at: "pick"; back?: boolean } | { at: "list" } | { at: "edit"; s: Scenario; fresh: boolean; back?: boolean } | { at: "kids"; back?: boolean } | null>(null);
+  const done = () => setDlg((d) => (d && "back" in d && d.back ? { at: "list" } : null));
   // The chart's mode and band, held here so the tool starting over (a
   // change switched on or off rebuilds its stages) keeps them.
   const [chartHold] = useState(() => { const h = { mode: "band" as ChartMode, band: "2", keep(mode: ChartMode, band: string) { h.mode = mode; h.band = band; } }; return h; });
@@ -288,9 +290,9 @@ export function Calculator() {
   };
   const changed = Object.keys(pr.calcOwn ?? {}).some((k) => !CALC_LOCKED_KEYS.includes(k) && k !== "stages");
   const toggle = (s: Scenario) => setProfile((p) => withRow(p, { ...s, on: !s.on }));
-  const edit = (s: Scenario) => setDlg(s.kind === "children" ? { at: "kids" } : { at: "edit", s, fresh: false });
+  const edit = (s: Scenario, back = false) => setDlg(s.kind === "children" ? { at: "kids", back } : { at: "edit", s, fresh: false, back });
   const remove = (id: string) => setProfile((p) => withoutRow(p, id));
-  const pick = (kind: ScenarioKind, over: Partial<Scenario>) => setDlg({ at: "edit", s: { ...newScenario(newId(), kind, age, nominal), ...over }, fresh: true });
+  const pick = (kind: ScenarioKind, over: Partial<Scenario>, back = false) => setDlg({ at: "edit", s: { ...newScenario(newId(), kind, age, nominal), ...over }, fresh: true, back });
 
   // Where each change starts, on the chart (year 0 is now).
   const marks = rows.map((r, i) => ({ r, i })).filter((x) => x.r.on).map(({ r, i }) => ({ year: (r.kind === "children" ? kidSpan?.from ?? age : r.from) - age, label: String(i + 1) })).filter((m) => m.year > 0)
@@ -351,15 +353,15 @@ export function Calculator() {
       </Hosted>
       {dlg?.at === "list" ? (
         <ChangesDialog rows={rows} years={years} kidSpan={kidSpan} fixed={(r) => r.kind === "children"}
-          figureOf={figureOf} sentenceOf={sentenceOf} warnOf={(r) => (shorts[r.id] ? shortWords(shorts[r.id]) : null)} toggle={toggle} edit={edit} remove={remove} add={() => setDlg({ at: "pick" })} close={() => setDlg(null)} />
+          figureOf={figureOf} sentenceOf={sentenceOf} warnOf={(r) => (shorts[r.id] ? shortWords(shorts[r.id]) : null)} edit={(r) => edit(r, true)} remove={remove} add={() => setDlg({ at: "pick", back: true })} close={() => setDlg(null)} />
       ) : null}
-      {dlg?.at === "kids" ? <ChildCostsDialog close={() => setDlg(null)} /> : null}
-      {dlg?.at === "pick" ? <PickKind kinds={[SAVING_KIND, LUMP_KIND, RETURNS_KIND]} note="What do you see coming? Pick one, then put a name, ages and amounts to it. Children are added in Profile." close={() => setDlg(null)} pick={(k) => pick(k.kind, k.over)} /> : null}
+      {dlg?.at === "kids" ? <ChildCostsDialog close={done} /> : null}
+      {dlg?.at === "pick" ? <PickKind kinds={[SAVING_KIND, LUMP_KIND, RETURNS_KIND]} note="What do you see coming? Pick one, then put a name, ages and amounts to it. Children are added in Profile." close={done} pick={(k) => pick(k.kind, k.over, dlg.back)} /> : null}
       {dlg?.at === "edit" ? (
         <ChangeDialog s={dlg.s} fresh={dlg.fresh} years={years} accounts label={tipLabel} sentence={(x) => scenarioSentence(x, retire, nominal)} effectOf={effectOf}
-          where={(k) => `The rest comes out of the others in the dashboard's order once ${acctWord(k)} runs out.`} close={() => setDlg(null)}
-          save={(x) => { setProfile((p) => withRow(p, x)); setDlg(null); }}
-          remove={() => { remove(dlg.s.id); setDlg(null); }} />
+          where={(k) => `The rest comes out of the others in the dashboard's order once ${acctWord(k)} runs out.`} close={done}
+          save={(x) => { setProfile((p) => withRow(p, x)); done(); }}
+          remove={() => { remove(dlg.s.id); done(); }} />
       ) : null}
     </Frame>
   );

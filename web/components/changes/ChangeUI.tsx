@@ -9,9 +9,8 @@
    "Year 5"). Every figure is in today's dollars. */
 
 import { useEffect, useState, type ReactNode } from "react";
-import { GiftIcon, LineChartIcon, PencilIcon, PlusIcon, TrendingUpIcon, UsersIcon, XIcon } from "lucide-react";
+import { GiftIcon, LineChartIcon, PlusIcon, TrendingUpIcon, UsersIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CheckToggle } from "@/components/fields/CheckToggle";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Modal, ModalTop } from "@/components/shell/Modal";
 import { Segmented } from "@/components/common/Readout";
@@ -54,15 +53,16 @@ export const yearWord = (Y: Years, n: number) => (Y.ages ? String(n) : "Year " +
 
 /* ---------- the big view: the lanes and every change ---------- */
 
-export function ChangesDialog({ rows, years: Y, kidSpan, figureOf, sentenceOf, warnOf, toggle, edit, remove, add, close, fixed }: {
+export function ChangesDialog({ rows, years: Y, kidSpan, figureOf, sentenceOf, warnOf, edit, remove, add, close, fixed }: {
   rows: Scenario[]; years: Years;
   /** A row that can't be removed here (the Dashboard's children, kept in Profile). */
   fixed?: (r: Scenario) => boolean;
   kidSpan: { from: number; to: number; peak: number } | null;
   figureOf: (r: Scenario) => ReactNode; sentenceOf: (r: Scenario) => string; warnOf: (r: Scenario) => string | null;
-  toggle: (r: Scenario) => void; edit: (r: Scenario) => void; remove: (id: string) => void; add: () => void; close: () => void;
+  edit: (r: Scenario) => void; remove: (id: string) => void; add: () => void; close: () => void;
 }) {
-  // Which row is asking "remove this?".
+  // Which row is asking "remove this?". A change is switched on or off in
+  // the calculator's own list; here, clicking one opens it.
   const [confirm, setConfirm] = useState<string | null>(null);
   const { base, end } = Y, span = Math.max(1, end - base);
   const lanes = (
@@ -77,8 +77,8 @@ export function ChangesDialog({ rows, years: Y, kidSpan, figureOf, sentenceOf, w
         const inside = width >= Math.min(60, 4 + text.length * 1.1);
         return (
           <div key={r.id} className="dsh-sc-lane">
-            <button type="button" className={"dsh-sc-bar " + kindClass(r) + (r.on ? "" : " dsh-sc-off") + (inside ? "" : " dsh-sc-narrow")} style={{ "--sc-l": left + "%", "--sc-w": width + "%" } as React.CSSProperties} onClick={() => toggle(r)}
-              aria-pressed={r.on} title={scenarioName(r) + ": " + sentenceOf(r) + (r.on ? " Click to switch off." : " Click to switch on.")}>
+            <button type="button" className={"dsh-sc-bar " + kindClass(r) + (r.on ? "" : " dsh-sc-off") + (inside ? "" : " dsh-sc-narrow")} style={{ "--sc-l": left + "%", "--sc-w": width + "%" } as React.CSSProperties} onClick={() => edit(r)}
+              title={scenarioName(r) + ": " + sentenceOf(r) + (r.on ? "" : " Switched off.") + " Click to edit."}>
               <span className="dsh-sc-lbl"><span className="dsh-sc-n">{i + 1}.</span> {scenarioName(r)}{fig ? <span className="dsh-sc-lfig">{fig}</span> : null}</span>
             </button>
           </div>
@@ -100,11 +100,13 @@ export function ChangesDialog({ rows, years: Y, kidSpan, figureOf, sentenceOf, w
             return (
               <li key={r.id} className={"dsh-sc-row" + (r.on ? "" : " dsh-sc-off")}>
                 <div className="dsh-sc-top">
-                  <CheckToggle id={"chg-" + r.id} on={r.on} onToggle={() => toggle(r)} tip={figureOf(r)}><span className={"dsh-sc-mark " + kindClass(r)} aria-hidden="true" /><span className="dsh-sc-n">{i + 1}.&nbsp;</span>{scenarioName(r)}</CheckToggle>
-                  <Button variant="outline" size="sm" onClick={() => edit(r)}><PencilIcon aria-hidden="true" />Edit</Button>
+                  <button type="button" className="dsh-sc-open" onClick={() => edit(r)} aria-label={"Edit " + scenarioName(r)}>
+                    <span className="dsh-sc-name"><span className={"dsh-sc-mark " + kindClass(r)} aria-hidden="true" /><span className="dsh-sc-n">{i + 1}.&nbsp;</span>{scenarioName(r)}{r.on ? null : <span className="dsh-sc-offtag">Off</span>}</span>
+                    {figureOf(r)}
+                    <span className="dsh-sc-sent">{sentenceOf(r)}</span>
+                  </button>
                   {fixed?.(r) ? <span className="dsh-sc-xgap" aria-hidden="true" /> : <Button variant="ghost" size="icon-sm" aria-label={"Remove " + scenarioName(r)} onClick={() => setConfirm(r.id)}><XIcon aria-hidden="true" /></Button>}
                 </div>
-                <p className="dsh-sc-sent">{sentenceOf(r)}</p>
                 {warn ? <p className="dsh-sc-warn">{warn}</p> : null}
                 {confirm === r.id ? (
                   <div className="dsh-sc-confirm" role="alertdialog" aria-label={"Remove " + scenarioName(r) + "?"}>

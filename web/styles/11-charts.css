@@ -230,3 +230,16 @@ html.pwa .popup-overlay{
    the masthead and the tab rail get them too rather than main alone. */
 header{padding-top:var(--sb-clear)}
 /* (the site-wide reduced-motion guard is at the end of 00-base.css) */
+
+/* A chart's fixed layout (ProjectionChart layout="fixed": the Dashboard's
+   Calculator and Advanced): one row of the same height for the mode's own
+   control, so switching modes moves nothing; Full screen over the page on
+   wider screens (not on phones or touch). */
+.mcbar-fixed{min-height:72px;align-items:center;padding-top:10px}
+.mcbar-fixed .hint{flex:1 1 200px}
+.mcbar-fixed .chart-fullbtn{margin-left:auto}
+.chart-full{position:fixed;inset:0;z-index:95;background:var(--ds-ground);padding:20px 28px;overflow:auto}
+.chart-full .chartwrap > svg{max-width:none}
+@media (max-width:760px),(hover:none) and (pointer:coarse){
+  .chart-fullbtn,.chart-full{display:none}
+}
