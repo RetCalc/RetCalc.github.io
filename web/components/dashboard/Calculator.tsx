@@ -17,7 +17,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { CheckIcon, GiftIcon, LineChartIcon, PencilIcon, PlusIcon, TrendingUpIcon, XIcon } from "lucide-react";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { stagesCompute, type LumpAccount, type StagesInputs } from "@/tools/stages/model";
@@ -108,13 +108,17 @@ const coastRow = (from: number): Scenario => ({ ...newScenario(COAST_ID, "saving
     with the changes on as they are (the stop-saving change itself left
     out). `at` is null when saving has to go on to retirement; `keep` is
     savings at retirement saving as you are, `stop` with saving stopped at
-    `at`, and `target` what's needed then (the tax on the accounts moves
-    it a little, so it's the one for `at` when there is one). All in
-    today's dollars. */
+    `at`, and `target` the portfolio needed then. The income it has to
+    pay is held at the plan's as it is: with a starting rate set on
+    Retirement, that income follows the balance, and letting it follow
+    here would shrink the goal with every year of saving taken away. Only
+    the tax on it moves with the accounts' mix, so `target` is the one for
+    `at` when there is one. All in today's dollars. */
 interface Coast { at: number | null; target: number; keep: number; stop: number | null }
 function coastOf(pr: Profile, entries: Entry[], age: number, retire: number): Coast | null {
-  const run = (p: Profile) => ({ fv: planOf(p, entries).fv, target: stagesCompute(calcInputs(p, entries), null).portToday });
-  const base = withoutRow(pr, COAST_ID), now = run(base);
+  const base = withoutRow(pr, COAST_ID), goal = calcInputs(base, entries).target;
+  const run = (p: Profile) => ({ fv: planOf(p, entries).fv, target: stagesCompute({ ...calcInputs(p, entries), target: goal }, null).portToday });
+  const now = run(base);
   if (!(now.target > 0) || now.fv == null) return null;
   const short = { at: null, target: now.target, keep: now.fv, stop: null };
   if (now.fv < now.target) return short;
@@ -132,13 +136,31 @@ function coastOf(pr: Profile, entries: Entry[], age: number, retire: number): Co
   return hi >= retire ? short : found(hi);
 }
 
+/** What the card shows, kept where the card reads it itself: the host
+    hands its slots to the tool a render late, so a slot holding the card
+    would show the answer before last until something else redrew. */
+type CoastView = Parameters<typeof CoastCard>[0];
+function coastStore() {
+  let view: CoastView | null = null;
+  const subs = new Set<() => void>();
+  return {
+    get: () => view,
+    set(v: CoastView) { view = v; subs.forEach((f) => f()); },
+    sub(f: () => void) { subs.add(f); return () => { subs.delete(f); }; },
+  };
+}
+function CoastSlot({ store }: { store: ReturnType<typeof coastStore> }) {
+  const view = useSyncExternalStore(store.sub, store.get, () => null);
+  return view ? <CoastCard {...view} /> : null;
+}
+
 /** The card in place of "Reach your target": the age you could stop
     saving, and a button that puts it in your changes. */
 function CoastCard({ coast, busy, row, age, retire, onUse, onRemove }: { coast: Coast | null | undefined; busy: boolean; row: Scenario | undefined; age: number; retire: number; onUse: (at: number) => void; onRemove: () => void }) {
   const at = coast?.at ?? null;
   const has = !!row && row.on && at != null && row.from === at;
   const head = coast === undefined ? "Working it out…" : !coast ? "Not known yet" : at == null ? (coast.keep < coast.target ? "Not before " + retire : "Keep saving to " + retire) : at <= age ? "You could stop today" : "Stop saving at " + at;
-  const note = !coast ? "Once your plan has your savings and what you'll spend, this says the earliest age you could stop saving."
+  const note = coast === undefined ? "" : !coast ? "Once your plan has your savings and what you'll spend, this says the earliest age you could stop saving."
     : at == null && row ? "Your change to stop saving at " + row.from + " no longer gets you there: saving as you are, you reach " + money(coast.keep) + " of the " + money(coast.target) + " you need by " + retire + "."
     : at == null ? (coast.keep < coast.target ? "Saving as you are, you reach " + money(coast.keep) + " of the " + money(coast.target) + " you need by " + retire + "." : "Saving as you are, you only just reach your target by " + retire + ".")
       : (at <= age ? "Put nothing more in from now on" : "Put nothing more in from " + at) + ", the match included, and your savings still grow to " + money(coast.stop ?? 0) + " by " + retire + ", enough for your target.";
@@ -274,7 +296,11 @@ export function Calculator() {
   const coastRowNow = (pr.scenarios ?? []).find((x) => x.id === COAST_ID);
   // The last answer shows until the new one is in, but can't be added then.
   const applyCoast = (at: number) => setProfile((p) => withRow(p, coastRow(at)));
-  const reach = <CoastCard coast={coastState?.coast} busy={coastState?.key !== fxKey} row={coastRowNow} age={age} retire={retire} onUse={applyCoast} onRemove={() => setProfile((p) => withoutRow(p, COAST_ID))} />;
+  const [coastHold] = useState(coastStore);
+  useEffect(() => {
+    coastHold.set({ coast: coastState?.coast, busy: coastState?.key !== fxKey, row: coastRowNow, age, retire, onUse: applyCoast, onRemove: () => setProfile((p) => withoutRow(p, COAST_ID)) });
+  });
+  const reach = <CoastSlot store={coastHold} />;
 
   // Read when a tool opens: the stages are worked out then, not on every change.
   const seed = (id: string): ToolInputs | undefined =>
