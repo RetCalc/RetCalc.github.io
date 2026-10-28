@@ -172,8 +172,8 @@ export function scenarioSentence(s: Scenario, end: number, baseNominal: number):
   const until = to >= end ? "to retirement" : `until ${to}`;
   const less = s.amount < 0;
   const where = less ? (s.acct === "auto" ? "out of brokerage first" : `out of ${acctWord(s.acct)} first`) : (s.acct === "auto" ? "into brokerage" : `into ${acctWord(s.acct)}`);
-  if (s.mode === "pctYearly") return `Save ${pctText(s.amount)} ${less ? "less" : "more"} each year from ${s.from} ${until}, ${where}.`;
-  const amt = s.mode === "amount" ? `${moneyText(s.amount)} per month` : pctText(s.amount);
+  if (s.mode === "pctYearly") return `Save ${pctText(s.amount)} ${less ? "less" : "more"} each year from ${s.from} ${until}, compounding (${pctText(s.amount)} ${less ? "less" : "more"} than the year before, every year), ${where}.`;
+  const amt = s.mode === "amount" ? `${moneyText(s.amount)} per month` : `${pctText(s.amount)} of what you'd save then`;
   const how = s.ramp > 0 ? `, phased in over ${s.ramp} ${s.ramp === 1 ? "year" : "years"}` : "";
   return `Save ${amt} ${less ? "less" : "more"} from ${s.from} ${until}${how}, ${where}.`;
 }

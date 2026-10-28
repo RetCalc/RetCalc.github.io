@@ -77,7 +77,7 @@ test("a return steps or climbs from its age", () => {
 test("each scenario is one sentence", () => {
   assert.equal(scenarioSentence(sc({ amount: -900 }), 65, 0.075), "Save $900 per month less from 40 to retirement, out of brokerage first.");
   assert.equal(scenarioSentence(sc({ amount: 600, acct: "roth", until: 50, ramp: 3 }), 65, 0.075), "Save $600 per month more from 40 until 50, phased in over 3 years, into Roth.");
-  assert.equal(scenarioSentence(sc({ mode: "pctYearly", amount: -10, from: 55 }), 65, 0.075), "Save 10% less each year from 55 to retirement, out of brokerage first.");
+  assert.equal(scenarioSentence(sc({ mode: "pctYearly", amount: -10, from: 55 }), 65, 0.075), "Save 10% less each year from 55 to retirement, compounding (10% less than the year before, every year), out of brokerage first.");
   assert.equal(scenarioSentence({ ...newScenario("r", "returns", 34, 0.075), from: 44, nominal: 0.09, ramp: 10 }, 65, 0.075), "Returns climb from 7.5% to 9% over 10 years from 44, before inflation.");
   assert.equal(scenarioSentence({ ...newScenario("l", "lump", 34, 0.075), from: 45, amount: 50000, acct: "brok" }, 65, 0.075), "$50,000 put into brokerage at 45.");
 });
