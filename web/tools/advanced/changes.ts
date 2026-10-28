@@ -36,6 +36,8 @@ export const changesOn = (s: AdvancedInputs) => liveChanges(s).length > 0;
     and what's going on. */
 export interface ShownStage {
   from: number; to: number; monthly: Monthly; rises: number; nominal: number;
+  /** What's saved a month in its last year, today's dollars, your own. */
+  monthlyEnd: Monthly;
   lump: { amount: number; to: "t" | "r" | "b" | "h" } | null; names: string[];
   /** The children cost more than is saved then, by so much a month. */
   short: number;
@@ -140,15 +142,15 @@ export function compileChanges(s: AdvancedInputs, household: Household | null): 
   // above may run it year by year); its rise is its first year's.
   const nameOf = (id: string) => { const c = list.find((x) => x.id === id); return c ? scenarioName(c) : ""; };
   const namesOf = (x: Slice) => [...(x.kid ? [x.kid] : []), ...[...new Set([...x.tags, ...x.lumpIds])].filter((id) => id !== CHILDREN_ID).map(nameOf).filter(Boolean)];
-  const shownGroups: { from: number; to: number; first: Slice; second?: Slice }[] = [];
+  const shownGroups: { from: number; to: number; first: Slice; second?: Slice; last: Slice }[] = [];
   for (const x of slices) {
     const g = shownGroups[shownGroups.length - 1];
-    if (g && !x.lump && keyOf(g.first) === keyOf(x)) { g.to = x.b; if (!g.second && Number.isInteger(x.a) && x.a === g.first.a + 1) g.second = x; }
-    else shownGroups.push({ from: x.a, to: x.b, first: x });
+    if (g && !x.lump && keyOf(g.first) === keyOf(x)) { g.to = x.b; g.last = x; if (!g.second && Number.isInteger(x.a) && x.a === g.first.a + 1) g.second = x; }
+    else shownGroups.push({ from: x.a, to: x.b, first: x, last: x });
   }
   const shown: ShownStage[] = shownGroups.map((g) => {
     const t0 = sum(g.first.monthly), t1 = g.second ? sum(g.second.monthly) : t0;
-    return { from: g.from, to: g.to, monthly: g.first.monthly, rises: t0 > 0 ? t1 / t0 - 1 : 0, nominal: g.first.nominal, lump: g.first.lump, names: namesOf(g.first), short: g.first.short };
+    return { from: g.from, to: g.to, monthly: g.first.monthly, monthlyEnd: g.last.monthly, rises: t0 > 0 ? t1 / t0 - 1 : 0, nominal: g.first.nominal, lump: g.first.lump, names: namesOf(g.first), short: g.first.short };
   });
 
   // A stage from a group (or one year of one, inside a glide that has to be split).

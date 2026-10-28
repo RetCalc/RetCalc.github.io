@@ -32,10 +32,8 @@ import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { useShareKit } from "@/components/shell/share";
 import { projectionShare } from "./share";
 import { ADVANCED_DEF, ADVANCED_DEFAULTS, advancedCompute, advancedPlan, glideNote, glideYearsFor, type AdvancedInputs } from "./model";
-import { toStages } from "./toStages";
 import { changesCompute, changesOn, type Compiled } from "./changes";
 import { ChangesAhead, ReachCard, ageOf } from "./ChangesAhead";
-import { stagesLookEdited, STAGES_DEFAULTS, type StagesInputs } from "@/tools/stages/model";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
 import { InputGroupInput } from "@/components/ui/input-group";
@@ -164,22 +162,6 @@ export function Advanced() {
     if (!c.acOn) return { ...c, contrib: groupDigits(total, true) };
     const t = spreadTotal(advancedPlan(c, profile).a!, PER_YEAR[c.period], total);
     return { ...c, tradC: dollarsField(t.trad), rothC: dollarsField(t.roth), brokC: dollarsField(t.brok), hsaC: dollarsField(t.hsa) };
-  };
-
-  const handToStages = () => {
-    if (CH) {
-      // The stages the changes make, in place of what's on the Stages tab.
-      const cur = store.read<StagesInputs>("stages", STAGES_DEFAULTS);
-      if (stagesLookEdited(cur.stages) && !confirm("Replace the stages currently on the Stages tab with these?")) return;
-      store.write("stages", { ...cur, ...CH.C.inputs });
-      go("/stages");
-      toast("Copied into " + CH.C.inputs.stages.length + " stages");
-      return;
-    }
-    const out = toStages(V.P, s, null, store);
-    if (!out) return;
-    go("/stages");
-    toast(out);
   };
 
   const growthDialog = dialog === "growth" && acOn ? (
@@ -426,9 +408,6 @@ export function Advanced() {
                 drawing on it. This carries your inflation-adjusted balance into the
                 Drawdown Simulator.</p>
               <Button variant="outline" id="toDrawdown" onClick={toDrawdown}>Test withdrawals</Button>
-              <p className="hint mt-5 border-t border-border pt-3.5">{CH ? "The Stages tab lets you edit stages by hand. This carries the stages your changes make over to it."
-                : "The Stages tab lets you change your contribution, return, or timeline partway through the plan. This will carry your current numbers over as the first stage, then add a second stage with the same numbers running 10 years longer."}</p>
-              <Button variant="outline" id="btnToStages" onClick={handToStages}>Model these numbers in Stages</Button>
             </CardContent>
           </Card>
         </div>

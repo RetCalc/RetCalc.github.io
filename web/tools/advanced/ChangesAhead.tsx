@@ -234,14 +234,14 @@ function StagesTable({ shown: list, Y, split }: { shown: ShownStage[]; Y: Years;
   const total = (m: Monthly) => m.brok + m.roth + m.trad + m.hsa;
   return (
     <>
-      <p className="hint mt-0 mb-3">Amounts are a month, in today&apos;s dollars, at the start of each stage: your own money{split ? ", before the match" : ""}. Rises is how much that grows each year, after inflation.{anyLump ? " On day one is a lump sum put in or taken out on the stage's first day." : ""}</p>
+      <p className="hint mt-0 mb-3">Amounts are a month, in today&apos;s dollars: your own money{split ? ", before the match" : ""}. Per month is the first year&apos;s and, where it moves, the last year&apos;s. Rises is how much the first year&apos;s grows into the next, after inflation.{anyLump ? " On day one is a lump sum put in or taken out on the stage's first day." : ""}</p>
       <div className="swipehint">Swipe the table sideways to see every column.</div>
       <div className="scroll" tabIndex={0} role="region" aria-label="The stages behind your plan">
         <table id="stagesBehindA">
           <thead><tr><th>Stage</th><th>{Y.ages ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="stagerises" /></th>{anyLump ? <th><Tipped text="On day one" k="stagelump" /></th> : null}<th>Return</th><th className="text-center">What&apos;s going on</th></tr></thead>
           <tbody>
             {list.map((x, i) => (
-              <tr key={i}><td>{i + 1}</td><td>{span(x)}</td><td>{fmtNum(Math.round((x.to - x.from) * 100) / 100)}</td><td><b>{money(total(x.monthly))}</b></td>
+              <tr key={i}><td>{i + 1}</td><td>{span(x)}</td><td>{fmtNum(Math.round((x.to - x.from) * 100) / 100)}</td><td className="whitespace-nowrap"><b>{money(total(x.monthly))}</b>{Math.abs(total(x.monthlyEnd) - total(x.monthly)) >= 1 ? <> → <b>{money(total(x.monthlyEnd))}</b></> : null}</td>
                 {split ? <><td>{money(x.monthly.trad)}</td><td>{money(x.monthly.roth)}</td><td>{money(x.monthly.brok)}</td>{hsa ? <td>{money(x.monthly.hsa)}</td> : null}</> : null}
                 <td>{Math.abs(x.rises) < 0.0005 ? "none" : pctStr(x.rises, 1) + "/yr"}</td>
                 {anyLump ? <td className={x.lump ? (x.lump.amount < 0 ? "neg" : "pos") : undefined}>{x.lump ? <><b>{(x.lump.amount < 0 ? "−" : "+") + money(Math.abs(x.lump.amount))}</b> {x.lump.amount < 0 ? "out of" : "into"} {split ? ({ t: "traditional", r: "Roth", b: "brokerage", h: "HSA" } as const)[x.lump.to] : "savings"}</> : DASH}</td> : null}
