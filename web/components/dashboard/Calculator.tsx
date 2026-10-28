@@ -18,7 +18,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { BabyIcon, GiftIcon, LineChartIcon, PauseCircleIcon, PencilIcon, PlusIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react";
+import { GiftIcon, LineChartIcon, PencilIcon, PlusIcon, TrendingUpIcon } from "lucide-react";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import type { StagesInputs } from "@/tools/stages/model";
 import { CheckToggle } from "@/components/fields/CheckToggle";
@@ -304,9 +304,7 @@ export function Calculator() {
 /* ---------- adding one: the kind, then its form ---------- */
 
 const KINDS: { kind: ScenarioKind; icon: ReactNode; title: string; sub: string; over: Partial<Scenario> }[] = [
-  { kind: "saving", icon: <TrendingUpIcon aria-hidden="true" />, title: "Save more", sub: "A raise or lower costs from an age on, all at once or phased in.", over: { name: "A raise", amount: 500, acct: "auto" } },
-  { kind: "saving", icon: <TrendingDownIcon aria-hidden="true" />, title: "Save less", sub: "A bigger house, a second car, more travel: less saving for a stretch.", over: { name: "A bigger house", amount: -500, acct: "auto" } },
-  { kind: "saving", icon: <PauseCircleIcon aria-hidden="true" />, title: "Ease off", sub: "Save a share less each year, or a share less for a while.", over: { name: "Easing off", mode: "pctYearly", amount: -10, acct: "auto" } },
+  { kind: "saving", icon: <TrendingUpIcon aria-hidden="true" />, title: "Save more or less", sub: "A raise, a bigger house, easing off: more or less saving from an age on, by dollars a month or a share, all at once or phased in.", over: { name: "", amount: 500, acct: "auto" } },
   { kind: "lump", icon: <GiftIcon aria-hidden="true" />, title: "A lump sum", sub: "An inheritance or a home sale put in, or a big expense taken out, at an age.", over: {} },
   { kind: "returns", icon: <LineChartIcon aria-hidden="true" />, title: "Different returns", sub: "A higher or lower return from an age on, stepped or climbing.", over: {} },
 ];
@@ -315,10 +313,9 @@ function PickKind({ close, pick }: { close: () => void; pick: (kind: ScenarioKin
   return (
     <Modal size="wide" onClose={close}>
       <ModalTop title="Add a scenario" onClose={close} />
-      <p className="hint mt-0 mb-3">What do you see coming? Pick one; you&apos;ll name it and put ages and amounts to it next. Children are in Profile.</p>
+      <p className="hint mt-0 mb-3">What do you see coming? Pick one; you&apos;ll name it and put ages and amounts to it next. Children are added in Profile.</p>
       <div className="dsh-choices dsh-sc-kinds">
         {KINDS.map((k) => <Choice key={k.title} on={false} icon={k.icon} title={k.title} sub={k.sub} onClick={() => pick(k.kind, k.over)} />)}
-        <Choice on={false} icon={<BabyIcon aria-hidden="true" />} title="Children" sub="Added or changed in Profile; their costs and cover are edited from their row here." onClick={close} />
       </div>
     </Modal>
   );
@@ -412,7 +409,7 @@ function ScenarioDialog({ s: s0, fresh, pr, entries, age, retire, nominal, close
   const where = s.kind === "saving" && s.acct !== "auto" && less ? ` The rest comes out of the others in the dashboard's order once ${acctWord(s.acct)} runs out.` : "";
   return (
     <Modal size="wide" onClose={close} focus="#scName">
-      <ModalTop title={fresh ? KINDS.find((k) => k.kind === s.kind && (s.kind !== "saving" || k.over.mode === s.mode || (k.over.mode == null && s.mode !== "pctYearly" && (k.over.amount ?? 0) < 0 === less)))?.title ?? "Add a scenario" : scenarioName(s)} onClose={close} />
+      <ModalTop title={fresh ? KINDS.find((k) => k.kind === s.kind)?.title ?? "Add a scenario" : scenarioName(s)} onClose={close} />
       <div className="dsh-sc-form">
         {name}
         {form}
