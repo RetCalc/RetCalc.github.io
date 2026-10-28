@@ -9,6 +9,7 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { readStored, writeStored } from "@/lib/storage";
 import { SYNCED_EVENT } from "@/lib/sync/engine";
 import type { ToolInputs } from "@/components/tools/ToolState";
+import { readScenarios, type Scenario } from "./scenarios";
 
 export type Per = "week" | "2weeks" | "twice" | "month" | "year";
 export const PER_LABEL: Record<Per, string> = { week: "per week", "2weeks": "every two weeks", twice: "twice a month", month: "per month", year: "per year" };
@@ -137,6 +138,11 @@ export interface Profile {
   /** In the Calculator, which accounts give up saving for each stage's
       children's costs ("How will you cover it?"), by stage. */
   kidCover: Record<string, Record<string, number>>;
+  /** The Calculator's scenarios (scenarios.ts): changes in saving, a lump
+      sum, a different return from an age on, and the children's row,
+      switched on or off. They change the plan's saving year by year, so
+      every tab follows them. Unset: none yet. */
+  scenarios?: Scenario[];
 }
 
 export type AssetKind = "workplace" | "g457" | "ira" | "roth" | "brokerage" | "hsa" | "cash" | "home" | "other";
@@ -213,6 +219,7 @@ function load(): DashData {
   p.planned = { ...EMPTY_PROFILE.planned, ...v.profile?.planned };
   p.college = { ...EMPTY_PROFILE.college, ...v.profile?.college };
   p.childCosts = { ...EMPTY_PROFILE.childCosts, ...v.profile?.childCosts };
+  if (v.profile?.scenarios != null) p.scenarios = readScenarios(v.profile.scenarios);
   // Years until the first planned child, from the age you'll be then.
   const age = ageNow(p.p1);
   if (p.planned.bornAge != null && age != null) p.planned = { ...p.planned, firstIn: Math.max(0, Math.round((p.planned.bornAge - age) * 2) / 2) };

@@ -10,6 +10,7 @@ import { STAGES_DEF, stageFields, stagesCompute, type StageInputs, type StagesIn
 import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
 import { flow, growthLines, taxState } from "./flows";
 import { shiftCover } from "./cover";
+import { nominalAt, returnsOn, scenarioName, withoutReturns, yearChange, type Scenario } from "./scenarios";
 import { KID_BASE } from "@/tools/stages/kids";
 import { ageOf, couple, holdings, realGrowth, results, spendMonth, type Results } from "./model";
 import { OUTSIDE_US, sum, type Entry, type Profile } from "./store";
@@ -72,7 +73,12 @@ export function planKidsOf(pr: Profile): PlanKids | null {
 
 /** A year of the plan's saving: what goes in each month that year, yours
     and your employers', in today's dollars, and what's going on. */
-interface PlanYear { monthly: number; label: string; split?: { t: number; r: number; b: number } }
+interface PlanYear {
+  monthly: number; label: string; split?: { t: number; r: number; b: number };
+  /** The scenarios at work that year (their names), and the return before
+      inflation it earns (a returns scenario changes it). */
+  tags: string[]; nominal: number;
+}
 
 /** A stage's name without the yearly growth in it ("after the raise" once
     for every year saving has grown): the stage's growth rate says that. */
@@ -83,29 +89,38 @@ function plainLabel(label: string): string {
 
 /** The plan's saving year by year, from its schedule (children, college,
     saving that grows to its limits), or today's saving to retirement. */
-function planYears(R: Results): PlanYear[] {
+function planYears(R: Results, scen: Scenario[], nominal: number): PlanYear[] {
   const S = R.S;
   if (!S) return [];
   const age = Math.round(S.I.age), end = Math.round(S.retire);
   const sched: { from: number; to: number; monthly: number; label: string; split?: PlanYear["split"] }[] = S.sched?.length ? S.sched : [{ from: age, to: end, monthly: S.monthly, label: "Saving" }];
   const out: PlanYear[] = [];
-  for (const s of sched) for (let t = Math.round(s.from); t < Math.round(s.to); t++) out.push({ monthly: s.monthly, label: plainLabel(s.label), ...(s.split ? { split: s.split } : {}) });
+  const nameOf = (id: string) => scenarioName(scen.find((s) => s.id === id)!);
+  for (const s of sched) for (let t = Math.round(s.from); t < Math.round(s.to); t++) {
+    // Which scenarios touch the year: the saving ones by what they do to
+    // today's saving (a share of nothing is nothing), the returns ones by age.
+    const Y = yearChange(scen, t, end, S.monthly), N = nominalAt(scen, t, nominal);
+    // A hidden scenario (its id starts with "__") does its work without a name.
+    out.push({ monthly: s.monthly, label: plainLabel(s.label), ...(s.split ? { split: s.split } : {}), tags: [...Y.tags, ...N.tags].filter((id) => !id.startsWith("__")).map(nameOf), nominal: N.nominal });
+  }
   return out;
 }
 
 /** The plan's years as stages: a new stage wherever what's going on
-    changes, or saving turns from rising to level or back; within one,
-    saving grows at the rate that puts the same amount in by retirement. */
+    changes (its words, the scenarios at work, the return), or saving turns
+    from rising to level or back; within one, saving grows at the rate that
+    puts the same amount in by retirement. */
 function planGroups(years: PlanYear[]) {
   const trend = (i: number) => (i === 0 ? 0 : Math.sign(Math.round(years[i].monthly - years[i - 1].monthly)));
-  const groups: { from: number; to: number; label: string }[] = [];
+  const keyOf = (y: PlanYear) => y.label + "|" + y.tags.join(",") + "|" + y.nominal.toFixed(6);
+  const groups: { from: number; to: number; label: string; key: string }[] = [];
   years.forEach((y, i) => {
-    const last = groups[groups.length - 1];
+    const last = groups[groups.length - 1], key = keyOf(y);
     // A rise into the year counts with the year before it, so a stage that
     // grows starts at its first rise.
-    const same = last && last.label === y.label && (i - last.from < 2 || trend(i) === trend(i - 1)) && trend(i) >= 0;
+    const same = last && last.key === key && (i - last.from < 2 || trend(i) === trend(i - 1)) && trend(i) >= 0;
     if (same) last.to = i + 1;
-    else groups.push({ from: i, to: i + 1, label: y.label });
+    else groups.push({ from: i, to: i + 1, label: y.tags.length ? y.label + ", " + y.tags.join(", ") : y.label, key });
   });
   return groups;
 }
@@ -115,8 +130,12 @@ function planGroups(years: PlanYear[]) {
     employers' match), so the Calculator reaches what the plan has at
     retirement. */
 export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
-  const A = shared(pr, entries), own = A.tradC + A.rothC + A.brokC + A.hsaC;
-  const R = results(pr, entries), F = A.F;
+  // A returns scenario is the Calculator's own: the plan runs on its one
+  // return, and takes the Calculator's result (calcFvOf). The plan is read
+  // without it here, so nothing goes round in circles.
+  const scen = pr.scenarios ?? [], retOn = returnsOn(scen), plan = retOn ? { ...pr, scenarios: withoutReturns(scen) } : pr;
+  const A = shared(plan, entries), own = A.tradC + A.rothC + A.brokC + A.hsaC;
+  const R = results(plan, entries), F = A.F;
   // Both employers' match as one rate on what you put in before taxes and to
   // Roth: the share of every dollar of yours your employers add.
   // Outside the US the plan counts every account as tax-free, the match in
@@ -135,10 +154,10 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
     const r1 = y.split.r * (1 - hsaOfR), hsa = y.split.r - r1, t = Math.max(0, (y.split.t - p * r1) / (1 + p)), mine = t + y.split.r + y.split.b;
     return { mine, split: mine > 0 ? { sTrad: t / mine, sRoth: r1 / mine, ...(hsa > 0 ? { sHsa: hsa / mine } : {}) } : todaySplit };
   };
-  const stage = (years: number, y: Pick<PlanYear, "monthly" | "split">, growth: number, name?: string, adj = false): StageInputs => {
+  const stage = (years: number, y: Pick<PlanYear, "monthly" | "split"> & Partial<Pick<PlanYear, "nominal">>, growth: number, name?: string, adj = false): StageInputs => {
     const m = mineOf(y);
     return {
-      ...stageFields({ years, contrib: Math.round(m.mine), period: "Monthly", growth: nom(growth), nominal: A.nominal, vol: 0.15, adj, ...m.split }),
+      ...stageFields({ years, contrib: Math.round(m.mine), period: "Monthly", growth: nom(growth), nominal: y.nominal ?? A.nominal, vol: 0.15, adj, ...m.split }),
       ...(name ? { name } : {}),
     };
   };
@@ -154,7 +173,7 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
   // Historical mode's mix as last set in the Calculator.
   const M = pr.calcMix, withMix = (s: StagesInputs): StagesInputs => (M ? { ...s, histMix: M.stock, histSv: M.sv, histCash: M.cash, histMixEnd: M.end } : s);
   const kids = planKidsOf(pr), withKids = (s: StagesInputs) => (kids ? { ...s, kids, kidCover: shiftCover(pr.kidCover ?? {}, KID_BASE - (ageOf(pr.p1) ?? KID_BASE)) } : s);
-  const years = planYears(R);
+  const years = planYears(R, scen, A.nominal);
   if (!years.length) return withMix(withKids(base));
   const groups = planGroups(years);
   // Each stage as the plan has it year by year, then as one stage growing
@@ -179,7 +198,9 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
   // differently, and the stages save in whole dollars, so they can end a
   // few dollars apart. The last stage's growth takes up the difference, so
   // the Calculator lands on the plan's own figure (Retirement starts there).
-  const target = R.atRetire, li = out.length - 1, total = (stages: StageInputs[]) => stagesCompute(withKids({ ...base, stages }), null).R.fvReal;
+  // With a returns scenario on there's no plan figure to land on: the
+  // Calculator's own result becomes the plan's.
+  const target = retOn ? null : R.atRetire, li = out.length - 1, total = (stages: StageInputs[]) => stagesCompute(withKids({ ...base, stages }), null).R.fvReal;
   if (target != null && li >= 0 && Math.abs(total(out) - target) >= 0.5) {
     const m = made[li], at = (gr: number) => [...out.slice(0, li), stage(m.n, m.first, gr, exact(li), li > 0)];
     let lo = m.growth - 0.05, hi = m.growth + 0.05;
@@ -197,6 +218,9 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
     they're covered, historical mode's mix), so never kept as the
     Calculator's own. */
 const PROFILE_KEYS = new Set(["kids", "kidCover", "histMix", "histSv", "histCash", "histMixEnd"]);
+/** The stages themselves are built from the plan and its scenarios, never
+    kept by hand (any kept before are let go of). */
+const BUILT_KEYS = new Set(["stages"]);
 
 /** Stages inputs the plan sets, which the Calculator locks (Profile, Income
     and Net worth set them): the balances and cost basis, pay and the
@@ -225,29 +249,35 @@ function planStages(pr: Profile, entries: Entry[]): StagesInputs {
 }
 
 /** The Calculator as it opens: the plan's stages with your own changes on top. */
+const ownKeys = (pr: Profile) => Object.entries(pr.calcOwn ?? {}).filter(([k]) => !CALC_LOCKED_KEYS.includes(k) && !BUILT_KEYS.has(k));
+
 export function calcInputs(pr: Profile, entries: Entry[]): StagesInputs {
   const s = planStages(pr, entries);
-  const own = Object.entries(pr.calcOwn ?? {}).filter(([k]) => !CALC_LOCKED_KEYS.includes(k));
+  const own = ownKeys(pr);
   return own.length ? ({ ...s, ...Object.fromEntries(own) } as StagesInputs) : s;
 }
 
 /** The inputs that differ from the plan's, to keep; null when none do. */
 export function calcOwnOf(pr: Profile, entries: Entry[], d: StagesInputs): Record<string, unknown> | null {
   const base = planStages(pr, entries) as unknown as Record<string, unknown>, now = d as unknown as Record<string, unknown>, own: Record<string, unknown> = {};
-  for (const k of Object.keys(now)) if (!PROFILE_KEYS.has(k) && !CALC_LOCKED_KEYS.includes(k) && JSON.stringify(norm(now[k])) !== JSON.stringify(norm(base[k]))) own[k] = now[k];
+  for (const k of Object.keys(now)) if (!PROFILE_KEYS.has(k) && !BUILT_KEYS.has(k) && !CALC_LOCKED_KEYS.includes(k) && JSON.stringify(norm(now[k])) !== JSON.stringify(norm(base[k]))) own[k] = now[k];
   return Object.keys(own).length ? own : null;
 }
 
 const fvs = new Map<string, number | null>();
 /** The Calculator's result, savings at retirement in today's dollars, when
-    your changes there move it away from the plan's own; null otherwise. */
+    your changes there (or a returns scenario) move it away from the plan's
+    own; null otherwise. */
 export function calcFvOf(pr: Profile, entries: Entry[]): number | null {
-  if (!Object.keys(pr.calcOwn ?? {}).some((k) => !CALC_LOCKED_KEYS.includes(k))) return null;
+  const retOn = returnsOn(pr.scenarios);
+  if (!retOn && !ownKeys(pr).length) return null;
   const key = JSON.stringify([pr, entries]);
   if (fvs.has(key)) return fvs.get(key)!;
-  const base = planStages(pr, entries);
-  const fv = stagesCompute(calcInputs(pr, entries), null).R.fvReal, was = stagesCompute(base, null).R.fvReal;
-  const out = Number.isFinite(fv) && Math.abs(fv - was) >= 0.5 ? Math.max(0, fv) : null;
+  const fv = stagesCompute(calcInputs(pr, entries), null).R.fvReal;
+  // Against the plan's own stages before any changes here; with a returns
+  // scenario the Calculator's result always stands.
+  const was = retOn ? NaN : stagesCompute(planStages(pr, entries), null).R.fvReal;
+  const out = Number.isFinite(fv) && (retOn || Math.abs(fv - was) >= 0.5) ? Math.max(0, fv) : null;
   if (fvs.size > 60) fvs.clear();
   fvs.set(key, out);
   return out;

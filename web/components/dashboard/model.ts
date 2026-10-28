@@ -13,6 +13,8 @@ import { paycheckInput } from "@/tools/budget/paycheck-math";
 import { collegeKid, collegeNeedOf, collegeYears } from "./college";
 import { yearlySaving } from "./cover";
 import { calcFvOf } from "./calc";
+import { kidsOff, type Scenario } from "./scenarios";
+import { childCost, children } from "@/tools/guide/schedule";
 import { payoffDrop } from "./housing";
 import { BRIDGE_DOCK, hasBridgePlan, needsBridge } from "./bridge";
 import { drawdownSetup } from "@/tools/drawdown/model";
@@ -104,8 +106,31 @@ export function partnerStop(pr: Profile): { year: number; before: boolean; years
   return r2 === r1 ? null : { year: r2, before: r2 < r1, years: Math.abs(r2 - r1) };
 }
 
+/** The plan without the children, when their scenario is switched off in
+    the Calculator: no children, and what they take from the budget today
+    (their costs this year and the college line) saved instead, every year
+    to retirement, as the Plan summary's "without them" counts it. */
+function answersWithoutKids(pr: Profile, entries: Entry[]): Answers {
+  const F = flow(pr), age = ageOf(pr.p1);
+  const kids = pr.kidList.slice(0, pr.kids).filter((k) => k.by).map((k) => ageOf(k)!).filter((x) => x >= 0 && x < 30);
+  const C = pr.childCosts, n = (v: string) => (v.trim() === "" ? null : parseNum(v));
+  const now = children({ age, kidsNow: kids, kidsPlanned: 0, childcare: pr.childcare, careArea: pr.careArea, childEarly: n(C.early), childSchool: n(C.school), childTeen: n(C.teen), childLater: n(C.later) == null ? null : n(C.later)! / 100 }).filter((c) => !c.planned);
+  const extra = (age != null ? now.reduce((t, c) => t + childCost(c, Math.round(age)), 0) : 0) + F.college;
+  // The money saved instead goes in as a scenario of its own (hidden: its
+  // id starts with "__"), so the plan's saving year by year and the
+  // Calculator's stages both carry it.
+  const saved: Scenario[] = extra > 0 && age != null ? [{ id: "__kids", kind: "saving", name: "", on: true, from: Math.round(age), until: 0, mode: "amount", amount: Math.round(extra), ramp: 0, acct: "brok", nominal: 0 }] : [];
+  const none: Profile = { ...pr, kids: 0, planned: { ...pr.planned, count: 0 }, college: { ...pr.college, help: "none" }, scenarios: [...saved, ...(pr.scenarios ?? []).filter((s) => s.kind !== "children")] };
+  const a = answers(none, entries);
+  if (extra <= 0) return a;
+  a.contrib = (a.contrib ?? 0) + extra;
+  if (a.yearlyBase != null) a.yearlyBase += extra;
+  return a;
+}
+
 /** The profile and latest entry as the Guide's answers. */
 export function answers(pr: Profile, entries: Entry[] = []): Answers {
+  if (kidsOff(pr.scenarios)) return answersWithoutKids(pr, entries);
   const two = couple(pr), abroad = outsideUS(pr), H = holdings(entries, pr);
   const F = flow(pr);
   const spend = F.spendPaid > 0 ? F.spendPaid : pr.spend;

@@ -29,5 +29,6 @@ jobs:
       - run: npm run test:guide
       - run: npm run test:budget
       - run: npm run test:tax
+      - run: npm run test:dashboard
       - run: npm run lint
       - run: npm run build

@@ -236,7 +236,12 @@ export interface ToolScope {
         (`locked`), in its own words, with where each is changed. */
     facts?: ReactNode;
     /** The Drawdown Simulator's Social Security, said in place of its fields. */
-    ssFacts?: ReactNode };
+    ssFacts?: ReactNode;
+    /** The Dashboard's Calculator: its scenarios in place of the Stages
+        tool's stage list (the stages are built from them, read-only), lanes
+        under the chart, the chart's marks (where each scenario starts) and
+        your age at year 0, so the stages read by age. */
+    scenarios?: ReactNode; underChart?: ReactNode; marks?: { year: number; label: string }[]; stagesAge?: number };
   /** Inputs the scope sets itself, by name (or a group's name: "ss" for
       the Drawdown's Social Security), which the tool leaves out: the
       scope's `facts` say them. The Dashboard's figures from its plan. */

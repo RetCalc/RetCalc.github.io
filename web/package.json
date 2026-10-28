@@ -16,7 +16,8 @@
     "test:budget": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"tools/budget/tests/*.test.ts\"",
     "test:tax": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"tools/tax/tests/*.test.ts\"",
     "test:plan": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"tools/plan/tests/*.test.ts\"",
-    "test:guide": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"tools/guide/tests/*.test.ts\""
+    "test:guide": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"tools/guide/tests/*.test.ts\"",
+    "test:dashboard": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"components/dashboard/tests/*.test.ts\""
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

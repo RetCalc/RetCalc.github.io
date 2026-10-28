@@ -142,7 +142,10 @@ export function Stages() {
   useShareKit(STAGES_DEF.id, projectionShare({ kind: "stages", g: V.P.g, eff: V.P.eff, R: V.R, mode }));
   const { P, R, F, portToday, rate } = V;
   const g = P.g;
-  const chart = useMemo(() => chartData(typed, V, mode, parseNum(band) / 100, seed), [typed, V, mode, band, seed]);
+  // The Dashboard marks where each scenario starts, in place of the stage boundaries.
+  const scMarks = dash ? scope?.slots?.marks : undefined;
+  const chart = useMemo(() => { const c = chartData(typed, V, mode, parseNum(band) / 100, seed); return scMarks ? { ...c, marks: scMarks } : c; }, [typed, V, mode, band, seed, scMarks]);
+  const markWord = scMarks ? "Scenario starts" : "Stage boundary";
   const n = s.stages.length;
   const split = s.saOn;
 
@@ -254,6 +257,8 @@ export function Stages() {
   /* Stages are edited in a pop-up (`editing`: the stage to open it at);
      the panel lists them. */
   const [editing, setEditing] = useState<number | null>(null);
+  // The Dashboard's read-only view of the stages its scenarios build.
+  const [behind, setBehind] = useState(false);
   const names = s.stages.map((st, i) => st.name || "Stage " + (i + 1));
   const stageCard = (i: number, st: StageInputs) => (
     <StageCard key={i} i={i} st={st} last={i === n - 1} split={split} mc={mode === "mc"} span={spans[i]}
@@ -294,12 +299,21 @@ export function Stages() {
             <CardContent>
               {/* The Dashboard's children come from its profile: their costs
                   are changed here, the children themselves there. */}
-              {dash && kids ? (
-                <div className="mb-3.5 grid gap-2 border-b border-border pb-3.5">
-                  <p className="hint m-0">Adjusted for your children&apos;s costs over the years. {kidsLine(kids)}</p>
-                  <Button variant="outline" className="w-full" disabled={!(planYears > 0)} onClick={() => setKidStep({ at: "kids" })}>Edit child costs</Button>
-                </div>
-              ) : null}
+              {/* The Dashboard: its scenarios in place of the stage list; the
+                  stages they build are read, not edited. */}
+              {dash ? <>
+                {scope?.slots?.scenarios}
+                <GroupHead>The stages behind this</GroupHead>
+                <p className="hint mt-0 mb-2.5">Your plan and your scenarios, year by year, as the {n === 1 ? "stage" : n + " stages"} the calculator runs. Change a scenario to change them.</p>
+                <Button variant="outline" className="w-full" id="btnStagesBehind" disabled={!n} onClick={() => setBehind(true)}>{n === 1 ? "See the stage" : "See the " + n + " stages"}</Button>
+                {behind && n ? (
+                  <Modal size="table" onClose={() => setBehind(false)}>
+                    <ModalTop title="The stages behind your plan" onClose={() => setBehind(false)} />
+                    <StagesBehind s={s} nums={nums} names={names} age={scope?.slots?.stagesAge} />
+                  </Modal>
+                ) : null}
+              </> : null}
+              {dash ? null : <>
               <GroupHead first>Your stages</GroupHead>
               {n ? <StageBar nums={nums} names={names} spans={spans} onPick={(i) => setEditing(i)} /> : null}
               {n ? (
@@ -336,6 +350,7 @@ export function Stages() {
                   </div>
                 </Modal>
               ) : null}
+              </>}
               <div className="derived mb-1">
                 <div><span>Stages</span><span className="num" id="gStages">{n}</span></div>
                 <div><span>Fees</span><span className="num" id="gFeeNote">{(g.fees || 0) > 0 ? pctStr(g.fees, 2) + " off every stage" : "none"}</span></div>
@@ -477,13 +492,13 @@ export function Stages() {
               note={F && last ? "Stage " + dn + ", paid " + PERIOD_ADV[last.period] + " for " + fmtYears(last.years) + (mf > 1 ? ", plus the match" : "") : ""}>
               <KV k="Per year" id="tPerYear" v={F ? money(F.perYear / mf) : ""} />
               <StageChange F={F} contrib={P.eff[dn - 1]?.contrib ?? 0} mf={mf} />
-              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyS" disabled={!n || noPay} onClick={applyContribution}>Use this contribution</Button>
+              {dash ? null : <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyS" disabled={!n || noPay} onClick={applyContribution}>Use this contribution</Button>}
             </SolveOption>
             <SolveOption label="Change the final stage's length" id="tYears" value={!F ? DASH : F.reached ? fmtYears(F.stageYears!) : "Out of reach"} sized={!!F} noteId="tYearsNote" className="max-sm:border-t sm:border-l"
               note={!F ? "" : F.reached ? "Keeping " + money(P.eff[dn - 1].contrib / mf, 2) + " " + PERIOD_ADV[last.period] : "Not reached within 100 years at this contribution."}>
               <KV k="Final stage now" id="tYearsNow" v={F && last ? fmtYears(last.years) : ""} />
               <KV k="Whole run becomes" id="tYearsTotal" v={!F ? "" : F.reached ? fmtYears(F.totalIfStretched!) : DASH} />
-              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYearsS" disabled={!n || (!!F && !F.reached) || noPay} onClick={applyYears}>Use this length</Button>
+              {dash ? null : <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYearsS" disabled={!n || (!!F && !F.reached) || noPay} onClick={applyYears}>Use this length</Button>}
             </SolveOption>
           </div>
           <div className="-mb-1 border-t border-border px-4.5 pt-1 max-sm:px-3.5">
@@ -509,9 +524,10 @@ export function Stages() {
             mixButton={dash ? <HistMixButton s={s} setState={setState} /> : undefined}
             mcHint={<>5,000 simulations per redraw. Volatility is
               set per stage, in your plan.</>}
-            chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100)} legendExtra="Stage boundary"
+            chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100, markWord)} legendExtra={markWord}
             tipHead={(b) => <><b>Year {fmtNum(b.year)}</b> <span className="text-dim">&middot; stage {String(b.stage)}</span></>}
             target={portToday} targetLabel={TARGET_LABEL} />
+          {dash ? scope?.slots?.underChart : null}
         </div>
 
         {/* Milestones at full width, and Take it further under it as a slim
@@ -619,14 +635,46 @@ function matchNote(P: ReturnType<typeof stagesPlan>): string {
   return "Stage 1 match: " + money(bi, 2) + " biweekly" + (bi < full - 0.005 ? " (the full match is " + money(full, 2) + ")" : "") + ".";
 }
 
-function bandLegend(band: number): [string, string][] {
+function bandLegend(band: number, markWord = "Stage boundary"): [string, string][] {
   const lbl = bandLabel(band);
   return [
     [SERIES.teal, band > 0 ? "Every stage +" + lbl + "%" : "Higher"],
     [SERIES.plan, "As entered"],
     [SERIES.rose, band > 0 ? "Every stage −" + lbl + "%" : "Lower"],
-    ["var(--stageline)", "Stage boundary"],
+    ["var(--stageline)", markWord],
   ];
+}
+
+/** The Dashboard's stages, read-only: each one's ages, length, saving a
+    month by account (your own, before the match), return and what's going
+    on, as the plan and the scenarios build them. */
+function StagesBehind({ s, nums, names, age }: { s: StagesInputs; nums: ReturnType<typeof readStage>[]; names: string[]; age?: number }) {
+  const split = s.saOn, hsa = split && nums.some((st) => stageSplit(st).h > 0);
+  const starts = nums.reduce<number[]>((acc, st) => [...acc, acc[acc.length - 1] + st.years], [0]);
+  const rows = nums.map((st, i) => {
+    const start = starts[i], from = starts[i + 1];
+    const ppy = (PPY as Record<string, number>)[st.period] ?? 12, mo = (st.contrib * ppy) / 12, sp = stageSplit(st);
+    const ages = age != null ? fmtNum(age + start) + " to " + fmtNum(age + from) : "Year " + fmtNum(start) + " – " + fmtNum(from);
+    return { i, ages, years: st.years, mo, t: mo * sp.t, r: mo * sp.r, b: mo * sp.b, h: mo * sp.h, nominal: st.nominal, growth: st.growth, name: names[i] };
+  });
+  return (
+    <>
+      <p className="hint mt-0 mb-3">Amounts are a month, in today&apos;s dollars, your own money before the match. Saving that grows within a stage shows its yearly rise.</p>
+      <div className="swipehint">Swipe the table sideways to see every column.</div>
+      <div className="scroll" tabIndex={0} role="region" aria-label="The stages behind your plan">
+        <table id="stagesBehind">
+          <thead><tr><th>Stage</th><th>{age != null ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th>Rises</th><th>Return</th><th>What&apos;s going on</th></tr></thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.i}><td>{r.i + 1}</td><td>{r.ages}</td><td>{fmtNum(r.years)}</td><td><b>{money(r.mo)}</b></td>
+                {split ? <><td>{money(r.t)}</td><td>{money(r.r)}</td><td>{money(r.b)}</td>{hsa ? <td>{money(r.h)}</td> : null}</> : null}
+                <td>{Math.abs(r.growth) < 0.00005 ? DASH : pctStr(r.growth, 2) + "/yr"}</td><td>{pctStr(r.nominal, 2)}</td><td className="text-left whitespace-normal">{r.name}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
 }
 
 /* ---- the numbers ---- */

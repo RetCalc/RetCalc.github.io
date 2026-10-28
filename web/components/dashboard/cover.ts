@@ -14,6 +14,7 @@ import { COVER_ORDER, type CoverLine } from "@/tools/plan/model";
 import { childCost, children } from "@/tools/guide/schedule";
 import type { Answers, YearSaving } from "@/tools/guide/store";
 import { growthLines, type Flow } from "./flows";
+import { yearChange } from "./scenarios";
 import type { Profile } from "./store";
 
 type Line = "brok" | "k401max" | "rothIra" | "hsa" | "match";
@@ -109,7 +110,7 @@ const CACHE = new Map<string, { rows: YearSaving[]; base: number[] }>();
 function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }): { rows: YearSaving[]; base: number[] } {
   const age = Math.round(a.age ?? 0), end = Math.round(a.retire ?? 0), pi = F.pi;
   if (!(end > age)) return { rows: [], base: [] };
-  const L = growthLines(pr, F), kids = children(a);
+  const L = growthLines(pr, F), kids = children(a), scen = pr.scenarios ?? [];
   const costNow = kids.filter((c) => !c.planned).reduce((s, c) => s + childCost(c, age), 0);
   const segs = kidStages(kidsOf(a), age, end), cover = pr.kidCover ?? {};
   const m0 = L.find((l) => l.id === "match")!;
@@ -121,11 +122,18 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
       return [id, Math.min(l.amount * Math.pow(1 + l.growth, k), isFinite(l.cap) ? Math.max(l.cap, l.amount) : Infinity)];
     })) as Record<Line, number>;
     const employer = F.match * (m0.amount > 0 ? lines.match / m0.amount : 1);
-    const need = kids.reduce((s, c) => s + childCost(c, t), 0) - costNow + (opts.college[k] ?? 0);
+    // The Calculator's scenarios this year: saving given up (covered like
+    // the children's costs, from the accounts they name first), and saving
+    // or a lump sum added to an account.
+    const own = byKind(pi, lines), Y = yearChange(scen, t, end, own.brok + own.roth + own.trad + own.hsa);
+    const need = kids.reduce((s, c) => s + childCost(c, t), 0) - costNow + (opts.college[k] ?? 0) + Y.cut;
     const seg = segs.find((s) => s.from <= t && t < s.to);
-    const c = Math.abs(need) < 0.5 ? null : coverDash(need, pi, seg ? cover[stageKey(seg)] : undefined, lines);
-    const left = byKind(pi, lines);
+    const typedKids = seg ? cover[stageKey(seg)] : undefined;
+    const typed = Y.cut > 0 ? Object.fromEntries(COVER_ORDER.filter((a) => typedKids?.[a] != null || Y.typed[a] != null).map((a) => [a, (typedKids?.[a] ?? 0) + (Y.typed[a] ?? 0)])) as Partial<Monthly> : typedKids;
+    const c = Math.abs(need) < 0.5 ? null : coverDash(need, pi, typed, lines);
+    const left = own;
     if (c) for (const kk of COVER_ORDER) left[kk] = Math.max(0, left[kk] - c.take[kk]);
+    for (const kk of COVER_ORDER) left[kk] += Y.add[kk];
     const emp = Math.max(0, employer - (c?.matchLost ?? 0));
     // The employer's money goes in as the match line is taxed.
     const empRoth = pi.roth.match;

@@ -752,3 +752,55 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 /* Retirement: the simulator's notes on the marked years, and its "When you
    retire" intro, kept to a readable measure inside the Dashboard. */
 .dsh-embed .dderas p, .dsh-embed #ddSeqIntro .ddintro { max-width: 70ch; }
+
+/* The Calculator's scenarios (components/dashboard/Calculator.tsx): the
+   list in the inputs column, each row a switch, a mark in its kind's
+   colour, one sentence and what it does at retirement; lanes under the
+   chart, one bar per scenario across your ages; the pop-up's form. */
+.dsh-sc { margin-bottom: 14px; }
+.dsh-sc-rows { list-style: none; margin: 0 0 10px; padding: 0; border-top: 1px solid var(--ds-rule); }
+.dsh-sc-row { padding: 9px 0; border-bottom: 1px solid var(--ds-rule); }
+.dsh-sc-top { display: flex; align-items: center; gap: 6px; }
+.dsh-sc-top > :first-child { flex: 1; min-width: 0; }
+.dsh-sc-top > [data-slot="button"] { flex: none; color: var(--ds-muted); }
+.dsh-sc-mark { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; background: var(--ds-series-gray); }
+.dsh-sc-n { color: var(--ds-muted); font-variant-numeric: tabular-nums; }
+.dsh-sc-sent { margin: 2px 0 0 28px; font-size: 13px; line-height: 1.4; color: var(--ds-muted); }
+.dsh-sc-eff { margin: 3px 0 0 28px; font-size: 13px; color: var(--ds-muted); font-variant-numeric: tabular-nums; min-height: 1.2em; }
+.dsh-sc-eff b, .dsh-sc-all b { font-weight: 600; font-size: 14px; }
+.dsh-sc-eff.dsh-up b, .dsh-sc-all.dsh-up b { color: var(--ds-gain); }
+.dsh-sc-eff.dsh-dn b, .dsh-sc-all.dsh-dn b { color: var(--ds-loss); }
+.dsh-sc-off .dsh-sc-sent { opacity: .75; }
+.dsh-sc-all { margin: 0 0 8px; font-size: 13px; color: var(--ds-muted); }
+.dsh-sc-children { background: var(--ds-series-lavender); }
+.dsh-sc-up { background: var(--ds-series-teal); }
+.dsh-sc-down { background: var(--ds-series-rose); }
+.dsh-sc-returns { background: var(--ds-series-sky); }
+.dsh-sc-lump { background: var(--ds-series-teal); }
+
+/* Lanes under the chart, on the same ages the chart runs over. */
+.dsh-sc-lanes { position: relative; display: grid; gap: 5px; padding: 12px 18px 14px; }
+.dsh-sc-lane { position: relative; height: 24px; }
+.dsh-sc-bar { position: absolute; top: 0; bottom: 0; left: var(--sc-l); width: var(--sc-w); min-width: 24px; border: 0; border-radius: 6px; padding: 0 9px; display: flex; align-items: center; gap: 6px; font: inherit; font-size: 12.5px; font-weight: 500; line-height: 1; white-space: nowrap; overflow: hidden; color: #fff; cursor: pointer; text-align: left; }
+.dsh-sc-bar:hover { filter: brightness(1.08); }
+.dsh-sc-bar:focus-visible { outline: 2px solid var(--ds-text); outline-offset: 2px; }
+.dsh-sc-bar .dsh-sc-n { color: inherit; opacity: .8; }
+.dsh-sc-bar .dsh-sc-fig { font-weight: 400; opacity: .85; }
+.dsh-sc-bar.dsh-sc-off { background: transparent; color: var(--ds-muted); box-shadow: inset 0 0 0 1px var(--ds-rule-strong); }
+.dsh-sc-axis { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11.5px; color: var(--ds-muted); font-variant-numeric: tabular-nums; }
+
+/* The pop-up's form: two columns, some fields across both. */
+.dsh-sc-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 4px; }
+.dsh-sc-form .field { margin: 0; }
+.dsh-sc-full { grid-column: 1 / -1; }
+.dsh-sc-amt { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+.dsh-sc-preview { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: var(--ds-raised); font-size: 13.5px; line-height: 1.45; }
+.dsh-sc-preview b { font-weight: 500; }
+.dsh-sc-pe { margin-top: 4px; }
+.dsh-sc-pe .dsh-up { color: var(--ds-gain); } .dsh-sc-pe .dsh-dn { color: var(--ds-loss); }
+.dsh-sc-kinds { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.dsh-sc-kinds .dsh-choice { padding: 13px 14px; }
+@media (max-width: 640px) {
+  .dsh-sc-form, .dsh-sc-amt { grid-template-columns: 1fr; }
+  .dsh-sc-lanes { padding: 10px 12px 12px; }
+}
