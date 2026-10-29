@@ -45,6 +45,8 @@ export function ageOf(p: Pick<Person, "bm" | "by">, d = new Date()): number | nu
 }
 /** The year someone reaches an age. */
 export const yearAt = (p: Pick<Person, "by">, age: number) => (p.by ?? 0) + age;
+/** When someone retires, as a year with a fraction: the birthday they reach their retirement age. */
+export const retireAt = (p: Pick<Person, "by" | "bm" | "retire">) => (p.by && p.retire != null ? p.by + ((p.bm || 1) - 1) / 12 + p.retire : null);
 
 export const outsideUS = (pr: Profile) => pr.state === OUTSIDE_US;
 /** Pay over a year, as entered (before or after taxes). */
@@ -272,7 +274,7 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   return a;
 }
 
-export interface Point { t: number; v: number; lo: number; hi: number }
+export interface Point { t: number; v: number; lo: number; hi: number; p25?: number; p75?: number }
 export interface Results {
   S: Sim | null;
   /** Share of historical retirements that lasted, 0 to 1. */
@@ -301,6 +303,9 @@ export interface Results {
   /** The year the plan runs to, and each of you's age then (the simulator's
       years: to 95, or the younger of you's 95, unless set on Retirement). */
   endYear: number | null; endAges: number[];
+  /** Each January start through retirement, as the simulator draws them:
+      the year it begins (retirement) and its net worth a year at a time. */
+  traces: { t0: number; lines: number[][] } | null;
   equity: number;
   /** Months of spending in cash, once accounts are in. */
   cushion: number | null;
@@ -393,16 +398,24 @@ export function results(pr: Profile, entries: Entry[]): Results {
   }
   const equity = H.equity + H.other + (H.cash ?? 0) - H.debts;
   const path: Point[] = [];
-  let retireYear: number | null = null, endYear: number | null = null;
+  let retireYear: number | null = null, endYear: number | null = null, traces: Results["traces"] = null;
   const endAges: number[] = [];
   if (S && a.age != null) {
     const now = nowYear(), toRet = S.retire - a.age;
     retireYear = pr.p1.by != null ? pr.p1.by + S.retire : Math.round(now + toRet);
-    S.path.forEach((v, i) => { if (i <= toRet) path.push({ t: now + i, v: v + equity, lo: v + equity, hi: v + equity }); });
+    // The plan counts whole years of age; the chart puts retirement on its
+    // date (the birthday it comes on), so the first year is the part left
+    // until your next birthday.
+    const retT = retireAt(pr.p1) ?? now + toRet, lead = now + toRet - retT;
+    S.path.forEach((v, i) => { if (i <= toRet) path.push({ t: i ? now + i - lead : now, v: v + equity, lo: v + equity, hi: v + equity }); });
     // Once retired, the run the chance comes from: the strategy and years
     // chosen on Retirement. The plan's own fixed spending only without it.
-    const bands = dr && dr.of > 0 ? dr.bands : retPath(S);
-    bands.forEach((b, y) => path.push({ t: now + toRet + y + 1, v: b.p50 + equity, lo: b.p10 + equity, hi: b.p90 + equity }));
+    const fan = dr && dr.of > 0 ? dr : null, bands: { p10: number; p50: number; p90: number; p25?: number; p75?: number }[] = fan ? fan.bands : retPath(S);
+    const at = path[path.length - 1];
+    if (fan && at) Object.assign(at, { p25: at.v, p75: at.v });
+    bands.forEach((b, y) => path.push({ t: retT + y + 1, v: b.p50 + equity, lo: b.p10 + equity, hi: b.p90 + equity,
+      ...(b.p25 != null && b.p75 != null ? { p25: b.p25 + equity, p75: b.p75 + equity } : {}) }));
+    if (fan) traces = { t0: retT, lines: fan.traces.map((l) => l.map((v) => v + equity)) };
     endYear = Math.round(retireYear + bands.length);
     people(pr).forEach((p) => { if (p.by) endAges.push(Math.round(endYear! - p.by)); });
   }
@@ -418,7 +431,7 @@ export function results(pr: Profile, entries: Entry[]): Results {
     claim1: S ? S.ss.claim : null, claim2: S && couple(pr) ? S.ss.claim2 : null,
     ssYear: claimYears.length ? Math.min(...claimYears) : null, gap: planGap(pr),
     takehome: a.takehome ?? null,
-    atRetire: S ? S.fv : null, retireYear, path, equity, endYear, endAges,
+    atRetire: S ? S.fv : null, retireYear, path, equity, endYear, endAges, traces,
     // Months of the spending the emergency fund is sized on (the budget, or the emergency budget).
     cushion: H.cash != null && efMonth > 0 ? H.cash / efMonth : null,
     strategy: chosen, ddPlan, goal: G ? G.spend / 12 : null, spend: S ? S.spend / 12 : null, abroad,

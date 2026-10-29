@@ -7,7 +7,9 @@ export { money };
 /** $1.9M, $450K, $800: for chart axes and secondary figures. */
 export function shortMoney(n: number): string {
   const a = Math.abs(n), sign = n < 0 ? "-" : "";
-  if (a >= 1e6) return sign + "$" + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace(/\.0$/, ".0") + "M";
+  // $2.0M below $10M; from there $12.3M, or $20M when it's even.
+  if (a >= 1e7) return sign + "$" + (a / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
+  if (a >= 1e6) return sign + "$" + (a / 1e6).toFixed(1) + "M";
   if (a >= 1e3) return sign + "$" + Math.round(a / 1e3) + "K";
   return sign + "$" + Math.round(a);
 }

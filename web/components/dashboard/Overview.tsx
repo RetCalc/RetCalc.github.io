@@ -18,7 +18,9 @@ import { Frame } from "./Frame";
 import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./charts";
 import { daysSince, lastedWords, longDate, money, pctDown, shortMoney } from "./format";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
-import { FACTORS, areaPoints, ageOf, answers, couple, fraYears, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, toAges, yearAt, type Results } from "./model";
+import { FACTORS, areaPoints, ageOf, answers, couple, fraYears, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, retireAt, spendMonth, toAges, yearAt, type Point, type Results } from "./model";
+import { useFullScreen, type Px } from "@/components/charts/FullScreen";
+import { BAND_INNER, SERIES } from "@/lib/hues";
 import { nextSteps } from "./nextsteps";
 import { explain } from "./readiness";
 import { target, type FactorId } from "@/tools/guide/calc";
@@ -152,15 +154,36 @@ export function Overview() {
   // At retirement: the plan's savings then, with the home and other assets, as every tab has it.
   const retAt = R.atRetire != null ? { v: R.atRetire + R.equity } : null;
   const p1 = pr.p1, p2 = couple(pr) ? pr.p2 : null;
-  const r1 = p1.by && p1.retire ? yearAt(p1, p1.retire) : null, r2 = p2?.by && p2.retire ? yearAt(p2, p2.retire) : null;
+  // Each retirement on its date, where the chart's plan retires.
+  const r1 = retireAt(p1), r2 = p2 ? retireAt(p2) : null;
   const marks = r1 && r1 === r2 ? [{ t: r1, label: "You both retire" }]
     : [r1 ? { t: r1, label: nameOf(pr, 0) + " retires" } : null, r2 ? { t: r2, label: nameOf(pr, 1) + " retires" } : null].filter((m): m is { t: number; label: string } => !!m);
   const until = range === "recent" ? nowYear() + 3 : range === "retire" && R.retireYear ? R.retireYear + 1 : undefined;
   const steps = nextSteps(data, R);
+  const full = useFullScreen("Net worth");
+  const chart = (px?: Px) => <NetWorthChart hist={hist.length ? hist : [{ t: nowYear(), v: nw }]} proj={R.path} traces={R.traces} marks={marks} until={until} describe={describe} px={px} />;
+  // The entries and the plan to retirement in the Dashboard's amber; from
+  // there, the Retirement tab's chart and its legend.
+  const fanned = R.traces != null && (until == null || until > (r1 ?? Infinity));
+  const legend = (
+    <div className="dsh-legend dsh-mt6">
+      <span><i />Your entries</span><span><i className="dsh-d" />Projected</span>
+      {fanned ? <>{([[SERIES.teal, "10th\u201390th percentile"], [BAND_INNER, "25th\u201375th"], [SERIES.plan, "Median"], [SERIES.guide, "Each starting year"]] as const).map(([c, t]) => (
+        <span key={t}><i className="dsh-sw bg-(--swatch)" style={{ "--swatch": c } as React.CSSProperties} />{t}</span>
+      ))}<span><Tip id="band" title="Through retirement" /></span></>
+        : <span><i className="dsh-b" />8 in 10 markets <Tip id="band" title="8 in 10 markets" /></span>}
+    </div>
+  );
   const tax = R.abroad ? ", before taxes" : "";
-  const describe = (p: { t: number; v: number; lo: number; hi: number; entry?: string }): Readout => {
-    const rows: [string, string][] = [[p.entry ? "Net worth" : "Projected", money(p.entry ? p.v : Math.round(p.v / 1000) * 1000)]];
-    if (p.hi > p.lo) rows.push(["8 in 10 markets", `${shortMoney(p.lo)} to ${shortMoney(p.hi)}`]);
+  const k = (v: number) => money(Math.round(v / 1000) * 1000);
+  const describe = (p: Point & { entry?: string }): Readout => {
+    const fan = p.p25 != null && p.hi > p.lo;
+    const rows: [string, string][] = [[p.entry ? "Net worth" : fan ? "Median" : "Projected", p.entry ? money(p.v) : k(p.v)]];
+    if (fan) {
+      rows.push(["25th to 75th", `${shortMoney(p.p25!)} to ${shortMoney(p.p75!)}`], ["10th to 90th", `${shortMoney(p.lo)} to ${shortMoney(p.hi)}`]);
+      // The Retirement tab's figure: savings alone, without the home and the rest.
+      if (Math.abs(R.equity) >= 500) rows.push(["Savings, median", k(p.v - R.equity)]);
+    } else if (p.hi > p.lo) rows.push(["8 in 10 markets", `${shortMoney(p.lo)} to ${shortMoney(p.hi)}`]);
     const ages = people(pr).map((x, i) => (x.by ? `${nameOf(pr, i ? 1 : 0)} ${Math.floor(p.t - x.by - ((x.bm || 1) - 1) / 12)}` : null)).filter(Boolean) as string[];
     if (ages.length) rows.push(["Ages", ages.join(", ")]);
     return { title: p.entry ? `Your entry, ${longDate(p.entry)}` : String(Math.floor(p.t)), rows };
@@ -194,12 +217,12 @@ export function Overview() {
       <div className="dsh-grid dsh-r1">
         <Tile icon={WalletIcon} title="Net worth" right={
           <div className="dsh-nwhead">
-            <span className="dsh-legend"><span><i />Your entries</span><span><i className="dsh-d" />Projected</span><span><i className="dsh-b" />8 in 10 markets <Tip id="band" title="8 in 10 markets" /></span></span>
             <Segmented aria-label="How far to show">
               {([["recent", "Recent"], ["retire", "To retirement"], ["all", "Whole plan"]] as const).map(([k, l]) => (
                 <SegmentedItem key={k} pressed={range === k} onPressedChange={() => setRange(k)}>{l}</SegmentedItem>
               ))}
             </Segmented>
+            {R.path.length ? full.button : null}
           </div>
         }>
           <div className="dsh-nwfigs">
@@ -213,12 +236,13 @@ export function Overview() {
               </div>
             </div>
             {retAt ? <div className="dsh-sec"><div className="dsh-label">At retirement, {R.retireYear} <Tip id="atRetire" title="Net worth at retirement" /></div><div className="dsh-fig">{shortMoney(retAt.v)}</div></div> : null}
-            {end && R.endYear ? <div className="dsh-sec"><div className="dsh-label">At {R.endAges.length ? R.endAges.join(" and ") : 95}, {R.endYear}</div><div className="dsh-fig">{shortMoney(end.v)}</div></div> : null}
+            {end && R.endYear ? <div className="dsh-sec"><div className="dsh-label">At {R.endAges.length ? R.endAges.join(" and ") : 95}, {R.endYear} <Tip id="atEnd" title="Net worth at the end of the plan" /></div><div className="dsh-fig">{shortMoney(end.v)}</div></div> : null}
           </div>
           <div className="dsh-mt">
-            {R.path.length ? <NetWorthChart hist={hist.length ? hist : [{ t: nowYear(), v: nw }]} proj={R.path} marks={marks} until={until} describe={describe} />
+            {R.path.length ? <>{chart()}{legend}</>
               : <p className="dsh-cap">Your projection appears once your profile has your age, savings, retirement age and spending.</p>}
           </div>
+          {full.overlay((px) => chart(px), legend)}
           <div className="dsh-assume dsh-cap">
             In today&apos;s dollars{tax}. Assumes <b>{pct(realGrowth(pr))}</b> growth per year after inflation{R.retireYear ? ` until ${R.retireYear}` : ""}, then every market since 1926 invested <b>{mixWords(retireMix(pr))}</b>. <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#assumptions" />}>Growth is set in Profile</Button>, the mix on <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement" />}>Retirement</Button>.
           </div>

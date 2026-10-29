@@ -14,7 +14,8 @@ export const TIPS = {
   /* Dashboard */
   kidCostNow: "What your plan counts per month for the children you have, at their ages now, from the costs in Profile. It's already part of your spending. As they move into an age that costs more or less, or leave home, the difference comes out of (or goes back to) your saving.",
   netWorth: "What you have, less what you owe: every account, your home and anything else you listed, minus your debts. It comes from your latest entry on Net worth.",
-  band: "Markets don't all go the same way. The shaded band is where your net worth landed in 8 of every 10 past markets since 1926; the dotted line is the middle one.",
+  band: "Markets don't all go the same way. From retirement, the chart is the Retirement tab's: every January since 1926 as a faint line, with your strategy. The outer band is where your net worth landed in 8 of every 10 of them, the inner band the middle half, and the solid line the middle one.",
+  atEnd: "The middle of every past market: your savings then, as the Retirement tab's median ending balance, plus your home and anything else you own, less your debts. In today's dollars.",
   atRetire: "Your savings at retirement, plus your home and anything else you own, less your debts. In today's dollars, so it compares with what things cost now.",
   retIncome: "What your plan pays each month once you retire: what you plan to spend, with taxes on top. Savings pay it, and Social Security covers part of it once it starts.",
   ssEstimate: "Until you add the figure from your Social Security statement, each benefit is estimated from today's pay, as if you keep earning about the same until you retire. Your statement at ssa.gov is more accurate.",

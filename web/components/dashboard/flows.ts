@@ -347,21 +347,23 @@ export function drawdownRuns(d: DrawdownState): { rate: number; ok: number; of: 
 }
 
 /** The same run year by year, for the Dashboard's chart: each year's balance
-    at the 10th percentile, the middle and the 90th of history's starting
-    months, in today's dollars, with how many lasted and the years it runs. */
+    at the 10th, 25th, 50th, 75th and 90th percentile of history's starting
+    months, in today's dollars, and each January start's own balances (year
+    0 the start), with how many lasted and the years it runs. */
 export function drawdownPath(d: DrawdownState) {
   const { o, P } = drawdownSetup(d), W = ddWindows(o), n = W.length;
-  const cols = Array.from({ length: o.years }, () => new Float64Array(n));
+  const cols = Array.from({ length: o.years }, () => new Float64Array(n)), traces: number[][] = [];
   let ok = 0;
   W.forEach((w, k) => {
     const r = runDrawdown(o, w.seq, null, P);
     if (!r.depleted) ok++;
     for (let y = 0; y < o.years; y++) cols[y][k] = Math.max(0, r.rows[y]?.realEnd ?? 0);
+    if (w.month === 1) traces.push([P.initial, ...Array.from({ length: o.years }, (_, y) => cols[y][k])]);
   });
   // As the simulator's own bands pick them.
   const at = (c: Float64Array, q: number) => c[Math.min(n - 1, Math.floor(n * q))];
-  const bands = n ? cols.map((c) => (c.sort(), { p10: at(c, 0.1), p50: at(c, 0.5), p90: at(c, 0.9) })) : [];
-  return { rate: n ? ok / n : 0, ok, of: n, years: o.years, bands };
+  const bands = n ? cols.map((c) => (c.sort(), { p10: at(c, 0.1), p25: at(c, 0.25), p50: at(c, 0.5), p75: at(c, 0.75), p90: at(c, 0.9) })) : [];
+  return { rate: n ? ok / n : 0, ok, of: n, years: o.years, bands, traces };
 }
 
 /* ---------- Saving that grows ---------- */

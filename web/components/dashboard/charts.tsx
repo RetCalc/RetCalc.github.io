@@ -4,8 +4,10 @@
    the readiness score's split bar. The two charts are drawn at the width
    they're given, so their text stays the size of the page's. */
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { useScrub } from "@/components/charts/ChartFrame";
+import type { Px } from "@/components/charts/FullScreen";
+import { SERIES } from "@/lib/hues";
 import { useNarrow } from "@/components/charts/useNarrow";
 import { shortMoney } from "./format";
 import type { Point } from "./model";
@@ -34,21 +36,32 @@ export interface Readout { title: string; rows: [string, string][] }
 
 type NetWorthProps = {
   hist: { t: number; v: number; date?: string }[]; proj: Point[]; marks: { t: number; label: string }[]; until?: number; height?: number;
-  describe?: (p: { t: number; v: number; lo: number; hi: number; entry?: string }) => Readout;
+  /** Each January start through retirement: the year it begins, a value a year. */
+  traces?: { t0: number; lines: number[][] } | null;
+  /** Full screen: drawn at exactly this size. */
+  px?: Px;
+  describe?: (p: Point & { entry?: string }) => Readout;
 };
 
-/** Net worth: the entries as a solid line, the plan dotted, and in
-    retirement the band 8 in 10 historical markets fell within. Pointing
-    at it, or tapping and dragging along it, shows that year's figures. */
+/** Net worth: the entries as a solid line and the plan dotted to
+    retirement; from there, the Retirement tab's chart: every January start
+    as a faint line, the 10th to 90th and 25th to 75th percentile as bands
+    and the median as a line. Pointing at it, or tapping and dragging along
+    it, shows that year's figures. */
 export function NetWorthChart(props: NetWorthProps) {
   const pts = props.proj.filter((p) => p.t <= (props.until ?? Infinity));
   return pts.length ? <NetWorthPlot {...props} /> : <div />;
 }
 
-function NetWorthPlot({ hist, proj, marks, until, height = 270, describe }: NetWorthProps) {
-  const [ref, W] = useWidth(900);
+function NetWorthPlot({ hist, proj, marks, until, height, traces, px, describe }: NetWorthProps) {
+  const [ref, fit] = useWidth(900);
   const [at, setAt] = useState<number | null>(null);
-  const H = height, L = 56, R = 16, T = 18, B = 26;
+  const uid = useId().replace(/:/g, "");
+  const W = px ? px.w : fit;
+  // Tall, as the site's other big charts are: a little over half its
+  // width, never shorter than 340 (280 on a phone) or taller than 480.
+  const H = px ? px.h : height ?? Math.round(Math.min(480, Math.max(W < 500 ? 280 : 340, W * 0.55)));
+  const L = 56, R = 16, T = 18, B = 26;
   const pts = proj.filter((p) => p.t <= (until ?? Infinity));
   const x0 = hist.length ? Math.min(hist[0].t, pts[0].t) : pts[0].t, x1 = Math.max(pts[pts.length - 1].t, x0 + 1);
   const ymax = Math.max(...pts.map((p) => p.hi), ...hist.map((h) => h.v)) * 1.05;
@@ -60,12 +73,19 @@ function NetWorthPlot({ hist, proj, marks, until, height = 270, describe }: NetW
   const years: number[] = [];
   for (let y = Math.ceil(x0 / every) * every; y <= x1; y += every) years.push(y);
   const line = (arr: { t: number; v: number }[]) => arr.map((p, k) => (k ? "L" : "M") + X(p.t).toFixed(1) + " " + Y(p.v).toFixed(1)).join(" ");
+  const ribbon = (arr: Point[], hi: (p: Point) => number, lo: (p: Point) => number) =>
+    line(arr.map((p) => ({ t: p.t, v: hi(p) }))) + " " + arr.toReversed().map((p) => "L" + X(p.t).toFixed(1) + " " + Y(lo(p)).toFixed(1)).join(" ") + " Z";
+  // In retirement: the fan, from the retirement point on. Without it (no
+  // run yet), one band and the dotted line all the way.
+  const fan = pts.filter((p) => p.p25 != null);
+  const isFan = fan.length > 1;
+  const dotted = isFan ? pts.slice(0, pts.indexOf(fan[0]) + 1) : pts;
   const banded = pts.filter((p) => p.hi > p.lo);
-  const band = banded.length > 1
-    ? line(banded.map((p) => ({ t: p.t, v: p.hi }))) + " " + banded.slice().reverse().map((p) => "L" + X(p.t).toFixed(1) + " " + Y(p.lo).toFixed(1)).join(" ") + " Z"
-    : null;
+  const band = !isFan && banded.length > 1 ? ribbon(banded, (p) => p.hi, (p) => p.lo) : null;
+  const g = (name: string) => name + uid;
+  const lines = isFan && traces ? traces.lines.map((ln) => line(ln.map((v, y) => ({ t: traces.t0 + y, v })).filter((p) => p.t <= x1 + 1e-6))) : [];
   // The point under the pointer: an entry when one is close, else the plan.
-  const pick = (t: number) => {
+  const pick = (t: number): Point & { entry?: string } => {
     const h = hist.reduce<(typeof hist)[number] | null>((b, p) => (Math.abs(p.t - t) < Math.abs((b?.t ?? Infinity) - t) ? p : b), null);
     if (h && Math.abs(X(h.t) - X(t)) < 10) return { t: h.t, v: h.v, lo: h.v, hi: h.v, entry: h.date };
     return pts.reduce((b, p) => (Math.abs(p.t - t) < Math.abs(b.t - t) ? p : b), pts[0]);
@@ -86,11 +106,38 @@ function NetWorthPlot({ hist, proj, marks, until, height = 270, describe }: NetW
     <div ref={ref} className="dsh-chartwrap" {...(describe ? scrub : {})}>
       <svg className="dsh-chart" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Net worth: your entries and the plan ahead"
         onPointerMove={describe ? move : undefined} onPointerDown={describe ? move : undefined} onPointerLeave={(e) => { if (e.pointerType !== "touch") setAt(null); }}>
+        <defs>
+          {/* The Retirement tab's fan, shade for shade. */}
+          {([["fanOuter", .16, .08], ["fanInner", .30, .18]] as const).map(([name, a, b]) => (
+            <linearGradient key={name} id={g(name)} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={SERIES.teal} stopOpacity={a} />
+              <stop offset="100%" stopColor={SERIES.teal} stopOpacity={b} />
+            </linearGradient>
+          ))}
+          <clipPath id={g("plot")}><rect x={L} y={T} width={W - L - R} height={H - T - B} /></clipPath>
+        </defs>
         {grid.map((v) => (
           <g key={v}><line className="dsh-gl" x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} /><text x={L - 8} y={Y(v) + 4} textAnchor="end">{shortMoney(v)}</text></g>
         ))}
         {years.map((y) => <text key={y} x={X(y)} y={H - 6} textAnchor="middle">{y}</text>)}
         {band ? <path className="dsh-band" d={band} /> : null}
+        {lines.length ? (
+          <g clipPath={`url(#${g("plot")})`} fill="none" stroke={SERIES.guide} strokeLinejoin="round" strokeWidth={.6} strokeOpacity={lines.length > 60 ? .14 : .2}>
+            {lines.map((d, k) => <path key={k} d={d} />)}
+          </g>
+        ) : null}
+        {isFan ? (
+          <>
+            <path d={ribbon(fan, (p) => p.hi, (p) => p.lo)} fill={`url(#${g("fanOuter")})`} />
+            <path d={ribbon(fan, (p) => p.p75!, (p) => p.p25!)} fill={`url(#${g("fanInner")})`} />
+            <g fill="none" stroke={SERIES.teal} strokeLinejoin="round">
+              <path d={line(fan.map((p) => ({ t: p.t, v: p.hi })))} strokeWidth={1} strokeDasharray="4 3" strokeOpacity={.75} />
+              <path d={line(fan.map((p) => ({ t: p.t, v: p.lo })))} strokeWidth={1} strokeDasharray="4 3" strokeOpacity={.75} />
+              <path d={line(fan.map((p) => ({ t: p.t, v: p.p75! })))} strokeWidth={1.2} strokeOpacity={.9} />
+              <path d={line(fan.map((p) => ({ t: p.t, v: p.p25! })))} strokeWidth={1.2} strokeOpacity={.9} />
+            </g>
+          </>
+        ) : null}
         {marks.filter((m) => m.t >= x0 && m.t <= x1).map((m, i) => (
           <g key={m.label}><line className="dsh-mk" x1={X(m.t)} x2={X(m.t)} y1={T + 14 + i * 16} y2={H - B} />
             {/* Left of its line when it would run past the chart's edge. */}
@@ -98,7 +145,8 @@ function NetWorthPlot({ hist, proj, marks, until, height = 270, describe }: NetW
               ? <text className="dsh-ml" x={X(m.t) - 5} y={T + 24 + i * 16} textAnchor="end">{m.label}</text>
               : <text className="dsh-ml" x={X(m.t) + 5} y={T + 24 + i * 16}>{m.label}</text>}</g>
         ))}
-        <path className="dsh-proj" d={line(pts)} />
+        <path className="dsh-proj" d={line(dotted)} />
+        {isFan ? <path d={line(fan)} fill="none" stroke={SERIES.plan} strokeWidth={2.6} strokeLinejoin="round" strokeLinecap="round" /> : null}
         {hist.length > 1 ? <path className="dsh-hist" d={line(hist)} /> : null}
         {hist.map((p) => <circle key={p.t} className="dsh-pt" cx={X(p.t)} cy={Y(p.v)} r={hist.length > 1 ? 3.5 : 5} />)}
         {hot ? <g><line className="dsh-cursor" x1={X(hot.t)} x2={X(hot.t)} y1={T} y2={H - B} /><circle className="dsh-cdot" cx={X(hot.t)} cy={Y(hot.v)} r={5} /></g> : null}
