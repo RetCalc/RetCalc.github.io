@@ -21,7 +21,7 @@ import { NIIT, bracketRoom, yearData } from "@/lib/engine/typed";
 import { DASH, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { PRE_ROWS, TAX_DEF, itemized, runTax, taxInput, taxYears } from "./model";
+import { PRE_ROWS, TAX_DEF, deductionLine, itemized, runTax, taxInput, taxYears } from "./model";
 import { PreTaxDialog } from "./PreTaxDialog";
 import { PAY_FREQS, paycheckStub, payWord, type Stub, type StubRow } from "./paycheck";
 import { LOCAL_TAX } from "./local";
@@ -74,6 +74,8 @@ export function Tax() {
   // The household's filing status, state and incomes.
   useHouseholdFill("tax", s, setState, (h, c) => ({
     ...c, status: h.status === "m" ? "m" : "s",
+    ...(h.age != null && h.age > 0 && h.age < 120 ? { age: String(Math.round(h.age)) } : {}),
+    ...(h.status === "m" && h.spouseAge != null && h.spouseAge > 0 && h.spouseAge < 120 ? { spouseAge: String(Math.round(h.spouseAge)) } : {}),
     gross2: groupDigits(h.status === "m" && h.income2 != null ? h.income2 : 0, true),
     ...(h.income != null ? { gross: groupDigits(h.income, true) } : {}),
     ...(h.state ? { state: h.state } : {}),
@@ -146,7 +148,8 @@ export function Tax() {
       net: money(shown), month: money(shown / 12), third: money(shown / ppy),
     };
     derived = {
-      stdLabel: "Standard deduction", std: money(yearData(year).fedStd[inp.status]), ssRow: null,
+      // The label and the amount follow the deduction the return uses.
+      stdLabel: deductionLine(inp.dedType, 0, R.fedDed).label, std: money(deductionLine(inp.dedType, 0, R.fedDed).amount), ssRow: null,
       marginal: pctStr(R.marginal, 0), ...(R.gross > 0 ? room(R.fedTaxable) : noRoom), zeroRoom: null,
     };
     bars = [
@@ -182,8 +185,8 @@ export function Tax() {
       net: money(R.net), month: money(R.net / 12), third: pctStr(R.effTotal, 2),
     };
     derived = {
-      stdLabel: inp.dedType === "item" ? "Itemized deduction" : R.seniors > 0 ? "Standard deduction, incl. 65+" : "Standard deduction",
-      std: money(R.fedDed),
+      stdLabel: deductionLine(inp.dedType, R.seniors, R.fedDed).label,
+      std: money(deductionLine(inp.dedType, R.seniors, R.fedDed).amount),
       ssRow: R.ssGross > 0 ? money(R.taxableSS) + " (" + pctStr(R.taxableSS / R.ssGross, 0) + ")" : null,
       marginal: pctStr(R.marginal, 1),
       ...(R.gross > 0 ? room(R.ordTaxable) : noRoom),
@@ -283,20 +286,17 @@ export function Tax() {
               {/* Two-up where the answers are short; the selects take the
                   full width on a phone, where half would cut their text. */}
               <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                <SelectField id="txStatus" label="Filing status" value={s.status}
-                  // "Both spouses" only means anything on a joint return.
-                  onChange={(v) => setState((c) => ({ ...c, status: v, seniors: v !== "m" && c.seniors === "2" ? "1" : c.seniors }))}>
+                <SelectField id="txStatus" label="Filing status" value={s.status} onChange={set("status")}>
                   <option value="s">Single</option>
                   <option value="m">Married filing jointly</option>
                 </SelectField>
-                <SelectField id="txSeniors" wrapId="txSeniorWrap" hidden={!ret} label={<Tipped text="Age 65 or older" k="senior" />} value={s.seniors} onChange={set("seniors")}>
-                  <option value="0">No</option>
-                  <option value="1">{joint ? "One spouse" : "Yes"}</option>
-                  <option value="2" hidden={!joint} disabled={!joint}>Both spouses</option>
-                </SelectField>
-                <SelectField id="txState" className={ret ? "col-span-full" : undefined} label="State" value={s.state} onChange={set("state")}>
+                <SelectField id="txState" label="State" value={s.state} onChange={set("state")}>
                   {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
                 </SelectField>
+                {/* Retirement mode: the ages decide the federal age 65 rules and
+                    each state's own (Iowa 55, Georgia 62, New York 59½ and so on). */}
+                <NumberField id="txAge" wrapId="txAgeWrap" hidden={!ret} label={<Tipped text="Your age" k="txage" />} unit="yrs old" max={120} value={s.age} onValueChange={set("age")} />
+                <NumberField id="txSpouseAge" wrapId="txSpouseAgeWrap" hidden={!ret || !joint} label="Spouse's age" unit="yrs old" max={120} value={s.spouseAge} onValueChange={set("spouseAge")} />
               </div>
 
               <GroupHead>Income</GroupHead>

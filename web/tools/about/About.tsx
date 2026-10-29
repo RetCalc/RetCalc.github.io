@@ -861,7 +861,7 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>The survivor&apos;s bracket</dt>
               <dd>Sometimes called the widow&apos;s penalty. When the first spouse dies,
-              the survivor files single the following year: roughly the same income, but
+              the survivor can still file jointly for that year and files single from the next: roughly the same income, but
               single brackets and a single standard deduction. It is one of the strongest
               arguments for converting while both are alive, and the tool flags the year it
               happens.</dd>

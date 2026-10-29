@@ -69,7 +69,7 @@ export function firstYearAfter(ctx: BrCtx, e: BrEnd) {
   const tot = e.total, wT = e.trad / tot, wR = e.roth / tot, wB = e.brok / tot;
   const gs = e.brok > 0 ? 1 - e.bBasis / e.brok : 0;
   let G = ctx.spend;
-  for (let i = 0; i < 12; i++) G = ctx.spend + brTax(ctx, G * wT, G * wB * gs, 0);
+  for (let i = 0; i < 12; i++) G = ctx.spend + brTax(ctx, G * wT, G * wB * gs, 0, Math.ceil(BR_UNLOCK));
   return { trad: G * wT, roth: G * wR, brok: G * wB, gainPct: gs, gross: G };
 }
 

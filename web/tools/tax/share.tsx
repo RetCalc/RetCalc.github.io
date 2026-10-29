@@ -33,7 +33,7 @@ export function taxShare(s: TaxInputs): ShareKit {
       } else if (inp.status === "m") situation.push(["Your gross income", money(inp.gross)], ["Spouse's gross income", money(inp.gross2)], ["Household gross income", money(R.gross)]);
       else situation.push(["Gross income", money(inp.gross)]);
       situation.push(["Filing status", inp.status === "m" ? "Married filing jointly" : "Single"]);
-      if (ret && R.seniors > 0) situation.push(["Age 65 or older", R.seniors === 2 ? "Both spouses" : "Yes"]);
+      if (ret && inp.ages.length > 0) situation.push([inp.ages.length > 1 ? "Ages" : "Age", inp.ages.join(" and ")]);
       situation.push(["State", R.stateName || "None"]);
       if (inp.pre > 0) situation.push(["Pre-tax deductions", money(inp.pre)]);
       // Broken down by kind: each kind's household total under it.

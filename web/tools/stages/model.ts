@@ -3,7 +3,7 @@
    are read by the Budget (lib/retirement-contribs.ts). From
    src/js/app/08-stages.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { finishAccounts, growthBlend, seniorsAt, targetRate, withHsaRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
+import { finishAccounts, agesAt, growthBlend, seniorsAt, targetRate, withHsaRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
 import { PPY, finalStageSolve, projectSeries } from "@/lib/engine/typed";
 import type { Plan, Series, SeriesGlobals, Stage } from "@/lib/engine/types";
 import { groupDigits, oneOf, parseNum } from "@/lib/format";
@@ -226,7 +226,7 @@ export function stagesPlan(s: StagesInputs, household: Household | null): Stages
   const years = T.totalYears;
   // The brokerage's cost basis follows its contributions, and what a lump put in adds or one taken out carries off.
   const B = finishAccounts(a, { trad: T.fv + Mt.fv, roth: Ro.fv, brok: Br.fv, hsa: Hs ? Hs.fv : 0 }, Br.basisEnd,
-    Math.pow(1 + g.inflation, years), g.withdrawal, seniorsAt(a, years, household));
+    Math.pow(1 + g.inflation, years), g.withdrawal, seniorsAt(a, years, household), agesAt(a, years, household));
   B.matchTotal = Mt.contribTotal;
   // Roth contributions, less any taken back out: those come out of contributions first.
   B.rothIn = Math.max(0, Ro.contribTotal);
