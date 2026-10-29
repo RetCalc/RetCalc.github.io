@@ -244,6 +244,10 @@ type Brackets = [number, number][];
     credits (keys as data/2026.js explains them). */
 export interface StateTax {
   n: string; none?: 1; sd?: Pair; pe?: Pair; pec?: Pair; sdc?: Pair; peAge?: number; agiCap?: Pair;
+  /** The standard deduction falls away between `from` and `from + width` of AGI (South Carolina). */
+  sdPh?: { from: Pair; width: Pair };
+  /** The `sdc` credit falls by `rate` of income over `from` (Utah). */
+  sdcPh?: { from: Pair; rate: number };
   b?: { s: Brackets; m: Brackets };
 }
 /** A state's retirement rules (keys as data/2026.js explains them). */

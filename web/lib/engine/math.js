@@ -808,6 +808,22 @@ export function agesKey(a1, a2){
   return ageStep(a1) * 64 + ageStep(a2);
 }
 
+/* A state's standard deduction that falls away as income rises, as South
+   Carolina's SCIAD does (S.C. Code 12-6-1140(15), Act 110 of 2026): the
+   amount is cut by the share of AGI above `from` over `width`, the cut
+   rounded down to $10, and it is gone once that share reaches one. */
+function phasedDeduction(amt, ph, idx, agi){
+  const frac = (agi - ph.from[idx]) / ph.width[idx];
+  if (frac >= 1) return 0;
+  if (frac <= 0) return amt;
+  return amt - Math.floor(amt * frac / 10) * 10;
+}
+/* A state credit that falls as income rises, as Utah's taxpayer tax credit
+   does: `rate` of income over `from` comes off the credit. */
+function phasedCredit(amt, ph, idx, income){
+  return Math.max(0, amt - ph.rate * Math.max(0, income - ph.from[idx]));
+}
+
 /* Public pensions are exempt in some states and not others, so the tool has to
    be told which kind the pension is. Everything else about a pension --
    ordinary rates, no FICA -- is the same either way. */
@@ -942,6 +958,12 @@ export function stateRetireTax(S, c){
         // AGI over exFull, so the share of the full amount that is left is:
         const bands = c.agi > R.exFull[idx] ? Math.ceil((c.agi - R.exFull[idx]) / R.exBand[idx]) : 0;
         room *= Math.max(0, 1 - bands * R.exStep / R.exAmt[idx]);
+      } else if (R.exPhase === "steps"){
+        // Connecticut: a table of shares by band of AGI, each band's share
+        // of the retirement income applying once AGI reaches the band's start.
+        let share = 1;
+        R.exSteps[idx].forEach(t => { if (c.agi >= t[0]) share = t[1]; });
+        room = Math.min(room, (trad + pension) * share);
       } else if (R.exPhase === "lin"){
         const range = R.exRange || 1;
         room *= c.agi <= cap ? 1
@@ -965,8 +987,9 @@ export function stateRetireTax(S, c){
 
   // --- 6. deductions, exemptions and age add-ons ----------------------------
   let ded = 0;
-  if (c.dedType === "item" && S.sd) ded = Math.max(c.item, 0);
+  if (c.dedType === "item" && S.sd && !S.sdPh) ded = Math.max(c.item, 0);
   else if (S.sd) ded = S.sd[idx];
+  if (S.sdPh) ded = phasedDeduction(ded, S.sdPh, idx, c.agi);   // South Carolina has no itemizing
   if (S.pe) ded += S.pe[idx];
   if (S.peAge) ded += S.peAge * agedN(c, S.peAt || 65);      // Illinois
   if (R.peAge) ded += R.peAge * agedN(c, R.peAt || 65);
@@ -998,7 +1021,7 @@ export function stateRetireTax(S, c){
 
   // --- 8. credits -----------------------------------------------------------
   if (S.pec) tax = Math.max(0, tax - S.pec[idx]);
-  if (S.sdc) tax = Math.max(0, tax - S.sdc[idx]);
+  if (S.sdc) tax = Math.max(0, tax - (S.sdcPh ? phasedCredit(S.sdc[idx], S.sdcPh, idx, taxable) : S.sdc[idx]));
   let credit = 0;
   const credN = R.credAge ? agedN(c, R.credAt || 65) : 0;
   if (credN > 0 && (!R.ohRet || !R.exCap || c.agi <= R.exCap[idx]))
@@ -1137,8 +1160,9 @@ export function computeTax(inp){
   let state = 0, stateTaxable = 0;
   if (!S.none && S.b){
     let ded = 0;
-    if (inp.dedType === "item" && S.sd) ded = Math.max(inp.item, 0);
+    if (inp.dedType === "item" && S.sd && !S.sdPh) ded = Math.max(inp.item, 0);
     else if (S.sd) ded = S.sd[idx];
+    if (S.sdPh) ded = phasedDeduction(ded, S.sdPh, idx, afterPre + (P ? P.addBack : 0));
     if (S.pe) ded += S.pe[idx];
     // Illinois-style cliff: some states drop the personal exemption entirely,
     // rather than phasing it out, once AGI crosses a threshold. afterPre is
@@ -1148,7 +1172,7 @@ export function computeTax(inp){
     stateTaxable = Math.max(0, afterPre + (P ? P.addBack : 0) - ded);
     state = bracketTax(stateTaxable, S.b[st]).tax;
     if (S.pec) state = Math.max(0, state - S.pec[idx]);
-    if (S.sdc) state = Math.max(0, state - S.sdc[idx]);
+    if (S.sdc) state = Math.max(0, state - (S.sdcPh ? phasedCredit(S.sdc[idx], S.sdcPh, idx, stateTaxable) : S.sdc[idx]));
   }
 
   // FICA is on gross wages; most pre-tax retirement deferrals do not reduce it.

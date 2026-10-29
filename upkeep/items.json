@@ -57,7 +57,7 @@
       "data_for": "As of January 1, 2026",
       "next_due": "2027-02-28",
       "priority": "high",
-      "notes": "States sometimes change rates mid-year; the law-watch item covers that. states.preTaxed changes only with a state law: check the 401(k), IRA, HSA and Section 125 treatment of PA, NJ, CA and MA, and watch for new non-conformers (New Jersey has had bills to allow 403(b), 457 and HSA deductions)."
+      "notes": "States sometimes change rates mid-year; the law-watch item covers that. states.preTaxed changes only with a state law: check the 401(k), IRA, HSA and Section 125 treatment of PA, NJ, CA and MA, and watch for new non-conformers (New Jersey has had bills to allow 403(b), 457 and HSA deductions). Re-sourced from state agency pages on 2026-10-29: Georgia (4.99%, $15,000/$30,000), South Carolina (Act 110: 1.99%/5.21% and the SCIAD phase-out), Utah (4.45% and the credit phase-out), California (FTB 2026 schedules), Hawaii, Louisiana (RIB 26-019), Maine (MRS schedule revised May 2026), Missouri public pension cap and Connecticut's stepped pension phase-out. Still unconfirmed: Arizona's 2026 standard deduction ($16,100/$32,200 follows the federal figure by statute, but AZ DOR has not published its own), Maine's 2026 high-income surcharge and standard deduction phase-out (not modeled), Georgia's overtime and tips exclusions (not modeled), and any 2026 Connecticut instructions. Every other state's figures were not re-checked in this pass."
     },
     {
       "id": "state-retirement",

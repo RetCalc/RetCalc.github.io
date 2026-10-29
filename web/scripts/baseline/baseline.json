@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-29T19:03:02.871Z",
+  "recorded": "2026-10-29T19:50:21.065Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -244,12 +244,12 @@
       "id": "Income Tax: married, California, $180,000 + $95,000, $23,000 pre-tax, itemized $40,000",
       "out": {
         "federal": 36076,
-        "state": 12287.276,
+        "state": 12035.118,
         "fica": 21262.5,
-        "total": 69625.776,
-        "net": 182374.224,
-        "takeHome": 182374.224,
-        "effectiveRate": 0.2532,
+        "total": 69373.618,
+        "net": 182626.382,
+        "takeHome": 182626.382,
+        "effectiveRate": 0.2523,
         "marginal": 0.24
       },
       "fields": {
@@ -261,9 +261,9 @@
         "effFed": "8af1f9c63b19c754",
         "effFica": "f2d72cff53652f92",
         "effLocal": "5feceb66ffc86f38",
-        "effNet": "428516f4c4f09c65",
-        "effState": "1f3384cac6091fb4",
-        "effTotal": "918a6815fe024269",
+        "effNet": "90572083af533620",
+        "effState": "65e54784b793b331",
+        "effTotal": "7fd555b550ff39ff",
         "fedDed": "4948963369b68261",
         "fedTaxable": "6ab5ad374b5ce53a",
         "federal": "422fb7cd779a4308",
@@ -272,19 +272,19 @@
         "local": "5feceb66ffc86f38",
         "marginal": "6382e07f9de0c852",
         "med": "5aaa2bd0029944c5",
-        "net": "b62de841e2da753f",
+        "net": "7145ee765b0314ad",
         "pre": "9ea50d033486770a",
         "preFed": "9ea50d033486770a",
         "preTax": "74234e98afe7498f",
         "ss": "22c4a38b0f53e677",
         "ss1": "3dfbfa571165c5a2",
         "ss2": "704f069acc2c5e2e",
-        "state": "6fd939e8740bed38",
+        "state": "8de1765b665e47e5",
         "stateName": "965e753a8d47f7b0",
         "stateNone": "fcbcf165908dd18a",
         "stateTaxable": "6ab5ad374b5ce53a",
-        "takeHome": "b62de841e2da753f",
-        "total": "d6cd72dcd05e7adc"
+        "takeHome": "7145ee765b0314ad",
+        "total": "2ff211de4db845a6"
       }
     },
     {

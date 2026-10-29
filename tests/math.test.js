@@ -202,7 +202,8 @@ group("State retirement rules: RI, NJ, MO, ME, MN, KS 2025-26 updates");
   near(st("NJ", { status: "s", idx: 0, seniors: 1, trad: 110000 }).excluded, 41250, .01, "NJ single: 37.5% in the middle band");
   // Missouri: public pensions exempt with no income test since 2024 (SB 190).
   near(st("MO", { pension: 40000, penPublic: true, other: 160000 }).excluded, 40000, .01, "MO: public pension exempt at any income");
-  near(st("MO", { status: "s", idx: 0, seniors: 1, pension: 60000, penPublic: true }).excluded, 49824, .01, "MO: capped at the max Social Security benefit");
+  near(st("MO", { status: "s", idx: 0, seniors: 1, pension: 60000, penPublic: true }).excluded, 48967, .01, "MO: capped at the 2026 max Social Security benefit");
+  near(st("MO", { status: "s", idx: 0, seniors: 1, pension: 60000, penPublic: true, taxableSS: 10000, ssGross: 12000, agi: 70000 }).excluded, 48967 - 10000, .01, "MO: less the Social Security deducted");
   // Maine: $49,824 for 2026, phased out over $100k of AGI above the threshold.
   near(st("ME", { status: "s", idx: 0, seniors: 1, trad: 60000 }).excluded, 49824, .01, "ME: 2026 ceiling");
   near(st("ME", { status: "s", idx: 0, seniors: 1, trad: 60000, other: 115000 }).excluded, 49824 * .5, .01, "ME: half gone $50k over the single threshold");
@@ -320,6 +321,79 @@ group("State age rules: the real age for each state, not 65 everywhere");
   near(plTax(c, 1, 0, 80000, 0, 66, null), ga(66), 6, "cached tax at 66");
   eq(plTax(c, 0, 0, 80000, 0, 62, null) < plTax(c, 0, 0, 80000, 0, 61, null), true, "62 pays less than 61");
   eq(plTax(c, 0, 0, 80000, 0, 62, null), plTax(c, 0, 0, 80000, 0, 63, null), "ages between the same steps share a cache entry");
+})();
+
+/* State figures re-sourced on 29 October 2026: Georgia, South Carolina, Utah,
+   California, Hawaii, Louisiana, Maine, Arizona, Missouri and Connecticut. The
+   sources are in the comments in states.tax and states.retire
+   (web/lib/engine/data/2026.js). */
+group("State tax: 2026 rates, deductions and phase-outs re-sourced");
+(function () {
+  function wages(state, gross, status, extra) {
+    return computeTax(Object.assign({ status: status || "s", gross: gross, pre: 0, dedType: "std", item: 0, state: state }, extra || {}));
+  }
+  // Georgia: flat 4.99%, standard deduction $15,000 / $30,000.
+  near(wages("GA", 100000).state, (100000 - 15000) * .0499, .01, "GA single $100,000: 4.99% after $15,000");
+  near(wages("GA", 200000, "m").state, (200000 - 30000) * .0499, .01, "GA joint $200,000: 4.99% after $30,000");
+  // California: 2026 standard deduction, Schedules X and Y, exemption credit.
+  near(wages("CA", 100000).state, 3310.88 + .093 * (94100 - 75197) - 158, .01, "CA single $100,000");
+  near(wages("CA", 200000, "m").state, 6621.76 + .093 * (188200 - 150394) - 316, .01, "CA joint $200,000");
+  near(wages("CA", 10000).state, Math.max(0, (10000 - 5900) * .01 - 158), .01, "CA: a small income owes nothing after the credit");
+  // Hawaii: $8,000 standard deduction and a $1,144 exemption.
+  near(wages("HI", 60000).state, 2539.2 + .076 * (60000 - 8000 - 1144 - 48000), .01, "HI single $60,000");
+  // Louisiana: $12,838 standard deduction (RIB 26-019).
+  near(wages("LA", 100000).state, (100000 - 12838) * .03, .01, "LA single $100,000");
+  // Maine: $15,700 standard deduction, $5,300 exemption, brackets at $27,400 and $64,850.
+  near(wages("ME", 100000).state, .058 * 27400 + .0675 * (64850 - 27400) + .0715 * (100000 - 15700 - 5300 - 64850), .01, "ME single $100,000");
+  // Arizona: flat 2.5% after the federal-sized deduction.
+  near(wages("AZ", 100000).state, (100000 - 16100) * .025, .01, "AZ single $100,000");
+  // South Carolina: 1.99% under $30,000 of taxable income, 5.21% above (less $966).
+  near(wages("SC", 40000).state, (40000 - 15000) * .0199, .01, "SC single $40,000: the full $15,000 SCIAD");
+  near(wages("SC", 50000).state, .0199 * 30000 + .0521 * (50000 - 12280 - 30000), .01, "SC single $50,000: SCIAD cut by $2,720");
+  near(wages("SC", 50000).state, .0521 * 37720 - 966, .5, "SC single $50,000: 5.21% less $966 gives the same tax");
+  near(wages("SC", 95000).state, .0521 * 95000 - 966, .01, "SC single $95,000: SCIAD gone");
+  near(wages("SC", 150000).state, .0521 * 150000 - 966, .01, "SC single $150,000: SCIAD gone");
+  near(wages("SC", 80000, "m").state, .0199 * 30000 + .0521 * (80000 - 30000 - 30000), .01, "SC joint $80,000: the full $30,000 SCIAD");
+  near(wages("SC", 135000, "m").state, .0199 * 30000 + .0521 * (135000 - 15000 - 30000), .01, "SC joint $135,000: half the SCIAD");
+  near(wages("SC", 190000, "m").state, .0521 * 190000 - 966, .01, "SC joint $190,000: SCIAD gone");
+  eq(wages("SC", 40000, "s", { dedType: "item", item: 60000 }).state, wages("SC", 40000).state, "SC: itemizing makes no difference");
+  // South Carolina through the retirement path: the deduction reads AGI, the age 65 deduction stays.
+  var scBase = { status: "s", idx: 0, seniors: 0, ages: [60], trad: 0, pension: 0, penPublic: false, other: 0, gain: 0,
+                 taxableSS: 0, ssGross: 0, agi: 0, pre: 0, dedType: "std", item: 0, grossForTest: 0, code: "SC" };
+  function sc(o) { var c = Object.assign({}, scBase, o); c.grossForTest = c.trad + c.pension + c.other + c.gain; c.agi = c.grossForTest + c.taxableSS; return stateRetireTax(YD.states.tax.SC, c); }
+  near(sc({ other: 30000 }).ded, 15000, .01, "SC retirement path: full SCIAD at $30,000");
+  near(sc({ other: 67500 }).ded, 15000 - Math.floor(15000 * 27500 / 55000 / 10) * 10, .01, "SC retirement path: half at $67,500");
+  near(sc({ other: 95000 }).ded, 0, .01, "SC retirement path: none at $95,000");
+  near(sc({ other: 95000, ages: [66] }).ded, 15000, .01, "SC retirement path: the age 65 deduction stays");
+  // Utah: 4.45%, less the taxpayer credit (6% of the federal deduction, phased out at 1.3%).
+  near(wages("UT", 18000).state, 18000 * .0445 - Math.min(966, 18000 * .0445), .01, "UT: the credit wipes out a tiny tax");
+  near(wages("UT", 50000).state, 50000 * .0445 - (966 - .013 * (50000 - 18696)), .01, "UT single $50,000: credit part phased out");
+  near(wages("UT", 100000).state, 100000 * .0445, .01, "UT single $100,000: credit gone");
+  near(wages("UT", 100000, "m").state, 100000 * .0445 - (1932 - .013 * (100000 - 37392)), .01, "UT joint $100,000");
+  near(wages("UT", 200000, "m").state, 200000 * .0445, .01, "UT joint $200,000: credit gone");
+  var utBase = Object.assign({}, scBase, { code: "UT", ages: [70], seniors: 1, taxableSS: 10000, ssGross: 12000, agi: 40000, other: 30000 });
+  near(stateRetireTax(YD.states.tax.UT, utBase).credit, 10000 * .0445, .01, "UT: Social Security credit at 4.45%");
+  // Missouri: the public pension exclusion falls by the Social Security deducted.
+  var moBase = Object.assign({}, scBase, { code: "MO", ages: [70], seniors: 1, pension: 60000, penPublic: true, taxableSS: 20000, ssGross: 24000 });
+  moBase.grossForTest = 60000; moBase.agi = 80000;
+  near(stateRetireTax(YD.states.tax.MO, moBase).excluded, 48967 - 20000, .01, "MO: $48,967 less $20,000 of benefits");
+  // Connecticut: the exempt share of a pension steps down by band of AGI.
+  function ct(agi, status) {
+    var c = Object.assign({}, scBase, { code: "CT", status: status || "s", idx: status === "m" ? 1 : 0, ages: [70], seniors: 1, pension: 40000, other: agi - 40000, gain: 0 });
+    c.grossForTest = agi; c.agi = agi;
+    return stateRetireTax(YD.states.tax.CT, c).excluded;
+  }
+  near(ct(74999), 40000, .01, "CT single under $75,000: all of it");
+  near(ct(75000), 34000, .01, "CT single $75,000: 85%");
+  near(ct(80000), 22000, .01, "CT single $80,000: 55%");
+  near(ct(92000), 2000, .01, "CT single $92,000: 5%");
+  near(ct(97000), 1000, .01, "CT single $97,000: 2.5%");
+  near(ct(100000), 0, .01, "CT single $100,000: nothing");
+  near(ct(99999, "m"), 40000, .01, "CT joint under $100,000: all of it");
+  near(ct(110000, "m"), 22000, .01, "CT joint $110,000: 55%");
+  near(ct(125000, "m"), 4000, .01, "CT joint $125,000: 10%");
+  near(ct(149999, "m"), 1000, .01, "CT joint $149,999: 2.5%");
+  near(ct(150000, "m"), 0, .01, "CT joint $150,000: nothing");
 })();
 
 group("Roth conversions: the survivor files jointly for the year of death, single after");

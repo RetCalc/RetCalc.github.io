@@ -1340,9 +1340,9 @@ export function About({ states }: { states: StateOption[] }) {
             unearned income of any kind; New York $20,000 a person on top of a full
             exemption for government pensions; New Jersey up to $100,000 joint but on
             a hard income test that steps to nothing by $150,000; Connecticut a full
-            exemption below $75,000 single or $100,000 joint, phased out over the next
-            $25,000. Maine and Maryland reduce their exclusions dollar for dollar by
-            the Social Security you receive, which for a large benefit can consume
+            exemption below $75,000 single or $100,000 joint, stepping down to nothing
+            at $100,000 single or $150,000 joint. Maine, Maryland and Missouri reduce
+            their exclusions dollar for dollar by the Social Security you receive, which for a large benefit can consume
             them outright. South Carolina, Virginia, West Virginia and Montana give a
             flat deduction at 65 against income of any kind rather than a retirement
             exclusion; Virginia&apos;s is withdrawn dollar for dollar above $50,000 single

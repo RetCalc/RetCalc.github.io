@@ -75,19 +75,36 @@ export var YEAR_2026 = {
   states: {
     year: 2026,
     /* sd/pe: [single, married]. pec = exemption delivered as a credit instead.
-       sdc = standard deduction delivered as a credit. */
+       sdc = standard deduction delivered as a credit.
+       sdPh = {from, width}: the standard deduction falls by the share of AGI over
+       `from` divided by `width` (South Carolina's SCIAD), and the state has no itemizing.
+       sdcPh = {from, rate}: the sdc credit falls by `rate` of taxable income over `from`
+       (Utah's taxpayer tax credit). from and width are [single, married]. */
     tax: {
       AL:{n:"Alabama",sd:[3000,8500],pe:[1500,3000],b:{s:[[0,.02],[500,.04],[3000,.05]],m:[[0,.02],[1000,.04],[6000,.05]]}},
       AK:{n:"Alaska",none:1},
-      AZ:{n:"Arizona",sd:[8350,16700],b:{s:[[0,.025]],m:[[0,.025]]}},
+      // Arizona: the standard deduction is $15,750 single, $31,500 joint for 2025 (AZ DOR 2025
+      // Form 140 booklet; A.R.S. 43-1041(A)) and is adjusted each year the way the federal basic
+      // standard deduction is (43-1041(H)), so 2026 takes the federal $16,100 / $32,200 (IRS
+      // Rev. Proc. 2025-32). AZ DOR has not published its own 2026 figure yet.
+      AZ:{n:"Arizona",sd:[16100,32200],b:{s:[[0,.025]],m:[[0,.025]]}},
       AR:{n:"Arkansas",sd:[2470,4940],pec:[29,58],b:{s:[[0,.02],[4600,.039]],m:[[0,.02],[4600,.039]]}},
-      CA:{n:"California",sd:[5540,11080],pec:[153,306],b:{s:[[0,.01],[11079,.02],[26264,.04],[41452,.06],[57542,.08],[72724,.093],[371479,.103],[445771,.113],[742953,.123],[1000000,.133]],m:[[0,.01],[22158,.02],[52528,.04],[82904,.06],[115084,.08],[145448,.093],[742958,.103],[891542,.113],[1000000,.123],[1485906,.133]]}},
+      // California 2026: standard deduction $5,900 single / $11,800 joint, exemption credit $158 per
+      // person ($316 joint), and tax rate Schedules X and Y (CA Franchise Tax Board, Tax News,
+      // October 2026, "2026 Indexing"). The extra 1% Mental Health Services Tax over $1,000,000
+      // is folded into the top two rates (Rev. & Tax. Code 17043).
+      CA:{n:"California",sd:[5900,11800],pec:[158,316],b:{s:[[0,.01],[11456,.02],[27157,.04],[42861,.06],[59498,.08],[75197,.093],[384109,.103],[460927,.113],[768213,.123],[1000000,.133]],m:[[0,.01],[22912,.02],[54314,.04],[85722,.06],[118996,.08],[150394,.093],[768218,.103],[921854,.113],[1000000,.123],[1536426,.133]]}},
       CO:{n:"Colorado",sd:[16100,32200],b:{s:[[0,.044]],m:[[0,.044]]}},
       CT:{n:"Connecticut",pe:[15000,24000],b:{s:[[0,.02],[10000,.045],[50000,.055],[100000,.06],[200000,.065],[250000,.069],[500000,.0699]],m:[[0,.02],[20000,.045],[100000,.055],[200000,.06],[400000,.065],[500000,.069],[1000000,.0699]]}},
       DE:{n:"Delaware",sd:[3250,6500],pec:[110,220],b:{s:[[0,0],[2000,.022],[5000,.039],[10000,.048],[20000,.052],[25000,.0555],[60000,.066]],m:[[0,0],[2000,.022],[5000,.039],[10000,.048],[20000,.052],[25000,.0555],[60000,.066]]}},
       FL:{n:"Florida",none:1},
-      GA:{n:"Georgia",sd:[12000,24000],b:{s:[[0,.0519]],m:[[0,.0519]]}},
-      HI:{n:"Hawaii",sd:[4400,8800],pe:[1144,2288],b:{s:[[0,.014],[9600,.032],[14400,.055],[19200,.064],[24000,.068],[36000,.072],[48000,.076],[125000,.079],[175000,.0825],[225000,.09],[275000,.10],[325000,.11]],m:[[0,.014],[19200,.032],[28800,.055],[38400,.064],[48000,.068],[72000,.072],[96000,.076],[250000,.079],[350000,.0825],[450000,.09],[550000,.10],[650000,.11]]}},
+      // Georgia 2026: flat 4.99% and a standard deduction of $15,000 single or separate / $30,000
+      // joint (HB 463, signed 11 May 2026; GA Dept. of Revenue, Important Tax Updates).
+      GA:{n:"Georgia",sd:[15000,30000],b:{s:[[0,.0499]],m:[[0,.0499]]}},
+      // Hawaii 2026: standard deduction $8,000 single / $16,000 joint, brackets unchanged from 2025
+      // (Act 46, SLH 2024; HI Dept. of Taxation Announcement 2024-03, "Tax Year 2026"). Exemption
+      // $1,144 per person (HRS 235-54).
+      HI:{n:"Hawaii",sd:[8000,16000],pe:[1144,2288],b:{s:[[0,.014],[9600,.032],[14400,.055],[19200,.064],[24000,.068],[36000,.072],[48000,.076],[125000,.079],[175000,.0825],[225000,.09],[275000,.10],[325000,.11]],m:[[0,.014],[19200,.032],[28800,.055],[38400,.064],[48000,.068],[72000,.072],[96000,.076],[250000,.079],[350000,.0825],[450000,.09],[550000,.10],[650000,.11]]}},
       ID:{n:"Idaho",sd:[16100,32200],b:{s:[[0,0],[4811,.053]],m:[[0,0],[9622,.053]]}},
       /* Illinois is modeled precisely rather than through the generic state
          machinery, since it is the tool's default state. Flat 4.95% rate, applied
@@ -105,8 +122,15 @@ export var YEAR_2026 = {
       IA:{n:"Iowa",sd:[16100,32200],pec:[40,80],b:{s:[[0,.038]],m:[[0,.038]]}},
       KS:{n:"Kansas",sd:[3605,8240],pe:[9160,18320],b:{s:[[0,.052],[23000,.0558]],m:[[0,.052],[46000,.0558]]}},
       KY:{n:"Kentucky",sd:[3360,3360],b:{s:[[0,.035]],m:[[0,.035]]}},
-      LA:{n:"Louisiana",sd:[12875,25750],b:{s:[[0,.03]],m:[[0,.03]]}},
-      ME:{n:"Maine",sd:[8350,16700],pe:[5300,10600],b:{s:[[0,.058],[27399,.0675],[64849,.0715]],m:[[0,.058],[54849,.0675],[129749,.0715]]}},
+      // Louisiana 2026: standard deduction $12,838 single or separate / $25,676 joint, head of
+      // household or surviving spouse (LA Dept. of Revenue, RIB 26-019, 28 September 2026; La. R.S.
+      // 47:294). The $12,875 / $25,750 in the January withholding tables were early estimates.
+      LA:{n:"Louisiana",sd:[12838,25676],b:{s:[[0,.03]],m:[[0,.03]]}},
+      // Maine 2026: standard deduction $15,700 single or separate / $31,400 joint, personal
+      // exemption $5,300 per person, brackets start at $27,400 and $64,850 single, $54,850 and
+      // $129,750 joint (Maine Revenue Services, "Individual Income Tax 2026 Rates", revised
+      // 20 May 2026; it replaced the September 2025 draft's $15,300 / $30,600).
+      ME:{n:"Maine",sd:[15700,31400],pe:[5300,10600],b:{s:[[0,.058],[27400,.0675],[64850,.0715]],m:[[0,.058],[54850,.0675],[129750,.0715]]}},
       MD:{n:"Maryland",sd:[3350,6700],pe:[3200,6400],b:{s:[[0,.02],[1000,.03],[2000,.04],[3000,.0475],[100000,.05],[125000,.0525],[150000,.055],[250000,.0575],[500000,.0625],[1000000,.065]],m:[[0,.02],[1000,.03],[2000,.04],[3000,.0475],[150000,.05],[175000,.0525],[225000,.055],[300000,.0575],[600000,.0625],[1200000,.065]]}},
       MA:{n:"Massachusetts",pe:[4400,8800],b:{s:[[0,.05],[1083150,.09]],m:[[0,.05],[1083150,.09]]}},
       MI:{n:"Michigan",pe:[5900,11800],b:{s:[[0,.0425]],m:[[0,.0425]]}},
@@ -127,11 +151,22 @@ export var YEAR_2026 = {
       OR:{n:"Oregon",sd:[2910,5820],pec:[256,512],b:{s:[[0,.0475],[4550,.0675],[11400,.0875],[125000,.099]],m:[[0,.0475],[9100,.0675],[22800,.0875],[250000,.099]]}},
       PA:{n:"Pennsylvania",b:{s:[[0,.0307]],m:[[0,.0307]]}},
       RI:{n:"Rhode Island",sd:[11200,22400],pe:[5250,10500],b:{s:[[0,.0375],[82050,.0475],[186450,.0599]],m:[[0,.0375],[82050,.0475],[186450,.0599]]}},
-      SC:{n:"South Carolina",sd:[8350,16700],b:{s:[[0,0],[3640,.03],[18230,.06]],m:[[0,0],[3640,.03],[18230,.06]]}},
+      // South Carolina 2026: two brackets, 1.99% of taxable income under $30,000 and 5.21% above
+      // it less $966 (S.C. Code 12-6-510(C), Act 110 of 2026, H. 4216, signed 30 March 2026; SC Dept.
+      // of Revenue). The federal standard and itemized deductions no longer apply. The South
+      // Carolina Income Adjusted Deduction (SCIAD, 12-6-1140(15)) is $15,000 single or separate,
+      // $30,000 joint, cut by the share of federal AGI over $40,000 / $80,000 divided by $55,000 /
+      // $110,000, so it is gone at $95,000 / $190,000 (sdPh). Head of household is not modeled.
+      SC:{n:"South Carolina",sd:[15000,30000],sdPh:{from:[40000,80000],width:[55000,110000]},b:{s:[[0,.0199],[30000,.0521]],m:[[0,.0199],[30000,.0521]]}},
       SD:{n:"South Dakota",none:1},
       TN:{n:"Tennessee",none:1},
       TX:{n:"Texas",none:1},
-      UT:{n:"Utah",sdc:[966,1932],b:{s:[[0,.045]],m:[[0,.045]]}},
+      // Utah 2026: flat 4.45% (Utah Code 59-10-104(2), S.B. 60 of 2026). No deductions or exemptions
+      // for the taxpayer (the $2,167 exemption is per qualifying dependent). The taxpayer tax
+      // credit is 6% of the federal standard deduction ($16,100 single, $32,200 joint), which is
+      // sdc, less 1.3% of Utah taxable income over $18,696 single or $37,392 joint (sdcPh). Draft
+      // 2026 TC-40, lines 8 to 18 (Utah State Tax Commission, draft of 20 October 2026).
+      UT:{n:"Utah",sdc:[966,1932],sdcPh:{from:[18696,37392],rate:.013},b:{s:[[0,.0445]],m:[[0,.0445]]}},
       VT:{n:"Vermont",sd:[7650,15300],pe:[5300,10600],b:{s:[[0,.0335],[49400,.066],[119700,.076],[249700,.0875]],m:[[0,.0335],[82500,.066],[199450,.076],[304000,.0875]]}},
       VA:{n:"Virginia",sd:[8750,17500],pe:[930,1860],b:{s:[[0,.02],[3000,.03],[5000,.05],[17000,.0575]],m:[[0,.02],[3000,.03],[5000,.05],[17000,.0575]]}},
       WA:{n:"Washington",none:1},
@@ -175,10 +210,12 @@ export var YEAR_2026 = {
          exLessSS  "gross" or "taxable" -- the exclusion is reduced dollar for
                    dollar by Social Security received on that basis
          exCap     AGI above which the exclusion is lost
-         exPhase   "cliff" (default), "lin" over exRange, "nj" (New Jersey's
-                   own schedule: a share of retirement income by income band)
-                   or "nm" (New Mexico's: each person's amount falls by exStep
-                   for every exBand of AGI over exFull, both [single, joint])
+         exPhase   "cliff" (default), "lin" over exRange, "steps" (Connecticut's
+                   table: exSteps[single or joint] lists [AGI from, share left]),
+                   "nj" (New Jersey's own schedule: a share of retirement income
+                   by income band) or "nm" (New Mexico's: each person's amount
+                   falls by exStep for every exBand of AGI over exFull, both
+                   [single, joint])
          exRange   dollars over which a linear phase-out runs
          sdAge     extra deduction per person at age sdAt (65 unless set)
          sdStdOnly 1 = sdAge is lost when the return itemizes
@@ -237,9 +274,17 @@ export var YEAR_2026 = {
       CO:{exAmt:[24000,24000], exPer:1, exAge:55, exTiers:[[55,20000],[65,24000]], exSrc:"tp", exLessSS:"taxable",
           ssFullAge:65, ssFullMid:{age:55, cap:[75000,95000]},
           note:"Colorado gives each person 55 or older a subtraction of up to $20,000 of pension and annuity income, and $24,000 from 65. Taxable Social Security comes out of that ceiling first. At 65 it is exempt in full, and at 55 to 64 it is exempt in full while AGI is $75,000 single or $95,000 joint or less."},
-      CT:{exAmt:[1e12,1e12], exSrc:"tp", exCap:[75000,100000], exPhase:"lin", exRange:25000,
+      // Connecticut: pensions, annuities and IRA distributions (100% of an IRA from 2026, 75% in
+      // 2025) are exempt below $75,000 of federal AGI single or $100,000 joint, then the exempt share
+      // steps down by band to nothing at $100,000 single or $150,000 joint (CT DRS, 2025 CT-1040
+      // instructions, Pension and Annuity Phase-Out Table; CGS 12-701(a)(20)(B)). Social Security is
+      // exempt below the same AGI lines, and above them a quarter of the federal benefit
+      // stays taxable (Social Security Benefit Adjustment Worksheet).
+      CT:{exAmt:[1e12,1e12], exSrc:"tp", exCap:[75000,100000], exPhase:"steps",
+          exSteps:[[[75000,.85],[77500,.70],[80000,.55],[82500,.40],[85000,.25],[87500,.10],[90000,.05],[95000,.025],[100000,0]],
+                   [[100000,.85],[105000,.70],[110000,.55],[115000,.40],[120000,.25],[125000,.10],[130000,.05],[140000,.025],[150000,0]]],
           ssCap:[75000,100000], ssPct:.25,
-          note:"Connecticut exempts pension, annuity and IRA income in full below $75,000 of AGI single or $100,000 joint, phasing the exemption out over the next $25,000. Social Security is exempt below the same thresholds, and above them a quarter of the federally taxable benefit stays in the base."},
+          note:"Connecticut exempts pension, annuity and IRA income in full below $75,000 of AGI single or $100,000 joint. Above that the exempt share steps down, from 85% to nothing at $100,000 single or $150,000 joint. Social Security is exempt below $75,000 single or $100,000 joint, and above them a quarter of the federally taxable benefit stays in the base."},
       // Delaware: the exclusion is per person from age 60 ($12,500, and it also takes
       // interest, dividends, gains and rent); under 60 it is $2,000 of employer pension
       // only. The $110 extra credit is for age 60 and over. The $2,500 extra standard
@@ -326,10 +371,13 @@ export var YEAR_2026 = {
       // person. MS Dept. of Revenue, 2025 Form 80-100 instructions (line 46).
       MS:{penFull:1, tradFull:1, peAge:1500,
           note:"Mississippi exempts retirement income (pensions, annuities, 401(k) and IRA withdrawals) once you meet the plan's retirement age or service, and taxes early distributions. This treats it all as exempt. It adds an extra $1,500 exemption per person at 65."},
-      // Missouri: the public pension exclusion has no age. Social Security is deducted at 62 and
-      // over, which is not checked here. MO Dept. of Revenue, pension FAQ.
-      MO:{exAmt:[49824,49824], exPer:1, exSrc:"pub",
-          note:"Missouri exempts public pension income up to the maximum Social Security benefit (about $49,800 per person for 2026), with no income limit since 2024 (SB 190). Its separate $6,000 private pension exemption cuts off at $25,000 / $32,000 and is not modeled."},
+      // Missouri: the public pension exclusion has no age. It is capped at the maximum Social
+      // Security benefit, $48,967 for 2026 ($47,633 for 2025), and is reduced by the Social Security
+      // deduction taken (benefits in federal AGI, for people 62 and over, which is not checked
+      // here). MO Dept. of Revenue, pension FAQ ("How is my public pension taxed?" and the
+      // maximum Social Security benefit table).
+      MO:{exAmt:[48967,48967], exPer:1, exSrc:"pub", exLessSS:"taxable",
+          note:"Missouri exempts public pension income up to the maximum Social Security benefit ($48,967 per person for 2026), less any Social Security you subtract, with no income limit since 2024 (SB 190). Its separate $6,000 private pension exemption cuts off at $25,000 / $32,000 and is not modeled."},
       // Montana: the age 65 subtraction is per person and indexed each year (MCA 15-30-2120).
       // MT Dept. of Revenue, 2025 Form 2 instructions: $5,660.
       MT:{sdAge:[5660,5660], cgB:{s:[[0,.03],[20500,.041]], m:[[0,.03],[41000,.041]]},
@@ -395,15 +443,18 @@ export var YEAR_2026 = {
           note:"Rhode Island exempts Social Security and up to $50,000 per person of pension, 401(k) and annuity income (it was $20,000 through 2024). Both start at Social Security's full retirement age, which this sets at 67, and both are lost above an AGI limit. The limits here are the 2025 figures, $107,000 single and $133,750 joint, which the state adjusts each year. IRA withdrawals don't qualify for the pension exclusion, which this tool doesn't separate from other traditional withdrawals."},
       // South Carolina: up to $3,000 per person of retirement income under 65. From 65 a $15,000
       // deduction per person against any income, which absorbs the retirement deduction
-      // (S.C. Code 12-6-1170; SC Dept. of Revenue SC4972 instructions). Act 110 of 2026 changed
-      // the brackets and standard deduction, which are not updated here.
+      // (S.C. Code 12-6-1170; SC Dept. of Revenue SC4972 instructions). Act 110 of 2026 left
+      // 12-6-1170 as it was and changed the brackets and the deduction (see the tax table above).
       SC:{sdAge:[15000,15000], exLow:{age:65, amt:3000, src:"tp"}, cgPct:.44,
           note:"South Carolina deducts up to $3,000 per person of retirement income before 65. From 65 it deducts $15,000 per person against any income, which absorbs that deduction. It also excludes 44% of net long-term capital gain."},
       // Utah: the Social Security credit has no age. The $450 retirement credit is for people
       // born before 1953 and cannot be combined with it (not modeled). Utah State Tax Commission,
       // credit pages for tax year 2025.
-      UT:{ssCredit:{rate:.045, cap:[54000,90000], phase:.025},
-          note:"Utah taxes Social Security but then hands back a credit for the tax on it, withdrawn at 2.5 cents per dollar of income above $54,000 single or $90,000 joint. Pension and retirement-account income is taxed at the flat 4.5% rate."},
+      // For 2026 the credit is the income tax rate (4.45%) times the benefit in Utah taxable income,
+      // less 2.5 cents per dollar of modified AGI over $54,000 single or $90,000 joint or head of
+      // household (Utah Code 59-10-1042, effective 1 January 2026).
+      UT:{ssCredit:{rate:.0445, cap:[54000,90000], phase:.025},
+          note:"Utah taxes Social Security but then hands back a credit for the tax on it, withdrawn at 2.5 cents per dollar of income above $54,000 single or $90,000 joint. Pension and retirement-account income is taxed at the flat 4.45% rate."},
       // Vermont: no age on the Social Security exemption or the $10,000 government pension
       // exemption. Thresholds were raised $5,000 for 2025 by Act 71 and are not indexed
       // (32 V.S.A. 5830e; VT Dept. of Taxes, 2025 IN-112 instructions).

@@ -44,14 +44,17 @@ function ruleOrdinary(code, S, st){
     out = b.length + " brackets, " + rp(paid[0][1]) + " to " + rp(top) + ". ";
     if (b[0][1] === 0) out += "The first " + money(paid[0][0]) +
       " of taxable income is taxed at zero. ";
-    out += "The top rate starts at " + money(S.b.s[S.b.s.length - 1][0]) +
-      " single / " + money(S.b.m[S.b.m.length - 1][0]) + " joint. ";
+    out += "The top rate starts at " + sj([S.b.s[S.b.s.length - 1][0], S.b.m[S.b.m.length - 1][0]]) + ". ";
   }
   const d = [];
-  if (S.sd) d.push("standard deduction " + sj(S.sd));
+  if (S.sd) d.push("standard deduction " + sj(S.sd) + (S.sdPh
+    ? ", which shrinks as AGI rises above " + sj(S.sdPh.from) + " and is gone by " +
+      sj([S.sdPh.from[0] + S.sdPh.width[0], S.sdPh.from[1] + S.sdPh.width[1]]) +
+      " (the state has no itemizing)" : ""));
   if (S.pe) d.push("personal exemption " + sj(S.pe));
   if (S.pec) d.push("exemption credit " + sj(S.pec) + " rather than a deduction");
-  if (S.sdc) d.push("deduction delivered as a " + sj(S.sdc) + " credit");
+  if (S.sdc) d.push("deduction delivered as a " + sj(S.sdc) + " credit" + (S.sdcPh
+    ? ", which shrinks by " + rp(S.sdcPh.rate) + " of income above " + sj(S.sdcPh.from) : ""));
   out += d.length ? "Against that: " + d.join(", ") + "."
                   : "No standard deduction or personal exemption.";
   if (S.agiCap) out += " The exemption is lost outright: a cliff, not a " +
@@ -180,6 +183,10 @@ function exclusionSentence(R, which){
       " of income, then a share of retirement income itself: 50% joint (37.5% single) to " +
       money(R.exCap[0] + 25000) + ", half that to " +
       money(R.exCap[0] + 50000) + ", nothing above.";
+    else if (R.exPhase === "steps") out += " Above " + sj(R.exCap) + " of AGI the exempt share steps down " +
+      "from " + rp(R.exSteps[0][0][1]) + " to nothing at " +
+      money(R.exSteps[0][R.exSteps[0].length - 1][0]) + " single / " +
+      money(R.exSteps[1][R.exSteps[1].length - 1][0]) + " joint.";
     else if (R.exPhase === "lin") out += " Phased out evenly as AGI " +
       "rises above " + sj(R.exCap) + ", so it is gone by " +
       money(R.exCap[0] + R.exRange) + " single / " +
@@ -251,7 +258,7 @@ const STATE_GAPS = {
   CO:"TABOR-driven rate reductions that temporarily cut the flat rate in some years. The rule that IRA withdrawals before 59½ do not count for the pension subtraction.",
   CT:"Connecticut's benefit recapture, which claws back the value of the lower brackets at higher incomes and can add several hundred dollars. Also the personal exemption's own phase-out.",
   DE:"Wilmington's 1.25% city wage tax on earned income.",
-  GA:"The $5,000 sublimit on earned income inside the retirement exclusion. The amount at 65 rises to $70,000 in 2027.",
+  GA:"The $5,000 sublimit on earned income inside the retirement exclusion. The amount at 65 rises to $70,000 in 2027. The new exclusions for overtime pay and cash tips.",
   HI:"Working out how much of a 401(k) was employer-funded, since that share is exempt too. This assumes none of it was, so the real Hawaii bill may be lower.",
   ID:"Idaho's retirement benefits deduction for federal Civil Service, military and public-safety retirees, which is generous where it applies.",
   IL:"Nothing large. Illinois has no local income taxes and its retirement treatment is unusually simple.",
@@ -260,7 +267,7 @@ const STATE_GAPS = {
   KS:"Kansas's food sales tax credit and homestead property tax refund, both of which matter at lower retirement incomes.",
   KY:"Local occupational license taxes of roughly 1% to 2.5% on earned income in Louisville, Lexington and elsewhere. The full exemption for service credited before 1998.",
   LA:"Parish-level differences and Louisiana's own itemized deduction rules, which depart from the federal ones.",
-  ME:"Maine's alternative minimum tax and the phase-out of its personal exemption at higher incomes.",
+  ME:"Maine's alternative minimum tax and the phase-out of its standard deduction (above $102,250 single or $204,550 joint of Maine income) and personal exemption at higher incomes.",
   MD:"County and Baltimore City income taxes, which run 2.25% to 3.3% on top of the state rate and apply to retirement income. Maryland's senior tax credit of $1,000 to $1,750 below $100,000 / $150,000 of income.",
   MA:"Working out the previously-taxed contribution basis in an IRA, which Massachusetts lets you recover tax-free. The 4% surtax above roughly $1.08 million is in the brackets above.",
   MI:"City income taxes in Detroit, Grand Rapids and about two dozen others, roughly 1% to 2.4%, which reach retirement income.",
