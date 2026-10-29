@@ -261,17 +261,19 @@
     {
       "id": "sepp-rate",
       "area": "Other defaults",
-      "name": "72(t) interest rate default",
-      "what": "The rate the Bridge's 72(t) payment starts with: up to the greater of 5% or 120% of the federal mid-term rate.",
-      "where": ["web/tools/bridge/model.ts: seppRate",
+      "name": "72(t) interest rate floor",
+      "what": "The Bridge's 72(t) interest rate starts at 5%, which is always allowed: the IRS permits the greater of 5% or 120% of the federal mid-term rate. This is a check that 5% is still the statutory floor, not a default to chase.",
+      "where": ["web/tools/bridge/model.ts: seppRate (default 5)",
+        "web/lib/glossary.ts: brsepprate",
+        "web/content/articles/72t.html and bridge.html: the worked examples use 5%",
         "web/content/lessons/rule-72t.html: the dated 120%-of-mid-term figures"],
-      "source": "IRS Applicable Federal Rates (monthly revenue rulings)",
-      "cadence": "Check quarterly: the default must not exceed the greater of 5% or 120% of the mid-term rate for either of the two months before payments start",
-      "last_updated": "2026-10-26",
-      "data_for": "5.5% (120% of the federal mid-term rate was 5.40% in September and 5.54% in October 2026, Rev. Ruls. 2026-17 and 2026-19)",
-      "next_due": "2027-01-15",
+      "source": "IRS Notice 2022-6 (the 5% floor); IRS Applicable Federal Rates (monthly revenue rulings) for the 120% test",
+      "cadence": "Yearly: confirm Notice 2022-6 still sets the 5% floor and that no later notice or law changed it. Do not move the default when the mid-term rate rises",
+      "last_updated": "2026-10-29",
+      "data_for": "5% (Notice 2022-6: the greater of 5% or 120% of the federal mid-term rate)",
+      "next_due": "2027-10-01",
       "priority": "low",
-      "notes": "Lower it back toward 5% if the mid-term rate falls. The 72(t) article's worked example sets 5% itself, so its figures stay."
+      "notes": "If the floor changes, change the default, the glossary entry and the articles' worked examples together (tests/math.test.js checks them). The lesson's dated figures (120% of the mid-term rate was 5.40% in September and 5.54% in October 2026) are reviewed with the lessons."
     },
     {
       "id": "debt-defaults",

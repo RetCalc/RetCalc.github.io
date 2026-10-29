@@ -14,6 +14,7 @@
    line passes them. Reduced motion shows everything as it ends. */
 
 import { ReportThumb } from "@/tools/guide/report/Thumb";
+import { NEWEST_YEAR } from "@/lib/engine/data/years.js";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -169,7 +170,7 @@ export function Home({ data }: { data: HomeData }) {
         </div>
         <div className="hm-grid">
           <Tile href="/incometax" className="hm-s6" name="Income Tax"
-            text="Take-home pay, or the tax on a year of retirement income. Uses the 2026 federal brackets and the income tax rules of all 50 states and DC.">
+            text={`Take-home pay, or the tax on a year of retirement income. Uses the ${NEWEST_YEAR} federal brackets and the income tax rules of all 50 states and DC.`}>
             <TaxChart tax={data.tax} />
           </Tile>
           <Tile href="/rentbuy" className="hm-s6" name="Rent vs. Buy" d={1}

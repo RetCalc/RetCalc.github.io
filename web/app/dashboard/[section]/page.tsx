@@ -11,7 +11,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/dashboard/[section]">): Promise<Metadata> {
   const { section } = await params;
-  return { title: { absolute: `${SECTION_NAMES[section as Section]} | Your dashboard | RetCalc` }, robots: { index: false, follow: false } };
+  return { title: { absolute: `${SECTION_NAMES[section as Section]} | Your Dashboard | RetCalc` }, robots: { index: false, follow: false } };
 }
 
 export default async function Page({ params }: PageProps<"/dashboard/[section]">) {

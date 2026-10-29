@@ -450,6 +450,24 @@ group("Drawdown: the 4% rule, replicated independently");
   eq(H.failYears.join(","), "1965,1966,1968,1969", "the retirements that failed");
 })();
 
+group("Drawdown: what counts as a cut");
+(function () {
+  // A cut is a fall of more than 0.5% from the year before in regular spending,
+  // with the spending path's own planned changes taken out. Rounding noise is not one.
+  var flat = [{ realReg: 40000 }, { realReg: 39990 }, { realReg: 40010 }, { realReg: 39000 }, { realReg: 39000 }];
+  var cuts = ddCuts(flat, [1, 1, 1, 1, 1]);
+  eq(cuts.length, 1, "a $10 wobble on $40,000 is not a cut, a $1,010 fall is");
+  near(cuts[0].frac, 1 - 39000 / 40010, 1e-12, "the cut's size is a share of the year before");
+  eq(cuts[0].year, 3, "and it is the fourth year");
+  eq(ddCuts([{ realReg: 100 }, { realReg: 80 }], [1, .8]).length, 0, "a fall the path planned is not a cut");
+  // The scorecard's "Cuts per retirement" is the same count, averaged over runs.
+  var o = { initial: 1e6, years: 30, stockPct: 60, initialPct: 5, fee: 0, strategy: "guardrails", guardBand: 20, adjustPct: 10 };
+  var H = historicalBacktest(o), sc = ddScorecard(H.runs, o, 0, H.prep.path), n = 0;
+  H.runs.forEach(function (r) { n += ddCuts(r.rows, H.prep.path).length; });
+  near(sc.cutsAvg, n / H.runs.length, 1e-12, "Cuts per retirement is the average of the same per-run count");
+  ok(n > 0, "guardrails at 5% do cut in some retirements");
+})();
+
 group("Drawdown: every strategy starts at its stated spending; income offsets it");
 (function () {
   var base = { initial: 1e6, years: 30, stockPct: 60, initialPct: 4, fee: 0, guardBand: 20, adjustPct: 10,
@@ -864,6 +882,7 @@ group("Healthcare: CMS age curve and ACA credits");
 
 group("72(t): payment formulas and the /72t worked example");
 (function () {
+  eq(BR_SEPP_RATE_DEFAULT, "5", "the Bridge starts at 5%, which Notice 2022-6 always allows (the articles' worked examples use it)");
   eq(brLE(52), 34.3, "IRS Single Life Table, age 52");
   eq(brLE(50), 36.2, "IRS Single Life Table, age 50");
   var n = brLE(52), f = brAmortFactor(.05, 52);

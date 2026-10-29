@@ -22,7 +22,6 @@ import { applyToolsView, setToolsView, useToolsView, type ToolsView } from "@/li
 import type { PickerData } from "./picker-data";
 import { ToolCardLink } from "./ToolCardLink";
 import { ToolIconTile } from "./ToolIcon";
-import { Badge } from "@/components/ui/badge";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import {
   BridgeChart, BudgetChart, CloudChart, FanChart, FireChart, HealthChart, MortgageChart, RothChart, TaxChart, SocialChart
@@ -71,7 +70,7 @@ function YoursLine({ sub }: { sub: ToolSub }) {
 
 function Name({ sub }: { sub: ToolSub }) {
   const c = TOOLS[sub];
-  return <div className="toolcard-name">{c.name}{c.badge ? <Badge variant="highlight" className="ml-1.75 align-middle">{c.badge}</Badge> : null}</div>;
+  return <div className="toolcard-name">{c.name}</div>;
 }
 
 function ChartCard({ sub, size, data, glide }: { sub: ToolSub; size: "lead" | "third" | "half" | "quarter"; data: PickerData; glide: boolean }) {

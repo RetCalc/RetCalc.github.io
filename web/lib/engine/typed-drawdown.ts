@@ -59,7 +59,7 @@ export interface DdScore {
 export interface DdBand { year: number; p10: number; p25: number; p50: number; p75: number; p90: number }
 export interface DdMC {
   trials: number; survived: number; successRate: number; medianEnd: number; p10End: number; bands: DdBand[]; legacy: number;
-  med: DdRun; sc: DdScore; bal: Float64Array; spend: Float64Array; years: number; n: number;
+  med: DdRun; sc: DdScore; bal: Float64Array; spend: Float64Array; years: number; n: number; path: number[];
   sens: { rate: number; median: number }[] | null; ss: { rate: number; median: number }[] | null;
 }
 export interface DdShowItem {
@@ -88,6 +88,7 @@ export const ddPrep = typed<(o: DdOpts) => DdPrep>(E.ddPrep);
 export const historicalBacktest = typed<(o: DdOpts) => DdHist>(E.historicalBacktest);
 export const runDrawdown = typed<(o: DdOpts, seq: unknown[], ctl?: { lite?: boolean } | null, P?: DdPrep) => DdRun>(E.runDrawdown);
 export const ddScorecard = typed<(runs: DdRun[], o: DdOpts, comfort: number | number[], path: number[]) => DdScore>(E.ddScorecard);
+export const ddCuts = typed<(rows: DdRow[], path: number[]) => { year: number; frac: number }[]>(E.ddCuts);
 export const ddComfort = typed<(o: DdOpts, P?: DdPrep) => number | number[]>(E.ddComfort);
 export const ddLineAt = typed<(c: number | number[], y: number) => number>(E.ddLineAt);
 export const ddWindows = typed<(o: DdOpts) => DdWindow[]>(E.ddWindows);

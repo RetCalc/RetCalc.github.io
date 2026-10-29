@@ -65,8 +65,8 @@ const income: Tour<DashData> = { name: "Income", title: "Everything that comes i
 const spending: Tour<DashData> = { name: "Spending", title: "Build a budget that works", read: plan,
   pages: [
     { title: "Each month", focus: "#month", tasks: () => [
-      { h: "<b>Spending</b> is your budget's total, per month and per year. Everything on your dashboard that needs what you spend uses it." },
-      { h: "<b>Left after spending</b> is pay after taxes less your spending. Your saving comes out of it, on Taxes & Savings." },
+      { h: "<b>Spending</b> is your budget's total, per month and per year. Everything on your Dashboard that needs what you spend uses it." },
+      { h: "<b>Left after spending</b> is all income after taxes less your spending. Your saving comes out of it, on Taxes & Savings." },
       { h: "The <b>Emergency fund</b> goal is a number of months of spending kept in cash: about 6 suits most people, up to 12 if your income varies." },
     ] },
     { title: "Your budget", focus: "#bgList", tasks: ({ s }) => {
@@ -75,7 +75,7 @@ const spending: Tour<DashData> = { name: "Spending", title: "Build a budget that
         { h: "Open your last two or three months of bank and card statements and work down the list. Rough is fine. A guess beats a blank.", ok: done(lines >= 5) },
         { h: "For bills that come once or twice a year, like car insurance, travel, gifts or repairs, tap <b>Per year</b> on the line and enter the total for the year. They're the ones budgets usually forget." },
         { h: "Click a line's name to rename it, <b>+</b> on a group adds a line, and <b>×</b> removes one you don't need." },
-        { h: "Lines marked <b>from Home</b> are your rent, or your mortgage and what owning costs. They're set on Home, so they're the same everywhere." },
+        { h: "Lines marked <b>from your home</b> are your rent, or your mortgage and what owning costs. They're set on Your home, so they're the same everywhere." },
       ];
     } },
     { title: "Where it goes", focus: "#bgWhere", tasks: () => [
@@ -200,7 +200,7 @@ const health: Tour<DashData> = { name: "Health cover", title: "Health cover unti
   chip: () => "" };
 
 /* Home: the mortgage and what owning costs, or the rent. */
-const home: Tour<DashData> = { name: "Home", title: "What your home costs", read: plan,
+const home: Tour<DashData> = { name: "Your home", title: "What your home costs", read: plan,
   pages: [
     { title: "Your mortgage", focus: "#mortgage || #rentbuy", tasks: ({ s }) => [
       { h: "What your home is worth and what's left on the mortgage come from Net worth. Here, give the mortgage's <b>interest rate</b> and its <b>payment</b> (principal and interest only) to see when it's paid off.", ok: done(s.profile.mortPay != null || s.profile.home === "rent") },

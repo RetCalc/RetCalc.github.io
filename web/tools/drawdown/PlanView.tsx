@@ -22,7 +22,7 @@ import { SignArrow, ToneGlyph } from "@/components/common/Signed";
 import { Html } from "@/components/common/Html";
 import { KV } from "@/components/common/Readout";
 import {
-  DD_ERAS, ddEraFor, ddLineAt, ddQuick, ssDrawdownStreams, type DdHist, type DdHistRun, type DdMC, type DdOpts, type DdRun, type DdScore,
+  DD_ERAS, ddCuts, ddEraFor, ddLineAt, ddQuick, ssDrawdownStreams, type DdHist, type DdHistRun, type DdMC, type DdOpts, type DdRun, type DdScore,
 } from "@/lib/engine/typed-drawdown";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { useSort } from "@/lib/useSort";
@@ -102,6 +102,7 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
   const showLabel = show && H ? startLabel(show, H.monthly) : "";
   const view = mc ? "year" : ps.view;
   const run: DdRun | null = mc ? mc.M.med : show;
+  const path = hist ? hist.H.prep.path : mc ? mc.M.path : [];
   const sensRows = hist ? hist.sens : mc ? mc.M.sens : null, ssRes = hist ? hist.ss : mc ? mc.M.ss : null;
   const sensOn = !!sensRows, ssOn = !!(ssRows(o, v.d) && ssRes);
   // On the Dashboard the finer detail folds away under the charts.
@@ -121,10 +122,10 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
         <Card className="min-w-0" data-ddtabs="plan">
           <CardHeader><CardTitle id="ddIncomeSectionTitle"><span><Tipped text={hist && view === "year" ? "What your income looked like starting in " + showLabel : "What your income looked like"} k="sequence" /></span></CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
           <CardContent>
-            <div id="ddSpendYearView" hidden={view !== "year"}><SpendStats run={run} /></div>
+            <div id="ddSpendYearView" hidden={view !== "year"}><SpendStats run={run} path={path} /></div>
             <div id="ddSpendAllView" hidden={view !== "all"}><SpendStatsAll H={H} o={o} /></div>
             <Html className="hint mt-1" id="ddSpendNote" html={!R ? "" : view === "all" && H ? spendAllNote(H, o)
-              : run ? spendNote(run, mc ? "Showing the same run as the table below." : "Showing the period selected above.") : ""} />
+              : run ? spendNote(run, path, mc ? "Showing the same run as the table below." : "Showing the period selected above.") : ""} />
           </CardContent>
         </Card>
       </div>
@@ -511,17 +512,20 @@ const BaseSwatch = () => <span><i className="bg-series-gray"></i>Baseline median
 
 /* ---- spending ---- */
 const realOf = (r: { realSpend?: number; realWithdrawal: number }) => (r.realSpend != null ? r.realSpend : r.realWithdrawal);
-function spendFacts(run: DdRun) {
+/* What counts as a cut is the engine's (ddCuts), the same as the scorecard's
+   "Cuts per retirement". The biggest one is shown in dollars of the year's
+   total spending, as the rest of this panel is. */
+function cutDollars(rows: DdRun["rows"], path: number[]) {
+  const real = rows.map(realOf), cuts = ddCuts(rows, path);
+  return { cuts: cuts.length, maxCut: cuts.reduce((m, c) => Math.max(m, real[c.year - 1] - real[c.year]), 0) };
+}
+function spendFacts(run: DdRun, path: number[]) {
   const real = run.rows.map(realOf), sorted = real.slice().sort((a, b) => a - b);
-  let cuts = 0, maxCut = 0;
-  for (let i = 1; i < real.length; i++) {
-    const chg = real[i] - real[i - 1];
-    if (chg < -0.5) { cuts++; if (-chg > maxCut) maxCut = -chg; }
-  }
+  const { cuts, maxCut } = cutDollars(run.rows, path);
   return { real, high: sorted[sorted.length - 1], low: sorted[0], med: sorted[Math.floor(sorted.length / 2)], total: real.reduce((a, x) => a + x, 0), cuts, maxCut };
 }
-function SpendStats({ run }: { run: DdRun | null }) {
-  const f = run && run.rows.length ? spendFacts(run) : null;
+function SpendStats({ run, path }: { run: DdRun | null; path: number[] }) {
+  const f = run && run.rows.length ? spendFacts(run, path) : null;
   return (
     <div>
       <div>
@@ -537,9 +541,9 @@ function SpendStats({ run }: { run: DdRun | null }) {
     </div>
   );
 }
-function spendNote(run: DdRun, label: string): string {
+function spendNote(run: DdRun, path: number[], label: string): string {
   if (!run.rows.length) return label;
-  const f = spendFacts(run), swing = f.high > 0 ? (f.high - f.low) / f.high : 0;
+  const f = spendFacts(run, path), swing = f.high > 0 ? (f.high - f.low) / f.high : 0;
   return label + " Spending in today's dollars ranged from " + money(f.low) + " to " + money(f.high) +
     (swing > 0.01 ? ", a swing of " + pctStr(swing, 0) + " between the best and worst year." : ", essentially flat throughout.");
 }
@@ -552,12 +556,9 @@ function spendAll(H: DdHist) {
     const real = r.rows.map(realOf);
     all.push(...real);
     totals.push(real.reduce((a, x) => a + x, 0));
-    let c = 0;
-    for (let i = 1; i < real.length; i++) {
-      const chg = real[i] - real[i - 1];
-      if (chg < -0.5) { c++; if (-chg > maxCut) maxCut = -chg; }
-    }
-    cuts.push(c);
+    const c = cutDollars(r.rows, H.prep.path);
+    if (c.maxCut > maxCut) maxCut = c.maxCut;
+    cuts.push(c.cuts);
   }
   const sv = all.slice().sort((a, b) => a - b), st = totals.slice().sort((a, b) => a - b);
   return {

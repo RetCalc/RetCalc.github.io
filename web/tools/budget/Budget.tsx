@@ -180,7 +180,7 @@ export function Budget() {
                         <span className="desc"><Tipped text={r.desc} k="bgsavings" /></span>
                       ) : fixed(r) ? (
                         /* Set by the page this runs in (the Dashboard's Home). */
-                        <span className="desc">{r.desc} <span className="text-muted-foreground">· from Home</span></span>
+                        <span className="desc">{r.desc} <span className="text-muted-foreground">· from your home</span></span>
                       ) : isLockedRow(r, i) ? (
                         /* Fixed: the Paycheck tab reads this line as your premiums. */
                         <span className="desc" title="The Paycheck tab reads this line as your health premiums, so it keeps its name">{r.desc}</span>

@@ -11,6 +11,9 @@ import {
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { firstSpend, type DdItem, type PathStage } from "./model";
 
+/** A success rate for "nearly every period": cut down, never rounded up to 100%. */
+export const nearlyPct = (rate: number) => (Math.floor(rate * 1000) / 10).toFixed(1) + "%";
+
 /** A legend entry: a colored dot and its label, as HTML. */
 export const swatch = (c: string, t: string) => `<span><i style='background:${c}'></i>${t}</span>`;
 

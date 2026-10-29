@@ -37,7 +37,7 @@ import { buttonVariants } from "@/components/ui/button";
 const LINK = buttonVariants({ variant: "link", size: "inline" });
 import { cn } from "@/lib/utils";
 
-const HELP = "Comparison reads saved scenarios only, exactly as they were saved. Nothing here changes the numbers on the Basic or Advanced tabs.";
+const HELP = "Comparison reads saved scenarios only, exactly as they were saved. Nothing here changes the numbers in the Basic or Advanced Calculator.";
 
 /* The Results row each slot's reading shows: the balance in today's
    dollars, as the chart draws it. */

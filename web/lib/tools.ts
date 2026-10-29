@@ -1,13 +1,14 @@
 /* The tools, grouped as the tool list shows them: the address each lives at,
    its name and its one-line description. From src/main/16-tool-picker.html. */
 
+import { NEWEST_YEAR } from "@/lib/engine/data/years.js";
+
 export type ToolSub = "optimizer" | "drawdown" | "social" | "bridge" | "roth" | "healthcare" | "fire" | "backtest" | "college" | "rentbuy" | "tax" | "budget" | "debt" | "mortgage";
 
 export interface ToolCard {
   sub: ToolSub;
   path: string;
   name: string;
-  badge?: string;
   desc: string;
   /** The question the tool answers, as the tool list's compact tiles and
       chart cards put it. */
@@ -50,7 +51,6 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "q": "When should I claim Social Security?",
         "path": "social-security",
         "name": "Social Security Calculator",
-        "badge": "New",
         "desc": "What your check will be at every age you could claim, 62 to 70.",
         "i": 2
       },
@@ -129,7 +129,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "q": "How much tax will I owe?",
         "path": "incometax",
         "name": "Income Tax",
-        "desc": "Estimate your 2026 federal, state and FICA tax on a salary, or switch to retirement mode and see what a year of withdrawals costs across traditional, Roth, brokerage and Social Security.",
+        "desc": `Estimate your ${NEWEST_YEAR} federal, state and FICA tax on a salary, or switch to retirement mode and see what a year of withdrawals costs across traditional, Roth, brokerage and Social Security.`,
         "i": 10
       },
       {

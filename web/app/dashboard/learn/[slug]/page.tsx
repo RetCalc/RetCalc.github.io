@@ -13,7 +13,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/dashboard/learn/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  return { title: { absolute: `${lesson(slug)?.title ?? "Learn"} | Your dashboard | RetCalc` }, robots: { index: false, follow: false } };
+  return { title: { absolute: `${lesson(slug)?.title ?? "Learn"} | Your Dashboard | RetCalc` }, robots: { index: false, follow: false } };
 }
 
 export default async function Page({ params }: PageProps<"/dashboard/learn/[slug]">) {

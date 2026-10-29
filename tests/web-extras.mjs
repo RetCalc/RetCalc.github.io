@@ -7,10 +7,11 @@ import { register } from "node:module";
 
 register(new URL("../web/scripts/baseline/loader.mjs", import.meta.url));
 
-const [{ ROTH_DEFAULTS }, { DEBT_DEFAULTS }, { FACTORS, rating }] = await Promise.all([
+const [{ ROTH_DEFAULTS }, { DEBT_DEFAULTS }, { FACTORS, rating }, { BRIDGE_DEFAULTS }] = await Promise.all([
   import("../web/tools/roth/model.ts"),
   import("../web/tools/debt/model.ts"),
   import("../web/tools/guide/calc.ts"),
+  import("../web/tools/bridge/model.ts"),
 ]);
 
 // The tools keep their inputs as the text in their fields ("1,500,000").
@@ -23,4 +24,5 @@ console.log([
   "var DEBT_DEFAULTS = " + JSON.stringify(debts) + ";",
   "var GD_FACTORS = " + JSON.stringify(FACTORS) + ";",
   "var gdRating = " + rating.toString() + ";",
+  "var BR_SEPP_RATE_DEFAULT = " + JSON.stringify(BRIDGE_DEFAULTS.seppRate) + ";",
 ].join("\n"));

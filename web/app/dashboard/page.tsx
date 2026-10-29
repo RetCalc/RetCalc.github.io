@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { OverviewPage } from "@/components/dashboard/Pages";
 
 export const metadata: Metadata = {
-  title: { absolute: "Your dashboard | RetCalc" },
+  title: { absolute: "Your Dashboard | RetCalc" },
   robots: { index: false, follow: false },
 };
 

@@ -8,7 +8,7 @@ export const BRIDGE_DEFAULTS = {
   age: "50", status: "m", state: "IL", spend: "60,000",
   trad: "1,000,000", k401: "400,000", roth: "150,000", rothBasis: "90,000", brok: "450,000", basis: "60",
   g457: "0", stock: "70", work: "0", workUntil: "55",
-  aca: "1", household: "2", premium: "", fill: "auto", seppMethod: "amort", seppRate: "5.5",
+  aca: "1", household: "2", premium: "", fill: "auto", seppMethod: "amort", seppRate: "5",
   /** Set by the Dashboard from its plan, not shown on the tool's own page:
       small-cap value and cash in percent (then `stock` is US stocks alone),
       and a partner's pay a year while they keep working, until the early
