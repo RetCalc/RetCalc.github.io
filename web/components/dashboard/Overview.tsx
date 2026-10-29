@@ -169,7 +169,7 @@ export function Overview() {
     <div className="dsh-legend dsh-mt6">
       <span><i />Your entries</span><span><i className="dsh-d" />Projected</span>
       {fanned ? <>{([[SERIES.teal, "10th\u201390th percentile"], [BAND_INNER, "25th\u201375th"], [SERIES.plan, "Median"], [SERIES.guide, "Each starting year"]] as const).map(([c, t]) => (
-        <span key={t}><i className="dsh-sw bg-(--swatch)" style={{ "--swatch": c } as React.CSSProperties} />{t}</span>
+        <span key={t}><i className="dsh-sw" style={{ "--g": c } as React.CSSProperties} />{t}</span>
       ))}<span><Tip id="band" title="Through retirement" /></span></>
         : <span><i className="dsh-b" />8 in 10 markets <Tip id="band" title="8 in 10 markets" /></span>}
     </div>
@@ -178,11 +178,11 @@ export function Overview() {
   const k = (v: number) => money(Math.round(v / 1000) * 1000);
   const describe = (p: Point & { entry?: string }): Readout => {
     const fan = p.p25 != null && p.hi > p.lo;
-    const rows: [string, string][] = [[p.entry ? "Net worth" : fan ? "Median" : "Projected", p.entry ? money(p.v) : k(p.v)]];
+    const rows: [string, string][] = [[p.entry ? "Net worth" : fan ? "Net worth, median" : "Projected", p.entry ? money(p.v) : k(p.v)]];
     if (fan) {
       rows.push(["25th to 75th", `${shortMoney(p.p25!)} to ${shortMoney(p.p75!)}`], ["10th to 90th", `${shortMoney(p.lo)} to ${shortMoney(p.hi)}`]);
       // The Retirement tab's figure: savings alone, without the home and the rest.
-      if (Math.abs(R.equity) >= 500) rows.push(["Savings, median", k(p.v - R.equity)]);
+      if (Math.abs(R.equity) >= 500) rows.push(["Savings alone, median", k(p.v - R.equity)]);
     } else if (p.hi > p.lo) rows.push(["8 in 10 markets", `${shortMoney(p.lo)} to ${shortMoney(p.hi)}`]);
     const ages = people(pr).map((x, i) => (x.by ? `${nameOf(pr, i ? 1 : 0)} ${Math.floor(p.t - x.by - ((x.bm || 1) - 1) / 12)}` : null)).filter(Boolean) as string[];
     if (ages.length) rows.push(["Ages", ages.join(", ")]);
