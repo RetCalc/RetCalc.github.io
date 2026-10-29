@@ -56,7 +56,10 @@ export function Budget() {
   const dash = scope?.name === "dashboard", emerg = dash && s.efEmerg;
   // A phone has room for one amount a line: which budget it shows.
   const [emView, setEmView] = useState<"normal" | "emergency">("normal");
-  const toPaycheck = () => (scope ? go("/budget#paycheck") : set("view")("paycheck"));
+  // On its own, or in the Dashboard's Tools (saved scenarios, nothing kept
+  // in the plan), it's the whole tool: both tabs, switched in place.
+  const whole = !scope || !!scope.scenarios;
+  const toPaycheck = () => (whole ? set("view")("paycheck") : go("/budget#paycheck"));
   const setRow = (i: number, patch: Partial<BudgetRow>) =>
     setState((c) => ({ ...c, rows: c.rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) }));
 
@@ -122,7 +125,7 @@ export function Budget() {
   };
 
   // The two tabs: the budget itself, and where each paycheck goes.
-  const tabs = scope ? null : (
+  const tabs = !whole ? null : (
     <div className="col-span-full">
       <Segmented id="segBgView" attr="data-bgview" options={[["budget", "Budget"], ["paycheck", "Paycheck"]] as const} value={s.view}
         onChange={(v) => startTransition(() => { addTransitionType("view-switch"); set("view")(v); })} />
@@ -301,7 +304,7 @@ export function Budget() {
 
             {/* The next step: the paycheck that covers this budget (a
                 walkthrough has its own Next). */}
-            <div className="border-t border-border px-5.5 pt-4 pb-5 max-sm:px-4" hidden={!!scope}>
+            <div className="border-t border-border px-5.5 pt-4 pb-5 max-sm:px-4" hidden={!whole}>
               <h3 className="m-0 text-body font-semibold">Next: your paycheck</h3>
               <Button id="bgToPaycheck" onClick={toPaycheck}>{scope ? "Next: your paycheck" : "Open the Paycheck tab"}</Button>
             </div>

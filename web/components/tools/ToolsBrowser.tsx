@@ -135,9 +135,10 @@ const VIEWS: [ToolsView, string, React.ReactNode][] = [
   ["compact", "Compact", <svg key="t" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="2" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="9" y="2" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="1.5" y="9" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="9" y="9" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /></svg>],
 ];
 
-/** A section of its own before the site's tools, in either view (the
-    Dashboard's Advanced Calculator, which only the Dashboard has). */
-export interface ToolsLead { title: string; charts: React.ReactNode; compact: React.ReactNode }
+/** A card of the page's own at the head of one section, in either view
+    (the Dashboard's Advanced Calculator, which only the Dashboard has), and
+    the rest of that section's chart cards laid out around it. */
+export interface ToolsLead { group: string; charts: React.ReactNode; compact: React.ReactNode; layout: [ToolSub, "lead" | "third" | "half" | "quarter"][] }
 
 export function ToolsBrowser({ data, hrefFor, yours, lead }: { data: PickerData; hrefFor?: (sub: ToolSub) => string; yours?: Partial<Record<ToolSub, string>>; lead?: ToolsLead }) {
   const view = useToolsView();
@@ -163,32 +164,25 @@ export function ToolsBrowser({ data, hrefFor, yours, lead }: { data: PickerData;
       </div>
 
       <div className="tp-charts">
-        {lead ? (
-          <section className="toolgroup" aria-label={lead.title}>
-            <h2 className="toolgroup-h"><span>{lead.title}</span></h2>
-            <div className="tp-grid">{lead.charts}</div>
-          </section>
-        ) : null}
-        {TOOL_GROUPS.map((g) => (
-          <section className="toolgroup" aria-label={g.label} key={g.label}>
-            <h2 className="toolgroup-h"><span>{g.title}</span></h2>
-            <div className="tp-grid">
-              {CHART_LAYOUT[g.label].map(([sub, size]) => <ChartCard key={sub} sub={sub} size={size} data={data} glide={view === "charts"} />)}
-            </div>
-          </section>
-        ))}
+        {TOOL_GROUPS.map((g) => {
+          const here = lead?.group === g.label;
+          return (
+            <section className="toolgroup" aria-label={g.label} key={g.label}>
+              <h2 className="toolgroup-h"><span>{g.title}</span></h2>
+              <div className="tp-grid">
+                {here ? lead.charts : null}
+                {(here ? lead.layout : CHART_LAYOUT[g.label]).map(([sub, size]) => <ChartCard key={sub} sub={sub} size={size} data={data} glide={view === "charts"} />)}
+              </div>
+            </section>
+          );
+        })}
       </div>
 
       <div className="tp-compact">
-        {lead ? (
-          <section className="tp-col tp-lead-col" aria-label={lead.title}>
-            <h2 className="toolgroup-h"><span>{lead.title}</span></h2>
-            {lead.compact}
-          </section>
-        ) : null}
         {TOOL_GROUPS.map((g) => (
           <section className="tp-col" aria-label={g.label} key={g.label}>
             <h2 className="toolgroup-h"><span>{g.title}</span></h2>
+            {lead?.group === g.label ? lead.compact : null}
             {g.cards.map((c) => <CompactTile key={c.sub} sub={c.sub} glide={view === "compact"} />)}
           </section>
         ))}

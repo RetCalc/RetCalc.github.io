@@ -8,7 +8,8 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ScenarioBar } from "@/components/shell/ScenarioBar";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import type { ToolInputs } from "@/components/tools/ToolState";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { CheckIcon, ChevronLeftIcon } from "lucide-react";
 import type { CollegeInputs } from "@/tools/college/model";
 import { Button } from "@/components/ui/button";
@@ -84,9 +85,11 @@ const CALC_Q = "What will my savings grow to, with the changes I see coming?";
 function calcLead(data: PickerData, yours: string | undefined): ToolsLead {
   const top = <div className="toolcard-top">{CALC_ICON}<div className="toolcard-name">{NAMES.advanced}</div><div className="toolcard-arrow">&#8250;</div></div>;
   return {
-    title: "Your own calculator",
+    // First and widest in Saving and investing, with the rest a third each.
+    group: "Saving and investing",
+    layout: [["rentbuy", "third"], ["fire", "third"], ["backtest", "third"], ["college", "third"]],
     charts: (
-      <ToolCardLink href={CALC_HREF} sub="advanced" i={0} className="tp-card tp-lead tp-full" charted>
+      <ToolCardLink href={CALC_HREF} sub="advanced" i={0} className="tp-card tp-lead" charted>
         {top}
         <div className="tp-lead-body">
           <div>
@@ -134,6 +137,9 @@ const fromNow = () => {
   return f && f.startsWith("/dashboard") ? f : "/dashboard/tools";
 };
 const noop = () => () => {};
+/* What each tool held when you left it, for the visit: coming back to a
+   tool finds it as you left it (Reset goes back to your plan's figures). */
+const kept = new Map<string, ToolInputs>();
 
 function Tool({ sub }: { sub: DashTool }) {
   const { data, setProfile } = useDashboard();
@@ -147,6 +153,7 @@ function Tool({ sub }: { sub: DashTool }) {
   // The profile as the tool opens; later changes to the profile don't reach
   // a tool already open, and the tool's own changes never reach the profile.
   const seed = useMemo(() => seedFor(data.profile, data.entries), [data.profile, data.entries]);
+  const opening = useCallback((id: string) => kept.get(id) ?? seed(id), [seed]);
   const household = useMemo(() => householdOf(data.profile, data.entries), [data.profile, data.entries]);
   const View = VIEWS[sub], tab = PLAN_TAB[sub];
   return (
@@ -170,8 +177,8 @@ function Tool({ sub }: { sub: DashTool }) {
           <Note>Filled in from your plan, to try things on: changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id + (tab.hash ?? "")} />}>{tab.name}</Button>.</Note>
         </div>
       ) : null}
-      <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={seed} household={household} scenarios
-        keep={sub === "college" ? (id, d) => { if (id === "college") { setCollege(d as unknown as CollegeInputs); setApplied(false); } } : undefined}><View /></Hosted></div>
+      <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={opening} household={household} scenarios
+        keep={(id, d) => { kept.set(id, d); if (sub === "college" && id === "college") { setCollege(d as unknown as CollegeInputs); setApplied(false); } }}><View /></Hosted></div>
     </Frame>
   );
 }
