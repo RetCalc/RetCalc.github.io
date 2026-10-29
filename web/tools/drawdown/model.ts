@@ -54,6 +54,10 @@ export const DD_STATE: [string, string, Kind, number | string | boolean][] = [
   ["ssClaim2", "ddSSClaim2", "pick", 67],
   ["ssAmount", "ddSSAmount", "money", 33000],
   ["ssAmount2", "ddSSAmount2", "money", 33000],
+  /* The years you and your spouse were born, which set each full retirement
+     age for an estimated benefit. Set by the household; blank means 67. */
+  ["ssBirth", "ddSSBirth", "text", ""],
+  ["ssBirth2", "ddSSBirth2", "text", ""],
   ["ssDelay", "ddSSDelay", "num", 0],
   /* The second person's start, when it differs from the first's (blank:
      both start together, as the form has it). Set by the Dashboard. */
@@ -102,7 +106,7 @@ export const DD_STATE: [string, string, Kind, number | string | boolean][] = [
 /* Settings added after scenarios were first saved. A full set of inputs
    that doesn't have one (an old scenario, a hand-off from another tool)
    sets it to its default, rather than keeping whatever was on screen. */
-const DD_LATER = ["ssDelay2", "ssFrom", "sv", "cash", "rebal", "rebalN", "rebalBand", "gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
+const DD_LATER = ["ssBirth", "ssBirth2", "ssDelay2", "ssFrom", "sv", "cash", "rebal", "rebalN", "rebalBand", "gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
   "vgCeil", "vgFloor", "kitThresh", "kitRaise", "kitGap", "clyFloor", "hebWeight", "hebRate", "sensExtra",
   "rgTarget", "rgLo", "rgHi", "capeA", "capeB", "path", "pathEase", "gShare", "gType", "gYield", "gPayout", "gInflate",
   "mcBlock", "mcRet", "mcStock", "mcSV", "mcBond", "mcCash", "mcInfl"];

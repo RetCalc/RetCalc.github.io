@@ -87,7 +87,7 @@ export function SSNote({ a }: { a: Answers }) {
       {both
         ? <>Social Security: about <b>{money(ss.a1 / 12) + "/mo"}</b> for you from {ss.claim} ({src(ss.own, "your")}) and <b>{money(ss.a2 / 12) + "/mo"}</b> for your spouse from {ss.claim2} ({src(ss.own2, "their")}){ss.spousal ? ", including the spousal benefit" : ""}, in today&apos;s dollars.</>
         : <>{ss.own ? "Using your statement: " : "We estimate Social Security at about "}<b>{money(ss.total / 12) + "/mo"}</b>
-          {ss.own ? (ss.claim !== 67 ? ", adjusted for claiming at " + ss.claim : "") : " in today's dollars, from your income " +
+          {ss.own ? (ss.claim !== ss.fra1 ? ", adjusted for claiming at " + ss.claim : "") : " in today's dollars, from your income " +
             (ss.career < 35 ? "over the " + ss.career + " years you'll have worked by " + fmtNum(a.retire) + ", from 22" : "over a full career")}
           , starting at {ss.claim}.</>}
       {tail}{cover}

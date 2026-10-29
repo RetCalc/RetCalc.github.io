@@ -15,7 +15,10 @@ import { normalizeV2 } from "./stored";
 
 /** Every answer the guide keeps. Numbers are null once a field is cleared. */
 export interface Answers {
-  status?: "s" | "m" | null; age?: number | null; spouseAge?: number | null; retire?: number | null; state?: string | null;
+  status?: "s" | "m" | null; age?: number | null; spouseAge?: number | null;
+  /** Each of you's birth year, when it is known exactly (the Dashboard's). Left out, it is this year less the age. */
+  birth?: number | null; birth2?: number | null;
+  retire?: number | null; state?: string | null;
   income?: number | null; income2?: number | null;
   thKnow?: string | null; takehome?: number | null; txPre?: number | null;
   bgKnow?: string | null; spend?: number | null; bgSave?: number | null; bgMort?: number | null; bgHousing?: number | null; spendSrc?: string | null;

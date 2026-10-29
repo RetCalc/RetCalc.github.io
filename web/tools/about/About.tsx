@@ -455,7 +455,7 @@ export function About({ states }: { states: StateOption[] }) {
               <dd>Estimated from your income and the years you&apos;ll have worked by
               retirement, counted from 22, since Social Security averages your best 35
               years and missing years count as zeros. A lower-earning spouse gets at least
-              half the higher earner&apos;s benefit. It starts at 67, or at retirement if that&apos;s
+              half the higher earner&apos;s benefit. It starts at full retirement age (67 for anyone born in 1960 or later), or at retirement if that&apos;s
               later, unless you choose a claiming age from 62 to 70. A figure from your
               Social Security statement replaces the estimate and is scaled for the age you
               claim. A pension or other steady income can be added with its own start age,
@@ -903,7 +903,7 @@ export function About({ states }: { states: StateOption[] }) {
             <dl className="gloss">
               <dt>Full retirement age and the factors</dt>
               <dd>Full retirement age comes from the birth year: 66 for 1943 to 1954, two
-              months more for each year to 67 from 1960 on. A benefit claimed early is cut
+              months more for each year born after that, to 67 from 1960 on. A benefit claimed early is cut
               5/9 of 1% for each of the first 36 months and 5/12 of 1% for each month
               beyond. Claimed late it grows 2/3 of 1% per month, 8% per year, until 70.
               These are the Social Security Administration&apos;s own rules, applied to whole

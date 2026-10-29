@@ -194,6 +194,9 @@ export interface PlToday {
   trad: number; roth: number; rothBasis: number; brok: number; brokBasis: number;
   saveTrad: number; saveRoth: number; saveBrok: number; real: number; infl: number;
   spend: number; pia1: number; pia2: number; claim1: number; claim2: number;
+  /** Your and your spouse's full retirement age, in years (66.5 is 66 and 6
+      months), from the year each was born. 67 when left out. */
+  fra1?: number; fra2?: number;
   pension: number; pensionAge: number | null; pensionCola: boolean; aca: boolean; household: number;
   rule55: boolean; heirRate: number; mix: PlMixSpec; years: number; target: number; strategy: string; minSpend: number; fromYear: number;
   /** A partner still working after you retire: their pay a year before

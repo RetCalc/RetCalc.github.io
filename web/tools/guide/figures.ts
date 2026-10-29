@@ -114,11 +114,12 @@ export function buckets(a: Answers) {
 
 /** The claiming ages lesson 13 shows. */
 export const LADDER_AGES = [62, 64, 67, 70];
-/** Lesson 13's ladder: a benefit of `pia` per month at 67, claimed at each
-    age, by the 2026 rules (5/9 of 1% per month for the first three years
-    early, 5/12 beyond; 8% per year after 67). */
-export function ladder(pia: number, ages = LADDER_AGES) {
-  return ages.map((age) => ({ age, mo: plSSParts({ P: { pia1: pia, pia2: 0 }, married: false, gap: 0 }, { c1: age, c2: age }).own1 / 12 }));
+/** Lesson 13's ladder: a benefit of `pia` per month at full retirement age
+    (`fra`, 67 unless given), claimed at each age, by the 2026 rules (5/9 of
+    1% per month for the first three years early, 5/12 beyond; 8% per year
+    after full retirement age). */
+export function ladder(pia: number, ages = LADDER_AGES, fra = 67) {
+  return ages.map((age) => ({ age, mo: plSSParts({ P: { pia1: pia, pia2: 0, fra1: fra }, married: false, gap: 0 }, { c1: age, c2: age }).own1 / 12 }));
 }
 
 export interface Start { id: "a" | "b" | "c"; label: string; year: number; path: number[]; out: number | null; end: number }

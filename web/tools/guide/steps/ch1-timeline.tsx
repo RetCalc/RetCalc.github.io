@@ -28,7 +28,7 @@ export function AboutYou() {
             {" "}must pay for, from then until about 95. Working a year longer moves both: one more year of saving, one fewer to fund. That&apos;s why the
             {" "}retirement age is the strongest lever you have.</p>
           <p>A few ages are set by law: 59½ opens retirement accounts without a penalty, 62 is the earliest Social Security, 65 brings Medicare,
-            {" "}67 is <Term k="fra">full retirement age</Term>, and 75 starts required withdrawals.</p>
+            {" "}66 or 67, by birth year, is <Term k="fra">full retirement age</Term>, and 75 starts required withdrawals.</p>
         </Lesson>
       </Learn>
       <Numbers>
@@ -66,7 +66,7 @@ function TimelineReadout() {
         : spouseToMedicare != null && spouseToMedicare > 0 ? <li>You&apos;d have Medicare from the day you retire. Your spouse would wait <b>{yrs(spouseToMedicare)}</b>, buying their own coverage until then. The plan prices it for you.</li>
         : <li>You&apos;d retire at or after 65, so Medicare covers you from the start.</li>}
       {before59 > 0 ? <li>That&apos;s {yrs(before59)} before 59½, when retirement accounts open without a penalty. <b>Getting to 59½</b> joins your route to plan the years between.</li> : null}
-      <li>Social Security can start at 62{retire <= 62 ? "" : ", or whenever you choose after"}. The full benefit comes at 67, and waiting to 70 pays the most.</li>
+      <li>Social Security can start at 62{retire <= 62 ? "" : ", or whenever you choose after"}. The full benefit comes at 66 or 67, by birth year, and waiting to 70 pays the most.</li>
     </ul>
   );
 }

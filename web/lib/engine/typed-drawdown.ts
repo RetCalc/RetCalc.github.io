@@ -102,8 +102,8 @@ export const ddStudy = typed<(id: string) => DdStudy | null>(E.ddStudy);
 export const ddStagesFromRates = typed<(stages: unknown[], rate: number) => { start: number; level: number }[]>(E.ddStagesFromRates);
 export const DD_LANDING = E.DD_LANDING as Record<string, Record<string, unknown>>;
 export const ddJob = typed<(job: string, args: unknown) => unknown>(E.ddJob);
-export const ssEstimate = typed<(income: number, years: number, claim: number) => { monthly: number; pia: number }>(E.ssEstimate);
-export const ssDrawdownStreams = typed<(inc: number, claim: number, inc2: number, claim2: number, couple: boolean, retireAge: number | null, delay: number) =>
+export const ssEstimate = typed<(income: number, years: number, claim: number, fra?: number) => { monthly: number; pia: number; adjustment: number }>(E.ssEstimate);
+export const ssDrawdownStreams = typed<(inc: number, claim: number, inc2: number, claim2: number, couple: boolean, retireAge: number | null, delay: number, fra1?: number, fra2?: number) =>
   { own1: number; top1: number; own2: number; top2: number; annual: number; delay: number; annual2: number; delay2: number; annual3: number; delay3: number }>(E.ssDrawdownStreams);
 
 export const DD_STRAT = E.DD_STRAT as Record<string, DdStrat>;

@@ -8,6 +8,7 @@ import { Html } from "@/components/common/Html";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { opTacticsLine } from "@/tools/optimizer/words";
+import { fraLabel } from "@/tools/social/model";
 import { CARE_AREAS, careAreaOf, earlyCost, householdAtRetire } from "../schedule";
 import { rounded } from "../words";
 import {
@@ -497,10 +498,10 @@ function Social({ M, p }: { M: ReportModel; p: PageInfo }) {
   const Q = M.social!, total = Q.a1 + Q.a2, ssRows = M.rows.filter((r) => r.age >= M.firstClaim);
   const ladderMax = Math.max(...Q.ladder1.map((x) => x.v), ...Q.ladder2.map((x) => x.v));
   const one = (n: 1 | 2) => {
-    const name = cap(n === 1 ? M.who.first : M.who.second), a = n === 1 ? Q.a1 : Q.a2, pia = n === 1 ? Q.pia1 : Q.pia2, c = n === 1 ? Q.claim1 : Q.claim2, own = n === 1 ? Q.own1 : Q.own2;
+    const name = cap(n === 1 ? M.who.first : M.who.second), a = n === 1 ? Q.a1 : Q.a2, pia = n === 1 ? Q.pia1 : Q.pia2, c = n === 1 ? Q.claim1 : Q.claim2, own = n === 1 ? Q.own1 : Q.own2, fra = n === 1 ? Q.fra1 : Q.fra2;
     return <div><Sec>{name === "You" ? "Your benefit" : name}</Sec>
       <div className="rp-g2 tight"><Side><div className="rp-fig"><Est on={!own}>{money(a / 12)}</Est></div>per month, claiming at {c}</Side>
-        <Side><div className="rp-fig"><Est on={!own}>{money(pia)}</Est></div>per month at full retirement age, 67</Side></div>
+        <Side><div className="rp-fig"><Est on={!own}>{money(pia)}</Est></div>per month at full retirement age, {fraLabel(fra)}</Side></div>
       <p className="rp-small">{own ? "From your Social Security statement." : "Estimated from income. Your statement at ssa.gov/myaccount has the real figure."}</p>
       <h6 className="rp-mini">Claiming at each age from 62 to 70</h6>
       <ClaimLadder list={n === 1 ? Q.ladder1 : Q.ladder2} pick={c} max={ladderMax} /></div>;
@@ -508,7 +509,7 @@ function Social({ M, p }: { M: ReportModel; p: PageInfo }) {
   return (
     <Sheet M={M} p={p}>
       <Lead h={<>{money(total / 12)} per month together, {Q.claim1 === Q.claim2 ? "each claiming at " + Q.claim1 : "claiming at " + Q.claim1 + " and " + Q.claim2}.</>}>
-        Each of you gets a benefit from your own work record, or up to half the other&apos;s full benefit if that&apos;s more{Q.spousal ? ", which your plan uses" : ""}. Claiming before 67 shrinks a benefit for life. Each year of waiting past 67 raises it 8%, up to 70.
+        Each of you gets a benefit from your own work record, or up to half the other&apos;s full benefit if that&apos;s more{Q.spousal ? ", which your plan uses" : ""}. Claiming before full retirement age shrinks a benefit for life. Each year of waiting past it raises the benefit 8%, up to 70.
       </Lead>
       <div className="rp-g2">{one(1)}{one(2)}</div>
       <div className="rp-wide">

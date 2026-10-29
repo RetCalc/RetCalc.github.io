@@ -676,7 +676,7 @@ export function About() {
                   <dl className="gloss">
                     <dt>Full retirement age and the factors</dt>
                     <dd>Full retirement age comes from the birth year: 66 for 1943 to 1954, two
-                    months more for each year to 67 from 1960 on. A benefit claimed early is cut
+                    months more for each year born after that, to 67 from 1960 on. A benefit claimed early is cut
                     5/9 of 1% for each of the first 36 months and 5/12 of 1% for each month
                     beyond, and claimed late it grows 2/3 of 1% per month, 8% per year, until 70.
                     These are the Social Security Administration&apos;s own rules, applied to whole

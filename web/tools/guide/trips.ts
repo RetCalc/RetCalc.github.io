@@ -26,7 +26,7 @@ import type { Inputs as MortgageInputs } from "@/tools/mortgage/model";
 import { compileChanges } from "@/tools/advanced/changes";
 import { editsFrom, guideChanges, guideSchedule } from "./toAdvanced";
 import { runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
-import { bridgeSpend, bridgeSplit, coastNow, ddOpts, gdM, gross, mar, minSpend, mixFor, ok, pensionItems, pos, riskLabel, saveMo, saveNow, sim, stratName } from "./calc";
+import { births, bridgeSpend, bridgeSplit, coastNow, ddOpts, gdM, gross, mar, minSpend, mixFor, ok, pensionItems, pos, riskLabel, saveMo, saveNow, sim, stratName } from "./calc";
 import type { Answers, Capture, Trip } from "./store";
 
 export interface Task { h: string; ok?: boolean }
@@ -286,8 +286,9 @@ const TRIPS: Record<string, TripDef<never>> = {
       // amounts go in as known benefits.
       const est = !S.ss.own && !S.ss.spousal && S.ss.career >= 35 && (!mar(a) || !ok(a.spouseAge) || Math.round(a.spouseAge + (S.retire - a.age!)) - 22 >= 35);
       if (est) {
-        Object.assign(d, { ssMode: "est", ssWho: mar(a) ? "couple" : "single", ssIncome: a.income || 0, ssClaim: S.ss.claim });
-        if (mar(a)) Object.assign(d, { ssIncome2: a.income2 || 0, ssClaim2: S.ss.claim });
+        const B = births(a);
+        Object.assign(d, { ssMode: "est", ssWho: mar(a) ? "couple" : "single", ssIncome: a.income || 0, ssClaim: S.ss.claim, ssBirth: B.birth1 });
+        if (mar(a)) Object.assign(d, { ssIncome2: a.income2 || 0, ssClaim2: S.ss.claim2, ssBirth2: B.birth2 });
       } else Object.assign(d, { ssMode: "manual", ssWho: S.ss.a2 > 0 ? "couple" : "single", ssAmount: Math.round(S.ss.a1), ssAmount2: Math.round(S.ss.a2), ssDelay: S.ss.claim });
       // The guide's pension joins whatever other income is already listed.
       const keep = s.incomeItems.filter((x) => x.name !== "Pension (from the guide)");
@@ -341,13 +342,13 @@ const TRIPS: Record<string, TripDef<never>> = {
       ({ a, s, trip }: Ctx<DrawdownState>) => {
         const b = trip.base as { est: boolean; claim: number } | undefined;
         if (b && b.est) return [
-          { h: "<b>Claim at age</b> sets when your benefit starts. Waiting raises it about 8% per year from 67 to 70. Claiming at 62 cuts it about 30%, for life." },
+          { h: "<b>Claim at age</b> sets when your benefit starts. Waiting raises it about 8% per year from full retirement age to 70. Claiming at 62 cuts it 25% to 30%, for life." },
           { h: "Scroll to <b>Social Security claiming age comparison</b>, near the bottom, for your success rate claiming at 62, 64, 67 and 70." },
           { h: "Later claiming means drawing more from savings first, but a bigger check for the rest of your life, and for a surviving spouse.", ok: parseNum(String(s.ssClaim)) !== b.claim ? true : undefined },
         ];
         return [
           { h: "Your benefit is entered as a known amount" + (a.ssOwn ? ", from your statement" : ", from the guide's estimate") + ", starting at " + (b ? b.claim : 67) + "." },
-          { h: "Waiting raises a benefit about 8% per year from 67 to 70. Claiming at 62 cuts it about 30%. To try a different age, change <b>When will you claim it?</b> on the guide's Social Security card: the guide works out the new amount." },
+          { h: "Waiting raises a benefit about 8% per year from full retirement age to 70. Claiming at 62 cuts it 25% to 30%. To try a different age, change <b>When will you claim it?</b> on the guide's Social Security card: the guide works out the new amount." },
         ];
       },
       ({ s }: Ctx<DrawdownState>) => [

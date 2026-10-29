@@ -84,7 +84,8 @@ export interface Profile {
   assume: Assumptions;
   /** Social Security: checked by the person, each benefit at full
       retirement age per month from a statement (null: estimated), and the
-      age to claim (null: 67, or retirement if later). */
+      age to claim (null: full retirement age to the nearest year, 67 for anyone
+      born in 1960 or later, or retirement if later). */
   ss: { checked: boolean; own1: number | null; own2: number | null; claim: number | null; claim2: number | null;
     /** The share of the benefit expected, in percent (cuts if the trust
         fund runs short): every benefit in the plan is scaled by it. Unset: 100. */

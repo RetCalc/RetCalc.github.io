@@ -195,7 +195,7 @@ function Moves({ res }: { res: Result }) {
               ? "with the check starting later, the years before it have low income, and that's where the conversions below get done cheaply."
               : "with the check covering more of each year's spending, more of the low tax brackets are free for the conversions below.")
             : later
-              ? "Every year you wait past 67 adds 8% to the check, for life, and it rises with inflation. Your savings carry the years in between, which usually costs less than the bigger check pays back over a long retirement."
+              ? "Every year you wait past full retirement age adds 8% to the check, for life, and it rises with inflation. Your savings carry the years in between, which usually costs less than the bigger check pays back over a long retirement."
               : "Claiming sooner means drawing less from savings early on, so more of it stays invested. In your plan that outweighs the bigger check waiting would bring.";
         } else {
           const until = opConvUntil(t, C);

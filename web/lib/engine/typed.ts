@@ -41,13 +41,16 @@ export const projectBasic = typed<(p: { years: number; real: number; initial: nu
 
 export const ssPiaFromEarnings = typed<(earnings: number[]) => { aime: number; pia: number; years: number; counted: number[] }>(E.ssPiaFromEarnings);
 export const ssFRA = typed<(birthYear: number) => number>(E.ssFRA);
+/** Full retirement age for someone of this age today (67 when no age is known). */
+export const ssFraFromBirth = typed<(birth: unknown) => number>(E.ssFraFromBirth);
+export const ssFraFromAge = typed<(age: number | null | undefined) => number>(E.ssFraFromAge);
 export const ssClaimFactor = typed<(claimAge: number, fra: number) => number>(E.ssClaimFactor);
 export const ssSpousalFactor = typed<(claimAge: number, fra: number) => number>(E.ssSpousalFactor);
 export const ssPerson = typed<(p: { pia: number; fra: number; claim: number; earnings?: number }) => SsPerson>(E.ssPerson);
 export const ssHousehold = typed<(o: SsHouseholdInput) => SsHousehold>(E.ssHousehold);
 export const ssBreakEven = typed<(a: number, benA: number, b: number, benB: number) => number | null>(E.ssBreakEven);
 export const ssInvestEarly = typed<(o: SsInvestInput) => SsInvest>(E.ssInvestEarly);
-export const ssEstimatePia = typed<(income: number, careerYears: number, claimAge: number) => { pia: number; aime: number }>(E.ssEstimate);
+export const ssEstimatePia = typed<(income: number, careerYears: number, claimAge: number, fra?: number) => { pia: number; aime: number }>(E.ssEstimate);
 export const ssTaxable = typed<(ss: number, otherAgi: number, st: string) => { taxable: number }>(E.ssTaxable);
 export const hcFPL = typed<(size: number) => number>(E.hcFPL);
 export const hcGrossPremium = typed<(state: string, age: number, manual: number) => number>(E.hcGrossPremium);

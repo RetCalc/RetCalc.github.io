@@ -16,7 +16,7 @@ import { toolInputs, useToolState } from "@/components/tools/ToolState";
 import { HeroReading, PinnedReading, type HeroTone, type ReadingFigure } from "@/components/common/Reading";
 import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
-import { project, projectBasic } from "@/lib/engine/typed";
+import { NEWEST_YEAR, project, projectBasic } from "@/lib/engine/typed";
 import {
   HIST_START, HIST_STOCK, ddOptsFromState, ddScorecard, ddWindows, historicalBacktest,
   type DdMC, type DdOpts, type DdPrep,
@@ -95,6 +95,9 @@ export function Drawdown({ landing }: { landing?: string }) {
     const retire = has(h.retire) && h.retire! > 0 && h.retire! < 120 ? Math.round(h.retire!) : null;
     const d: Record<string, unknown> = { ssWho: married ? "couple" : "single" };
     if (retire) d.retireAge = String(retire);
+    // Their birth years set each full retirement age for the estimated benefits.
+    if (has(h.age) && h.age! > 0 && h.age! < 120) d.ssBirth = String(NEWEST_YEAR - Math.round(h.age!));
+    if (married && has(h.spouseAge) && h.spouseAge! > 0 && h.spouseAge! < 120) d.ssBirth2 = String(NEWEST_YEAR - Math.round(h.spouseAge!));
     if (has(h.income)) d.ssIncome = h.income;
     if (married && has(h.income2)) d.ssIncome2 = h.income2;
     return ddWrite(c, d);

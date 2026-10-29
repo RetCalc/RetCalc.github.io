@@ -7,6 +7,7 @@
 
 import { FACTORS, STRATS, retPath, score, sim, strats, type FactorId, type Part, type Sim, type StratResult } from "@/tools/guide/calc";
 import type { Answers } from "@/tools/guide/store";
+import { ssFRA } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
 import { budgetFor, drawdownFor, drawdownRuns, flow, personSaving, retireMix, savingAt, stocksOf, taxState } from "./flows";
 import { paycheckInput } from "@/tools/budget/paycheck-math";
@@ -24,6 +25,10 @@ import { ownerOf } from "./kinds";
 
 /** Take-home is about this share of pay before taxes, when only one is known. */
 const NET_SHARE = 0.76;
+
+/** A person's full retirement age to the nearest whole year, from the year
+    they were born: the age a blank claiming choice means. 67 with no birth year. */
+export const fraYears = (p: Pick<Person, "by">) => (p.by ? Math.round(ssFRA(p.by)) : 67);
 
 /** Now, as a year with a fraction (October 2026 is 2026.75). */
 export function nowYear(d = new Date()): number {
@@ -148,6 +153,8 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
     // marketplace premiums).
     state: abroad || !pr.state ? "IL" : pr.state,
     age: ageOf(pr.p1), spouseAge: two ? ageOf(pr.p2) : null, retire: pr.p1.retire,
+    // The birth years themselves, which set each full retirement age.
+    birth: pr.p1.by ?? null, birth2: two ? pr.p2.by ?? null : null,
     income: grossYear(pr.p1), income2: two ? grossYear(pr.p2) : null,
     saved: pr.saved == null && !entries.length ? null : saved,
     rothNow: abroad ? saved : H.roth, brokNow: abroad ? 0 : H.brok,
@@ -242,9 +249,10 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
     if (pay > 0) a.work2 = { pay, t: ps.t * 12, r: ps.r * 12, b: 0, years: stop2.years };
   }
   // Each of you's own claiming age (the plan's optimizer path, which takes
-  // two), each defaulting to 67 or retirement if later, as the fields say.
+  // two), each defaulting to full retirement age (to the nearest year, 67 for
+  // anyone born in 1960 or later) or retirement if later, as the fields say.
   if (!abroad) {
-    const dflt = (p: Person) => Math.min(70, Math.max(67, p.retire ?? 67));
+    const dflt = (p: Person) => { const f = fraYears(p); return Math.min(70, Math.max(f, p.retire ?? f)); };
     Object.assign(a, { optC1: pr.ss.claim ?? dflt(pr.p1), optC2: two ? pr.ss.claim2 ?? dflt(pr.p2) : pr.ss.claim ?? dflt(pr.p1), optF: 0, optU: 0, optIm: 0, optAc: 0 });
   }
   if (abroad) Object.assign(a, { splitTrad: 0, splitRoth: 100, splitBrok: 0, ssOwn: 1e-6, ssOwn2: two ? 1e-6 : null, hcIncl: "yes" });

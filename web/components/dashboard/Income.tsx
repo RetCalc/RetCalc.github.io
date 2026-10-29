@@ -19,7 +19,7 @@ import { Frame } from "./Frame";
 import { PayFields, StateField, num, txt, type PKey } from "./fields";
 import { budgetFor, flow, fromBudget, socialBenefits, socialFor } from "./flows";
 import { money } from "./format";
-import { couple, nameOf, otherMonth, outsideUS, results, yearAt } from "./model";
+import { couple, fraYears, nameOf, otherMonth, outsideUS, results, yearAt } from "./model";
 import { newId, useDashboard, type Person, type Profile } from "./store";
 import { Note, Tile, TipLabel } from "./ui";
 
@@ -28,7 +28,7 @@ export function ClaimField({ pr, set, i = 0 }: { pr: Profile; set: (f: (p: Profi
   const v = i ? pr.ss.claim2 : pr.ss.claim;
   return (
     <SelectField id={"dshClaim" + i} label={<TipLabel text={`${nameOf(pr, i)} claims`} k="ssclaim" />} value={String(v ?? "")} onChange={(x) => set((p) => ({ ...p, ss: { ...p.ss, ...(i ? { claim2: x ? Number(x) : null } : { claim: x ? Number(x) : null }) } }))}>
-      <option value="">At 67, or at retirement if later</option>
+      <option value="">{`At ${fraYears(i ? pr.p2 : pr.p1)}, or at retirement if later`}</option>
       {[62, 63, 64, 65, 66, 67, 68, 69, 70].map((a) => <option key={a} value={a}>At {a}{a === 70 ? " (the most per month)" : a === 62 ? " (the earliest)" : ""}</option>)}
     </SelectField>
   );

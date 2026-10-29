@@ -6,7 +6,7 @@
    through typed.ts (core.js), not this file: math.js and drawdown.js read
    each other's names, and core.js loads them in the order that works. */
 import {
-  mulberry32, ultDivisor, histAnnual, HIST_STOCK, HIST_BOND, HIST_INFL, pmtStart, ssDrawdownStreams
+  mulberry32, ultDivisor, histAnnual, HIST_STOCK, HIST_BOND, HIST_INFL, pmtStart, ssDrawdownStreams, ssFraFromBirth
 } from "./math.js";
 import {
   HIST_START, HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, HIST_M_CAPE, HIST_FF_START, HIST_M_CASH, HIST_M_SV, CAPE_NOW
@@ -962,7 +962,7 @@ export function ddOptsFromState(d){
     }
   } else if (d.ssMode === "est") {
     ss = ssDrawdownStreams(v("ssIncome", 0), v("ssClaim", 67), v("ssIncome2", 0), v("ssClaim2", 67),
-      couple, retireAge, v("ssDelay", 0));
+      couple, retireAge, v("ssDelay", 0), ssFraFromBirth(d.ssBirth), ssFraFromBirth(d.ssBirth2));
   }
 
   // Stages saved before the spending path belonged to the fixed strategy.

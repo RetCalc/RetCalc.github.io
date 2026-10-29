@@ -9,7 +9,7 @@ export const ROTH_DEFAULTS = {
   trad: g(1500000), roth: g(150000), brok: g(400000), basis: "60", ret: "5", spend: g(100000),
   ss: g(36000), ssAge: "67", spSS: g(22000), spSSAge: "67", other: "0", otherStart: "62",
   death: "15", strategy: "brk", bracket: "0.22", irmaaTarget: "0", fixed: g(75000),
-  pct: "8", startAge: "62", stopAge: "75", payFrom: "taxable", heir: "32", disc: "3", irmaaOn: "1",
+  pct: "8", startAge: "62", stopAge: "75", payFrom: "taxable", heir: "24", disc: "3", irmaaOn: "1",
 };
 export type RothInputs = typeof ROTH_DEFAULTS;
 
