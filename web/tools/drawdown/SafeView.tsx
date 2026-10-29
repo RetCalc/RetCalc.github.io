@@ -7,6 +7,7 @@
    ddSafeRefresh(), ddPaintSafe(), ddPaintHeat() and ddPaintVal() in
    src/js/app/15b-drawdown-views.js. */
 
+import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { useState } from "react";
 import { MultiChart } from "@/components/charts/MultiChart";
 import { Scatter } from "@/components/charts/Scatter";
@@ -81,7 +82,7 @@ function NoDial({ name, axis, setAxis }: { name: string; axis: "stock" | "years"
   );
 }
 const SafeTitle = () => <CardHeader><CardTitle id="ddSafeTitle"><span><Tipped text="The most you could have started with" k="ddsafe" /></span></CardTitle></CardHeader>;
-const ValTitle = () => <CardHeader><CardTitle><span><Tipped text="Valuations at the start" k="ddvalue" /></span></CardTitle><CardDescription>Shiller CAPE</CardDescription></CardHeader>;
+const ValTitle = ({ action }: { action?: React.ReactNode }) => <CardHeader><CardTitle><span><Tipped text="Valuations at the start" k="ddvalue" /></span></CardTitle><CardDescription>Shiller CAPE</CardDescription>{action ? <CardAction>{action}</CardAction> : null}</CardHeader>;
 function HeatTitle({ axis, setAxis }: { axis: "stock" | "years"; setAxis: (a: "stock" | "years") => void }) {
   return (
     <CardHeader><CardTitle><span><Tipped text="Success grid" k="ddheat" /></span></CardTitle><CardAction>
@@ -274,11 +275,12 @@ function HeatPanel({ v, Hm, running, axis, setAxis }: { v: DDView; Hm: { res: Dd
 /* Valuations: each start's CAPE against the most it could have started
    with, and where today's market sits. */
 function ValPanel({ S }: { S: Safe }) {
-  let intro = "", chart: React.ReactNode = null, legend = "", note = "";
+  let intro = "", chart: ((px?: Px) => React.ReactNode) | null = null, legend = "", note = "";
+  const full = useFullScreen("Valuations at the start");
   const safe = S ? (S.res.safe || []).filter((w) => w.rate != null) : [];
   if (S && safe.length) {
     const o = S.o, mine = rateOf(o, S.P), monthly = !!o.monthly;
-    chart = <Scatter id="DDV" ariaLabel="Each start's CAPE against the most it could have started with"
+    chart = (px?: Px) => <Scatter id={px ? "DDVF" : "DDV"} px={px} ariaLabel="Each start's CAPE against the most it could have started with"
       pts={safe.map((w) => ({ x: w.cape, y: w.rate! * 100, w, color: w.rate! < mine - 1e-6 ? SERIES.loss : SERIES.gain }))}
       opt={{ small: safe.length > 150, xMin: 0, yZero: true, xFmt: (x) => fmtNum(x), yFmt: (y) => fmtNum(y) + "%", xLabel: "CAPE at the start →", yLabel: "Highest year one that worked",
         vLine: { x: CAPE_NOW, label: "today, " + CAPE_NOW.toFixed(1), color: SERIES.guide }, hLine: { y: mine * 100, label: "yours, " + pctStr(mine, 2) } }}
@@ -299,10 +301,11 @@ function ValPanel({ S }: { S: Safe }) {
   }
   return (
     <Card id="ddValPanel" data-ddtabs="safe">
-      <ValTitle />
+      <ValTitle action={chart ? full.button : null} />
       <CardContent id="ddValIntro"><Html className="ddintro" html={intro} /></CardContent>
-      {chart ?? <Scatter id="DDV" pts={[]} ariaLabel="Each start's CAPE against the most it could have started with" tip={() => null} />}
+      {chart ? chart() : <Scatter id="DDV" pts={[]} ariaLabel="Each start's CAPE against the most it could have started with" tip={() => null} />}
       <Html className="legend" id="legendDDV" html={legend} />
+      {chart ? full.overlay(chart, <Html className="legend" id="legendDDVF" html={legend} />) : null}
       <div className="hint ddpad" id="ddValNote">{note}</div>
     </Card>
   );

@@ -7,6 +7,7 @@
    ddPaintMC(), ddPlanExtras(), ddPaintScore(), ddPaintDist(), ddPaintSeq()
    and the tables in src/js/app/15-drawdown.js, 15b and 15d. */
 
+import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { useRef, useState, type ReactNode } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { BandChart, type BandPoint } from "@/components/charts/BandChart";
@@ -322,6 +323,7 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
 
 /* ---- when you retire: sequence risk ---- */
 function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
+  const full = useFullScreen("When you retire");
   const [kind, setKind] = useState<"decade" | "year">("decade");
   const { o } = v;
   if (!H || !H.runs.length) return <Card id="ddSeqPanel" data-ddtabs="plan" hidden />;
@@ -356,16 +358,8 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
       " per year after inflation over " + o.years + " years, yet one left " + money(M.of(pr.a)) + " and the other " + money(M.of(pr.b)) +
       ": their first decades returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + ".";
   const eras = DD_ERAS.filter((e) => e.to >= lo && e.from <= hi);
-  return (
-    <Card id="ddSeqPanel" data-ddtabs="plan">
-      <CardHeader><CardTitle><span><Tipped text="When you retire" k="ddseq" /></span></CardTitle><CardAction>
-        <SegmentedGroup id="segDDSeq">
-          <SegmentedItem data-ddseq="decade" pressed={dec} onClick={() => setKind("decade")}>By first decade</SegmentedItem>
-          <SegmentedItem data-ddseq="year" pressed={!dec} onClick={() => setKind("year")}>By start year</SegmentedItem>
-        </SegmentedGroup>
-      </CardAction></CardHeader>
-      <CardContent id="ddSeqIntro"><Html className="ddintro" html={txt + (dec ? "" : " The dashed lines mark the eras below.")} /></CardContent>
-      <Scatter id="DDQ" pts={pts} ariaLabel="Each start's first ten years against how its retirement ended"
+  const seqChart = (px?: Px) => (
+      <Scatter id={px ? "DDQF" : "DDQ"} px={px} pts={pts} ariaLabel="Each start's first ten years against how its retirement ended"
         opt={{
           small: pts.length > 150, yZero: true, yFmt: fmtAxisMoney,
           xFmt: dec ? (x) => fmtNum(x) + "%" : (x) => String(Math.round(x)),
@@ -388,6 +382,19 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
             <br /><span className="ddtip-era">Tap to see it year by year</span>
           </>;
         }} />
+  );
+  return (
+    <Card id="ddSeqPanel" data-ddtabs="plan">
+      <CardHeader><CardTitle><span><Tipped text="When you retire" k="ddseq" /></span></CardTitle><CardAction>
+        <SegmentedGroup id="segDDSeq">
+          <SegmentedItem data-ddseq="decade" pressed={dec} onClick={() => setKind("decade")}>By first decade</SegmentedItem>
+          <SegmentedItem data-ddseq="year" pressed={!dec} onClick={() => setKind("year")}>By start year</SegmentedItem>
+        </SegmentedGroup>
+        {full.button}
+      </CardAction></CardHeader>
+      <CardContent id="ddSeqIntro"><Html className="ddintro" html={txt + (dec ? "" : " The dashed lines mark the eras below.")} /></CardContent>
+      {seqChart()}
+      {full.overlay(seqChart)}
       <Html className="legend" id="legendDDQ" html={(dec ? "" : "<span class='ddleg-k'>" + M.axis + ":</span> ") + swatch(SERIES.gain, "Lasted") + swatch(SERIES.loss, "Ran out") +
         (ps.sel != null ? "<span><i class='box-border rounded-full border-2 border-solid border-foreground bg-transparent'></i>The start picked in the table</span>" : "")} />
       <details className="dderas" id="ddEras" hidden={!eras.length}><summary>What happened in the marked years<ChevronDownIcon className="size-3.5" aria-hidden="true" /></summary>
@@ -442,14 +449,15 @@ const lbl = (age: number | null, year: number, point: boolean) => (age != null ?
 function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult | null; ps: PlanSel; show: DdHistRun | null; showLabel: string }) {
   const { o, age } = v;
   const xOff = age != null ? age : 0;
-  let title = "Every historical starting year", chart: React.ReactNode = null, legend = "", note = "";
+  const full = useFullScreen("Portfolio balance through retirement");
+  let title = "Every historical starting year", chart: ((px?: Px) => React.ReactNode) | null = null, legend = "", note = "";
   if (R?.kind === "hist") {
     const H = R.H, B = R.B;
     if (ps.view === "all") {
       title = H.monthly ? "Every historical starting month" : "Every historical starting year";
       const f = once(H, ["fan", o.years, o.initial].join(), () => fanOf(H.runs, o.years, o.initial, (r, y) => (r.rows[y - 1] ? r.rows[y - 1].realEnd : 0)));
       const ov = baseOverlay(B, "realEnd", true, null);
-      chart = <BandChart id="DD" aspect={0.5} gutter={64} pts={f.pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced ariaLabel="Portfolio balance through retirement"
+      chart = (px?: Px) => <BandChart id={px ? "DDF" : "DD"} px={px} aspect={0.5} gutter={64} pts={f.pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced ariaLabel="Portfolio balance through retirement"
         traces={v.tracesOn ? f.traces : undefined} overlay={ov ?? undefined}
         tip={(b) => <><b>{lbl(age, b.year, true)}</b><FanTipRows b={b} /></>} />;
       legend = "hist";
@@ -458,7 +466,7 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
       title = "Starting in " + showLabel;
       const pts: BandPoint[] = [{ year: 0, base: o.initial, hi: o.initial, lo: 0 }, ...show.rows.map((r) => ({ year: r.year, base: r.realEnd, hi: r.realEnd, lo: 0 }))];
       const ov = baseOverlay(B, "realEnd", true, show.startIdx);
-      chart = <BandChart id="DD" aspect={0.5} gutter={64} pts={pts} maxX={o.years} xOffset={xOff} enhanced noLoLine overlay={ov ?? undefined} ariaLabel="Portfolio balance through retirement"
+      chart = (px?: Px) => <BandChart id={px ? "DDF" : "DD"} px={px} aspect={0.5} gutter={64} pts={pts} maxX={o.years} xOffset={xOff} enhanced noLoLine overlay={ov ?? undefined} ariaLabel="Portfolio balance through retirement"
         tip={(b) => <><b>{lbl(age, b.year, true)}</b><br /><span className="n">{money(b.base)}</span></>} />;
       legend = swatch(SERIES.plan, "Portfolio balance, in today’s dollars") + (ov ? swatch(BASE_COLOR, "Baseline, same start") : "");
       note = "Balance in today’s dollars, retiring in " + showLabel + ".";
@@ -469,24 +477,29 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
     const pts: BandPoint[] = [{ year: 0, base: o.initial, hi: o.initial, lo: o.initial, p25: o.initial, p75: o.initial },
       ...M.bands.map((b) => ({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 }))];
     const ov = Mb ? baseLine([{ year: 0, value: R.baseInitial }, ...Mb.bands.map((b) => ({ year: b.year, value: b.p50 }))]) : undefined;
-    chart = <BandChart id="DD" aspect={0.5} gutter={64} pts={pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced overlay={ov} ariaLabel="Portfolio balance through retirement"
+    chart = (px?: Px) => <BandChart id={px ? "DDF" : "DD"} px={px} aspect={0.5} gutter={64} pts={pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced overlay={ov} ariaLabel="Portfolio balance through retirement"
       tip={(b) => <><b>{lbl(age, b.year, true)}</b><FanTipRows b={b} /></>} />;
     legend = "mc";
     note = "Balance in today's dollars across " + M.trials.toLocaleString("en-US") + " simulated retirements.";
   }
   const hasBase = R?.kind === "hist" ? !!R.B : R?.kind === "mc" ? !!R.Mb : false;
+  const legendEl = legend === "hist" ? <HistLegend id="legendDD" tracesOn={v.tracesOn} onToggleTraces={v.toggleTraces}>{hasBase ? <BaseSwatch /> : null}</HistLegend>
+    : legend === "mc" ? <McLegend id="legendDD" noDet>{hasBase ? <BaseSwatch /> : null}</McLegend>
+      : <Html className="legend" id="legendDD" html={legend} />;
   return (
     <Card data-ddtabs="plan">
-      <CardHeader><CardTitle id="ddChartTitle">{title}</CardTitle><CardAction id="ddViewWrap" hidden={R?.kind !== "hist"}>
-        <SegmentedGroup id="segDDView">
-          <SegmentedItem data-ddview="year" pressed={ps.view === "year"} onClick={() => ps.setView("year")}>Selected year</SegmentedItem>
-          <SegmentedItem data-ddview="all" pressed={ps.view === "all"} onClick={() => ps.setView("all")}>All years</SegmentedItem>
-        </SegmentedGroup>
-      </CardAction></CardHeader>
-      {chart ?? <BandChart id="DD" aspect={0.5} gutter={64} pts={[]} maxX={1} ariaLabel="Portfolio balance through retirement" tip={() => null} />}
-      {legend === "hist" ? <HistLegend id="legendDD" tracesOn={v.tracesOn} onToggleTraces={v.toggleTraces}>{hasBase ? <BaseSwatch /> : null}</HistLegend>
-        : legend === "mc" ? <McLegend id="legendDD" noDet>{hasBase ? <BaseSwatch /> : null}</McLegend>
-          : <Html className="legend" id="legendDD" html={legend} />}
+      <CardHeader><CardTitle id="ddChartTitle">{title}</CardTitle><CardAction><span className="flex items-center gap-2">
+        <span id="ddViewWrap" hidden={R?.kind !== "hist"}>
+          <SegmentedGroup id="segDDView">
+            <SegmentedItem data-ddview="year" pressed={ps.view === "year"} onClick={() => ps.setView("year")}>Selected year</SegmentedItem>
+            <SegmentedItem data-ddview="all" pressed={ps.view === "all"} onClick={() => ps.setView("all")}>All years</SegmentedItem>
+          </SegmentedGroup>
+        </span>
+        {chart ? full.button : null}
+      </span></CardAction></CardHeader>
+      {chart ? chart() : <BandChart id="DD" aspect={0.5} gutter={64} pts={[]} maxX={1} ariaLabel="Portfolio balance through retirement" tip={() => null} />}
+      {legendEl}
+      {chart ? full.overlay(chart, legendEl) : null}
       <Html className="mcnote" id="ddChartNote" html={note} />
     </Card>
   );

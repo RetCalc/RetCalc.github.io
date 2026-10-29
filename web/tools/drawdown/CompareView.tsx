@@ -5,6 +5,7 @@
    The tuning runs in the worker. From ddShowRefresh(), ddPaintShow() and
    ddPaintSpot() in src/js/app/15b-drawdown-views.js. */
 
+import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { useRef, useState } from "react";
 import { MultiChart, type Series } from "@/components/charts/MultiChart";
 import { Scatter } from "@/components/charts/Scatter";
@@ -63,10 +64,30 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
   const yName = { end: "Typically left at the end", low: "Leanest year", first: "Year one" }[yk];
   const spotLbl = (sp: { year: number; month: number } | null) => (sp ? (sp.month && sp.month !== 1 ? MON[sp.month - 1] + " " : "") + sp.year : "");
   const th = (c: Col, label: string) => <th {...sort.th(c, !!res)} data-ssort={c}>{label}</th>;
+  const showFull = useFullScreen("Strategy showdown");
+  const showChart = (px?: Px) => (
+    <Scatter id={px ? "DDSF" : "DDS"} px={px} ariaLabel="Each strategy's typical lifetime spending against what it leaves, its leanest year or its year one"
+      pts={res ? res.list.map((x) => ({ x: x.life, y: x[yk], label: DD_UI[x.id].short, id: x.id, cur: x.id === so.strategy, miss: !x.met })) : []}
+      opt={{ xFmt: fmtAxisMoney, yFmt: fmtAxisMoney, xLabel: "Typical lifetime spending →", yLabel: yName + " →", yZero: true,
+        hLine: sT.crit === "comfort" && yk !== "end" ? { y: ddLineAt(sT.comfort, 0), label: "comfort line", color: SERIES.guide } : null }}
+      tip={(p) => {
+        const x = res!.list.find((q) => q.id === p.id)!;
+        return <>
+          <b>{DD_UI[x.id].name}</b>
+          {x.tuned ? <><br />{dialText(x.id, x.dial, so)}</> : null}
+          <br />Year one <span className="n">{money(x.first)}</span>
+          <br />Typical lifetime <span className="n">{money(x.life)}</span>
+          <br />Leanest year <span className="n">{money(x.low)}</span>
+          <br />Typically left <span className="n">{money(x.end)}</span>
+          {x.met ? null : <><br /><span className="neg">Closest it gets: {pctStr(x.share, 0)} of starts</span></>}
+        </>;
+      }} />
+  );
+  const showLegend = <Html className="legend" id="legendDDS" html={res ? swatch(SERIES.plan, "Your strategy") + swatch(SERIES.gain, "Meets the target") + swatch(SERIES.loss, "Can't meet it: shown at its closest") : ""} />;
   return (
     <>
       <Card id="ddShowPanel" data-ddtabs="compare">
-        <CardHeader><CardTitle><span><Tipped text="Strategy showdown" k="ddshowdown" /></span></CardTitle><CardDescription>each tuned to the same risk</CardDescription><CardAction><CsvButton table={table} label="Strategy showdown" /></CardAction></CardHeader>
+        <CardHeader><CardTitle><span><Tipped text="Strategy showdown" k="ddshowdown" /></span></CardTitle><CardDescription>each tuned to the same risk</CardDescription><CardAction><span className="flex items-center gap-2"><CsvButton table={table} label="Strategy showdown" />{res ? showFull.button : null}</span></CardAction></CardHeader>
         {best ? (
           <div className={cn("grid grid-cols-1 border-b border-border", best.steady && "sm:grid-cols-2")} id="ddShowBest">
             <ShowBest label="Spends the most at this risk" x={best.top} />
@@ -82,23 +103,9 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
             ))}
           </SegmentedGroup>
         </div>
-        <Scatter id="DDS" ariaLabel="Each strategy's typical lifetime spending against what it leaves, its leanest year or its year one"
-          pts={res ? res.list.map((x) => ({ x: x.life, y: x[yk], label: DD_UI[x.id].short, id: x.id, cur: x.id === so.strategy, miss: !x.met })) : []}
-          opt={{ xFmt: fmtAxisMoney, yFmt: fmtAxisMoney, xLabel: "Typical lifetime spending →", yLabel: yName + " →", yZero: true,
-            hLine: sT.crit === "comfort" && yk !== "end" ? { y: ddLineAt(sT.comfort, 0), label: "comfort line", color: SERIES.guide } : null }}
-          tip={(p) => {
-            const x = res!.list.find((q) => q.id === p.id)!;
-            return <>
-              <b>{DD_UI[x.id].name}</b>
-              {x.tuned ? <><br />{dialText(x.id, x.dial, so)}</> : null}
-              <br />Year one <span className="n">{money(x.first)}</span>
-              <br />Typical lifetime <span className="n">{money(x.life)}</span>
-              <br />Leanest year <span className="n">{money(x.low)}</span>
-              <br />Typically left <span className="n">{money(x.end)}</span>
-              {x.met ? null : <><br /><span className="neg">Closest it gets: {pctStr(x.share, 0)} of starts</span></>}
-            </>;
-          }} />
-        <Html className="legend" id="legendDDS" html={res ? swatch(SERIES.plan, "Your strategy") + swatch(SERIES.gain, "Meets the target") + swatch(SERIES.loss, "Can't meet it: shown at its closest") : ""} />
+        {showChart()}
+        {showLegend}
+        {showFull.overlay(showChart, showLegend)}
         <div className="swipehint">Swipe the table sideways to see every column.</div>
         <div className="scroll" tabIndex={0} role="region" aria-label="Strategy showdown">
           <table id="ddShowTable" ref={table}>

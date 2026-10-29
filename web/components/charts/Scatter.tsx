@@ -51,11 +51,13 @@ export function roundAxis(lo: number, hi: number) {
   return { min, max, ticks };
 }
 
-export function Scatter<P extends ScatterPoint>({ id, pts, opt = {}, ariaLabel, tip, onPick }: {
+export function Scatter<P extends ScatterPoint>({ id, pts, opt = {}, ariaLabel, tip, onPick, px }: {
   id: string; pts: P[]; opt?: Opts; ariaLabel: string; tip: (p: P) => React.ReactNode; onPick?: (p: P) => void;
+  /** Draw at exactly this many pixels (full screen). */
+  px?: { w: number; h: number };
 }) {
-  const narrow = useNarrow();
-  const W = narrow ? 470 : 900, H = narrow ? 420 : 360, L = narrow ? 62 : 78, R = narrow ? 14 : 18, T = 14, B = narrow ? 48 : 42;
+  const narrow = useNarrow() && !px;
+  const W = px ? px.w : narrow ? 470 : 900, H = px ? px.h : narrow ? 420 : 360, L = narrow ? 62 : 78, R = narrow ? 14 : 18, T = 14, B = narrow ? 48 : 42;
   const fs = narrow ? 16 : 13, sw = narrow ? 1.6 : 1, pw = W - L - R, ph = H - T - B; // about 11px on screen
   const size: ChartSize = { narrow, W, H, L, Rp: R, T, B, fs, sw, pw, ph };
   const live = pts.filter((p) => p.x != null && p.y != null && isFinite(p.x) && isFinite(p.y));
