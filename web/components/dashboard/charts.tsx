@@ -53,14 +53,13 @@ export function NetWorthChart(props: NetWorthProps) {
   return pts.length ? <NetWorthPlot {...props} /> : <div />;
 }
 
-function NetWorthPlot({ hist, proj, marks, until, height, traces, px, describe }: NetWorthProps) {
+function NetWorthPlot({ hist, proj, marks, until, height = 270, traces, px, describe }: NetWorthProps) {
   const [ref, fit] = useWidth(900);
   const [at, setAt] = useState<number | null>(null);
   const uid = useId().replace(/:/g, "");
   const W = px ? px.w : fit;
-  // Tall, as the site's other big charts are: a little over half its
-  // width, never shorter than 340 (280 on a phone) or taller than 480.
-  const H = px ? px.h : height ?? Math.round(Math.min(480, Math.max(W < 500 ? 280 : 340, W * 0.55)));
+  // Full screen is for a bigger look; on the page it stays compact.
+  const H = px ? px.h : height;
   const L = 56, R = 16, T = 18, B = 26;
   const pts = proj.filter((p) => p.t <= (until ?? Infinity));
   const x0 = hist.length ? Math.min(hist[0].t, pts[0].t) : pts[0].t, x1 = Math.max(pts[pts.length - 1].t, x0 + 1);
