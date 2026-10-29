@@ -39,8 +39,8 @@ import { PERIOD_ADV } from "@/lib/periods";
 import { advancedHasSaving, intoAdvanced, paycheckCopy, taxFromPaycheck } from "./to-calculator";
 import { annualize, type BudgetInputs } from "./model";
 import {
-  PC_LINES, PC_PLANS, PC_STEPS, PC_ZERO, healthRowMonthly, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcMost,
-  pcPlanApply, pcPlanOrder, pcRothRoom, pcPreTax, pcRothKey, pcSplit, rowRole, type PcPlan, type PcRun, type PcStep,
+  PC_LINES, PC_PLANS, PC_STEPS, PC_ZERO, healthRowMonthly, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCatchText, pcCostPer, pcHasLimit, pcMost,
+  pcPlanApply, pcPlanOrder, pcRothRoom, pcPreTax, pcRothKey, pcSplit, rowRole, type PcAges, type PcPlan, type PcRun, type PcStep,
 } from "./paycheck-math";
 
 type SetState = (fn: (c: BudgetInputs) => BudgetInputs) => void;
@@ -65,7 +65,13 @@ export function Paycheck({ s, set, setState }: {
   const tax = store.read("tax", TAX_DEFAULTS), taxState = tax.state;
   // In the Dashboard the paycheck is the household's one tax figure, so its
   // itemized deductions count here too.
-  const pi = paycheckInput(s, taxState, scope?.name === "dashboard" ? { ...tax, useItem: true } : tax);
+  // Ages for the catch-up limits come from the household bar (or the
+  // Dashboard's profile), never from fields here. The bar holds today's age,
+  // so a birthday later this year isn't counted.
+  const { profile } = useHousehold(), hh = scope && scope.household !== undefined ? scope.household : profile;
+  const known = (n: number | null | undefined) => (n != null && n >= 15 && n < 120 ? Math.round(n) : null);
+  const ages: PcAges = scope?.slots?.ages ?? [known(hh?.age), hh?.status === "m" ? known(hh.spouseAge) : null];
+  const pi = paycheckInput(s, taxState, scope?.name === "dashboard" ? { ...tax, useItem: true } : tax, ages);
   const r = paycheckRun(pi);
   const base = paycheckRun(pi, PC_ZERO);
   // Married, two incomes: the household by the month; otherwise one paycheck.
@@ -377,7 +383,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
             const max = Math.max(0.01, k === "brok" ? toCents(v + room) : k === "ef" ? toCents(Math.max(cap, v + room)) : toCents(cap));
             const over = pcHasLimit(k) && v > cap + 0.005;
             const half = two && v > 0 && (k === "match" || k === "k401max" || k === "rothIra" || (k === "hsa" && pi.hsa !== "self")) ? sp[k as "match"] : null;
-            const rothKey = pcRothKey(k);
+            const rothKey = pcRothKey(k), catchUp = pcCatchText(pi, k, pi.amounts);
             const limit = k === "match" ? (two ? "Both full matches " : "Limit ") + cents(toCents(cap))
               : k === "k401max" ? "Limit " + cents(toCents(cap)) + (two ? " for both, with the matches" : "")
               : k === "hsa" && two ? (pi.hsa === "family" ? "Family limit " : pi.hsa === "self2" ? "Two self-only limits " : "Self-only limit ") + cents(toCents(cap))
@@ -400,13 +406,15 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
                     <NativeRange className="flex-1 max-sm:order-3 max-sm:basis-full" min={0} max={max} step={0.01} value={Math.min(v, max)} fill={v / max} disabled={empty}
                       aria-label={line.name + ", per " + per} data-slider={k} onChange={(e) => setLine(k, parseFloat(e.target.value))} />
                   </div>
-                  <div className="mt-0.5 truncate text-label text-muted-foreground max-sm:order-4 max-sm:mt-0 max-sm:basis-full max-sm:whitespace-normal" data-note>
+                  <div className="mt-0.5 text-label text-muted-foreground max-sm:order-4 max-sm:mt-0 max-sm:basis-full" data-note>
                     {k === "ef" ? (
                       <span className="inline-flex items-center gap-1.5">Plans fill it to
                         <Affixed prefix="$" className="w-24"><MoneyInput nonNeg aria-label={"Emergency fund: how much a plan puts in, per " + per} value={s.pcEfCap} onValueChange={set("pcEfCap")} /></Affixed>
                         per {per}</span>
                     ) : <>
                       {limit}
+                      {catchUp.included ? " · " + catchUp.included : null}
+                      {catchUp.ifText ? " · up to " + cents(toCents(catchUp.ifCap)) + " " + catchUp.ifText : null}
                       {over ? <span className="text-destructive"> · over the limit</span> : null}
                       {half ? " · you " + cents(half[0]) + ", spouse " + cents(half[1]) : null}
                       {v > 0 && pcPreTax(pi, k) && (k !== "rothIra" || r.iraDed >= 0.005) ? <>{two ? " · costs your deposits " : " · costs your deposit "}<b className="font-medium text-foreground tabular-nums">{cents(v * pcCostPer(pi, k))}</b></> : null}

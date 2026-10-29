@@ -27,6 +27,7 @@ import { parseNum } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { Frame } from "./Frame";
 import { num } from "./fields";
+import { agesOf } from "./ages";
 import { budgetFor, flow, fromBudget, fromTax, growthLines, taxFor, taxState } from "./flows";
 import { money } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
@@ -131,7 +132,7 @@ export function Savings() {
         {outsideUS(pr) ? <div className="dsh-mt"><Note>The 401(k), IRA and HSA lines follow US rules; outside the US, use them for the accounts closest to yours.</Note></div> : null}
       </Tile>
       <div className="dsh-r4">
-        <Hosted household={null} slots={{ afterSliders: <Growth />, payFacts: <PayFacts pr={pr} /> }}
+        <Hosted household={null} slots={{ afterSliders: <Growth />, payFacts: <PayFacts pr={pr} />, ages: agesOf(pr) }}
           seed={(id) => (id === "budget" ? ({ ...budgetFor(pr), view: "paycheck" } as unknown as ToolInputs) : id === "tax" ? (taxFor(pr) as unknown as ToolInputs) : undefined)}
           keep={(id, d) => { if (id === "budget") setProfile((p) => fromBudget(p, d as unknown as BudgetInputs)); }}>
           <Budget />

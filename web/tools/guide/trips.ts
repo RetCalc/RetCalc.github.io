@@ -8,7 +8,7 @@
    read off the page. From GD_TRIPS in src/js/app/29-guide-trips.js. */
 
 import { debtDate, PPY, projectBasic, BASIC_INFL } from "@/lib/engine/typed";
-import { bridgeRun, budgetNums, debtNums, hcPrem, housing, on, q, text } from "@/lib/tool-reads";
+import { bridgeRun, budgetNums, budgetUnassigned, debtNums, hcPrem, housing, on, q, text } from "@/lib/tool-reads";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { advancedFields, type AdvancedInputs } from "@/tools/advanced/model";
@@ -134,14 +134,15 @@ const TRIPS: Record<string, TripDef<never>> = {
         extra: keep && pos(a.debtExtra) ? gdM(a.debtExtra) : "" };
     },
     tasks: ({ a, s }: Ctx<DebtInputs>) => {
-      const D = debtNums(s);
+      const D = debtNums(s), unassigned = budgetUnassigned();
       return [
         { h: (Array.isArray(a.debtRows) && a.debtRows.length
           ? "Your debts from last time are back. Update any balance that's changed, and add new ones with <b>Add a debt</b>."
           : "The sample debts are cleared. Enter each of yours: a name, the <b>Balance</b>, the <b>Rate</b> (the APR on your statement) and the <b>Minimum</b> payment. <b>Add a debt</b> gives you another row.") +
           (D.live.length ? "<em>" + D.live.length + " entered</em>" : ""), ok: D.live.length > 0 },
-        { h: "In <b>Extra payment</b>, type what you can pay each month on top of the minimums, or tap <b>Copy from Budget</b> to use your budget's left-over" +
-          (pos(a.takehome) && pos(a.spend) && a.takehome - a.spend - (a.bgSave || 0) > 0 ? " (" + money(a.takehome - a.spend - (a.bgSave || 0)) + "/mo)." : "."), ok: parseNum(s.extra) > 0 },
+        // The figure the button copies: what's unassigned on the Budget's Paycheck tab.
+        { h: "In <b>Extra payment</b>, type what you can pay each month on top of the minimums, or tap <b>Copy from Budget</b> to use what's still unassigned on your Budget's Paycheck tab" +
+          (unassigned != null && unassigned > 0.5 ? " (" + money(unassigned, 0) + "/mo)." : "."), ok: parseNum(s.extra) > 0 },
         { h: "<b>Avalanche</b> pays the highest rate first and costs the least. <b>Snowball</b> clears the smallest balance first for quicker wins. Pick the one you'll stick with." },
         { h: "Your <b>Debt-free</b> date is at the top." },
       ];
@@ -276,7 +277,12 @@ const TRIPS: Record<string, TripDef<never>> = {
       const S = sim(a);
       if (!S) return s;
       const st = a.strategy || "fixed", o = ddOpts(a, S);
-      const d: Record<string, unknown> = { initial: Math.round(S.fv), years: S.years, strategy: st, stock: S.mix, stockEnd: "", fee: 0,
+      // The whole mix, so "the rest in bonds" is true: US stocks, small-cap
+      // value and cash from the plan (just stocks when that's all it has),
+      // and bonds the rest. A glide to a lower stock share carries over too.
+      const M = a.retMixAll, us = M ? M.us : S.mix;
+      const d: Record<string, unknown> = { initial: Math.round(S.fv), years: S.years, strategy: st, stock: us, sv: M ? M.sv : 0, cash: M ? M.cash : 0,
+        stockEnd: M && M.end != null ? String(M.end) : "", fee: 0,
         rate: Math.max(0.01, Math.round(o.initialPct * 100) / 100), retireAge: String(Math.round(S.retire)),
         guardBand: 20, adjust: 10, floor: 10, ceil: 10, yaleWeight: 70, yaleRate: Math.round(o.initialPct * 100) / 100,
         vpwRate: Math.round(o.vpwRate * 100) / 100, vpwFV: 0, spendFloor: minSpend(a), spendCeil: 0, legacyGoal: 0 };
@@ -292,7 +298,7 @@ const TRIPS: Record<string, TripDef<never>> = {
       // The guide's pension joins whatever other income is already listed.
       const keep = s.incomeItems.filter((x) => x.name !== "Pension (from the guide)");
       d.incomeItems = [...keep, ...S.inc.map((x) => ({ ...x, name: "Pension (from the guide)" } as DdItem))];
-      trip.base = { strategy: st, stock: S.mix, claim: S.ss.claim, est, floor: minSpend(a), seen: { [st]: 1 } };
+      trip.base = { strategy: st, stock: us, sv: M ? M.sv : 0, cash: M ? M.cash : 0, claim: S.ss.claim, est, floor: minSpend(a), seen: { [st]: 1 } };
       trip.page = 0;
       return ddWrite(s, d);
     },
@@ -331,9 +337,9 @@ const TRIPS: Record<string, TripDef<never>> = {
         ];
       },
       ({ s, trip }: Ctx<DrawdownState>) => {
-        const b = trip.base as { stock: number } | undefined;
+        const b = trip.base as { stock: number; sv?: number; cash?: number } | undefined;
         return [
-          { h: "<b>Stocks</b> is " + (b ? b.stock : 60) + "%, the rest in bonds. Try 40% and 80%: more stocks usually lifts the median, and can cut either way on the worst case.", ok: b && parseNum(String(s.stock)) !== b.stock ? true : undefined },
+          { h: "<b>Stocks</b> is " + (b ? b.stock : 60) + "%" + (b?.sv ? ", small-cap value " + b.sv + "%" : "") + (b?.cash ? ", cash " + b.cash + "%" : "") + ", the rest in bonds. Try 40% and 80%: more stocks usually lifts the median, and can cut either way on the worst case.", ok: b && parseNum(String(s.stock)) !== b.stock ? true : undefined },
           { h: "<b>Glide to</b> moves the mix gradually over retirement, for example from 60% down to 40% stocks, or up, which some research favors." },
           { h: "<b>Fees</b> come off every year. Try 0.5% or 1% to see what an advisor or pricier funds would cost over a whole retirement." },
         ];

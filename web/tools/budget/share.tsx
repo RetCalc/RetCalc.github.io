@@ -7,8 +7,8 @@
 
 import { SheetPage, SheetSection } from "@/components/shell/Sheet";
 import type { ShareKit } from "@/components/shell/share";
-import { money, parseNum } from "@/lib/format";
-import { annualize, budgetGroups, budgetTotals, isPlannedRow, type BudgetInputs, type BudgetRow } from "./model";
+import { money } from "@/lib/format";
+import { annualize, budgetCompute, budgetGroups, budgetTotals, isPlannedRow, type BudgetInputs, type BudgetRow } from "./model";
 
 /* The lines by group, in the tool's own order. */
 const ORDER = ["Housing", "Transportation", "Health", "Food", "Lifestyle", "Debt", "Custom"];
@@ -20,7 +20,9 @@ function byGroup(rows: BudgetRow[]) {
 const perMo = (yr: number) => money(yr / 12) + "/mo";
 
 export function budgetShare(s: BudgetInputs): ShareKit {
-  const T = budgetTotals(s), ef = Math.max(1, Math.round(parseNum(s.efMonths)) || 6);
+  // The emergency fund as the screen sizes it: on the emergency budget when that's chosen.
+  const T = budgetTotals(s), C = budgetCompute(s), ef = C.ef, target = money(C.efTarget);
+  const emerg = !!s.efEmerg && s.efBasis === "emergency", basis = perMo((C.efTarget / ef) * 12);
   return {
     sheet: () => {
       if (!(T.totalYr > 0)) return "Add your expenses first";
@@ -29,11 +31,11 @@ export function budgetShare(s: BudgetInputs): ShareKit {
       return (
         <SheetPage title="Monthly Budget" sub="Per month, unless noted"
           big={[["Budget", money(T.totalYr / 12), "per month"], ["Per year", money(T.totalYr), "every line"],
-            ["Emergency fund", money((T.spentYr / 12) * ef), ef + " months of spending"]]}
+            ["Emergency fund", target, ef + " months of " + (emerg ? "emergency " : "") + "spending"]]}
           foot="A snapshot of what you entered. Goals set aside for, like college savings, count in the budget but not in the emergency fund target. Pay, taxes and saving are on the Budget's Paycheck tab.">
           <div className="sh-cols">
             <SheetSection className="flex-1 min-w-0" t="Where it goes" rows={budgetGroups(s).map((x) => [x.group, perMo(x.yr)])} />
-            <SheetSection className="flex-1 min-w-0" t="Emergency fund" rows={[[ef + "-month target", money((T.spentYr / 12) * ef)], ["Based on", perMo(T.spentYr) + " of spending"]]} />
+            <SheetSection className="flex-1 min-w-0" t="Emergency fund" rows={[[ef + "-month target", target], ["Based on", basis + " of " + (emerg ? "emergency budget" : "spending")]]} />
           </div>
           <div className="sh-cols">
             {order.filter((g) => groups[g]).map((g) => <SheetSection key={g} className="flex-1 min-w-0" t={g} rows={groups[g].map((r) => [r.desc, perMo(annualize(r))])} />)}
@@ -45,7 +47,7 @@ export function budgetShare(s: BudgetInputs): ShareKit {
       const top = budgetGroups(s).slice(0, 3).map((x) => [x.group, perMo(x.yr)] as [string, string]);
       return { title: "My monthly budget", bigLabel: "Budget, per month", big: money(T.totalYr / 12),
         sub: money(T.totalYr) + " per year",
-        rows: [...top, ["Emergency fund target", money((T.spentYr / 12) * ef) + " (" + ef + " mo)"]] };
+        rows: [...top, ["Emergency fund target", target + " (" + ef + " mo)"]] };
     },
   };
 }
