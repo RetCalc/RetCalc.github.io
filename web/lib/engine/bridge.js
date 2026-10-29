@@ -5,7 +5,7 @@
    from src/js/app/36-bridge.js without changes to the math: the exports and
    imports are added, and brMCSeqs takes its random seed as an argument. */
 import { money } from "../format";
-import { computeRetireTax, hcAgeFactor, hcCalcACA, hcFPL, hcGrossPremium, hcMedicaidFPL, mulberry32 } from "./math.js";
+import { computeRetireTax, hcAgeFactor, hcCoverage, hcFPL, hcGrossPremium, hcMedicaidFPL, mulberry32 } from "./math.js";
 import { plMix } from "./plan.js";
 import { BR_SLT, HIST_START, yearData } from "./data/index.js";
 
@@ -99,11 +99,8 @@ export function brHealth(ctx, age, magi){
   var gross = ctx.premium > 0
     ? ctx.premium * hcAgeFactor(ctx.state, age) / hcAgeFactor(ctx.state, ctx.age)
     : hcGrossPremium(ctx.state, age, 0) * ctx.adults;
-  var pct = magi / ctx.fpl;
-  if (magi < 1.38 * ctx.mfpl && !yearData().states.noExpansion[ctx.state]) return {cost:0, kind:"medicaid", pct:pct};
-  if (pct < 1) return {cost:gross * 12, kind:"gap", pct:pct};
-  var r = hcCalcACA(magi, gross, pct, false);
-  return {cost:r.net * 12, kind:r.eligible ? "aca" : "cliff", pct:pct};
+  var c = hcCoverage(magi, ctx.household, ctx.state, gross, ctx.fpl, ctx.mfpl);
+  return {cost:c.net * 12, kind:c.kind, pct:c.pct};
 }
 
 export function brCtx(inp){

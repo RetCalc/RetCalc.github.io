@@ -71,7 +71,7 @@
       "data_for": "Tax year 2026",
       "next_due": "2027-03-15",
       "priority": "high",
-      "notes": "Several entries quote dollar amounts in their notes (Maryland's pension exclusion, Minnesota's AGI limits); those change yearly too."
+      "notes": "Several entries quote dollar amounts in their notes (Maryland's pension exclusion, Minnesota's AGI limits); those change yearly too. states.noExpansion was re-checked against KFF on 2026-10-29 (the same ten states). The Medicaid work-requirement note in web/lib/medicaid.ts (federal budget law, starts by 2027-01-01) needs a look when states begin and when HHS rules or dates change."
     },
     {
       "id": "local-tax",

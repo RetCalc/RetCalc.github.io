@@ -52,6 +52,10 @@ export const ssTaxable = typed<(ss: number, otherAgi: number, st: string) => { t
 export const hcFPL = typed<(size: number) => number>(E.hcFPL);
 export const hcGrossPremium = typed<(state: string, age: number, manual: number) => number>(E.hcGrossPremium);
 export const hcCalcACA = typed<(income: number, gross: number, pctFPL: number, enhanced: boolean) => { credit: number; net: number; eligible: boolean; pct: number }>(E.hcCalcACA);
+/** Medicaid, the coverage gap or the credit, for a year's income: the one rule every tool uses (math.js). */
+export type HcCoverage = { kind: "medicaid" | "gap" | "aca" | "cliff"; net: number; credit: number; gross: number; pct: number; mpct: number; contribPct: number; eligible: boolean };
+export const hcCoverage = typed<(magi: number, size: number, state: string, grossMonthly: number, fpl?: number, mfpl?: number) => HcCoverage>(E.hcCoverage);
+export const hcMedicaidFPL = typed<(size: number) => number>(E.hcMedicaidFPL);
 
 export const runRoth = typed<(inp: object, doConvert: boolean) => RothResult>(E.runRoth);
 

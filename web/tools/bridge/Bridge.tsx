@@ -28,6 +28,7 @@ import { BR_CATS, BR_TRIALS, brSeppBase, brSeppEnd, brSeppMax } from "@/lib/engi
 import type { BrCtx, BrEnd, BrRow } from "@/lib/engine/types";
 import { useMcSeed } from "@/lib/mc-seed";
 import { DASH, dollarsField, fmtNum, money, parseNum, pctStr } from "@/lib/format";
+import { MEDICAID_WORK_NOTE } from "@/lib/medicaid";
 import { STATE_OPTIONS } from "@/lib/states";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { sendYearToTax } from "@/tools/tax/handoff";
@@ -713,7 +714,8 @@ function Rules({ ctx }: { ctx: BrCtx }) {
     "what you sell don't. For a household of " + Math.max(ctx.household, ctx.adults) + ", the subsidy " +
     "disappears entirely above " + money(ctx.fpl * 4) + " (400% of the poverty line)" +
     (yearData().states.noExpansion[ctx.state] ? ", and below " + money(ctx.fpl) + " " + stN + " offers no subsidy or Medicaid for most adults."
-      : ", and below " + money(ctx.fpl * 1.38) + " (138%) " + stN + " covers adults through Medicaid instead.") +
+      : ", and below " + money(ctx.mfpl * 1.38) + " (138% of the " + yearData().year + " poverty level) " + stN + " covers adults through Medicaid instead.") +
+    (yearData().states.noExpansion[ctx.state] ? "" : " " + MEDICAID_WORK_NOTE) +
     " The blended plan counts that cost when it picks how much to convert."]);
   rules.push(["0% capital gains", "Long-term gains are taxed at 0% while taxable income, gains included, stays under " +
     money(ltcg) + (ctx.status === "m" ? " for a joint return" : "") + ". With little " +
