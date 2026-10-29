@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-29T00:01:41.745Z",
+  "recorded": "2026-10-29T19:03:07.525Z",
   "about": "The readiness guide's figures for the fixture households (scripts/baseline/guide-fixtures.mjs), from the harness in guide.mjs, which reproduces the live guide to the cent. Money in today's dollars, to the cent; shares to six places. Only the entries under deliberate may differ in the guide's code, each a decision in doc 3.",
   "households": {
     "maya-sam": {
@@ -471,26 +471,26 @@
         "fv": 1184303.85,
         "portIncome": 47372.15,
         "ss": 43851.38,
-        "taxYr": 5847.17,
-        "hcYr": 9174.34,
+        "taxYr": 5826.49,
+        "hcYr": 9172.37,
         "hcYears": 10,
-        "lifeTax": 162266.12,
-        "success": 0.836066,
-        "survived": 51,
+        "lifeTax": 159169.66,
+        "success": 0.852459,
+        "survived": 52,
         "total": 61,
-        "medianEnd": 1625517.04,
-        "coverage": 1.344544,
-        "need": 1253000,
-        "score": 92,
+        "medianEnd": 1659652.69,
+        "coverage": 1.344954,
+        "need": 1246000,
+        "score": 93,
         "areas": {
-          "outlook": 33,
+          "outlook": 34,
           "rate": 20,
           "cushion": 15,
           "debt": 15,
           "flow": 9
         },
         "shares": {
-          "outlook": 0.826776,
+          "outlook": 0.853689,
           "rate": 1,
           "cushion": 0.980769,
           "debt": 1,
@@ -499,50 +499,50 @@
         "levers": {
           "save+100": {
             "fv": 1188084.83,
-            "need": 1253000,
+            "need": 1246000,
             "success": 0.852459,
             "successPct": 85
           },
           "save+250": {
             "fv": 1193756.3,
-            "need": 1254000,
+            "need": 1247000,
             "success": 0.852459,
             "successPct": 85
           },
           "retire-3": null,
           "retire-1": {
             "fv": 1102740.69,
-            "need": 1324000,
+            "need": 1316000,
             "success": 0.716667,
             "successPct": 72
           },
           "retire+1": {
             "fv": 1269537.35,
-            "need": 1183000,
+            "need": 1177000,
             "success": 0.967742,
             "successPct": 97
           },
           "retire+3": {
             "fv": 1451683.46,
-            "need": 1037000,
+            "need": 1032000,
             "success": 1,
             "successPct": 100
           },
           "spend-5000": {
             "fv": 1184303.85,
-            "need": 1107000,
+            "need": 1101000,
             "success": 0.967213,
             "successPct": 97
           },
           "spend+5000": {
             "fv": 1184303.85,
-            "need": 1397000,
-            "success": 0.672131,
-            "successPct": 67
+            "need": 1390000,
+            "success": 0.688525,
+            "successPct": 69
           },
           "spend+10000": {
             "fv": 1184303.85,
-            "need": 1544000,
+            "need": 1537000,
             "success": 0.540984,
             "successPct": 54
           }

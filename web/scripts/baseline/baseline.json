@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-27T17:00:49.212Z",
+  "recorded": "2026-10-29T19:03:02.871Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -402,7 +402,7 @@
         "stateExcluded": "5feceb66ffc86f38",
         "stateName": "20ad2fe8824206eb",
         "stateNone": "fcbcf165908dd18a",
-        "stateNote": "5e91478a4ca202c8",
+        "stateNote": "17d498b568fc272d",
         "stateParts": "1c011ccdb59adf3a",
         "stateSSIn": "5feceb66ffc86f38",
         "stateTaxable": "9705cc6128a60cc2",
@@ -425,17 +425,17 @@
           "endAfterTax": 3057098.5211
         },
         "noConvert": {
-          "lifeTax": 503928.1686,
-          "lifeTaxPV": 295187.8961,
-          "lifeIrmaa": 51360,
+          "lifeTax": 494485.364,
+          "lifeTaxPV": 287275.2758,
+          "lifeIrmaa": 48475.2,
           "totalConv": 0,
           "peakRMD": 169099.1185,
-          "endAfterTax": 2833794.4351
+          "endAfterTax": 2991996.3485
         }
       },
       "fields": {
-        "withConv": "e8afa782f71a9bf2",
-        "without": "1888371e403825b8"
+        "withConv": "3c247f1c7a874ba6",
+        "without": "43d58b22bc9c2835"
       }
     },
     {
@@ -447,7 +447,7 @@
           "lifeIrmaa": 37976.4,
           "totalConv": 400000,
           "peakRMD": 84720.9214,
-          "endAfterTax": 2400567.9708
+          "endAfterTax": 2466989.1732
         },
         "noConvert": {
           "lifeTax": 490753.7127,
@@ -455,12 +455,12 @@
           "lifeIrmaa": 40944,
           "totalConv": 0,
           "peakRMD": 155223.7589,
-          "endAfterTax": 2325821.7547
+          "endAfterTax": 2447517.1817
         }
       },
       "fields": {
-        "withConv": "b83779a30095d3ce",
-        "without": "bdaa96a57c5910b9"
+        "withConv": "6c10bad2462b9b6f",
+        "without": "8621a3cb939af2f5"
       }
     },
     {
@@ -868,16 +868,16 @@
       "out": {
         "bestPlan": "Blended plan",
         "holds": 100,
-        "taxCost": 80783.493,
-        "leftAt59": 1926561.7388,
+        "taxCost": 74761.8111,
+        "leftAt59": 1936129.2582,
         "plans": "Blended plan: 100%; Roth conversion ladder: 85%; Brokerage, then Roth contributions: 53%; 72(t) payments: 100%; Pay the 10% penalty: 100%",
-        "firstYearGross": 60613.3341
+        "firstYearGross": 60629.1693
       },
       "fields": {
-        "after": "e86436436a386868",
-        "ctx": "3aab61a54dd593a2",
-        "run": "035a052d3bd52a68",
-        "sc": "e3bac686fa552b2e"
+        "after": "7fd80fdada1579d6",
+        "ctx": "582644f63eaa9346",
+        "run": "f10546ff086dcd91",
+        "sc": "2bd43f1b630490eb"
       }
     },
     {
@@ -892,8 +892,8 @@
       },
       "fields": {
         "after": "04c0536e556b525f",
-        "ctx": "c94b5ff2aef5d1ba",
-        "run": "f5146496415d1d86",
+        "ctx": "12e4cfcecb16ceb4",
+        "run": "0589a61539007135",
         "sc": "8358171d67e3a5a4"
       }
     },
@@ -941,8 +941,8 @@
       },
       "fields": {
         "F": "54b27046aefcded0",
-        "P": "cf62d4e9fdc067de",
-        "R": "b758b999af7ab3c0",
+        "P": "320443ebe33cbef0",
+        "R": "a2467466d2cd8388",
         "feeCost": "5feceb66ffc86f38",
         "portToday": "92c0af241c7be5a3",
         "rate": "14be4b45f18e0d8c",
@@ -961,8 +961,8 @@
       },
       "fields": {
         "F": "8c1b666d8f5452ce",
-        "P": "9ca4c735511e7eba",
-        "R": "9f77f95b9ffb0647",
+        "P": "405d301159fe4e39",
+        "R": "fa6a7c15f84fceed",
         "feeCost": "92bfa9facba57514",
         "portToday": "dd80d7a873341d49",
         "rate": "14be4b45f18e0d8c",
@@ -1068,7 +1068,7 @@
         "needAtRetirement": 924000
       },
       "fields": {
-        "S": "b5e73043394f1542",
+        "S": "33ec592ed55ac83d",
         "need": "8687fbfca8bdf1d5",
         "sc": "cf1beef94f7af3dd",
         "strats": "6eff53e7da569dd9"
@@ -1085,7 +1085,7 @@
         "needAtRetirement": 380000
       },
       "fields": {
-        "S": "c07864bf3cf421c8",
+        "S": "023b6302123d43de",
         "need": "df61f9f8bfae765c",
         "sc": "f5f05cd352878bbb",
         "strats": "527c72e4b619ddab"
