@@ -5,7 +5,7 @@
    appear depends on the plan: a saving schedule, college, retiring before
    65. No React, so tests run it in Node against every fixture household. */
 
-import { debtDate } from "@/lib/engine/typed";
+import { debtDate, yearData } from "@/lib/engine/typed";
 import { plSSParts } from "@/lib/engine/typed-plan";
 import { money as fmtMoney } from "@/lib/format";
 import { DEBT_DEFAULTS, debtCompute, type DebtRow } from "@/tools/debt/model";
@@ -234,7 +234,7 @@ export function reportModel(a0: Answers, src: Sources, levers: Levers, names: Re
     a, a0, S, F, need: F.need ?? 0, goal, ahead, levers3, R: { ...L.R, score }, rating: rating(score), list: L.list as Move[], kit: L.kit,
     why: planSources(a0, src), who, retire, end, rmdAge, firstClaim, firstMed, claim2, phases, stops, runs, band, worst, accum, rows, money,
     changes, college: collegePage as CollegePlanToday | null, health, bridge, pension, social, roadmap, debt, pages, perPage: PER, factors: FACTORS, strategy: stratName(a.strategy || "fixed"),
-    date: today.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }), year0: today.getFullYear(),
+    date: today.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }), year0: today.getFullYear(), taxYear: yearData().year,
   };
 }
 export type ReportModel = NonNullable<ReturnType<typeof reportModel>>;

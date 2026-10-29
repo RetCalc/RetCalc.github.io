@@ -291,7 +291,7 @@ function build(key: YoursKey, P: Plan): Out | null {
 function Footnote({ P }: { P: Plan }) {
   return P.sample
     ? <p className="lrn-yours-foot">A sample household. <Link href="/dashboard/setup">Set up your plan</Link> to see your own.</p>
-    : <p className="lrn-yours-foot">From your plan. <Link href="/dashboard/profile">Change it in your dashboard</Link>.</p>;
+    : <p className="lrn-yours-foot">From your plan. <Link href="/dashboard/profile">Change it in your Dashboard</Link>.</p>;
 }
 
 /** The panel beside the lesson. */

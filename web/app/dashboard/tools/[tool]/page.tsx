@@ -11,7 +11,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/dashboard/tools/[tool]">): Promise<Metadata> {
   const { tool } = await params;
-  return { title: { absolute: `${TOOLS[tool as ToolSub].name} | Your dashboard | RetCalc` }, robots: { index: false, follow: false } };
+  return { title: { absolute: `${TOOLS[tool as ToolSub].name} | Your Dashboard | RetCalc` }, robots: { index: false, follow: false } };
 }
 
 export default async function Page({ params }: PageProps<"/dashboard/tools/[tool]">) {

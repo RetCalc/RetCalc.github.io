@@ -73,7 +73,7 @@ export function College() {
   const multi = inp.kids.length > 1;
 
   // What each part of the page shows; blank until there's something to plan.
-  let monthly = DASH, monthlyNote = "", total = DASH, totalNote = "", short = DASH, shortNote = "", savGrow = "";
+  let monthly = DASH, monthlyNote = "", total = DASH, totalNote = "", short = DASH, shortNote = "", savGrow = "", gap = "";
   let ready = false, funded = false;
   let each: React.ReactNode = null, rows: React.ReactNode = null;
   let chart: { pts: { year: number; base: number; hi: number; lo: number }[]; maxX: number } | null = null;
@@ -130,8 +130,9 @@ export function College() {
     monthlyNote = "for " + fmtNum(inp.yearsUntil) + " years at " + pctStr(inp.investRet, 1);
     total = money(R.totalFuture);
     totalNote = inp.collegeYrs + " years at " + money(inp.annualCost, 0) + "/yr, " + pctStr(inp.tuitionInfl, 1) + " inflation";
-    short = money(R.shortfall);
-    shortNote = "Less than the " + money(R.totalFuture) + " total, since what's saved keeps earning " + pctStr(inp.investRet, 1) + " while later years' tuition is paid";
+    short = money(R.targetAtStart);
+    gap = money(R.shortfall);
+    shortNote = "Less than the " + money(R.totalFuture) + " total, since the money still in the account keeps earning " + pctStr(inp.investRet, 1) + " while later years' tuition is paid";
     // The comparison line: the full cost if college started that year,
     // rising with tuition inflation to the real total when it does start.
     const costIfStartingAt = (t: number) => {
@@ -231,6 +232,7 @@ export function College() {
               </div>
               <div className="derived">
                 <div><span id="clSavGrowK">{multi ? "What you've saved covers" : "What you've saved grows to"}</span><span className="num" id="clSavGrow">{savGrow}</span></div>
+                {multi ? null : <div><span id="clGapK">Shortfall to close</span><span className="num" id="clGap">{gap}</span></div>}
               </div>
             </CardContent>
           </Card>

@@ -421,7 +421,7 @@ function Sources({ M, p }: { M: ReportModel; p: PageInfo }) {
           <p className="rp-body sm"><b>Tax and health.</b> Each year&apos;s federal{st ? " and " + st : ""} income tax, the Medicare surcharge and marketplace premiums before 65 are worked out from where that year&apos;s money comes from, and paid on top of spending.</p>
           <p className="rp-body sm"><b>Needs.</b> The smallest balance at {M.retire} that lasted in {pctStr(M.goal, 0)} of historical retirements.</p>
           <Sec>Fine print</Sec>
-          <p className="rp-small">RetCalc is an educational tool, not financial, tax or legal advice. Past returns don&apos;t predict future ones. Tax rules are those of {M.year0}, held in today&apos;s dollars. Everything was calculated in your browser, and nothing you entered was sent anywhere to make this report.</p></div>
+          <p className="rp-small">RetCalc is an educational tool, not financial, tax or legal advice. Past returns don&apos;t predict future ones. Tax rules are those of {M.taxYear}, held in today&apos;s dollars. Everything was calculated in your browser, and nothing you entered was sent anywhere to make this report.</p></div>
       </div>
       <Sec>Words used in this report</Sec>
       <dl className="rp-gloss">

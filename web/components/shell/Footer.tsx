@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useClient } from "@/lib/useClient";
 import { Brandmark } from "./Brandmark";
 import { Button } from "@/components/ui/button";
+import { NEWEST_YEAR } from "@/lib/engine/data/years.js";
 
 const EMAIL = ["contact", "retcalc.app"].join("@");
 
@@ -37,7 +38,7 @@ export function Footer() {
               becomes the real one, as on the old site. */}
           <p>Found a bug, or a number that looks off?{" "}
             <a className="sitefoot-link mailme" href={client ? "mailto:" + EMAIL : "#"}>{client ? EMAIL : "contact [at] retcalc.app"}</a></p>
-          <p className="src">Market history: Robert Shiller&apos;s dataset (Yale) and the US Bureau of Labor Statistics, 1926 to 2025. Taxes: 2026 federal and state rules. Healthcare: KFF&apos;s 2026 averages.</p>
+          <p className="src">Market history: Robert Shiller&apos;s dataset (Yale) and the US Bureau of Labor Statistics, 1926 to 2025. Small-cap value and Treasury bills (cash): Kenneth French&apos;s data library (Dartmouth), July 1926 to 2025. Taxes: {NEWEST_YEAR} federal and state rules. Healthcare: KFF&apos;s 2026 averages.</p>
         </div>
         <nav className="sitefoot-nav text-note" aria-label="Site">
           {LINKS.map((l) => (

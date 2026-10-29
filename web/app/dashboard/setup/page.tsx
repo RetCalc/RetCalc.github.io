@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { SetupPage } from "@/components/dashboard/Pages";
 
 export const metadata: Metadata = {
-  title: { absolute: "Set up your dashboard | RetCalc" },
+  title: { absolute: "Set up your Dashboard | RetCalc" },
   robots: { index: false, follow: false },
 };
 

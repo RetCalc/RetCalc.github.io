@@ -127,7 +127,7 @@ function TabBar({ current, dots }: { current: Section; dots: Partial<Record<Sect
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent size="household" aria-labelledby="dshMenuTitle">
           <div className="dsh-menu-h">
-            <h2 id="dshMenuTitle" className="dsh-dlg-h">Your dashboard</h2>
+            <h2 id="dshMenuTitle" className="dsh-dlg-h">Your Dashboard</h2>
             <DialogClose render={<Button variant="ghost" size="icon" aria-label="Close the menu" />}><XIcon aria-hidden="true" /></DialogClose>
           </div>
           <nav className="dsh-menu" aria-label="Dashboard">

@@ -1062,6 +1062,22 @@ export function ddComfort(o, P){
    endings at twice the start or under half of it. The path's own planned
    changes don't count as cuts or swings. Extra expenses are left out, so a
    one-off purchase isn't a swing either. */
+/* A cut: regular spending (the path's own planned changes taken out, extra
+   expenses left out) falling by more than half a percent from the year
+   before, so rounding noise doesn't count. The scorecard's "Cuts per
+   retirement" and the plan view's "Years spending was cut" both come from
+   here. Returns each cut year's index and size as a share of the year before. */
+export var DD_CUT_MIN = .005;
+export function ddCuts(rows, path){
+  var out = [], prev = null;
+  rows.forEach(function (row, y) {
+    var m = path[y] || 0, norm = m > 0 ? row.realReg / m : row.realReg;
+    if (prev != null && prev > 0 && norm / prev - 1 < -DD_CUT_MIN) out.push({year: y, frac: 1 - norm / prev});
+    prev = norm;
+  });
+  return out;
+}
+
 export function ddScorecard(runs, o, comfort, path){
   var n = runs.length, years = 0, below = 0, dipped = 0, longest = 0, longRun = null;
   var low = Infinity, lowRun = null, lowYear = 0, lowRatio = Infinity;
@@ -1071,6 +1087,7 @@ export function ddScorecard(runs, o, comfort, path){
     var rows = r.rows || [];
     if (!rows.length) return;
     var first = rows[0].realReg / (path[0] || 1), streak = 0, any = false, sw = false, lg = false, sm = false, prev = null, life = 0;
+    ddCuts(rows, path).forEach(function (c) { cutYears++; if (c.frac > maxCut) { maxCut = c.frac; maxCutRun = r; } });
     firsts.push(rows[0].realReg);
     rows.forEach(function (row, y) {
       var m = path[y] || 0, v = row.realReg, norm = m > 0 ? v / m : v;
@@ -1085,7 +1102,6 @@ export function ddScorecard(runs, o, comfort, path){
       if (prev != null && prev > 0) {
         var ch = norm / prev - 1;
         if (Math.abs(ch) > .25) sw = true;
-        if (ch < -.005) { cutYears++; if (-ch > maxCut) { maxCut = -ch; maxCutRun = r; } }
       }
       if (first > 0 && norm >= first * 1.5) lg = true;
       if (first > 0 && norm <= first * .5) sm = true;

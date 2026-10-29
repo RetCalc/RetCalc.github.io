@@ -36,7 +36,7 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
   const preset = RISKS.find((r) => Math.abs(r.real - real) < 0.0005);
   const [growthTxt, setGrowthTxt] = useTyped(pctTxt(A.growth)), [inflTxt, setInflTxt] = useTyped(pctTxt(A.inflation));
   return (
-    <Tile id="assumptions" icon={SlidersHorizontalIcon} title="Assumptions" right={<span className="dsh-cap">Used by every figure on your dashboard</span>}>
+    <Tile id="assumptions" icon={SlidersHorizontalIcon} title="Assumptions" right={<span className="dsh-cap">Used by every figure on your Dashboard</span>}>
       <div className="dsh-stats">
         <div className="dsh-stat"><div className="dsh-label">Savings grow, after inflation</div><div className="dsh-fig">{pct(real)}<small>per year</small></div></div>
       </div>
@@ -310,16 +310,16 @@ function StartOver() {
   const [ask, setAsk] = useState<0 | 1 | 2>(0);
   const reset = () => { update(() => EMPTY); setAsk(0); router.replace("/dashboard/setup"); };
   return (
-    <Tile id="reset" icon={RotateCcwIcon} title="Reset your dashboard">
+    <Tile id="reset" icon={RotateCcwIcon} title="Reset your Dashboard">
       <div className="dsh-inline dsh-mt dsh-reset">
-        <p className="dsh-cap dsh-flush">Clears your profile, your net worth entries and every choice on your dashboard, and takes you back to setup with nothing filled in. The rest of RetCalc isn&apos;t affected.</p>
-        <Button variant="destructive" onClick={() => setAsk(1)}>Reset dashboard</Button>
+        <p className="dsh-cap dsh-flush">Clears your profile, your net worth entries and every choice on your Dashboard, and takes you back to setup with nothing filled in. The rest of RetCalc isn&apos;t affected.</p>
+        <Button variant="destructive" onClick={() => setAsk(1)}>Reset Dashboard</Button>
       </div>
       <Dialog open={ask > 0} onOpenChange={(o) => { if (!o) setAsk(0); }}>
         <DialogContent aria-labelledby="dshResetTitle">
           {ask === 1 ? (
             <>
-              <h2 id="dshResetTitle" className="dsh-dlg-h">Reset your dashboard?</h2>
+              <h2 id="dshResetTitle" className="dsh-dlg-h">Reset your Dashboard?</h2>
               <p className="dsh-cap">Your profile, your net worth history and everything you&apos;ve set on each tab will be cleared, here and in your account.</p>
               <div className="dsh-navbtns dsh-wrapbtns">
                 <Button variant="outline" onClick={() => setAsk(0)}>Cancel</Button>
@@ -331,7 +331,7 @@ function StartOver() {
               <h2 id="dshResetTitle" className="dsh-dlg-h">Are you sure?</h2>
               <p className="dsh-cap">This can&apos;t be undone. You&apos;ll start again from setup.</p>
               <div className="dsh-navbtns dsh-wrapbtns">
-                <Button variant="outline" onClick={() => setAsk(0)}>Keep my dashboard</Button>
+                <Button variant="outline" onClick={() => setAsk(0)}>Keep my Dashboard</Button>
                 <Button variant="destructive" onClick={reset}>Reset everything</Button>
               </div>
             </>

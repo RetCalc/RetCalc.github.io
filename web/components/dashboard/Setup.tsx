@@ -256,7 +256,7 @@ export function Setup() {
       <div>
         <div className="dsh-q-eyebrow">All set</div>
         <h1 className="dsh-q-title">Here&apos;s your starting point{pr.p1.name.trim() ? ", " + pr.p1.name.trim() : ""}</h1>
-        <p className="dsh-q-help">Your dashboard is ready. Some tiles start empty. Filling them in sharpens every number.</p>
+        <p className="dsh-q-help">Your Dashboard is ready. Some tiles start empty. Filling them in sharpens every number.</p>
         <div className="dsh-ready">
           <div className="dsh-tile"><div className="dsh-label">Net worth today</div><div className="dsh-fig dsh-key dsh-mt6">{shortMoney(nw)}</div></div>
           <div className="dsh-tile"><div className="dsh-label">At retirement{R.retireYear ? ", " + R.retireYear : ""}</div><div className="dsh-fig dsh-mt6">{R.atRetire != null ? shortMoney(R.atRetire + R.equity) : "—"}</div></div>
@@ -265,7 +265,7 @@ export function Setup() {
         {R.S ? <p className="dsh-cap dsh-mt">Your plan pays about <b>{money(R.S.spend / 12)}</b> per month to spend in retirement, with taxes on top, in today&apos;s dollars.</p> : null}
         <div className="dsh-navbtns">
           <Button variant="outline" size="lg" onClick={() => goTo(at - 1)}>Back</Button>
-          <Button size="lg" onClick={finish}>Open my dashboard</Button>
+          <Button size="lg" onClick={finish}>Open my Dashboard</Button>
         </div>
       </div>
     );
@@ -289,7 +289,7 @@ export function Setup() {
     <div className="dsh-setup">
       <header className="dsh-setup-top">
         <Link href="/" className="dsh-brand" aria-label="RetCalc home"><Brandmark /><span>RetCalc</span></Link>
-        <span className="dsh-cap">Set up your dashboard</span>
+        <span className="dsh-cap">Set up your Dashboard</span>
         <div className="dsh-r"><Button variant="link" onClick={later}>Save and finish later</Button></div>
       </header>
       <div className="dsh-prog" aria-hidden="true">

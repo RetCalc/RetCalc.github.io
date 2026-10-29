@@ -6,9 +6,9 @@
 
 import { SheetPage, SheetSection, SheetTable, type SheetRows } from "@/components/shell/Sheet";
 import { copyChart, type ShareKit } from "@/components/shell/share";
-import { DD_STRAT, HIST_START, HIST_STOCK, ddPrep, historicalBacktest, type DdOpts } from "@/lib/engine/typed-drawdown";
+import { DD_STRAT, HIST_START, HIST_STOCK, ddCuts, ddPrep, historicalBacktest, type DdOpts } from "@/lib/engine/typed-drawdown";
 import { DASH, fmtNum, money, pctStr } from "@/lib/format";
-import { DD_STRAT_NAMES, ageVal, ddN, describeItem, firstSpend, lineWords, mixText, rebalText, startLabel, wdOrder } from "./text";
+import { DD_STRAT_NAMES, ageVal, ddN, describeItem, firstSpend, lineWords, mixText, nearlyPct, rebalText, startLabel, wdOrder } from "./text";
 
 /** The plan in rows: the strategy and its settings, the path, guaranteed
     income, spending limits and the history tested. */
@@ -68,12 +68,13 @@ export function drawdownShare(o: DdOpts, sel: number | null): ShareKit {
       (o.expenseItems || []).filter((it) => it.on !== false).forEach((it) => inputs.push([it.name + " (expense)", describeItem(it, age)]));
       // Spending through the start shown: what a single ending balance can't tell you.
       const real = show.rows.map((r) => (r.realSpend != null ? r.realSpend : r.realWithdrawal)), sorted = real.slice().sort((a, b) => a - b);
-      let cuts = 0, maxCut = 0;
-      for (let i = 1; i < real.length; i++) { const d = real[i] - real[i - 1]; if (d < -0.5) { cuts++; maxCut = Math.max(maxCut, -d); } }
+      const cutYears = ddCuts(show.rows, H.prep.path), cuts = cutYears.length;
+      const maxCut = cutYears.reduce((m, c) => Math.max(m, real[c.year - 1] - real[c.year]), 0);
       const spend: SheetRows = [["Highest year's spending", money(sorted[sorted.length - 1])], ["Lowest year's spending", money(sorted[0])], ["Years spending was cut", cuts + " of " + real.length]];
       if (maxCut > 0) spend.push(["Biggest single-year cut", "−" + money(maxCut)]);
       spend.push(["Total spent, example period", money(real.reduce((a, v) => a + v, 0))]);
-      const verdict = H.successRate >= 0.99 ? "Survived every historical period, including the Depression, 1970s stagflation, and 2008."
+      const verdict = H.successRate >= 1 ? "Survived every historical period, including the Depression, 1970s stagflation, and 2008."
+        : H.successRate >= 0.99 ? "Survived nearly every historical period (" + nearlyPct(H.successRate) + "). Failed only when retirement began in " + H.failYears.slice(0, 8).join(", ") + (H.failYears.length > 8 ? ", and others" : "") + "."
         : H.successRate >= 0.9 ? "Survived most historical periods. Failed only when retirement began in " + H.failYears.slice(0, 8).join(", ") + (H.failYears.length > 8 ? ", and others" : "") + "."
           : "Ran out of money in " + H.failYears.length + " of " + H.total + " historical periods. Consider a lower withdrawal rate or a strategy that adjusts spending.";
       // Every year for a plan under 20 years, every other beyond, every third beyond 40.
@@ -85,7 +86,7 @@ export function drawdownShare(o: DdOpts, sel: number | null): ShareKit {
           big={[["Success rate", pctStr(H.successRate, 0), H.survived + " of " + H.total + " periods"], ["Median ending balance", money(H.medianEnd), "today's dollars"],
             ["Worst case", money(H.worstEnd), "today's dollars"]]}
           chart={copyChart("#chartDD")}
-          foot={verdict + " Tested against real US market history (" + H.first + " to " + (HIST_START + HIST_STOCK.length - 1) + "). Surviving every period is evidence a plan is reasonable, not a guarantee. Not financial advice."}>
+          foot={verdict + " Tested against real US market history (" + H.first + " to " + (HIST_START + HIST_STOCK.length - 1) + "). Lasting through history is evidence a plan is reasonable, not a guarantee. Not financial advice."}>
           <div className="sh-cols">
             <SheetSection t="Plan" rows={inputs} />
             <SheetSection t="Results" rows={[["Success rate", pctStr(H.successRate, 1)], ["Tested against", H.total + " periods since " + H.first], ["Survived", H.survived + " of " + H.total],
@@ -109,7 +110,7 @@ export function drawdownShare(o: DdOpts, sel: number | null): ShareKit {
       if (exp.length) rows.push(["Future expenses", exp.length === 1 ? exp[0].name : exp.length + " planned"]);
       return { title: "Will my money last?", bigLabel: "Success rate, tested since " + HIST_START, big: pctStr(H.successRate, 0),
         sub: fmtNum(o.years) + "-year retirement · " + mixText(o), rows,
-        verdict: H.successRate >= 0.99 ? "Survived every historical period on record." : H.successRate >= 0.9 ? "Survived the large majority of historical periods." : "Failed in a meaningful share of historical periods.",
+        verdict: H.successRate >= 1 ? "Survived every historical period on record." : H.successRate >= 0.99 ? "Survived nearly every historical period (" + nearlyPct(H.successRate) + ")." : H.successRate >= 0.9 ? "Survived the large majority of historical periods." : "Failed in a meaningful share of historical periods.",
         chart: { sel: "#chartDD", w: 900, h: 300 } };
     },
   };

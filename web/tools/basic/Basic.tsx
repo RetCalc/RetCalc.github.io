@@ -237,7 +237,7 @@ export function Basic() {
         <Card>
           <CardHeader><CardTitle>Want more detail?</CardTitle></CardHeader>
           <CardContent>
-            <p className="hint mt-0">The Advanced tab does everything this does
+            <p className="hint mt-0">The Advanced Calculator does everything this does
               plus taxes, fees, contribution growth, and a simulation of good and bad market
               runs. It also takes the changes you see coming: saving more after a raise, less
               while the kids are young, or nothing after you stop. This will carry your answers

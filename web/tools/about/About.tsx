@@ -224,7 +224,7 @@ export function About({ states }: { states: StateOption[] }) {
             </ul>
           </Section>
           <Section id="basic">
-            <p>The Basic tab answers five questions and nothing more: your age, when you
+            <p>The Basic Calculator answers five questions and nothing more: your age, when you
             want to stop working, what you&apos;ve saved, what you add, and roughly how it&apos;s
             invested. It&apos;s the right starting point if retirement planning is new to you.</p>
             <p>What makes it simple is that it works in <b>real</b> terms. The investment
@@ -252,7 +252,7 @@ export function About({ states }: { states: StateOption[] }) {
             <p>The shaded band on the chart shows the same plan running 1.5 points better
             or worse, because no one earns an identical return every year. When you want
             tax, fees, volatility or changing assumptions, <b>Open these numbers in
-            Advanced</b> carries your answers to the Advanced tab, splitting the real
+            Advanced</b> carries your answers to the Advanced Calculator, splitting the real
             rate back into a return and 3% inflation (Advanced&apos;s own default), with contributions set to rise
             alongside it. Basic&apos;s own contribution already steps up once a year behind
             the scenes, the same way Advanced&apos;s does, so the inflation-adjusted total
@@ -260,7 +260,7 @@ export function About({ states }: { states: StateOption[] }) {
             tax rate that Basic ignores, so the income figure will drop.</p>
           </Section>
           <Section id="advanced">
-            <p>The Advanced tab goes further than Basic in almost every direction: return
+            <p>The Advanced Calculator goes further than Basic in almost every direction: return
             and inflation as two separate figures instead of one blended real rate, an
             effective tax rate, fees, volatility for Monte Carlo, account types, and the
             changes you see coming (a raise, children, easing off, a lump sum). It
@@ -427,7 +427,7 @@ export function About({ states }: { states: StateOption[] }) {
             <dl className="gloss">
               <dt>Retirement outlook</dt>
               <dd>Your savings are projected to your retirement age the same way the Basic
-              tab does it: a steady return after inflation for the mix you pick, with
+              Calculator does it: a steady return after inflation for the mix you pick, with
               contributions (yours and your employer&apos;s) raised with inflation each year so
               they stay the same in today&apos;s dollars. Each account type grows on its own:
               traditional, Roth and a taxable brokerage account, split the way you answer,

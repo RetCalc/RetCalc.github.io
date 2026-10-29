@@ -33,7 +33,7 @@ import { DRAWDOWN_DEF, ddLanding, ddRaw, ddWrite, drawdownSetup, type DrawdownSt
 import { Inputs } from "./Inputs";
 import { DD_DRAGS, PlanView, deltaHtml, histExtras, ssRows, type PlanResult } from "./PlanView";
 import { SafeView } from "./SafeView";
-import { comfortNote, lineWords, mcWords, planLabel, startLabel, target } from "./text";
+import { comfortNote, lineWords, mcWords, nearlyPct, planLabel, startLabel, target } from "./text";
 import { useShareKit } from "@/components/shell/share";
 import { drawdownShare } from "./share";
 import { useBusy } from "@/lib/busy";
@@ -310,8 +310,11 @@ function readoutFigures(o: DdOpts, mode: "hist" | "mc", R: PlanResult | null, H:
       F.median = money(H.medianEnd);
       F.worst = money(H.worstEnd);
       F.worstNote = H.failCount ? "Ran out in " + H.failCount + " of " + H.total + " retirements" : "Never ran out";
-      F.verdict = H.successRate >= 0.99
+      F.verdict = H.successRate >= 1
         ? "<b>This plan survived every historical period,</b> including the Great Depression, the 1970s stagflation and the 2008 crash."
+        : H.successRate >= 0.99
+          ? "<b>This plan survived nearly every historical period (" + nearlyPct(H.successRate) + ").</b> It failed only when retirement began in " + H.failYears.slice(0, 6).join(", ") +
+            (H.failYears.length > 6 ? " and others" : "") + ", the worst sequence" + (H.failYears.length > 1 ? "s" : "") + " on record."
         : H.successRate >= 0.9
           ? "<b>This plan survived most historical periods.</b> It failed only when retirement began in " + H.failYears.slice(0, 6).join(", ") +
             (H.failYears.length > 6 ? " and others" : "") + ", the worst sequences on record."

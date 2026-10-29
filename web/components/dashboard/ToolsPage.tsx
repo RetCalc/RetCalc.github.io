@@ -158,7 +158,7 @@ function Tool({ sub }: { sub: DashTool }) {
   const View = VIEWS[sub], tab = PLAN_TAB[sub];
   return (
     <Frame current="tools" title={nameOf(sub)} help={sub === "advanced" ? undefined : sub}
-      sub={tab ? undefined : "Filled in from your dashboard. Changes here stay in this tool."}
+      sub={tab ? undefined : "Filled in from your Dashboard. Changes here stay in this tool."}
       actions={<>
         {/* Saved scenarios, the site's own lists: one saved here is there too.
             Reset goes back to your plan's figures. */}

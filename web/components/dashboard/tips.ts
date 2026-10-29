@@ -6,9 +6,9 @@
 export const TIPS = {
   /* Calculator scenarios */
   scFrom: "Your age when it starts. The plan counts whole years of age from today, so a change starting at 47 changes saving from the year you turn 47 to retirement, or to the age you set under Until.",
-  scAmount: "In today's dollars, like every figure on your dashboard: $500 per month means what $500 buys today, every year it runs. Saving more goes into the account you pick. Saving less comes out of the accounts in the order shown, and the plan keeps the tax it frees in mind.",
+  scAmount: "In today's dollars, like every figure on your Dashboard: $500 per month means what $500 buys today, every year it runs. Saving more goes into the account you pick. Saving less comes out of the accounts in the order shown, and the plan keeps the tax it frees in mind.",
   scPct: "A share of what you save that year, after the changes before this one. Each year compounds: 10% less each year is 90% of the year before, every year it runs.",
-  scAcct: "Where the money goes in, or which account gives up saving first. When that account runs out, the rest comes out of the others in the dashboard's order: the brokerage first, then the 401(k) beyond the match, the IRA and the HSA, and the 401(k) up to the match last. Saving can't go below nothing: the plan never takes money back out of savings before retirement.",
+  scAcct: "Where the money goes in, or which account gives up saving first. When that account runs out, the rest comes out of the others in the Dashboard's order: the brokerage first, then the 401(k) beyond the match, the IRA and the HSA, and the 401(k) up to the match last. Saving can't go below nothing: the plan never takes money back out of savings before retirement.",
   scLump: "One amount, in today's dollars, put in or taken out on the day you turn that age. Money put in goes into the account you pick and earns from that day. Money taken out leaves that account's balance that day, so the account has to hold at least that much by then. No tax is counted on the sale; the brokerage's cost basis at retirement does follow it.",
   scReturn: "The return your savings earn from that age on, before inflation, in place of the plan's. Stepped, it changes at once; climbing, it moves a little each year until it gets there. Only the Calculator runs returns year by year, so with a returns change on, its result is your plan's savings at retirement.",
   /* Dashboard */
@@ -24,7 +24,7 @@ export const TIPS = {
 
   /* Profile */
   growth: "How much your savings earn each year until you retire, before inflation. Less inflation, it's what they really gain, so every figure stays in today's dollars. The usual 7.6% is 4.5% after 3% inflation.",
-  inflation: "How fast prices rise each year. Every figure on your dashboard is in today's dollars, so inflation is taken out: growth before inflation, less this, is what your savings really gain.",
+  inflation: "How fast prices rise each year. Every figure on your Dashboard is in today's dollars, so inflation is taken out: growth before inflation, less this, is what your savings really gain.",
   stratSpend: "What your plan spends each month once retired, before taxes, in today's dollars: your withdrawal strategy's first year, from the starting rate you set on Retirement. Your goal from Profile is shown under it.",
   retSpend: "What you expect to spend each month once retired, in today's dollars, before taxes and health premiums (the plan adds those on top). Many people spend less than while working. Left blank, it's what you spend today, less the mortgage payment if it's paid off by then.",
   saved: "Your retirement and investment accounts: 401(k)s, IRAs, Roth and brokerage accounts, and HSAs. Checking and savings count as your emergency fund instead, and your home isn't spent in retirement.",
@@ -47,7 +47,7 @@ export const TIPS = {
   otherIncome: "Money that comes in besides pay, after taxes: side work, rent from a property, a pension. It adds to what you have each month to spend and save.",
   deduction: "What comes off your income before federal income tax is figured. Everyone can take the standard deduction; itemizing (adding up mortgage interest, charity and state and local taxes) only helps when those come to more.",
   fica: "Social Security and Medicare taxes, taken from every paycheck: 6.2% of pay for Social Security, up to a yearly limit, and 1.45% for Medicare.",
-  leftAfter: "Pay after taxes, less what you spend. Your saving comes out of this. Whatever isn't put toward saving shows on Taxes & Savings as not assigned.",
+  leftAfter: "All income after taxes, less what you spend. Your saving comes out of this. Whatever isn't put toward saving shows on Taxes & Savings as not assigned.",
   notAssigned: "Money left each month after taxes, spending and saving that hasn't been given a place. It sits in checking and earns nothing; putting it toward saving raises your plan.",
   savingsRate: "What goes into savings each month, with your employer's match, as a share of your pay before taxes. Around 15% is a common goal.",
   growLines: "Many people save more as their pay grows. Each line can rise by a share each year beyond inflation, and stops at its legal limit. Your plan counts the rise when it projects your savings.",

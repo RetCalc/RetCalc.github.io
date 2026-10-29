@@ -19,7 +19,7 @@ import { Frame } from "./Frame";
 /* The sections, in reading order. Each section's id is "about-" + its key,
    so /dashboard/about#about-networth opens that one. */
 const GROUPS = [
-  { key: "works", label: "How the dashboard works", sections: [["profile", "One profile behind every tab"], ["networth", "Net worth and its history"], ["home", "Home"], ["paycheck", "Income, Spending, and Taxes & Savings"], ["retire", "Retirement, the bridge and health cover"], ["assume", "What the plan assumes"], ["tools", "Tools opened here"], ["saved", "What's saved to your account"]] },
+  { key: "works", label: "How the Dashboard works", sections: [["profile", "One profile behind every tab"], ["networth", "Net worth and its history"], ["home", "Your home"], ["paycheck", "Income, Spending, and Taxes & Savings"], ["retire", "Retirement, the bridge and health cover"], ["assume", "What the plan assumes"], ["tools", "Tools opened here"], ["saved", "What's saved to your account"]] },
   { key: "calc", label: "Calculator", sections: [["calculator", "Calculator"], ["projection", "How the projection works"]] },
   { key: "retirement", label: "Retirement income", sections: [["optimizer", "Retirement Plan Optimizer"], ["drawdown", "Drawdown Simulator"], ["social", "Social Security Calculator"], ["bridge", "Early Retirement Bridge"], ["roth", "Roth Conversion Calculator"], ["healthcare", "Healthcare Cost Planner"]] },
   { key: "saving", label: "Saving and investing", sections: [["fire", "FIRE Calculator"], ["backtest", "Portfolio Backtest"], ["college", "College Savings"], ["rentbuy", "Rent vs. Buy"]] },
@@ -103,7 +103,7 @@ export function About() {
     return () => window.removeEventListener("hashchange", fromHash);
   }, [set]);
   return (
-    <Frame current="about" title="About" sub="How your dashboard works, what it assumes, and the fine print">
+    <Frame current="about" title="About" sub="How your Dashboard works, what it assumes, and the fine print">
       <OpenCtx.Provider value={{ open, set }}>
         <div className="dsh-about" id="tab-about">
           <div className="about-layout">
@@ -112,7 +112,7 @@ export function About() {
               <Card id="about-what">
                 <CardHeader><CardTitle>What this is</CardTitle></CardHeader>
                 <CardContent><div className="about">
-                  <p>Your dashboard keeps your whole financial picture in one place and turns it
+                  <p>Your Dashboard keeps your whole financial picture in one place and turns it
                   into one plan for retirement.</p>
                   <p>Each tab looks at one part of it: what you have and owe, what you earn, what
                   you pay in taxes, what you spend and what you save. <b>Retirement</b> and{" "}
@@ -132,7 +132,7 @@ export function About() {
                   tab that uses it follows.</p>
                   <p><b>Each figure is set in one place</b>, where that part of the plan is made:
                   your ages and retirement age in Profile, pay and Social Security on Income,
-                  balances on Net worth, what your home costs on Home. Later tabs list those
+                  balances on Net worth, what your home costs on Your home. Later tabs list those
                   figures instead of letting you type them, with a link to where each is set, so
                   two tabs can never disagree.</p>
                   <ul>
@@ -165,7 +165,7 @@ export function About() {
                 </Section>
                 <Section id="home">
                   <p><b>Owning:</b> what the home is worth and what&apos;s owed come from Net worth.
-                  On Home you give the mortgage&apos;s interest rate and its payment (principal and
+                  On Your home you give the mortgage&apos;s interest rate and its payment (principal and
                   interest), which gives when it&apos;s paid off, and the Mortgage Calculator runs on
                   your own loan. There you set what owning costs beyond the loan: property tax,
                   insurance, PMI, HOA, maintenance and utilities, and try extra payments or a
@@ -174,7 +174,7 @@ export function About() {
                   Calculator starting from your rent.</p>
                   <ul>
                     <li>Either way, those costs are your budget&apos;s housing lines on
-                    <b> Spending</b>, marked &ldquo;from Home&rdquo; and changed on Home.</li>
+                    <b> Spending</b>, marked &ldquo;from your home&rdquo; and changed on Your home.</li>
                     <li>The first time you set what owning costs, a budget that&apos;s still
                     setup&apos;s one number gives up what the new lines count, so your spending stays
                     what you said it was.</li>
@@ -192,7 +192,7 @@ export function About() {
                     your statement, or worked out from your pay history.</dd>
                     <dt>Spending</dt>
                     <dd>Your budget, line by line. Setup&apos;s one number starts it as one line;
-                    its total is your spending everywhere. Housing lines come from Home. Your
+                    its total is your spending everywhere. Housing lines come from Your home. Your
                     emergency fund is sized here, in months of spending or of a leaner
                     emergency budget.</dd>
                     <dt>Taxes &amp; Savings</dt>
@@ -204,7 +204,7 @@ export function About() {
                     its contribution limit.</dd>
                   </dl>
                   <p><b>The paycheck is the one tax calculator.</b> Its taxes are your pay after
-                  taxes everywhere on the dashboard, and pre-tax saving lowers them: move a
+                  taxes everywhere on the Dashboard, and pre-tax saving lowers them: move a
                   401(k) or HSA slider and the taxes above it change with it.</p>
                   <p><b>Social Security</b> is on Income too: each benefit, the age each of you
                   claims, and the share of the benefit you expect (100% unless you plan for
@@ -272,12 +272,12 @@ export function About() {
                   </ul>
                 </Section>
                 <Section id="tools">
-                  <p>Every RetCalc tool opens inside your dashboard, filled in with what your
+                  <p>Every RetCalc tool opens inside your Dashboard, filled in with what your
                   profile knows. <b>Back</b> returns to the tab you came from.</p>
                   <ul>
                     <li>Changes you make in a tool opened from <b>Tools</b> stay in that tool. They
                     never change your profile.</li>
-                    <li>Home, Spending, Taxes &amp; Savings, the Calculator and Retirement are built on
+                    <li>Your home, Spending, Taxes &amp; Savings, the Calculator and Retirement are built on
                     tools too. What you change on those tabs is saved to your profile, and the
                     figures they take from your plan are listed rather than typed.</li>
                     <li>The tools on the rest of RetCalc are separate. Nothing you do here changes
@@ -441,7 +441,7 @@ export function About() {
                   </dl>
                 </Section>
                 <Section id="drawdown">
-                  <p>In your dashboard the <b>Retirement</b> tab runs it on your plan, and the strategy you choose there sets your chance of success everywhere. Your savings at retirement, retirement age and Social Security come from the plan there. Your mix once retired is set there and is the plan&apos;s mix everywhere. Opened from <b>Tools</b>, it&apos;s a copy to try things on.</p>
+                  <p>In your Dashboard the <b>Retirement</b> tab runs it on your plan, and the strategy you choose there sets your chance of success everywhere. Your savings at retirement, retirement age and Social Security come from the plan there. Your mix once retired is set there and is the plan&apos;s mix everywhere. Opened from <b>Tools</b>, it&apos;s a copy to try things on.</p>
                   <p>Most planning tools answer &quot;how much will I have?&quot; This one asks
                   whether it will last once you stop contributing and start spending. It
                   takes a portfolio balance and a withdrawal strategy and tests them against
@@ -542,7 +542,7 @@ export function About() {
                   100.</p>
                 </Section>
                 <Section id="bridge">
-                  <p>In your dashboard, retiring before 59½, it&apos;s the <b>Bridge to 59½</b> view on Retirement, run on your plan&apos;s own figures (listed, not typed) with a partner&apos;s pay counted while they keep working. Opened from <b>Tools</b>, it&apos;s a copy to try things on.</p>
+                  <p>In your Dashboard, retiring before 59½, it&apos;s the <b>Bridge to 59½</b> view on Retirement, run on your plan&apos;s own figures (listed, not typed) with a partner&apos;s pay counted while they keep working. Opened from <b>Tools</b>, it&apos;s a copy to try things on.</p>
                   <p>Retire before 59½ and most of your savings sits behind a 10% additional
                   tax. This tool plans the years in between. You enter your balances by account
                   type, your spending and your state, and it builds a separate plan for every
@@ -587,7 +587,7 @@ export function About() {
                   </dl>
                   <p><b>What it does not do.</b> On the tool&apos;s own page, everything is one
                   household with one age, and both spouses&apos; accounts are treated as one
-                  person&apos;s. In your dashboard, a partner&apos;s traditional accounts open at their
+                  person&apos;s. In your Dashboard, a partner&apos;s traditional accounts open at their
                   own 59½. Payroll tax is counted on part-time pay, but not the earned income
                   credit or Roth contributions from that pay. The 72(t) annuitization method,
                   HSAs, the SECURE 2.0 emergency and disability exceptions and state-specific
@@ -664,7 +664,7 @@ export function About() {
                   is outside the model.</p>
                 </Section>
                 <Section id="social">
-                  <p>In your dashboard your Social Security is on <b>Income</b>: estimated from your pay, typed from your statement, or worked out from your pay history with this tool&apos;s editor. Your claiming ages there are the plan&apos;s, and so is the share of the benefit you expect, which scales every benefit in the plan.</p>
+                  <p>In your Dashboard your Social Security is on <b>Income</b>: estimated from your pay, typed from your statement, or worked out from your pay history with this tool&apos;s editor. Your claiming ages there are the plan&apos;s, and so is the share of the benefit you expect, which scales every benefit in the plan.</p>
                   <p>The Social Security Calculator shows your monthly check at every age you
                   could claim, 62 to 70, worked out from your pay or from your statement, and
                   what each choice adds up to, so the trade-off is plain: a smaller check for
@@ -751,7 +751,7 @@ export function About() {
                 </Section>
 
                 <Section id="healthcare">
-                  <p>In your dashboard it&apos;s the <b>Health cover</b> view on Retirement, run on your plan: the year work stops, your ages, household and state, and the income your plan gives that year and at 65 (Medicare uses the second). Only the benchmark premium is yours to type. Opened from <b>Tools</b>, it&apos;s a copy to try things on.</p>
+                  <p>In your Dashboard it&apos;s the <b>Health cover</b> view on Retirement, run on your plan: the year work stops, your ages, household and state, and the income your plan gives that year and at 65 (Medicare uses the second). Only the benchmark premium is yours to type. Opened from <b>Tools</b>, it&apos;s a copy to try things on.</p>
                   <p>Healthcare is one of the largest and most variable costs in early retirement.
                   This tool covers two phases: the ACA bridge between retirement and Medicare,
                   and Medicare itself from age 65 on.</p>
@@ -902,7 +902,7 @@ export function About() {
                   years unless you change that input yourself.</p>
                 </Section>
                 <Section id="rentbuy">
-                  <p>In your dashboard, renting, <b>Home</b> runs it starting from your rent.</p>
+                  <p>In your Dashboard, renting, <b>Your home</b> runs it starting from your rent.</p>
                   <p>The question is which path leaves you with more net worth after some number
                   of years, not which payment is bigger. This tool runs both scenarios month
                   by month. The buyer builds equity as the mortgage is paid down and the home
@@ -935,7 +935,7 @@ export function About() {
               </Group>
               <Group id="everyday">
                 <Section id="tax">
-                  <p>In your dashboard your taxes are on <b>Taxes &amp; Savings</b>, figured by your paycheck with the deduction and any local tax chosen there. Opened from <b>Tools</b>, this calculator is a copy to try things on.</p>
+                  <p>In your Dashboard your taxes are on <b>Taxes &amp; Savings</b>, figured by your paycheck with the deduction and any local tax chosen there. Opened from <b>Tools</b>, this calculator is a copy to try things on.</p>
                   <p>Two modes, switched at the top of the input panel. <b>Normal income</b>{" "}
                   estimates what you keep from a salary after federal income tax, state income
                   tax and FICA, and a local income tax if you give one. <b>Retirement income</b> answers a different question: you are
@@ -1151,7 +1151,7 @@ export function About() {
                   <p>Two tabs. <b>Budget</b> lays out what you spend. <b>Paycheck</b> starts from
                   your gross pay, takes out the taxes and that budget, and plans where the rest of
                   each paycheck goes.</p>
-                  <p>In your dashboard the Budget tab is <b>Spending</b> and the Paycheck tab is{" "}
+                  <p>In your Dashboard the Budget tab is <b>Spending</b> and the Paycheck tab is{" "}
                   <b>Taxes &amp; Savings</b>, and what you change there is your plan&apos;s.</p>
 
                   <h4>Budget</h4>
@@ -1287,7 +1287,7 @@ export function About() {
                   card.</p>
                 </Section>
                 <Section id="mortgage">
-                  <p>In your dashboard, owning a home, <b>Home</b> runs it on your own loan: your home&apos;s worth and what&apos;s owed, your rate, and the years left at your payment. What owning costs, set there, is your budget&apos;s housing lines.</p>
+                  <p>In your Dashboard, owning a home, <b>Your home</b> runs it on your own loan: your home&apos;s worth and what&apos;s owed, your rate, and the years left at your payment. What owning costs, set there, is your budget&apos;s housing lines.</p>
                   <p>Works out the full monthly cost of owning, not just the loan payment, and
                   shows how the balance falls over time.</p>
                   <p>Principal and interest use the standard amortization formula. Every payment
