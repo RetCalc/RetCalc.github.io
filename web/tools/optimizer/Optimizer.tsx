@@ -19,7 +19,8 @@ import { dollarsField, fmtNum, groupDigits, money, parseNum, pctStr } from "@/li
 import { has } from "@/lib/household";
 import { STATE_OPTIONS } from "@/lib/states";
 import { copyFrom, opSources, sourceDesc } from "./copy";
-import { OP_DEF, opSetMode, opToolIn, opView, type OptimizerInputs } from "./model";
+import { OP_DEF, opFras, opSetMode, opToolIn, opView, type OptimizerInputs } from "./model";
+import { fraLabel } from "@/tools/social/model";
 import { NEWEST_YEAR, RISKS } from "@/lib/engine/typed";
 import { OptimizerStatus, Progress } from "./Progress";
 import { OptimizerResult, heroFigure } from "./Result";
@@ -57,7 +58,15 @@ export function OpGoals({ host, goal, onPick }: { host: Host; goal: Goal; onPick
   );
 }
 
-const CLAIMS: [string, string][] = [["62", "62, the earliest"], ["63", "63"], ["64", "64"], ["65", "65"], ["66", "66"], ["67", "67, full retirement age"], ["68", "68"], ["69", "69"], ["70", "70, the most it pays"]];
+const CLAIMS: [string, string][] = [["62", "62, the earliest"], ["63", "63"], ["64", "64"], ["65", "65"], ["66", "66"], ["67", "67"], ["68", "68"], ["69", "69"], ["70", "70, the most it pays"]];
+
+/** The claiming choice that follows each person's full retirement age: the
+    plan to beat claims at the whole year nearest to it. */
+function fraChoice(F: { fra1: number; fra2: number }, married: boolean): string {
+  const a = Math.round(F.fra1), b = Math.round(F.fra2);
+  if (married && F.fra1 !== F.fra2) return "Each at full retirement age, " + a + " and " + b;
+  return "Full retirement age, " + fraLabel(F.fra1) + (F.fra1 === a ? "" : " (claims at " + a + ")");
+}
 
 export function Optimizer() {
   const toast = useToast();
@@ -73,8 +82,8 @@ export function Optimizer() {
   useHouseholdFill("optimizer", s, setState, (h, c) => {
     const married = h.status === "m", m = (v: number) => dollarsField(v), next: OptimizerInputs = { ...c, status: married ? "m" : "s" };
     const age = h.age && h.age > 0 ? Math.round(h.age) : null, retire = h.retire && h.retire > 0 && h.retire < 120 ? Math.round(h.retire) : null;
-    if (age) next.age = String(age);
-    if (married && has(h.spouseAge) && h.spouseAge! > 0) next.spAge = String(Math.round(h.spouseAge!));
+    if (age) { next.age = String(age); next.birth = String(NEWEST_YEAR - age); }
+    if (married && has(h.spouseAge) && h.spouseAge! > 0) { next.spAge = String(Math.round(h.spouseAge!)); next.spBirth = String(NEWEST_YEAR - Math.round(h.spouseAge!)); }
     if (retire && (!age || retire >= age)) next.retire = String(retire);
     if (married && retire && age && has(h.spouseAge) && h.spouseAge! > 0) next.spRet = String(Math.round(h.spouseAge! + (retire - age)));
     if (h.state && STATE_OPTIONS.some((o) => o.code === h.state)) next.state = h.state;
@@ -98,7 +107,14 @@ export function Optimizer() {
     return next;
   });
 
-  const v = opView(s);
+  const v = opView(s), F = opFras(s), fra1 = fraLabel(F.fra1), fra2 = fraLabel(F.fra2);
+  // Editing an age moves the birth year with it while that year is still the
+  // one the old age gave (as the household fills it in).
+  const setAge = (key: "age" | "spAge", bkey: "birth" | "spBirth") => (val: string) => setState((c) => {
+    const old = parseNum(c[key]), n = parseNum(val), next = { ...c, [key]: val };
+    if (c[bkey] !== "" && old > 0 && c[bkey] === String(NEWEST_YEAR - Math.round(old)) && n > 0) next[bkey] = String(NEWEST_YEAR - Math.round(n));
+    return next;
+  });
   // the plan at retirement, and how big its search is: worked out once per change
   const { I, P, E } = useMemo(() => {
     const In = opToolIn(s), Pl = plAtRetire(In);
@@ -168,7 +184,7 @@ export function Optimizer() {
             <div className="text-label text-muted-foreground tabular-nums">{money(P.trad) + " traditional · " + money(P.roth) + " Roth · " + money(P.brok) + " brokerage, in today's dollars"}</div>
           </div>
           <div>
-            <div className="text-label text-muted-foreground">Social Security at 67</div>
+            <div className="text-label text-muted-foreground">{"Social Security at " + (I.status === "m" && F.fra1 !== F.fra2 ? "full retirement age" : fra1)}</div>
             <div className="my-1 text-3xl leading-tight font-medium tabular-nums">{money(I.pia1 + I.pia2)}<span className="text-body text-muted-foreground">/mo</span></div>
             <div className="text-label text-muted-foreground tabular-nums">{I.status === "m" ? money(I.pia1) + " + " + money(I.pia2) + ", before any spousal top-up" : "Before claiming earlier or later"}</div>
           </div>
@@ -212,8 +228,12 @@ export function Optimizer() {
                 </SelectField>
               </div>
               <div className="two bottomalign max-sm:grid-cols-2" hidden={!v.now}>
-                <NumberField id="opAge" label="Your age" unit="yrs old" max={90} value={s.age} onValueChange={set("age")} />
-                <NumberField id="opSpAge" hidden={!v.married} label="Spouse's age" unit="yrs old" max={95} value={s.spAge} onValueChange={set("spAge")} />
+                <NumberField id="opAge" label="Your age" unit="yrs old" max={90} value={s.age} onValueChange={setAge("age", "birth")} />
+                <NumberField id="opSpAge" hidden={!v.married} label="Spouse's age" unit="yrs old" max={95} value={s.spAge} onValueChange={setAge("spAge", "spBirth")} />
+              </div>
+              <div className={"two bottomalign max-sm:grid-cols-2" + (v.married ? "" : " one")}>
+                <NumberField id="opBirth" label={<Tipped text="Year you were born" k="ssbirth" />} max={NEWEST_YEAR} placeholder={parseNum(s.age) > 0 ? String(NEWEST_YEAR - Math.round(parseNum(s.age))) : ""} value={s.birth} onValueChange={set("birth")} />
+                <NumberField id="opSpBirth" hidden={!v.married} label="Spouse's birth year" max={NEWEST_YEAR} placeholder={parseNum(s.spAge) > 0 ? String(NEWEST_YEAR - Math.round(parseNum(s.spAge))) : ""} value={s.spBirth} onValueChange={set("spBirth")} />
               </div>
               <div className={"two bottomalign max-sm:grid-cols-2" + (v.now || !v.married ? " one" : "")} id="opRetRow">
                 <NumberField id="opRetire" label={<span id="opRetireLbl"><Tipped text={v.now ? "Retire at" : "Your age at retirement"} k="opretire" /></span>}
@@ -263,14 +283,15 @@ export function Optimizer() {
                 <span id="opSpendWarn" role="alert">{spend ? "" : "Enter what you'll spend each year. The search needs it."}</span>
               </div>
               <div className="two bottomalign max-sm:grid-cols-2">
-                <MoneyField id="opSS1" label={<Tipped text="Your benefit at 67" k="opss" />} unit="/mo" value={s.ss1} onValueChange={set("ss1")} />
+                <MoneyField id="opSS1" label={<Tipped text={"Your benefit at " + fra1} k="opss" />} unit="/mo" value={s.ss1} onValueChange={set("ss1")} />
                 <MoneyField id="opInc1" label={<Tipped text="Or your salary" k="opinc" />} unit="/yr" value={s.inc1} onValueChange={set("inc1")} />
               </div>
               <div className="two bottomalign max-sm:grid-cols-2" hidden={!v.married}>
-                <MoneyField id="opSS2" label="Spouse's benefit at 67" unit="/mo" value={s.ss2} onValueChange={set("ss2")} />
+                <MoneyField id="opSS2" label={"Spouse's benefit at " + fra2} unit="/mo" value={s.ss2} onValueChange={set("ss2")} />
                 <MoneyField id="opInc2" label="Or their salary" unit="/yr" value={s.inc2} onValueChange={set("inc2")} />
               </div>
               <SelectField id="opClaim" label={<Tipped text="You'd claim it at" k="opclaim" />} value={s.claim} onChange={set("claim")}>
+                <option value="">{fraChoice(F, v.married)}</option>
                 {CLAIMS.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
               </SelectField>
               <div className="two bottomalign max-sm:grid-cols-2">

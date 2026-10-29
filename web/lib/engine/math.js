@@ -9,7 +9,7 @@ import {
   HIST_CASH, HIST_SV, HIST_MA_CASH, HIST_MA_SV
 } from "./drawdown.js";
 import {
-  yearData, HIST_START, HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, ULT
+  yearData, NEWEST_YEAR, HIST_START, HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, ULT
 } from "./data/index.js";
 
 // ===MATH START===
@@ -1803,16 +1803,20 @@ export function pmtStart(r, n, pv, fv){
    career at the income entered. A statement from ssa.gov reflects your actual
    35-year earnings record, so the manual figure is always more accurate.
    The bend points and the earnings cap (the FICA wage base) are the newest
-   year's (yearData()). */
+   year's (yearData()). SS_FRA is the full retirement age for anyone born in
+   1960 or later, and what every function here assumes when it isn't given
+   a person's own (ssFRA(birthYear), ssFraFromAge(age)). */
 export var SS_FRA = 67;
 
 /**
  * @param {number} income - annual income, in dollars
  * @param {number} careerYears - years worked at this income (capped at 35, the number Social Security averages over)
  * @param {number} claimAge - age benefits start, 62-70
+ * @param {number} [fra] - full retirement age, in years (66.5 is 66 and 6 months); 67 when left out
  * @returns {{aime: number, pia: number, adjustment: number, monthly: number, annual: number, atFRA: number, fra: number}}
  */
-export function ssEstimate(income, careerYears, claimAge) {
+export function ssEstimate(income, careerYears, claimAge, fra) {
+  fra = fra > 0 ? fra : SS_FRA;
   var Y = yearData(), SS_BEND1 = Y.ss.bend1, SS_BEND2 = Y.ss.bend2;
   var capped = Math.min(Math.max(0, income), Y.fica.ssCap);
   // Social Security averages your best 35 years; a shorter career means zeros
@@ -1827,30 +1831,32 @@ export function ssEstimate(income, careerYears, claimAge) {
   } else {
     pia = 0.90 * SS_BEND1 + 0.32 * (SS_BEND2 - SS_BEND1) + 0.15 * (aime - SS_BEND2);
   }
-  var age = Math.min(70, Math.max(62, claimAge || SS_FRA));
+  var age = Math.min(70, Math.max(62, claimAge || fra));
   var adj = 1;
-  if (age < SS_FRA) {
-    var early = (SS_FRA - age) * 12;
+  if (age < fra) {
+    var early = Math.round((fra - age) * 12 * 1e6) / 1e6;
     var first36 = Math.min(36, early);
     var beyond = Math.max(0, early - 36);
     adj = 1 - (first36 * (5 / 9) / 100) - (beyond * (5 / 12) / 100);
-  } else if (age > SS_FRA) {
-    adj = 1 + (age - SS_FRA) * 0.08;
+  } else if (age > fra) {
+    adj = 1 + (age - fra) * 0.08;
   }
   return {
     aime: aime, pia: pia, adjustment: adj,
     monthly: pia * adj, annual: pia * adj * 12,
-    atFRA: pia * 12, fra: SS_FRA
+    atFRA: pia * 12, fra: fra
   };
 }
 /* A spousal benefit's own claiming adjustment: it is cut more steeply than a
    worker's for an early claim (25/36 of 1% per month for the first 36 months,
    5/12 of 1% after, so 35% at 62 rather than 30%) and earns no delayed
-   retirement credits past full retirement age. */
-export function ssSpousalAdj(claimAge) {
-  var age = Math.min(70, Math.max(62, claimAge || SS_FRA));
-  if (age >= SS_FRA) return 1;
-  var early = (SS_FRA - age) * 12;
+   retirement credits past full retirement age. `fra` is the full retirement
+   age of the person receiving it (67 when left out). */
+export function ssSpousalAdj(claimAge, fra) {
+  fra = fra > 0 ? fra : SS_FRA;
+  var age = Math.min(70, Math.max(62, claimAge || fra));
+  if (age >= fra) return 1;
+  var early = Math.round((fra - age) * 12 * 1e6) / 1e6;
   return 1 - Math.min(36, early) * (25 / 36) / 100 - Math.max(0, early - 36) * (5 / 12) / 100;
 }
 /* Estimate-mode Social Security for the Drawdown tool, as the streams
@@ -1860,23 +1866,27 @@ export function ssSpousalAdj(claimAge) {
    on the spousal schedule for the age it starts at, and both spouses are
    taken to be the same age, as everywhere else in the tool. Without a
    retirement age the tool runs one shared delay, so everything folds into
-   the first stream. */
-export function ssDrawdownStreams(inc1, claim1, inc2, claim2, couple, retireAge, sharedDelay) {
-  claim1 = Math.min(70, Math.max(62, claim1 || SS_FRA));
-  claim2 = Math.min(70, Math.max(62, claim2 || SS_FRA));
+   the first stream. fra1 and fra2 are each spouse's full retirement age
+   (67 when left out): the claiming adjustments and each spousal reduction
+   count from the recipient's own. */
+export function ssDrawdownStreams(inc1, claim1, inc2, claim2, couple, retireAge, sharedDelay, fra1, fra2) {
+  fra1 = fra1 > 0 ? fra1 : SS_FRA;
+  fra2 = fra2 > 0 ? fra2 : SS_FRA;
+  claim1 = Math.min(70, Math.max(62, claim1 || fra1));
+  claim2 = Math.min(70, Math.max(62, claim2 || fra2));
   var delayFor = function (c) {
     return retireAge != null ? Math.max(0, Math.round(c - retireAge))
                              : Math.max(0, Math.round(sharedDelay || 0));
   };
-  var e1 = ssEstimate(inc1, 40, claim1);
+  var e1 = ssEstimate(inc1, 40, claim1, fra1);
   var out = {annual: e1.annual, delay: delayFor(claim1), annual2: 0, delay2: 0,
              annual3: 0, delay3: 0, own1: e1.annual, own2: 0, top1: 0, top2: 0};
   if (couple) {
-    var e2 = ssEstimate(inc2, 40, claim2);
-    var both = Math.max(claim1, claim2), adj = ssSpousalAdj(both);
+    var e2 = ssEstimate(inc2, 40, claim2, fra2);
+    var both = Math.max(claim1, claim2);
     out.own2 = e2.annual;
-    out.top1 = Math.max(0, 0.5 * e2.pia - e1.pia) * adj * 12;
-    out.top2 = Math.max(0, 0.5 * e1.pia - e2.pia) * adj * 12;
+    out.top1 = Math.max(0, 0.5 * e2.pia - e1.pia) * ssSpousalAdj(both, fra1) * 12;
+    out.top2 = Math.max(0, 0.5 * e1.pia - e2.pia) * ssSpousalAdj(both, fra2) * 12;
     if (retireAge != null) {
       out.annual2 = e2.annual; out.delay2 = delayFor(claim2);
       out.annual3 = out.top1 + out.top2; out.delay3 = delayFor(both);
@@ -2269,6 +2279,20 @@ export function ssFRA(birthYear) {
   if (y <= 1954) return 66;
   if (y <= 1959) return 66 + (y - 1954) * 2 / 12;
   return 67;
+}
+
+/** Full retirement age for a birth year as typed (a number or text): 67 when
+    it is blank or isn't a plausible year. */
+export function ssFraFromBirth(birth) {
+  var y = Math.round(parseFloat(birth));
+  return y >= 1900 && y <= NEWEST_YEAR ? ssFRA(y) : SS_FRA;
+}
+
+/** Full retirement age for someone of a given age today, by the year they
+    were born (this year less their age, as the Social Security Calculator
+    takes it): 67 when no age is known. */
+export function ssFraFromAge(age) {
+  return age > 0 && isFinite(age) ? ssFRA(NEWEST_YEAR - Math.round(age)) : SS_FRA;
 }
 
 /* The worker's own benefit, as a share of the full one, for claiming at

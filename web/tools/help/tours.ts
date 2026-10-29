@@ -439,13 +439,13 @@ const optimizer: Tour<OptimizerInputs> = { name: "Retirement Plan Optimizer", ti
     { title: "Where you start", focus: "#opModeSeg", tasks: ({ s, base }) => [
       { h: "The Optimizer tries every age to claim Social Security, every order to draw from your accounts, and Roth conversions, then tests each through every market since 1926. It needs to know where you stand first." },
       { h: "<b>Retirement day</b> or <b>Today</b>: start from what you'll have the day you retire, or from today's balances and what you save each month until then.", ok: tried(s.mode !== base.mode) },
-      { h: "<b>Filing status</b>, <b>State</b> and each person's <b>age</b> set the tax rules, the Medicare years and when Social Security can start." },
+      { h: "<b>Filing status</b>, <b>State</b> and each person's <b>age</b> set the tax rules, the Medicare years and when Social Security can start. Your <b>birth year</b> sets your full retirement age: 66 for 1943 to 1954, rising two months per year to 67 for 1960 and later." },
       { h: "Your savings by how they're taxed. <b>Traditional</b> 401(k)s and IRAs are taxed when you take money out; <b>Roth</b> money comes out tax-free; <b>Brokerage and cash</b> is taxed only on its gains. Which you draw from first is one of the things the search decides." },
     ] },
     { title: "Retirement and what matters", focus: "#opSpend", tasks: ({ s, base }) => [
       { h: "<b>Spending, after tax</b> is what you want to live on each year once retired, in today's dollars. The search pays the taxes on top, so leave them out." },
       { h: "<b>Stocks</b> is the share of your savings in stocks once retired; the rest is in bonds. More in stocks swings more but has usually lasted longer.", ok: tried(s.mix !== base.mix) },
-      { h: "Each person's Social Security check at 67, from a statement at ssa.gov if you have one. <b>You'd claim it at</b> is the usual plan the search is compared against; it tries every other age too.", ok: tried(s.claim !== base.claim) },
+      { h: "Each person's Social Security check at full retirement age, from a statement at ssa.gov if you have one. <b>You'd claim it at</b> is the usual plan the search is compared against; it tries every other age too.", ok: tried(s.claim !== base.claim) },
       { h: "A <b>Pension</b>, if you'll have one, with the age it starts and whether it rises with prices." },
       { h: "<b>Health insurance</b> prices coverage before 65 and Medicare after. <b>Heirs' tax rate</b> is what anyone inheriting your traditional accounts would pay on them. <b>Must last in</b> is how sure you want to be: the share of past markets the plan has to survive.", ok: tried(s.target !== base.target) },
     ] },

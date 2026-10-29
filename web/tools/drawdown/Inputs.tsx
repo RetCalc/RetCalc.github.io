@@ -18,6 +18,8 @@ import { toolInputs, useToolScope } from "@/components/tools/ToolState";
 import { forDrawdown, type SocialInputs } from "@/tools/social/model";
 import { Html } from "@/components/common/Html";
 import { DD_STRAT, ddMCHistory, ssDrawdownStreams, ssEstimate } from "@/lib/engine/typed-drawdown";
+import { ssFraFromBirth } from "@/lib/engine/typed";
+import { fraLabel } from "@/tools/social/model";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { advInUse, fromClamp, type DdItem, type DrawdownState, type FloorStep, type PathStage } from "./fields";
 import { Spark } from "./Spark";
@@ -103,14 +105,17 @@ export function Inputs({ v, fromNote, periods, open }: {
   /* ---- Social Security ---- */
   let ssEstNote = "";
   if (ssMode === "est") {
+    const f1 = ssFraFromBirth(d.ssBirth), f2 = ssFraFromBirth(d.ssBirth2);
     if (ssCouple) {
-      const st = ssDrawdownStreams(d.ssIncome as number, d.ssClaim as number, d.ssIncome2 as number, d.ssClaim2 as number, true, null, 0);
+      const st = ssDrawdownStreams(d.ssIncome as number, d.ssClaim as number, d.ssIncome2 as number, d.ssClaim2 as number, true, null, 0, ssFraFromBirth(d.ssBirth), ssFraFromBirth(d.ssBirth2));
       const m1 = (st.own1 + st.top1) / 12, m2 = (st.own2 + st.top2) / 12;
       ssEstNote = "About " + money(m1) + "/mo for you and " + money(m2) + "/mo for your spouse, " + money(m1 + m2) + "/mo combined, in today's dollars" +
-        (st.top1 + st.top2 > 0 ? ", including a spousal benefit of " + money((st.top1 + st.top2) / 12) + "/mo once you've both claimed" : "") + ".";
+        (st.top1 + st.top2 > 0 ? ", including a spousal benefit of " + money((st.top1 + st.top2) / 12) + "/mo once you've both claimed" : "") + "." +
+        (f1 !== 67 || f2 !== 67 ? " Full retirement age is " + fraLabel(f1) + " for you and " + fraLabel(f2) + " for your spouse." : "");
     } else {
-      const e = ssEstimate(d.ssIncome as number, 40, Math.min(70, Math.max(62, d.ssClaim as number)));
-      ssEstNote = "About " + money(e.monthly) + " per month in today's dollars, claiming at " + Math.round(d.ssClaim as number) + ".";
+      const e = ssEstimate(d.ssIncome as number, 40, Math.min(70, Math.max(62, d.ssClaim as number)), ssFraFromBirth(d.ssBirth));
+      ssEstNote = "About " + money(e.monthly) + " per month in today's dollars, claiming at " + Math.round(d.ssClaim as number) +
+        (f1 !== 67 ? ", with a full retirement age of " + fraLabel(f1) : "") + ".";
     }
   }
 

@@ -3,7 +3,7 @@
    change it; and the score. Everything here reads the answers it's given and
    changes nothing. From src/js/app/28-guide-core.js and the plan parts of
    30-guide-steps.js. */
-import { BASIC_INFL, HIST_START, computeTax, RISKS } from "@/lib/engine/typed";
+import { BASIC_INFL, HIST_START, NEWEST_YEAR, computeTax, RISKS, ssFRA, ssFraFromAge } from "@/lib/engine/typed";
 import { ssEstimate } from "@/lib/engine/typed-drawdown";
 import {
   PL_HEIR, plAtRetire, plBands, plBaseTactics, plClaimMin, plDetail, plHistory, plKey, plPrep, plSSParts,
@@ -97,12 +97,29 @@ export const retMix = (a: Answers) => (ok(a.retMix) && a.retMix >= 0 && a.retMix
     flexible withdrawal strategies. */
 export const minSpend = (a: Answers) => (pos(a.minSpend) ? a.minSpend : 0);
 
-/** When Social Security starts: the age chosen, or 67, or retirement if
-    that's later, up to 70; never before retirement in this plan. */
-export function claimAge(a: Answers, retire: number): number {
+/** Each of you's full retirement age, in years (66.5 is 66 and 6 months),
+    from the year you were born: the real one when the answers have it (the
+    Dashboard's), else this year less today's age, as the Social Security
+    Calculator does. 67 when no age is known. */
+export function fras(a: Answers): { fra1: number; fra2: number } {
+  const of = (birth: unknown, age: unknown) => (ok(birth) && birth > 1900 ? ssFRA(Math.floor(birth)) : ssFraFromAge(ok(age) ? age : null));
+  return { fra1: of(a.birth, a.age), fra2: mar(a) ? of(a.birth2, a.spouseAge) : 67 };
+}
+/** Each of you's birth year, as fras() reads it: the exact one when the
+    answers have it, else this year less today's age; "" when neither is known. */
+export function births(a: Answers): { birth1: string; birth2: string } {
+  const of = (birth: unknown, age: unknown) => (ok(birth) && birth > 1900 ? String(Math.floor(birth)) : ok(age) && age > 0 ? String(NEWEST_YEAR - Math.round(age)) : "");
+  return { birth1: of(a.birth, a.age), birth2: mar(a) ? of(a.birth2, a.spouseAge) : "" };
+}
+/** When Social Security starts: the age chosen, or full retirement age (to
+    the nearest year, 67 for anyone born in 1960 or later), or retirement if
+    that's later, up to 70; never before retirement in this plan. `who` is 2
+    for the spouse, who has a full retirement age of their own. */
+export function claimAge(a: Answers, retire: number, who: 1 | 2 = 1): number {
   const r = Math.min(70, Math.round(retire)), c = a.ssClaim;
   if (ok(c)) return Math.max(62, Math.min(70, Math.max(c, r)));
-  return Math.max(67, r);
+  const f = fras(a);
+  return Math.max(Math.round(who === 2 ? f.fra2 : f.fra1), r);
 }
 /** Each of you's benefit at full retirement age, a month, in today's
     dollars: from a statement, or estimated from income over the years
@@ -115,6 +132,8 @@ export function pias(a: Answers, retire: number) {
   // The share of the benefit expected (the Dashboard asks), on every benefit.
   const k = ok(a.ssScale) ? Math.max(0, Math.min(1, a.ssScale)) : 1;
   return {
+    // The benefit at full retirement age doesn't depend on the claiming age
+    // given here, so neither does it on the full retirement age.
     pia1: (own ? a.ssOwn! : ssEstimate(a.income || 0, yrs1, 67).pia) * k,
     pia2: (!mar(a) ? 0 : own2 ? a.ssOwn2! : ssEstimate(a.income2 || 0, yrs2, 67).pia) * k,
     own, own2, career: yrs1, career2: yrs2,
@@ -125,22 +144,23 @@ export function tactics(a: Answers): PlTactics | null {
   if (!ok(a.optC1)) return null;
   return { c1: a.optC1, c2: ok(a.optC2) ? a.optC2 : a.optC1, f: a.optF || 0, u: a.optU || 0, im: a.optIm || 0, ac: a.optAc || 0 };
 }
-export interface SSInfo { a1: number; a2: number; total: number; claim: number; claim2: number; delay: number; own: boolean; own2: boolean; spousal: boolean; career: number; tactics?: boolean }
+export interface SSInfo { fra1: number; fra2: number; a1: number; a2: number; total: number; claim: number; claim2: number; delay: number; own: boolean; own2: boolean; spousal: boolean; career: number; tactics?: boolean }
 /** Social Security for a retirement age, while typing: each of you's yearly
     benefit once claimed, at the ages the plan uses. */
 export function ssFor(a: Answers, retire: number): SSInfo {
-  const pia = pias(a, retire), Tq = tactics(a), claim = claimAge(a, retire);
+  const pia = pias(a, retire), Tq = tactics(a), claim = claimAge(a, retire), claimB = claimAge(a, retire, 2), F = fras(a);
   const age1 = Math.round(retire);
   const age2 = mar(a) && ok(a.spouseAge) && ok(a.age) ? Math.round(a.spouseAge + (retire - a.age)) : null;
   const c1 = Math.max(plClaimMin(age1), Math.min(70, Tq ? Tq.c1 : claim));
-  const c2 = age2 == null ? c1 : Math.max(plClaimMin(age2), Math.min(70, Tq ? Tq.c2 : claim));
-  const S = plSSParts({ P: { pia1: pia.pia1, pia2: pia.pia2 }, married: mar(a), gap: age2 == null ? 0 : age2 - age1 }, { c1, c2 });
-  return { a1: S.own1 + S.top1, a2: S.own2 + S.top2, total: S.total, claim: c1, claim2: c2,
+  const c2 = age2 == null ? c1 : Math.max(plClaimMin(age2), Math.min(70, Tq ? Tq.c2 : claimB));
+  const S = plSSParts({ P: { pia1: pia.pia1, pia2: pia.pia2, fra1: F.fra1, fra2: F.fra2 }, married: mar(a), gap: age2 == null ? 0 : age2 - age1 }, { c1, c2 });
+  return { fra1: F.fra1, fra2: F.fra2, a1: S.own1 + S.top1, a2: S.own2 + S.top2, total: S.total, claim: c1, claim2: c2,
     delay: Math.max(0, c1 - age1), own: pia.own, own2: pia.own2, spousal: S.top1 + S.top2 > 0, career: pia.career, tactics: !!Tq };
 }
 function ssOf(a: Answers, C: PlPrep, T: PlTactics, retire: number): SSInfo {
   const pia = pias(a, retire), S = plSSParts(C as unknown as Parameters<typeof plSSParts>[0], T);
-  return { a1: S.own1 + S.top1, a2: S.own2 + S.top2, total: S.total, claim: T.c1, claim2: T.c2,
+  const F = fras(a);
+  return { fra1: F.fra1, fra2: F.fra2, a1: S.own1 + S.top1, a2: S.own2 + S.top2, total: S.total, claim: T.c1, claim2: T.c2,
     delay: Math.max(0, T.c1 - Math.round(retire)), own: pia.own, own2: pia.own2, spousal: S.top1 + S.top2 > 0, career: pia.career };
 }
 export interface IncomeItem { name: string; on: boolean; annual: number; inflate: boolean; startYear: number; duration: { type: string } }
@@ -212,7 +232,7 @@ export function planIn(a: Answers, over: Over = {}): (PlToday & { monthly: numbe
   if (!ok(stop) || stop >= retire) stop = null;
   if (stop != null) stop = Math.max(a.age, stop);
   const emp = Math.min(Math.max(0, monthly), a.employer || 0), sp = saveSplit(a, Math.max(0, monthly - emp));
-  const A = accts(a), pia = pias(a, retire), claim = claimAge(a, retire);
+  const A = accts(a), pia = pias(a, retire), claim = claimAge(a, retire), claim2 = claimAge(a, retire, 2), F = fras(a);
   return {
     status: mar(a) ? "m" : "s", state: a.state || "IL", age: a.age,
     spouseAge: mar(a) && ok(a.spouseAge) ? a.spouseAge : null, retire, stopAge: stop ?? null,
@@ -221,7 +241,7 @@ export function planIn(a: Answers, over: Over = {}): (PlToday & { monthly: numbe
     rothBasis: ok(a.rothBasisNow) ? Math.min(A.roth, a.rothBasisNow) : A.roth * 0.5,
     brokBasis: ok(a.brokBasisNow) ? Math.max(0, a.brokBasisNow) : A.brok * 0.6,
     saveTrad: sp.t + emp, saveRoth: sp.r, saveBrok: sp.b, real: a.risk || 0.045, infl: BASIC_INFL as number,
-    spend, pia1: pia.pia1, pia2: pia.pia2, claim1: claim, claim2: claim,
+    spend, pia1: pia.pia1, pia2: pia.pia2, claim1: claim, claim2, fra1: F.fra1, fra2: F.fra2,
     pension: pos(a.pension) ? a.pension * 12 : 0, pensionAge: ok(a.pensionAge) ? a.pensionAge : null,
     pensionCola: a.pensionCola === "yes", aca: a.hcIncl !== "yes",
     household: hasChanges(a) && !over.flat ? householdAtRetire(a, retire) : mar(a) ? 2 : 1, rule55: a.rule55 === "yes", heirRate: PL_HEIR, mix: a.retMixAll ? { ...a.retMixAll } : retMix(a),

@@ -56,7 +56,7 @@ const income: Tour<DashData> = { name: "Income", title: "Everything that comes i
     { title: "Social Security", focus: "#social-security", tasks: ({ s }) => [
       { h: "Each benefit is estimated from today's pay until you give the real one. Your statement at <b>ssa.gov</b> shows your benefit at full retirement age (67 for anyone born in 1960 or later).", ok: done(s.profile.ss.checked) },
       { h: "No statement handy? <b>Estimate from my pay history</b> works it out from what you earned each year." },
-      { h: "<b>Claims</b> is the age each of you starts. Claiming at 62 cuts the check for life. Each year you wait past 67 adds 8%, up to 70. They're set only here, and Retirement uses them." },
+      { h: "<b>Claims</b> is the age each of you starts. Claiming at 62 cuts the check for life. Each year you wait past full retirement age adds 8%, up to 70. They're set only here, and Retirement uses them." },
       { h: "<b>Share of the benefit you expect</b> plans for cuts: Social Security's trust fund is projected to run short in the 2030s, and benefits could then be cut to roughly 80%. Set it lower than 100% and every benefit in your plan is scaled by it.", ok: done(s.profile.ss.pct != null && s.profile.ss.pct < 100) },
     ] },
   ],

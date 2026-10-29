@@ -5,7 +5,9 @@
    answer; and Social Security, the largest single line in most plans,
    with a pension or other steady income under More detail. */
 
+import { ssClaimFactor } from "@/lib/engine/typed";
 import { fmtNum, money, pctStr } from "@/lib/format";
+import { fraLabel } from "@/tools/social/model";
 import { guessing, mar, ok, pias, pos, spendGuess, ssFor, withGuess, type Sim } from "../calc";
 import { Ladder } from "../charts/Ladder";
 import { LADDER_AGES, ladder } from "../figures";
@@ -105,16 +107,18 @@ export function SocialCard() {
   const { v, a } = useGuideView(), m = mar(v);
   const retire = ok(a.retire) ? a.retire : 67, P = pias(a, retire), ss = ssFor(a, retire);
   const ages = (c: number) => [...new Set([...LADDER_AGES, c])].sort((x, y) => x - y);
-  const groups = [{ who: "You", rows: ladder(P.pia1, ages(ss.claim)), claim: ss.claim }];
-  if (m && P.pia2 > 0) groups.push({ who: "Your spouse", rows: ladder(P.pia2, ages(ss.claim2)), claim: ss.claim2 });
+  const groups = [{ who: "You", rows: ladder(P.pia1, ages(ss.claim), ss.fra1), claim: ss.claim }];
+  if (m && P.pia2 > 0) groups.push({ who: "Your spouse", rows: ladder(P.pia2, ages(ss.claim2), ss.fra2), claim: ss.claim2 });
+  // The cut at 62 and the most at 70 come from the full retirement age, which the birth year sets.
+  const cut62 = Math.round((1 - ssClaimFactor(62, ss.fra1)) * 100), top70 = Math.round(ssClaimFactor(70, ss.fra1) * 100), near = Math.round(ss.fra1);
   return (
     <>
       <Q>What will Social Security pay, and when?</Q>
       <Learn>
         <Lesson id="wait" figure={P.pia1 > 0 ? <Ladder groups={groups} /> : null}
           caption={P.pia1 > 0 ? "A month, in today's dollars, " + (P.own ? "from your statement" : "estimated from your income") + ", claimed at each age." : null}>
-          <p>Your benefit is set by your highest 35 years of earnings. What it pays at full retirement age, 67, is your <Term k="pia">PIA</Term>. Claim at 62 and
-            {" "}it&apos;s cut by 30%, for life; every year you wait past 67 adds 8%, up to 124% at 70. Once it starts, it rises with inflation.</p>
+          <p>Your benefit is set by your highest 35 years of earnings. What it pays at your full retirement age, {fraLabel(ss.fra1)}, is your <Term k="pia">PIA</Term>. Claim at 62 and
+            {" "}it&apos;s cut by {cut62}%, for life; every year you wait past full retirement age adds 8%, up to {top70}% at 70. Once it starts, it rises with inflation.</p>
           <p>{m ? <>For a couple, the survivor keeps the larger of the two benefits, so the higher earner waiting protects you both. A spouse with a small record
             {" "}gets a top-up, the <Term k="spousal">spousal benefit</Term>, of up to half the other&apos;s PIA.</>
             : "Waiting means living on more of your savings first, for a larger check for the rest of your life."}</p>
@@ -129,12 +133,12 @@ export function SocialCard() {
         </div>
       </>}>
         <div className="gd-fields">
-          <MoneyF k="ssOwn" label={m ? "Your benefit at 67, from your statement" : "Your monthly benefit at 67, from your statement"} per="/mo" full={!m} ph="optional"
+          <MoneyF k="ssOwn" label={(m ? "Your benefit at " : "Your monthly benefit at ") + fraLabel(ss.fra1) + ", from your statement"} per="/mo" full={!m} ph="optional"
             hint="From ssa.gov/myaccount. It uses your real earnings record, so it is more accurate than the guide's estimate." />
-          {m ? <MoneyF k="ssOwn2" label="Your spouse's benefit at 67" per="/mo" ph="optional" hint="From their own statement." /> : null}
+          {m ? <MoneyF k="ssOwn2" label={"Your spouse's benefit at " + fraLabel(ss.fra2)} per="/mo" ph="optional" hint="From their own statement." /> : null}
           <SelF k="ssClaim" label={m ? "When would you each claim it?" : "When would you claim it?"} num full
-            opts={[["", "At 67, or when I retire if that's later"], ...[62, 63, 64, 65, 66, 67, 68, 69, 70].map((x) =>
-              [x, "At " + x + (x === 62 ? ", the earliest" : x === 67 ? ", full retirement age" : x === 70 ? ", the most it pays" : "")] as [number, string])]}
+            opts={[["", "At " + near + ", or when I retire if that's later"], ...[62, 63, 64, 65, 66, 67, 68, 69, 70].map((x) =>
+              [x, "At " + x + (x === 62 ? ", the earliest" : x === ss.fra1 ? ", full retirement age" : x === 70 ? ", the most it pays" : "")] as [number, string])]}
             hint={"In this plan it never starts before you retire. The Retirement Plan Optimizer, near the end, tries every age for " + (m ? "each of you." : "you.")} />
         </div>
       </Numbers>

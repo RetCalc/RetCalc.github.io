@@ -208,7 +208,8 @@ export function plHealth(C, y, magi){
      costs after tax), strategy and its settings, minSpend, pia1 and pia2
      (monthly benefits at full retirement age), pension (a year) from
      pensionAge, pensionCola, aca, household, premium (optional monthly
-     benchmark for the household), rule55, heirRate, mix (stock %), rmdAge,
+     benchmark for the household), fra1 and fra2 (optional: your and your
+     spouse's full retirement age, in years; 67 when left out), rule55, heirRate, mix (stock %), rmdAge,
      fromYear.
    Everything that doesn't depend on the tactics is worked out once here. */
 export function plPrep(P){
@@ -293,16 +294,19 @@ export function plFillLevel(st, f){
 export function plClaimMin(age){ return Math.max(62, Math.min(70, Math.round(age))); }
 /* Each of you's own benefit at the age you claim it, a year, and any
    spousal top-up: that starts once both have claimed, reduced for the age of
-   the one receiving it then. both1 is your age when it starts. */
+   the one receiving it then. both1 is your age when it starts. Early and
+   late claiming count from each person's own full retirement age (P.fra1,
+   P.fra2, in years: 66.5 is 66 and 6 months), 67 when the plan has none. */
 export function plSSParts(C, T){
   var P = C.P, c1 = T.c1, c2 = T.c2, pia1 = Math.max(0, P.pia1 || 0), pia2 = C.married ? Math.max(0, P.pia2 || 0) : 0;
-  var o = {own1:pia1 * 12 * ssEstimate(0, 35, c1).adjustment,
-    own2:C.married ? pia2 * 12 * ssEstimate(0, 35, c2).adjustment : 0, top1:0, top2:0, both1:c1};
+  var f1 = P.fra1 > 0 ? P.fra1 : 67, f2 = P.fra2 > 0 ? P.fra2 : 67;
+  var o = {own1:pia1 * 12 * ssEstimate(0, 35, c1, f1).adjustment,
+    own2:C.married ? pia2 * 12 * ssEstimate(0, 35, c2, f2).adjustment : 0, top1:0, top2:0, both1:c1};
   if (C.married){
     var d = C.gap;                         // spouse's age minus yours
     o.both1 = Math.max(c1, c2 - d);
-    o.top1 = Math.max(0, .5 * pia2 - pia1) * 12 * ssSpousalAdj(Math.min(70, o.both1));
-    o.top2 = Math.max(0, .5 * pia1 - pia2) * 12 * ssSpousalAdj(Math.min(70, o.both1 + d));
+    o.top1 = Math.max(0, .5 * pia2 - pia1) * 12 * ssSpousalAdj(Math.min(70, o.both1), f1);
+    o.top2 = Math.max(0, .5 * pia1 - pia2) * 12 * ssSpousalAdj(Math.min(70, o.both1 + d), f2);
   }
   o.total = o.own1 + o.own2 + o.top1 + o.top2;
   return o;
@@ -329,12 +333,14 @@ export function plTactics(C, T){
   return K;
 }
 export function plBaseTactics(C){
-  var P = C.P, pickFor = function(c, age){
+  // With no claiming age given: full retirement age, to the nearest year (67
+  // unless the plan says otherwise).
+  var P = C.P, pickFor = function(c, age, fra){
     var lo = plClaimMin(age);
-    return c != null && isFinite(c) ? Math.max(lo, Math.min(70, Math.round(c))) : Math.max(67, lo);
+    return c != null && isFinite(c) ? Math.max(lo, Math.min(70, Math.round(c))) : Math.max(fra > 0 ? Math.round(fra) : 67, lo);
   };
-  var c1 = pickFor(P.claim1, C.age1);
-  var c2 = C.married ? pickFor(P.claim2, C.age2) : c1;
+  var c1 = pickFor(P.claim1, C.age1, P.fra1);
+  var c2 = C.married ? pickFor(P.claim2, C.age2, P.fra2) : c1;
   return {c1:c1, c2:c2, f:0, u:0, im:0, ac:0};
 }
 export function plKey(T){ return T.c1 + "," + T.c2 + "," + T.f + "," + T.u + "," + T.im + "," + T.ac; }

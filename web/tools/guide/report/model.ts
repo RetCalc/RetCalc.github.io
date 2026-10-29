@@ -10,7 +10,7 @@ import { plSSParts } from "@/lib/engine/typed-plan";
 import { money as fmtMoney } from "@/lib/format";
 import { DEBT_DEFAULTS, debtCompute, type DebtRow } from "@/tools/debt/model";
 import { OP_GOALS, opClaims, opConvUntil, opTacticsLine } from "@/tools/optimizer/words";
-import { FACTORS, ok, pias, pos, rating, sim, stratName, target, withGuess, type Levers, type Sim } from "../calc";
+import { FACTORS, fras, ok, pias, pos, rating, sim, stratName, target, withGuess, type Levers, type Sim } from "../calc";
 import { collegeToday, type CollegePlanToday } from "../college";
 import { factsHere, planLists, type Move } from "../moves";
 import { CHILD_COST, CHILD_SOURCE, children, hasChanges, householdByAge, shortfall, type Stage } from "../schedule";
@@ -173,10 +173,10 @@ export function reportModel(a0: Answers, src: Sources, levers: Levers, names: Re
      what each would get claiming at 62 to 70 (the other held where it is),
      and what the survivor keeps. */
   const social = married ? (() => {
-    const pia = pias(a, retire), g2 = Math.round(a.spouseAge! - a.age!);
-    const at = (c1: number, c2: number) => plSSParts({ P: { pia1: pia.pia1, pia2: pia.pia2 }, married: true, gap: g2 }, { c1, c2 });
+    const pia = pias(a, retire), g2 = Math.round(a.spouseAge! - a.age!), F = fras(a);
+    const at = (c1: number, c2: number) => plSSParts({ P: { pia1: pia.pia1, pia2: pia.pia2, fra1: F.fra1, fra2: F.fra2 }, married: true, gap: g2 }, { c1, c2 });
     const c2 = S.ss.claim2 ?? S.ss.claim, ages = [62, 63, 64, 65, 66, 67, 68, 69, 70];
-    return { pia1: pia.pia1, pia2: pia.pia2, own1: pia.own, own2: pia.own2, a1: S.ss.a1, a2: S.ss.a2, claim1: S.ss.claim, claim2: c2,
+    return { fra1: F.fra1, fra2: F.fra2, pia1: pia.pia1, pia2: pia.pia2, own1: pia.own, own2: pia.own2, a1: S.ss.a1, a2: S.ss.a2, claim1: S.ss.claim, claim2: c2,
       spousal: S.ss.spousal, survivor: Math.max(S.ss.a1, S.ss.a2),
       ladder1: ages.map((c) => { const x = at(c, c2); return { age: c, v: x.own1 + x.top1 }; }),
       ladder2: ages.map((c) => { const x = at(S.ss.claim, c); return { age: c, v: x.own2 + x.top2 }; }) };

@@ -24,6 +24,7 @@ import { KV } from "@/components/common/Readout";
 import {
   DD_ERAS, ddCuts, ddEraFor, ddLineAt, ddQuick, ssDrawdownStreams, type DdHist, type DdHistRun, type DdMC, type DdOpts, type DdRun, type DdScore,
 } from "@/lib/engine/typed-drawdown";
+import { ssFraFromBirth } from "@/lib/engine/typed";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { useSort } from "@/lib/useSort";
 import type { DDView } from "./Drawdown";
@@ -69,11 +70,11 @@ export function ssRows(o: DdOpts, d: Record<string, unknown>) {
   const ov = (st: ReturnType<typeof ssDrawdownStreams>) => ({
     ssAnnual: st.annual, ssDelayYears: st.delay, ssAnnual2: st.annual2, ssDelayYears2: st.delay2, ssAnnual3: st.annual3, ssDelayYears3: st.delay3,
   });
-  const n = (k: string) => d[k] as number;
+  const n = (k: string) => d[k] as number, f1 = ssFraFromBirth(d.ssBirth), f2 = ssFraFromBirth(d.ssBirth2);
   const mk = (who: 1 | 2) => ages.map((a) => {
     const st = who === 1
-      ? ssDrawdownStreams(n("ssIncome"), a, n("ssIncome2"), n("ssClaim2"), both, o.retireAge, n("ssDelay"))
-      : ssDrawdownStreams(n("ssIncome"), n("ssClaim"), n("ssIncome2"), a, true, o.retireAge, n("ssDelay"));
+      ? ssDrawdownStreams(n("ssIncome"), a, n("ssIncome2"), n("ssClaim2"), both, o.retireAge, n("ssDelay"), f1, f2)
+      : ssDrawdownStreams(n("ssIncome"), n("ssClaim"), n("ssIncome2"), a, true, o.retireAge, n("ssDelay"), f1, f2);
     return { age: a, annual: who === 1 ? st.own1 + st.top1 : st.own2 + st.top2, ov: ov(st), current: a === Math.round(who === 1 ? n("ssClaim") : n("ssClaim2")) };
   });
   const rows1 = mk(1), rows2 = both ? mk(2) : null;

@@ -18,7 +18,7 @@ import { Frame } from "./Frame";
 import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./charts";
 import { daysSince, lastedWords, longDate, money, pctDown, shortMoney } from "./format";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
-import { FACTORS, areaPoints, ageOf, answers, couple, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
+import { FACTORS, areaPoints, ageOf, answers, couple, fraYears, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
 import { explain } from "./readiness";
 import { target, type FactorId } from "@/tools/guide/calc";
@@ -107,7 +107,7 @@ export function timeline(d: DashData, R: Results): { lanes: Lane[]; from: number
     if (!p.by) return;
     to = Math.max(to, yearAt(p, 95));
     const ret = p.retire ? yearAt(p, p.retire) : null;
-    const claim = (i ? R.claim2 : R.claim1) ?? 67;
+    const claim = (i ? R.claim2 : R.claim1) ?? fraYears(p);
     const events = [{ at: yearAt(p, 65), label: "Medicare " + yearAt(p, 65) }];
     // Retiring before 59½: the bridge years until retirement accounts open.
     const early = ret && p.retire! < 59.5 ? p.by + 59.5 : null;

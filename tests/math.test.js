@@ -1489,6 +1489,83 @@ group("Plan engine: taxes, accounts and the rules");
   near(S2.top2, 12000, 0.01, "the spousal top-up waits for both claims, and at 70 it's unreduced");
 })();
 
+group("Social Security: full retirement age from the birth year, in every estimate");
+(function () {
+  // SSA's table (ssa.gov, Full retirement age by year of birth).
+  var table = [[1950, 66], [1955, 66 + 2 / 12], [1957, 66.5], [1959, 66 + 10 / 12], [1960, 67], [1965, 67]];
+  table.forEach(function (r) { near(ssFRA(r[0]), r[1], 1e-9, "born " + r[0] + ": full retirement age " + r[1]); });
+  eq(ssFraFromAge(NEWEST_YEAR - 1957), 66.5, "a person this year's age less 1957 old: 66 and 6 months");
+  eq(ssFraFromAge(null), 67, "no age: 67"); eq(ssFraFromAge(0), 67, "age 0: 67");
+  eq(ssFraFromBirth("1957"), 66.5, "a typed birth year"); eq(ssFraFromBirth(""), 67, "a blank birth year: 67");
+  eq(ssFraFromBirth("abc"), 67, "not a year: 67"); eq(ssFraFromBirth(1850), 67, "an impossible year: 67");
+
+  // The estimate's claiming adjustment is the claiming factor, for every full retirement age.
+  table.forEach(function (r) {
+    var fra = ssFRA(r[0]);
+    for (var age = 62; age <= 70; age++) {
+      near(ssEstimate(80000, 35, age, fra).adjustment, ssClaimFactor(age, fra), 1e-9, "born " + r[0] + ", claiming at " + age);
+    }
+    near(ssEstimate(80000, 35, 70, fra).fra, fra, 1e-12, "the estimate reports the full retirement age it used");
+  });
+  // Early: 5/9 of 1% a month for 36 months, 5/12 beyond. Late: 2/3 of 1% a month.
+  near(ssEstimate(80000, 35, 62, 66).adjustment, .75, 1e-9, "FRA 66, claiming at 62: 25% less");
+  near(ssEstimate(80000, 35, 62, 66.5).adjustment, 1 - 36 * 5 / 9 / 100 - 18 * 5 / 12 / 100, 1e-9, "FRA 66 and 6 months, at 62: 27.5% less");
+  near(ssEstimate(80000, 35, 67, 66.5).adjustment, 1.04, 1e-9, "FRA 66 and 6 months, at 67: 4% more");
+  near(ssEstimate(80000, 35, 70, 66).adjustment, 1.32, 1e-9, "FRA 66, at 70: 32% more");
+  near(ssEstimate(80000, 35, 66, 66 + 2 / 12).adjustment, 1 - 2 * 5 / 9 / 100, 1e-9, "FRA 66 and 2 months, at 66: 1.1% less");
+  near(ssEstimate(80000, 35, 62).adjustment, .70, 1e-9, "no full retirement age given: 67, as before");
+  eq(ssEstimate(80000, 35, 62).fra, 67, "and it says 67");
+  // The benefit at full retirement age does not move with it.
+  near(ssEstimate(80000, 35, 67, 66).pia, ssEstimate(80000, 35, 67, 67).pia, 1e-9, "the PIA doesn't depend on the full retirement age");
+
+  // A spousal benefit is cut 25/36 of 1% a month for 36 months and 5/12 beyond, from the recipient's own full retirement age.
+  near(ssSpousalAdj(62), .65, 1e-9, "spousal at 62, no age given: 35% less");
+  near(ssSpousalAdj(62, 66), .70, 1e-9, "spousal at 62, FRA 66: 30% less");
+  near(ssSpousalAdj(62, 66.5), 1 - .25 - 18 * 5 / 12 / 100, 1e-9, "spousal at 62, FRA 66 and 6 months: 32.5% less");
+  near(ssSpousalAdj(66, 66.5), 1 - 6 * 25 / 36 / 100, 1e-9, "spousal at 66, FRA 66 and 6 months");
+  near(ssSpousalAdj(70, 66), 1, 1e-9, "no delayed credits on a spousal benefit");
+  [66, 66.5, 67].forEach(function (f) { near(ssSpousalAdj(63, f), ssSpousalFactor(63, f), 1e-9, "same as the Calculator's factor, FRA " + f); });
+
+  // The plan engine: each person's own full retirement age.
+  var S = plSSParts({P: {pia1: 3000, pia2: 500, fra1: 66, fra2: 66.5}, married: true, gap: 0}, {c1: 66, c2: 62});
+  near(S.own1, 36000, 0.01, "full benefit at 66 when that is the full retirement age");
+  near(S.own2, 6000 * (1 - 36 * 5 / 9 / 100 - 18 * 5 / 12 / 100), 0.01, "the spouse at 62, FRA 66 and 6 months");
+  near(S.top2, 12000 * ssSpousalAdj(66, 66.5), 0.01, "the top-up starts when both have claimed, cut for the spouse's age and full retirement age");
+  var S0 = plSSParts({P: {pia1: 3000, pia2: 500}, married: true, gap: 0}, {c1: 66, c2: 62});
+  near(S0.own1, 36000 * (1 - 12 * 5 / 9 / 100), 0.01, "no full retirement age in the plan: 67, so 66 is early");
+  near(plSSParts({P: {pia1: 2400, pia2: 0, fra1: 66.5}, married: false, gap: 0}, {c1: 70, c2: 70}).own1, 2400 * 12 * 1.28, 0.01, "claiming at 70, FRA 66 and 6 months");
+  // The usual plan claims at the whole year nearest to full retirement age.
+  var C66 = plPrep({status: "s", state: "TX", years: 20, spend: 0, mix: 60, heirRate: .24, rmdAge: 75, age1: 62, fra1: 66});
+  eq(plBaseTactics(C66).c1, 66, "usual plan, FRA 66: claim at 66");
+  var C665 = plPrep({status: "s", state: "TX", years: 20, spend: 0, mix: 60, heirRate: .24, rmdAge: 75, age1: 62, fra1: 66.5});
+  eq(plBaseTactics(C665).c1, 67, "usual plan, FRA 66 and 6 months: 67");
+  var C67 = plPrep({status: "s", state: "TX", years: 20, spend: 0, mix: 60, heirRate: .24, rmdAge: 75, age1: 62});
+  eq(plBaseTactics(C67).c1, 67, "usual plan, no full retirement age: 67, as before");
+  var Cm = plPrep({status: "m", state: "TX", years: 20, spend: 0, mix: 60, heirRate: .24, rmdAge: 75, age1: 62, age2: 62, fra1: 66, fra2: 67});
+  eq(plBaseTactics(Cm).c1 + "," + plBaseTactics(Cm).c2, "66,67", "a couple with different full retirement ages: each at their own");
+
+  // The Drawdown Simulator's estimate and the top-up for a couple.
+  var D1 = ssDrawdownStreams(100000, 62, 0, 62, false, null, 0, 66);
+  near(D1.annual, ssEstimate(100000, 40, 62, 66).annual, .01, "Drawdown, single, FRA 66, at 62");
+  var D2 = ssDrawdownStreams(100000, 66, 20000, 62, true, 65, 0, 66, 66.5);
+  var e1 = ssEstimate(100000, 40, 66, 66), e2 = ssEstimate(20000, 40, 62, 66.5);
+  near(D2.own1, e1.annual, .01, "couple: the first spouse's own"); near(D2.own2, e2.annual, .01, "couple: the second's, at their own full retirement age");
+  near(D2.top2, Math.max(0, .5 * e1.pia - e2.pia) * ssSpousalAdj(66, 66.5) * 12, .01, "the top-up counts from the receiving spouse's full retirement age");
+  var D3 = ssDrawdownStreams(100000, 67, 0, 67, true, 65, 0);
+  near(D3.annual3, .5 * ssEstimate(100000, 40, 67).pia * 12, .01, "no full retirement ages given: as before");
+
+  // The household: delayed credits and the survivor, with different full retirement ages.
+  var H = ssHousehold({married: true, pia1: 3000, fra1: 66, claim1: 70, through1: 80, pia2: 1000, fra2: 67, claim2: 62, through2: 90, gap: 0});
+  near(H.you.monthly, 3000 * 1.32, .01, "delayed credits count from FRA 66: 32% at 70");
+  near(H.spouse.monthly, 1000 * .70, .01, "the spouse at 62, FRA 67: 30% less");
+  near(H.survivor, 3000 * 1.32, .01, "the survivor keeps the larger check, with its delayed credits");
+  var L = ssHousehold({married: true, pia1: 3000, fra1: 66, claim1: 62, through1: 80, pia2: 1000, fra2: 67, claim2: 62, through2: 90, gap: 0});
+  near(L.you.monthly, 2250, .01, "claiming at 62 with FRA 66: 75%");
+  near(L.survivor, .825 * 3000, .01, "survivor of an early claimer: at least 82.5% of the full benefit");
+  var N = ssHousehold({married: true, pia1: 3000, fra1: 66.5, claim1: 66, through1: 80, pia2: 1000, fra2: 67, claim2: 62, through2: 90, gap: 0});
+  near(N.survivor, 3000 * (1 - 6 * 5 / 9 / 100), .01, "claimed at 66 before FRA 66 and 6 months: the reduced check is the larger");
+})();
+
 group("Retirement Plan Optimizer");
 (function () {
   var P = plAtRetire({status: "s", state: "IL", age: 62, retire: 62, trad: 800000, roth: 50000, rothBasis: 30000,
@@ -1511,6 +1588,18 @@ group("Retirement Plan Optimizer");
   // The steps add up to the whole gain.
   var sum = R.steps.reduce(function (a, s) { return a + s.to.medLegacy - s.from.medLegacy; }, 0);
   near(sum, R.best.stats.medLegacy - R.base.stats.medLegacy, 0.01, "what each change is worth adds up to the total");
+  // Someone born in 1957 (full retirement age 66 and 6 months): the same search, counted from their age.
+  var P57 = plAtRetire({status: "s", state: "IL", age: 62, retire: 62, trad: 800000, roth: 50000, rothBasis: 30000,
+    brok: 150000, brokBasis: 90000, saveTrad: 0, saveRoth: 0, saveBrok: 0, real: .045, infl: BASIC_INFL,
+    spend: 55000, pia1: 2400, claim1: 67, fra1: ssFRA(1957), pension: 0, aca: true, household: 1, heirRate: .24, mix: 60, years: 33, target: .9});
+  var R57 = plOptimizeNow(P57, "legacy");
+  eq(R57.of, 9 * 61, "the same plans are tried: every claiming age from 62 to 70");
+  eq(R57.base.T.c1, 67, "the usual way claims at 67");
+  ok(R57.best.stats.medLegacy >= R57.base.stats.medLegacy, "the best plan leaves at least as much as the usual way");
+  var Sp = plSSParts(plPrep(P57), {c1: 70, c2: 70}), Sp67 = plSSParts(plPrep(P), {c1: 70, c2: 70});
+  near(Sp.own1, 2400 * 12 * 1.28, .01, "claiming at 70 pays 28% more with a full retirement age of 66 and 6 months");
+  near(Sp67.own1, 2400 * 12 * 1.24, .01, "and 24% more with 67");
+  ok(R57.base.stats.medLegacy !== R.base.stats.medLegacy || R57.base.stats.medTax !== R.base.stats.medTax, "the earlier full retirement age changes the plan's results");
 })();
 
 group("Articles: the readiness guide's score");

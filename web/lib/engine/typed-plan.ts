@@ -18,6 +18,6 @@ export const plOptimize = typed<(P: PlPlan, goal: string) => Generator<PlProgres
 export const plHistory = typed<(C: PlPrep, T: PlTactics, opts: { paths?: boolean; stopAfter?: number }) => PlHist>(E.plHistory);
 export const plDetail = typed<(C: PlPrep, T: PlTactics) => { rows: PlRow[] }>(E.plDetail);
 export const plBands = typed<(H: PlHist, n: number) => { p10: number; p50: number; p90: number }[]>(E.plBands);
-export const plSSParts = typed<(C: { P: { pia1: number; pia2: number }; married: boolean; gap: number }, T: { c1: number; c2: number }) => PlSS>(E.plSSParts);
+export const plSSParts = typed<(C: { P: { pia1: number; pia2: number; fra1?: number; fra2?: number }; married: boolean; gap: number }, T: { c1: number; c2: number }) => PlSS>(E.plSSParts);
 export const plClaimMin = typed<(age: number) => number>(E.plClaimMin);
 export const PL_HEIR = E.PL_HEIR as number;
