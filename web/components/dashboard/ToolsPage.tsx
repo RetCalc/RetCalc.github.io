@@ -6,11 +6,15 @@
    changed in a tool stays in that tool. */
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { ScenarioBar } from "@/components/shell/ScenarioBar";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { CheckIcon, ChevronLeftIcon } from "lucide-react";
 import type { CollegeInputs } from "@/tools/college/model";
 import { Button } from "@/components/ui/button";
-import { ToolsBrowser } from "@/components/tools/ToolsBrowser";
+import { ToolsBrowser, type ToolsLead } from "@/components/tools/ToolsBrowser";
+import { ToolCardLink } from "@/components/tools/ToolCardLink";
+import { GrowthChart } from "@/components/home/charts";
 import type { PickerData } from "@/components/tools/picker-data";
 import { TOOLS, type ToolSub } from "@/lib/tools";
 import { Frame, SECTIONS, SignedIn } from "./Frame";
@@ -22,8 +26,20 @@ import { money, pctDown } from "./format";
 import { holdings, mortgage, results } from "./model";
 import { Note } from "./ui";
 
+/** The Dashboard's own tools beside the site's: the Advanced calculator,
+    to try anything on with every input open (the Calculator tab keeps the
+    plan's facts fixed), and Compare, for its saved scenarios. */
+export type DashTool = ToolSub | "advanced";
+const NAMES: Record<"advanced", string> = { advanced: "Advanced Calculator" };
+const nameOf = (sub: DashTool) => (sub === "advanced" ? NAMES.advanced : TOOLS[sub].name);
+const Advanced = dynamic(() => import("@/tools/advanced/Advanced").then((m) => m.Advanced), { ssr: false });
+const VIEWS: Record<DashTool, React.ComponentType> = { ...TOOL_VIEWS, advanced: Advanced };
+/** The site's own page for a tool, which a share link opens. */
+const sitePath = (sub: DashTool) => "/" + (sub === "advanced" ? "advanced" : TOOLS[sub].path);
+
 /** The tab that holds a tool's figures for the plan itself. */
-const PLAN_TAB: Partial<Record<ToolSub, { id: string; name: string; hash?: string }>> = {
+const PLAN_TAB: Partial<Record<DashTool, { id: string; name: string; hash?: string }>> = {
+  advanced: { id: "calculator", name: "Calculator" },
   budget: { id: "spending", name: "Spending" }, drawdown: { id: "retirement", name: "Retirement" },
   tax: { id: "savings", name: "Taxes & Savings" }, social: { id: "income", name: "Income" },
   college: { id: "profile", name: "Profile", hash: "#college" },
@@ -53,12 +69,57 @@ function yoursFor(pr: Profile, entries: Entry[]): Partial<Record<ToolSub, string
   return y;
 }
 
+/** The Advanced Calculator's icon: a calculator, in the plan's own color. */
+const CALC_ICON = (
+  <span className="toolcard-icon" aria-hidden="true" style={{ "--tool-hue": "var(--ds-series-plan)" } as React.CSSProperties}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="3" width="14" height="18" rx="2.5" /><path d="M8.5 7.5h7" /><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5v.01" />
+    </svg>
+  </span>
+);
+const CALC_HREF = "/dashboard/tools/advanced";
+const CALC_Q = "What will my savings grow to, with the changes I see coming?";
+
+/** The Advanced Calculator's card and tile, ahead of the site's tools. */
+function calcLead(data: PickerData, yours: string | undefined): ToolsLead {
+  const top = <div className="toolcard-top">{CALC_ICON}<div className="toolcard-name">{NAMES.advanced}</div><div className="toolcard-arrow">&#8250;</div></div>;
+  return {
+    title: "Your own calculator",
+    charts: (
+      <ToolCardLink href={CALC_HREF} sub="advanced" i={0} className="tp-card tp-lead tp-full" charted>
+        {top}
+        <div className="tp-lead-body">
+          <div>
+            <h3 className="tp-lead-q">{CALC_Q}</h3>
+            <p className="toolcard-desc">The site&apos;s Advanced calculator, filled in from your plan with every input open: balances, saving, returns, taxes and the changes ahead. Try anything; your plan stays as it is.</p>
+            {yours ? <div className="tp-yours">{yours}</div> : null}
+          </div>
+          <div className="tp-chart"><GrowthChart values={data.growth} /></div>
+        </div>
+      </ToolCardLink>
+    ),
+    compact: (
+      <ToolCardLink href={CALC_HREF} sub="advanced" i={0} className="tp-tile">
+        {CALC_ICON}
+        <div className="tp-tile-text">
+          <div className="toolcard-name">{NAMES.advanced}</div>
+          <div className="toolcard-desc">{CALC_Q}</div>
+          {yours ? <div className="tp-yours">{yours}</div> : null}
+        </div>
+        <div className="toolcard-arrow">&#8250;</div>
+      </ToolCardLink>
+    ),
+  };
+}
+
 function ToolsList({ data }: { data: PickerData }) {
   const { data: d } = useDashboard();
   const yours = useMemo(() => yoursFor(d.profile, d.entries), [d.profile, d.entries]);
+  const atRetire = useMemo(() => results(d.profile, d.entries).atRetire, [d.profile, d.entries]);
+  const lead = calcLead(data, atRetire != null ? `Your plan: ${money(Math.round(atRetire / 1000) * 1000)} at retirement, in today's dollars` : undefined);
   return (
     <Frame current="tools" title="Tools" sub="Each one opens here, with what you've told us filled in">
-      <ToolsBrowser data={data} hrefFor={(sub) => toolHref(sub, "/dashboard/tools")} yours={yours} />
+      <ToolsBrowser data={data} hrefFor={(sub) => toolHref(sub, "/dashboard/tools")} yours={yours} lead={lead} />
     </Frame>
   );
 }
@@ -74,7 +135,7 @@ const fromNow = () => {
 };
 const noop = () => () => {};
 
-function Tool({ sub }: { sub: ToolSub }) {
+function Tool({ sub }: { sub: DashTool }) {
   const { data, setProfile } = useDashboard();
   // College Savings' figures as they stand, for "Apply to my plan".
   const [college, setCollege] = useState<CollegeInputs | null>(null);
@@ -87,11 +148,14 @@ function Tool({ sub }: { sub: ToolSub }) {
   // a tool already open, and the tool's own changes never reach the profile.
   const seed = useMemo(() => seedFor(data.profile, data.entries), [data.profile, data.entries]);
   const household = useMemo(() => householdOf(data.profile, data.entries), [data.profile, data.entries]);
-  const View = TOOL_VIEWS[sub], tab = PLAN_TAB[sub];
+  const View = VIEWS[sub], tab = PLAN_TAB[sub];
   return (
-    <Frame current="tools" title={TOOLS[sub].name} help={sub}
+    <Frame current="tools" title={nameOf(sub)} help={sub === "advanced" ? undefined : sub}
       sub={tab ? undefined : "Filled in from your dashboard. Changes here stay in this tool."}
       actions={<>
+        {/* Saved scenarios, the site's own lists: one saved here is there too.
+            Reset goes back to your plan's figures. */}
+        <ScenarioBar compareHref="/dashboard/tools/compare" resetTo={(id) => seed(id)} sharePath={sitePath(sub)} />
         {sub === "college" ? <Button disabled={!apply || applied} onClick={() => { if (apply) { setProfile(() => apply); setApplied(true); } }}>{applied || (college && sameCollege(data.profile, college)) ? <><CheckIcon aria-hidden="true" />{applied ? "Applied to my plan" : "Your plan matches"}</> : "Apply to my plan"}</Button> : null}
         <Button variant="outline" nativeButton={false} render={<Link href={back} />}><ChevronLeftIcon aria-hidden="true" />Back to {backName}</Button>
       </>}>
@@ -106,12 +170,26 @@ function Tool({ sub }: { sub: ToolSub }) {
           <Note>Filled in from your plan, to try things on: changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id + (tab.hash ?? "")} />}>{tab.name}</Button>.</Note>
         </div>
       ) : null}
-      <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={seed} household={household}
+      <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={seed} household={household} scenarios
         keep={sub === "college" ? (id, d) => { if (id === "college") { setCollege(d as unknown as CollegeInputs); setApplied(false); } } : undefined}><View /></Hosted></div>
     </Frame>
   );
 }
 
-export function ToolPage({ sub }: { sub: ToolSub }) {
+export function ToolPage({ sub }: { sub: DashTool }) {
   return <SignedIn><Tool sub={sub} /></SignedIn>;
+}
+
+/* Compare: the site's own, on the Dashboard's page. */
+const CompareView = dynamic(() => import("@/tools/compare/Compare").then((m) => m.Compare), { ssr: false });
+function CompareTool() {
+  return (
+    <Frame current="tools" title="Compare scenarios" sub="Saved Basic and Advanced scenarios side by side. Nothing here changes your plan."
+      actions={<Button variant="outline" nativeButton={false} render={<Link href="/dashboard/tools/advanced" />}><ChevronLeftIcon aria-hidden="true" />Back to the Advanced Calculator</Button>}>
+      <div className="dsh-embed"><CompareView /></div>
+    </Frame>
+  );
+}
+export function ComparePage() {
+  return <SignedIn><CompareTool /></SignedIn>;
 }

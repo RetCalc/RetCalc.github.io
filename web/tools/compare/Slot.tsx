@@ -89,7 +89,7 @@ export function SlotSecond({ value, note }: { value?: string; note: ReactNode })
 export function CompareHead({ id, backId, title, children }: { id?: string; backId: string; title: string; children: React.ReactNode }) {
   const router = useRouter();
   return (
-    <div className="col-span-full" id={id}>
+    <div className="col-span-full" id={id} data-cmp-head="">
       <Button variant="ghost" size="sm" className="-ml-2" id={backId} onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>
         <i className="arw back" aria-hidden="true"></i>Back
       </Button>

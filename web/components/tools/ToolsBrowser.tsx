@@ -135,7 +135,11 @@ const VIEWS: [ToolsView, string, React.ReactNode][] = [
   ["compact", "Compact", <svg key="t" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="2" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="9" y="2" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="1.5" y="9" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="9" y="9" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /></svg>],
 ];
 
-export function ToolsBrowser({ data, hrefFor, yours }: { data: PickerData; hrefFor?: (sub: ToolSub) => string; yours?: Partial<Record<ToolSub, string>> }) {
+/** A section of its own before the site's tools, in either view (the
+    Dashboard's Advanced Calculator, which only the Dashboard has). */
+export interface ToolsLead { title: string; charts: React.ReactNode; compact: React.ReactNode }
+
+export function ToolsBrowser({ data, hrefFor, yours, lead }: { data: PickerData; hrefFor?: (sub: ToolSub) => string; yours?: Partial<Record<ToolSub, string>>; lead?: ToolsLead }) {
   const view = useToolsView();
   // Arriving by a link inside the site, the inlined script hasn't run.
   useLayoutEffect(() => applyToolsView(), []);
@@ -159,6 +163,12 @@ export function ToolsBrowser({ data, hrefFor, yours }: { data: PickerData; hrefF
       </div>
 
       <div className="tp-charts">
+        {lead ? (
+          <section className="toolgroup" aria-label={lead.title}>
+            <h2 className="toolgroup-h"><span>{lead.title}</span></h2>
+            <div className="tp-grid">{lead.charts}</div>
+          </section>
+        ) : null}
         {TOOL_GROUPS.map((g) => (
           <section className="toolgroup" aria-label={g.label} key={g.label}>
             <h2 className="toolgroup-h"><span>{g.title}</span></h2>
@@ -170,6 +180,12 @@ export function ToolsBrowser({ data, hrefFor, yours }: { data: PickerData; hrefF
       </div>
 
       <div className="tp-compact">
+        {lead ? (
+          <section className="tp-col tp-lead-col" aria-label={lead.title}>
+            <h2 className="toolgroup-h"><span>{lead.title}</span></h2>
+            {lead.compact}
+          </section>
+        ) : null}
         {TOOL_GROUPS.map((g) => (
           <section className="tp-col" aria-label={g.label} key={g.label}>
             <h2 className="toolgroup-h"><span>{g.title}</span></h2>

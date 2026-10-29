@@ -231,6 +231,9 @@ export interface ToolScope {
       the scope has a paycheck to work it out on (the paycheck guide):
       Advanced's changes ahead size cuts from pre-tax saving by it. */
   freed?: Freed;
+  /** The scope's tools take saved scenarios (the Dashboard's Tools): the
+      page's scenario bar acts on the open tool, with the site's own lists. */
+  scenarios?: boolean;
   /** A tool moving to a page: true when the scope took it. */
   go: (path: string) => boolean;
   /** The household this scope's tools take in, in place of the saved one:
@@ -364,8 +367,9 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
   }, [def, scope, toast]);
 
   // The header's controls see this tool, and its inputs as they change
-  // (in a scope, the page's own register instead).
-  useRegisterTool(def, state, (data) => setState(withDefaults(def, data)), !!scope);
+  // (in a scope, the page's own register instead, unless the scope takes
+  // saved scenarios: then its page's scenario bar does).
+  useRegisterTool(def, state, (data) => setState(withDefaults(def, data)), !!scope && !scope.scenarios);
   // In a scope Help still reads the tool's inputs as they change.
   useEffect(() => { if (scope) setScopedState(def.id, state); }, [scope, def.id, state]);
 

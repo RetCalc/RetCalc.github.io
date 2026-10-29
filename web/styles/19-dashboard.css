@@ -856,3 +856,7 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
    target): the answer and its sentence beside three figures. */
 .dsh-coast { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 8px 40px; align-items: center; }
 @media (max-width: 760px) { .dsh-coast { grid-template-columns: minmax(0, 1fr); } }
+
+/* Compare inside the Dashboard: the Dashboard's header has the title and
+   the way back, so Compare's own are left out. */
+.dsh-embed [data-cmp-head] > [data-slot="button"], .dsh-embed [data-cmp-head] > h2 { display: none; }

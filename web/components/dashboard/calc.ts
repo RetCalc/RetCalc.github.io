@@ -59,6 +59,8 @@ export function advancedFor(pr: Profile, entries: Entry[]): AdvancedInputs {
     brokBal: g(A.brokBal), brokC: g(A.brokC), brokBasis: g(A.brokBasis ?? A.brokBal * 0.6), hsaBal: g(A.hsaBal), hsaC: g(A.hsaC),
     salary: g(A.salary), matchPct: A.matchPct, matchCap: A.matchCap, acStatus: A.status, acState: A.state,
     gRates: A.rates,
+    // Your age, so the changes ahead read by age.
+    age: ageOf(pr.p1) != null ? String(ageOf(pr.p1)) : "",
   };
 }
 

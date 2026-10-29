@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { encodeShare, readScenarios, useActiveTool, writeScenarios, type Scenario } from "@/components/tools/ToolState";
+import { encodeShare, readScenarios, useActiveTool, writeScenarios, type Scenario, type ToolInputs } from "@/components/tools/ToolState";
 import { usePopup, type PopupOption } from "./Popup";
 import { canShareSheet, copyCard, saveCard, sendLink, shareKit, type CardData } from "./share";
 import { printSheet } from "./Sheet";
@@ -24,7 +24,17 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
    short in the box (the list shows it whole). */
 const NAME_MAX = 60;
 
-export function ScenarioBar() {
+/** The tools Compare puts side by side: the retirement calculators. */
+const COMPARES = new Set(["basic", "advanced"]);
+
+/** `compareHref`: where Compare opens (the Dashboard's own copy of it); it's
+    offered only for the calculators either way. `resetTo`: what Reset goes
+    back to, when it isn't the tool's defaults (the Dashboard: your plan's
+    figures). `sharePath`: the page a share link opens (the Dashboard's
+    tools share the site's own page, which anyone can open). */
+export function ScenarioBar({ compareHref = "/compare", resetTo, sharePath }: {
+  compareHref?: string; resetTo?: (id: string) => ToolInputs | undefined; sharePath?: string;
+} = {}) {
   const tool = useActiveTool();
   const showPopup = usePopup();
   const toast = useToast();
@@ -82,8 +92,8 @@ export function ScenarioBar() {
   const share = () => {
     if (!tool || !id) return;
     const hash = encodeShare(id, tool.state);
-    history.replaceState(history.state, "", hash);
-    sendLink(location.origin + location.pathname + hash, "Link copied; it opens with these exact numbers", toast);
+    if (!sharePath) history.replaceState(history.state, "", hash);
+    sendLink(location.origin + (sharePath ?? location.pathname) + hash, "Link copied; it opens with these exact numbers", toast);
   };
 
   return (
@@ -117,16 +127,17 @@ export function ScenarioBar() {
       <button className="btn" id="btnScenario" type="button" aria-label="Save or delete a scenario" title="Save or delete"
         onClick={async () => {
           if (!tool) return;
+          const compares = COMPARES.has(tool.def.id);
           const c = await showPopup("Scenario", [
             { label: "Save", desc: "Save the current inputs under a name" },
             { label: "Delete", desc: "Remove the selected saved scenario" },
-            { label: "Compare", desc: "Put saved retirement scenarios side by side" },
+            ...(compares ? [{ label: "Compare", desc: "Put saved retirement scenarios side by side" }] : []),
           ]);
           if (c === 0) save();
           else if (c === 1) remove();
-          else if (c === 2) {
+          else if (c === 2 && compares) {
             Object.assign(compareNav, { from: tool.def.id, path: location.pathname });
-            router.push("/compare");
+            router.push(compareHref);
           }
         }}>
         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 3.5h9.5l2.5 2.5v10.5H4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M7 3.5v4h6v-4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M7 16.5v-5h6v5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
@@ -156,13 +167,15 @@ export function ScenarioBar() {
         }}>
         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5V3M6.5 6.2L10 2.8l3.5 3.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /><path d="M6.5 9H5v8h10V9h-1.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
-      <button className="btn" id="btnReset" type="button" aria-label="Reset to defaults" title="Reset"
+      <button className="btn" id="btnReset" type="button" aria-label={resetTo ? "Reset to your plan's figures" : "Reset to defaults"} title="Reset"
         onClick={() => {
           if (!tool) return;
+          const to = resetTo?.(tool.def.id) ?? tool.def.defaults;
           // The button sits close to the tabs on a phone, so ask first.
-          if (!same(tool.state, tool.def.defaults) &&
-              !confirm(`Reset the ${tool.def.label} inputs to their defaults? Your saved ${tool.def.noun}s won't be affected.`)) return;
-          tool.load(tool.def.defaults);
+          if (!same(tool.state, to) &&
+              !confirm(resetTo ? `Reset the ${tool.def.label} inputs to your plan's figures? Your saved ${tool.def.noun}s won't be affected.`
+                : `Reset the ${tool.def.label} inputs to their defaults? Your saved ${tool.def.noun}s won't be affected.`)) return;
+          tool.load(to);
         }}>
         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.2 8.2A6 6 0 1 1 4 11.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /><path d="M3.6 4v4.4H8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
