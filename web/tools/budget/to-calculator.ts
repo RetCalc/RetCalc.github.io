@@ -95,6 +95,6 @@ export function taxFromPaycheck(cur: TaxInputs, pi: PcInput, r: PcRun): TaxInput
     k4012: yr(r.k401s[1]), ira2: yr(ira[1]), hsa2: yr(r.hsas[1]), health2: yr(health[1]), dother2: "0",
     pre: yr(r.k401 + r.hsa + r.health + ira[0] + ira[1]),
     // Its pop-up shows them per paycheck on this schedule, or per month with two incomes.
-    preUnits: two ? "month,year,month,month,year" : "check,year,check,check,year", prePay: String(pi.p),
+    preUnits: two ? "month,year,month,month,year" : "check,year,check,check,year", prePay: String(pi.pays[0]),
   };
 }

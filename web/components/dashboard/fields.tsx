@@ -12,6 +12,7 @@ import { STATE_OPTIONS } from "@/lib/states";
 import { MONTHS, money, money10 } from "./format";
 import { answers, payYear } from "./model";
 import { Tip } from "./ui";
+import { payFreq } from "./flows";
 import { OUTSIDE_US, PER_LABEL, type Per, type Person, type Profile } from "./store";
 
 export type PKey = "p1" | "p2";
@@ -73,6 +74,8 @@ export function takeHomeOf(pr: Profile, k: PKey): number | null {
   return A.takehome && gross > 0 ? (A.takehome * ((k === "p1" ? A.income : A.income2) ?? 0)) / gross : null;
 }
 
+const PAID_OPTIONS = [["52", "Every week"], ["26", "Every two weeks"], ["24", "Twice a month"], ["12", "Once a month"]] as const;
+
 /** One person's pay: amount, how often, before or after taxes, and what
     it comes to. */
 export function PayFields({ pr, k, setP }: { pr: Profile; k: PKey; setP: (k: PKey, v: Partial<Person>) => void }) {
@@ -85,6 +88,11 @@ export function PayFields({ pr, k, setP }: { pr: Profile; k: PKey; setP: (k: PKe
           {Object.entries(PER_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </SelectField>
       </div>
+      {p.per === "year" || p.per === "month" ? (
+        <SelectField id={"dshPaid" + k} label="You're paid" value={payFreq(p)} onChange={(v) => setP(k, { paid: v })}>
+          {PAID_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+        </SelectField>
+      ) : null}
       {abroad ? (y != null && p.per !== "year" ? <span className="dsh-cap"><b>{money(y)}</b> per year</span> : null) : (
         <div className="dsh-inline">
           <Segmented aria-label="Before or after taxes">

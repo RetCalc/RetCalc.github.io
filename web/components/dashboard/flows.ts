@@ -24,6 +24,8 @@ import { housingLines } from "./housing";
 export const ALL_TOGETHER = "Everything else";
 
 const FREQ: Record<Per, string> = { week: "52", "2weeks": "26", twice: "24", month: "12", year: "26" };
+/** How many paychecks a year: as chosen when the pay is per year or per month, else what the pay is given per. */
+export const payFreq = (p: Person) => (p.per === "year" || p.per === "month") && p.paid ? p.paid : FREQ[p.per];
 const PER_OF: Record<string, Per> = { "52": "week", "26": "2weeks", "24": "twice", "12": "month" };
 /** Pay before taxes over a year, as the paycheck reads it. */
 const grossOf = (p: Person, abroad = false) => (p.pay == null ? null : (p.pay * PER_YEAR[p.per]) / (p.taxed === "after" && !abroad ? 0.76 : 1));
@@ -46,8 +48,8 @@ function overlay(b: BudgetInputs, pr: Profile): BudgetInputs {
   const g1 = grossOf(pr.p1, abroad), g2 = two ? grossOf(pr.p2, abroad) : null;
   return {
     ...withHousing(b, pr), pcNoTax: abroad,
-    ...(g1 != null ? { pcGross: dollarsField(g1), pcFreq: FREQ[pr.p1.per] } : {}),
-    ...(g2 != null ? { pcGross2: dollarsField(g2), pcFreq2: FREQ[pr.p2.per] } : {}),
+    ...(g1 != null ? { pcGross: dollarsField(g1), pcFreq: payFreq(pr.p1) } : {}),
+    ...(g2 != null ? { pcGross2: dollarsField(g2), pcFreq2: payFreq(pr.p2) } : {}),
     pcStatus: pr.who !== "couple" ? "s" : two ? "m2" : "m",
     pcState: taxState(pr),
   };
@@ -96,10 +98,11 @@ export function fromBudget(pr: Profile, b: BudgetInputs): Profile {
   const g1 = parseNum(b.pcGross), g2 = parseNum(b.pcGross2), two = b.pcStatus === "m2";
   const back = (p: Person, g: number, f: string): Person => {
     // The pay's own "how often" stays, unless the paychecks were changed there.
-    const per = f !== FREQ[p.per] ? PER_OF[f] ?? p.per : p.per;
+    let q = p;
+    if (f !== payFreq(p)) q = p.per === "year" ? { ...p, paid: f } : { ...p, per: PER_OF[f] ?? p.per, paid: undefined };
     // Unchanged in the tool: the pay stays as it was entered (after taxes, say).
-    if (per === p.per && Math.abs(g - (grossOf(p, pr.state === OUTSIDE_US) ?? 0)) < 1) return p;
-    return g > 0 ? { ...p, per, taxed: "before", pay: Math.round(((g / PER_YEAR[per]) * 100)) / 100 } : p;
+    if (q.per === p.per && Math.abs(g - (grossOf(p, pr.state === OUTSIDE_US) ?? 0)) < 1) return q;
+    return g > 0 ? { ...q, taxed: "before", pay: Math.round(((g / PER_YEAR[q.per]) * 100)) / 100 } : q;
   };
   const spend = budgetTotals(b).spentYr / 12;
   return {

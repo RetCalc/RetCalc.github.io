@@ -24,6 +24,8 @@ export interface Person {
   bm: number | null; by: number | null;
   retire: number | null;
   pay: number | null; per: Per; taxed: "before" | "after";
+  /** Paychecks per year ("52", "26", "24", "12") when the pay is given per year or per month; otherwise the "how often" says it. */
+  paid?: string;
 }
 export interface Kid { name: string; bm: number | null; by: number | null }
 /** Money coming in besides pay: side work, rent from a property. After
