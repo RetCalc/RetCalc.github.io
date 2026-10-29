@@ -19,7 +19,7 @@ import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
-import { toolInputs, useToolState } from "@/components/tools/ToolState";
+import { useToolState } from "@/components/tools/ToolState";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading, type HeroTone } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
@@ -28,9 +28,7 @@ import type { DebtResult } from "@/lib/engine/types";
 import { DASH, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { useClient } from "@/lib/useClient";
 import { cn } from "@/lib/utils";
-import { BUDGET_DEFAULTS } from "@/tools/budget/model";
-import { paycheckMonthly } from "@/tools/budget/paycheck-math";
-import { TAX_DEFAULTS } from "@/tools/tax/model";
+import { budgetUnassigned } from "@/lib/tool-reads";
 import { DEBT_DEF, debtCompute, debtList, type DebtRow } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { debtShare } from "./share";
@@ -247,17 +245,18 @@ export function Debt() {
                   onClick={() => {
                     // What's still unassigned on the Budget's Paycheck tab: pay,
                     // less taxes, the budget and the saving planned there.
-                    const pay = paycheckMonthly(toolInputs("budget", BUDGET_DEFAULTS), toolInputs("tax", TAX_DEFAULTS).state);
-                    if (!pay) {
+                    // (budgetUnassigned: the same figure the Guide's Debt task quotes.)
+                    const left = budgetUnassigned();
+                    if (left == null) {
                       toast("Enter your gross pay on the Budget's Paycheck tab first");
                       return;
                     }
-                    if (!(pay.left > 0.5)) {
+                    if (!(left > 0.5)) {
                       toast("Nothing is unassigned on your Paycheck tab to put at debt");
                       return;
                     }
-                    setState((c) => ({ ...c, extra: groupDigits(pay.left.toFixed(0), true) }));
-                    toast("Using " + money(pay.left, 0) + "/mo still unassigned on your Paycheck tab");
+                    setState((c) => ({ ...c, extra: groupDigits(left.toFixed(0), true) }));
+                    toast("Using " + money(left, 0) + "/mo still unassigned on your Paycheck tab");
                   }}>Copy from Budget</Button>
               </div>
               <div className="mt-4">

@@ -245,6 +245,9 @@ export interface ToolScope {
       place of the Paycheck's pay, filing status, state and match fields,
       when the scope keeps those itself. */
   slots?: { afterSliders?: ReactNode; kidsSummary?: ReactNode; payFacts?: ReactNode;
+    /** The Paycheck tab's ages, you and your spouse, at the end of this
+        year (null: not known), when the scope keeps them itself. */
+    ages?: [number | null, number | null];
     /** Said at the top of a tool's inputs: the figures the scope sets itself
         (`locked`), in its own words, with where each is changed. */
     facts?: ReactNode;

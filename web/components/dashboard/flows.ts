@@ -10,7 +10,8 @@
 import { withDefaults, type ToolInputs } from "@/components/tools/ToolState";
 import { dollarsField, groupDigits, parseNum } from "@/lib/format";
 import { BUDGET_DEF, budgetCompute, budgetTotals, openBudget, type BudgetInputs, type BudgetRow } from "@/tools/budget/model";
-import { PC_ZERO, paycheckInput, paycheckRun, pcCap, pcSplit, type PcInput, type PcRun } from "@/tools/budget/paycheck-math";
+import { PC_ZERO, paycheckInput, paycheckRun, pcCap, pcCapAhead, pcSplit, type PcInput, type PcRun } from "@/tools/budget/paycheck-math";
+import { agesOf } from "./ages";
 import { taxFromPaycheck } from "@/tools/budget/to-calculator";
 import { TAX_DEF, type TaxInputs } from "@/tools/tax/model";
 import { SOCIAL_DEF, social, type SocialInputs } from "@/tools/social/model";
@@ -83,7 +84,7 @@ function seedBudget(pr: Profile): BudgetInputs {
   b = overlay(b, pr);
   const monthly = pr.contrib == null ? 0 : (pr.contrib * PER_YEAR[pr.cper]) / 12;
   if (monthly > 0) {
-    const pi = paycheckInput(b, taxState(pr));
+    const pi = paycheckInput(b, taxState(pr), undefined, agesOf(pr));
     const per = (monthly * 12) / pi.p, cap = pcCap(pi, "match", PC_ZERO);
     const match = Math.min(per, cap), rest = Math.max(0, per - match);
     const cents = (v: number) => String(Math.round(v * 100) / 100);
@@ -163,7 +164,7 @@ export const taxChoices = (pr: Profile) => ({ ...withDefaults(TAX_DEF, pr.tools.
 export function flow(pr: Profile): Flow {
   // The paycheck is the one tax calculator: with the deductions and local
   // tax chosen on Taxes & Savings.
-  const b = budgetFor(pr), pi = paycheckInput(b, taxState(pr), taxChoices(pr)), r = paycheckRun(pi), a = pi.amounts;
+  const b = budgetFor(pr), pi = paycheckInput(b, taxState(pr), taxChoices(pr), agesOf(pr)), r = paycheckRun(pi), a = pi.amounts;
   const m = pi.p / 12, hasPay = pi.gross + pi.gross2 > 0;
   // None outside the US, where pay is entered after them.
   const abroad = pr.state === OUTSIDE_US;
@@ -202,7 +203,7 @@ export function personSaving(F: Flow, i: 0 | 1): { t: number; r: number; match: 
 
 /** Income Tax as the profile has it: its own choices (deductions, year),
     with the pay and the pre-tax money through work from the paycheck. */
-export function taxFor(pr: Profile, b = budgetFor(pr), pi = paycheckInput(b, taxState(pr)), r = paycheckRun(pi)): TaxInputs {
+export function taxFor(pr: Profile, b = budgetFor(pr), pi = paycheckInput(b, taxState(pr), undefined, agesOf(pr)), r = paycheckRun(pi)): TaxInputs {
   const stored = withDefaults(TAX_DEF, pr.tools.tax ?? {});
   return taxFromPaycheck({ ...stored, dedType: stored.dedType, item: stored.item }, pi, r);
 }
@@ -361,7 +362,11 @@ export function growthLines(pr: Profile, F: Flow = flow(pr)) {
     const amount = a[id] * m, cap = pcCap(pi, id, a) * m, g = pr.growth[id] ?? 0;
     const capped = isFinite(cap) && amount > 0 && amount >= cap - 0.5;
     const years = !capped && g > 0 && amount > 0 && isFinite(cap) ? Math.ceil(Math.log(cap / amount) / Math.log(1 + g)) : null;
-    return { id, name: GROW_NAMES[id], amount, cap, growth: capped ? 0 : g, capped, years };
+    // The limit k years on: the catch-ups open as each of you reaches 50 (60
+    // to 63 for the larger 401(k) one) and 55 for the HSA. Limits otherwise
+    // keep pace with inflation, so in today's dollars they hold still.
+    const capAt = (k: number) => (k <= 0 ? cap : pcCapAhead(pi, id, a, k) * m);
+    return { id, name: GROW_NAMES[id], amount, cap, capAt, growth: capped ? 0 : g, capped, years };
   });
 }
 
@@ -369,9 +374,9 @@ export function growthLines(pr: Profile, F: Flow = flow(pr)) {
     and held at its limit. */
 export function savingAt(pr: Profile, k: number, F: Flow = flow(pr)): number {
   const L = growthLines(pr, F);
-  const own = L.reduce((s, l) => s + Math.min(l.amount * Math.pow(1 + l.growth, k), isFinite(l.cap) ? Math.max(l.cap, l.amount) : Infinity), 0);
+  const own = L.reduce((s, l) => { const c = l.capAt(k); return s + Math.min(l.amount * Math.pow(1 + l.growth, k), isFinite(c) ? Math.max(c, l.amount) : Infinity); }, 0);
   const m0 = L.find((l) => l.id === "match")!;
-  const matchNow = m0.amount > 0 ? Math.min(m0.amount * Math.pow(1 + m0.growth, k), Math.max(m0.cap, m0.amount)) / m0.amount : 1;
+  const matchNow = m0.amount > 0 ? Math.min(m0.amount * Math.pow(1 + m0.growth, k), Math.max(m0.capAt(k), m0.amount)) / m0.amount : 1;
   return own + F.match * matchNow;
 }
 

@@ -119,7 +119,8 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
     const k = t - age;
     const lines = Object.fromEntries(DASH_ORDER.map((id) => {
       const l = L.find((x) => x.id === id)!;
-      return [id, Math.min(l.amount * Math.pow(1 + l.growth, k), isFinite(l.cap) ? Math.max(l.cap, l.amount) : Infinity)];
+      const cap = l.capAt(k);
+      return [id, Math.min(l.amount * Math.pow(1 + l.growth, k), isFinite(cap) ? Math.max(cap, l.amount) : Infinity)];
     })) as Record<Line, number>;
     const employer = F.match * (m0.amount > 0 ? lines.match / m0.amount : 1);
     // The Calculator's scenarios this year: saving given up (covered like

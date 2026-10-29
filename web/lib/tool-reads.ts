@@ -8,7 +8,7 @@ import { mcSeed } from "@/lib/mc-seed";
 import { parseNum } from "@/lib/format";
 import { bridgeInput, type BridgeInputs } from "@/tools/bridge/model";
 import { runBridge, type BridgeRun } from "@/tools/bridge/run";
-import { annualize, isPlannedRow, isSavingsRow, type BudgetInputs } from "@/tools/budget/model";
+import { BUDGET_DEFAULTS, annualize, isPlannedRow, isSavingsRow, type BudgetInputs } from "@/tools/budget/model";
 import { paycheckMonthly } from "@/tools/budget/paycheck-math";
 import { toolInputs } from "@/components/tools/ToolState";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
@@ -32,6 +32,14 @@ export function budgetNums(s: BudgetInputs) {
   });
   const pay = paycheckMonthly(s, toolInputs("tax", TAX_DEFAULTS).state);
   return { inc: pay ? pay.deposit * 12 : 0, spent, saved, lines, left: pay ? pay.left * 12 : 0, paid: !!pay };
+}
+/** What the Budget's Paycheck tab has unassigned, a month, as the Budget
+    stands in this browser: pay less taxes, the budget and the saving planned
+    there. It is what Debt Payoff's "Copy from Budget" takes, and what the
+    Guide's Debt task quotes. null until the Paycheck tab has a gross pay. */
+export function budgetUnassigned(): number | null {
+  const pay = paycheckMonthly(toolInputs("budget", BUDGET_DEFAULTS), toolInputs("tax", TAX_DEFAULTS).state);
+  return pay ? pay.left : null;
 }
 export function debtNums(s: DebtInputs) {
   const live = debtList(s.rows).filter((d) => d.balance > 0);

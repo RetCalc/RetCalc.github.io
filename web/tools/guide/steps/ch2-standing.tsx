@@ -138,13 +138,15 @@ export function SafetyCard() {
       </Numbers>
       <Means>
         {!ok(a.cash) ? <p className="gd-means-empty">How many months it covers appears once it&apos;s in, even if it&apos;s 0.</p>
-          : !pos(a.spend) ? <p className="gd-means-empty">Enter your monthly spending on the card before this one to see how many months this covers.</p>
+          : !pos(a.spend) && !pos(a.cashSpend) ? <p className="gd-means-empty">Enter your monthly spending on the card before this one to see how many months this covers.</p>
             : (() => {
-              const m = a.cash / a.spend, pts = points(a, "cushion", 15);
+              // The same figure the score uses: the emergency budget when the fund is sized on it, else spending.
+              const base = pos(a.cashSpend) ? a.cashSpend! : a.spend!, what = a.cashEmergency ? "your emergency budget" : "spending";
+              const m = a.cash / base, pts = points(a, "cushion", 15);
               return (
                 <ul className="gd-read">
-                  <li><b>{months(m)} {m === 1 ? "month" : "months"}</b> of spending. The usual target is 3 to 6: <b>{money(a.spend * 3)}</b> to <b>{money(a.spend * 6)}</b> for you.</li>
-                  <li>{m < 1 ? "Start with one month, " + money(a.spend) + ", before anything else. " : ""}Six months earns full marks for the emergency fund{pts ? "; yours scores " + pts : ""}.</li>
+                  <li><b>{months(m)} {m === 1 ? "month" : "months"}</b> of {what}. The usual target is 3 to 6: <b>{money(base * 3)}</b> to <b>{money(base * 6)}</b> for you.</li>
+                  <li>{m < 1 ? "Start with one month, " + money(base) + ", before anything else. " : ""}Six months earns full marks for the emergency fund{pts ? "; yours scores " + pts : ""}.</li>
                 </ul>
               );
             })()}

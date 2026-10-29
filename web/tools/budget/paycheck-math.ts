@@ -65,6 +65,9 @@ export function rowRole(b: BudgetInputs, r: BudgetRow): "count" | "save" | "work
     self-only for each of you (two limits). */
 export type HsaCov = "self" | "family" | "self2";
 
+/** Ages at the end of the year: you, then your spouse (null: not known). */
+export type PcAges = [number | null, number | null];
+
 export interface PcInput {
   /** No US income or payroll tax: pay entered after taxes, outside the US
       (the Dashboard's; the site's own tab never sets it). */
@@ -91,6 +94,12 @@ export interface PcInput {
   health: [number, number];
   match: { rate: number; upTo: number }[];
   hsa: HsaCov;
+  /** Each person's age at the end of this calendar year, when known (null
+      when not): the catch-up contributions open at 50 (60 to 63 for the
+      larger 401(k) one) and, for the HSA, 55. Left out, every limit is the
+      base one. Your spouse's counts for the HSA on family coverage when
+      married, even on one income. */
+  ages?: PcAges;
   efCap: number;
   /** Whether there's an emergency fund line (it's added, or has money on it). */
   efOn: boolean;
@@ -137,7 +146,7 @@ function localOf(state: string, tax?: PcTaxChoices): { local?: PcInput["local"];
     Dashboard's, which sets `useItem`). */
 export interface PcTaxChoices { localRate?: string; localBase?: string; dedType?: string; item?: string; useItem?: boolean }
 
-export function paycheckInput(b: BudgetInputs, taxState: string, tax?: PcTaxChoices): PcInput {
+export function paycheckInput(b: BudgetInputs, taxState: string, tax?: PcTaxChoices, ages?: PcAges): PcInput {
   const two = b.pcStatus === "m2";
   const sched = (v: string) => ([52, 26, 24, 12].includes(+v) ? +v : 26);
   const pays: [number, number] = [sched(b.pcFreq), sched(b.pcFreq2)];
@@ -154,6 +163,7 @@ export function paycheckInput(b: BudgetInputs, taxState: string, tax?: PcTaxChoi
     health: [health1, two ? (n(b.pcHealth2) * pays[1]) / 12 : 0],
     match: [{ rate: n(b.pcMatchRate), upTo: n(b.pcMatchUpTo) }, { rate: n(b.pcMatchRate2), upTo: n(b.pcMatchUpTo2) }],
     hsa: b.pcHsaFamily ? "family" : two && b.pcHsaBoth ? "self2" : "self",
+    ...(ages ? { ages } : {}),
     efCap: n(b.pcEfCap), efOn, roth: { match: !!b.pcMatchRoth, k401max: !!b.pcK401maxRoth, rothIra: b.pcIraRoth !== false },
     spendYear, order: pcOrder(b.pcOrder).filter((s) => s !== "ef" || efOn), amounts, noTax: !!b.pcNoTax,
     ...localOf(b.pcState || taxState, tax),
@@ -162,10 +172,78 @@ export function paycheckInput(b: BudgetInputs, taxState: string, tax?: PcTaxChoi
 
 const limits = () => yearData().limits;
 
+/* The yearly limits for someone who is `age` at the end of the year (null:
+   not known, so the base limit). IRS Notice 2025-67 (2026): a 401(k), 403(b)
+   or governmental 457 takes a catch-up from 50, and the larger one for ages
+   60 to 63 in place of it (SECURE 2.0); an IRA takes its catch-up from 50.
+   An HSA takes $1,000 more from 55 (IRC 223(b)(3); Rev. Proc. 2025-19). */
+export function k401Limit(age: number | null | undefined, L = limits()): number {
+  return L.k401.base + (age == null || age < 50 ? 0 : age >= 60 && age <= 63 ? L.k401.catch60 : L.k401.catch50);
+}
+export const iraLimit = (age: number | null | undefined, L = limits()): number => L.ira.base + (age != null && age >= 50 ? L.ira.catch50 : 0);
+export const hsaCatchUp = (age: number | null | undefined, L = limits()): number => (age != null && age >= 55 ? L.hsa.catch55 : 0);
+
+const ageOfPerson = (pi: PcInput, i: number): number | null => pi.ages?.[i] ?? null;
+/** Each person's 401(k) and IRA limits (the spouse's counts only with two incomes). */
+const k401Limits = (pi: PcInput): [number, number] => [k401Limit(ageOfPerson(pi, 0)), k401Limit(ageOfPerson(pi, 1))];
+const iraLimits = (pi: PcInput): [number, number] => [iraLimit(ageOfPerson(pi, 0)), iraLimit(ageOfPerson(pi, 1))];
+/** Each person's own HSA limit, when each has a self-only plan. */
+const hsaOwn = (pi: PcInput): [number, number] => {
+  const self = limits().hsa.self;
+  return [self + hsaCatchUp(ageOfPerson(pi, 0)), self + hsaCatchUp(ageOfPerson(pi, 1))];
+};
+/** The HSA's yearly limit as covered. The family limit is shared, and each
+    spouse of 55 or older adds their own catch-up on top of it. */
+function hsaYearLimit(pi: PcInput): number {
+  const L = limits(), own = hsaOwn(pi);
+  if (pi.hsa === "self2") return own[0] + own[1];
+  if (pi.hsa === "family") return L.hsa.family + hsaCatchUp(ageOfPerson(pi, 0)) + (pi.status === "m" ? hsaCatchUp(ageOfPerson(pi, 1)) : 0);
+  return own[0];
+}
+
+/** Whose age matters to line `s` (you, and your spouse where their limit counts). */
+function whoCounts(pi: PcInput, s: PcStep): number[] {
+  if (s === "hsa") return pi.hsa === "self2" || (pi.hsa === "family" && pi.status === "m") ? [0, 1] : [0];
+  return s === "match" || s === "k401max" || s === "rothIra" ? (pi.two ? [0, 1] : [0]) : [];
+}
+
+/** The catch-up on line `s`: who it applies to (`eligible`, with the age it
+    opens at and whether the 60 to 63 one or the 50 one is in play), and who
+    has no age (`unknown`), whose limit stays the base one and might be higher. */
+export function pcCatchUp(pi: PcInput, s: PcStep): { people: number[]; eligible: number[]; unknown: number[]; from: 50 | 55; high: boolean; low: boolean } {
+  const from = s === "hsa" ? 55 : 50, people = whoCounts(pi, s);
+  const eligible = people.filter((i) => { const a = ageOfPerson(pi, i); return a != null && a >= from; });
+  const unknown = people.filter((i) => ageOfPerson(pi, i) == null);
+  const tier60 = (i: number) => (s === "match" || s === "k401max") && (ageOfPerson(pi, i) ?? 0) >= 60 && (ageOfPerson(pi, i) ?? 0) <= 63;
+  return { people, eligible, unknown, from, high: eligible.some(tier60), low: eligible.some((i) => !tier60(i)) };
+}
+
+/** What the Limit caption of line `s` says about catch-ups: why its limit is
+    the higher one (`included`), and, when someone's age isn't known, what it
+    could be (`ifCap`, per period, with `ifText` saying on what condition).
+    Each is null when it doesn't apply. */
+export function pcCatchText(pi: PcInput, s: PcStep, a: PcAmounts): { included: string | null; ifCap: number; ifText: string | null } {
+  const c = pcCatchUp(pi, s), two = c.people.length > 1;
+  let included: string | null = null;
+  if (c.eligible.length && pcCap(pi, s, a) > pcCap({ ...pi, ages: undefined }, s, a) + 0.005) {
+    const kind = s === "hsa" ? "the age 55 catch-up" : c.high && c.low ? "the catch-ups for age 50 and for 60 to 63" : c.high ? "the catch-up for age 60 to 63" : "the age 50 catch-up";
+    included = "includes " + kind + (!two ? "" : c.eligible.length === 2 ? " for both of you" : c.eligible[0] === 0 ? " for you" : " for your spouse");
+  }
+  const ifCap = pcCap(pcIfEligible(pi), s, a);
+  const maybe = c.unknown.length > 0 && ifCap > pcCap(pi, s, a) + 0.005;
+  const who = !two || (c.unknown.length === 1 && c.unknown[0] === 0) ? "you are" : c.unknown.length === 2 ? "either of you is" : "your spouse is";
+  return { included, ifCap, ifText: maybe ? "if " + who + " " + c.from + " or older" : null };
+}
+
+/** The same input with everyone's age known, those without one taken as 55
+    (both the 50 and the 55 catch-ups are open): what a line would allow if
+    they qualify. */
+export const pcIfEligible = (pi: PcInput): PcInput => ({ ...pi, ages: [ageOfPerson(pi, 0) ?? 55, ageOfPerson(pi, 1) ?? 55] });
+
 /** Each person's full match, per period: what they defer to get all of it. */
 function matchCaps(pi: PcInput): [number, number] {
-  const L = limits();
-  const cap = (i: number, g: number) => Math.min((pi.match[i].upTo / 100) * g, L.k401.base) / pi.p;
+  const lim = k401Limits(pi);
+  const cap = (i: number, g: number) => Math.min((pi.match[i].upTo / 100) * g, lim[i]) / pi.p;
   return [cap(0, pi.gross), pi.two ? cap(1, pi.gross2) : 0];
 }
 
@@ -181,51 +259,64 @@ export interface PcSplit {
     one paycheck). The match line fills the higher match first (more free
     money per dollar), then the other; beyond the match, each person in
     proportion to their room left under their own limit; the HSA (two
-    people's) and Roth IRA evenly. */
+    people's) and the IRA in proportion to each one's limit (evenly when
+    those are the same). */
 export function pcSplit(pi: PcInput, a: PcAmounts = pi.amounts): PcSplit {
   if (!pi.two) return { match: [a.match, 0], k401max: [a.k401max, 0], hsa: [a.hsa, 0], rothIra: [a.rothIra, 0], hsaFirst: null };
-  const L = limits(), mc = matchCaps(pi);
+  const mc = matchCaps(pi), lim = k401Limits(pi);
   const first = pi.match[1].rate > pi.match[0].rate ? 1 : 0, second = 1 - first;
   const m: [number, number] = [0, 0];
   m[first] = Math.min(a.match, mc[first]);
   m[second] = Math.min(a.match - m[first], mc[second]);
   m[first] += a.match - m[0] - m[1]; // anything over both matches: on the first (it shows as over the limit)
-  const room = [0, 1].map((i) => Math.max(0, L.k401.base / pi.p - m[i]));
+  const room = [0, 1].map((i) => Math.max(0, lim[i] / pi.p - m[i]));
   const rooms = room[0] + room[1];
   const x: [number, number] = rooms > 0 ? [(a.k401max * room[0]) / rooms, (a.k401max * room[1]) / rooms] : [a.k401max / 2, a.k401max / 2];
   // HSA money through payroll also skips the 6.2% Social Security tax, but
   // only on pay under the wage cap. With one of you over it, it comes out of
   // the other's pay first: all of a family limit, or up to their own
-  // self-only limit. Otherwise it splits evenly.
+  // self-only limit. Otherwise it splits evenly (by each one's limit, when
+  // each has a plan of their own).
   const cap = yearData().fica.ssCap, over = [pi.gross >= cap, pi.gross2 >= cap];
   const hsaFirst: 0 | 1 | null = pi.hsa !== "self" && over[0] !== over[1] ? (over[0] ? 1 : 0) : null;
+  const ho = hsaOwn(pi), il = iraLimits(pi);
   let hsa: [number, number];
   if (pi.hsa === "self") hsa = [a.hsa, 0];
-  else if (hsaFirst == null) hsa = [a.hsa / 2, a.hsa / 2];
+  else if (hsaFirst == null) hsa = pi.hsa === "self2" ? [(a.hsa * ho[0]) / (ho[0] + ho[1]), (a.hsa * ho[1]) / (ho[0] + ho[1])] : [a.hsa / 2, a.hsa / 2];
   else {
-    const own = pi.hsa === "family" ? a.hsa : Math.min(a.hsa, L.hsa.self / pi.p);
+    const own = pi.hsa === "family" ? a.hsa : Math.min(a.hsa, ho[hsaFirst] / pi.p);
     hsa = hsaFirst === 0 ? [own, a.hsa - own] : [a.hsa - own, own];
   }
-  return { match: m, k401max: x, hsa, rothIra: [a.rothIra / 2, a.rothIra / 2], hsaFirst };
+  return { match: m, k401max: x, hsa, rothIra: [(a.rothIra * il[0]) / (il[0] + il[1]), (a.rothIra * il[1]) / (il[0] + il[1])], hsaFirst };
 }
 
 /** Where Fill stops a line, per period (Infinity for brokerage). The 401(k)
     line beyond the match shares each person's yearly limit with the match
-    line; with two incomes the limits are the two of yours together. */
+    line; with two incomes the limits are the two of yours together. Each
+    limit includes the person's catch-up when `pi.ages` says they qualify. */
 export function pcCap(pi: PcInput, s: PcStep, a: PcAmounts): number {
-  const L = limits(), p = pi.p;
+  const p = pi.p;
   switch (s) {
     case "match": { const mc = matchCaps(pi); return mc[0] + mc[1]; }
     case "k401max": {
-      const m = pcSplit(pi, a).match;
-      return Math.max(0, L.k401.base / p - m[0]) + (pi.two ? Math.max(0, L.k401.base / p - m[1]) : 0);
+      const m = pcSplit(pi, a).match, lim = k401Limits(pi);
+      return Math.max(0, lim[0] / p - m[0]) + (pi.two ? Math.max(0, lim[1] / p - m[1]) : 0);
     }
-    case "hsa": return (pi.hsa === "family" ? L.hsa.family : pi.hsa === "self2" ? 2 * L.hsa.self : L.hsa.self) / p;
-    case "rothIra": return ((pi.two ? 2 : 1) * L.ira.base) / p;
+    case "hsa": return hsaYearLimit(pi) / p;
+    case "rothIra": { const il = iraLimits(pi); return (il[0] + (pi.two ? il[1] : 0)) / p; }
     case "ef": return pi.efCap;
     case "brok": return Infinity;
   }
 }
+
+/** Line `s`'s cap per period `k` years from now: each person's age is `k`
+    older, so a catch-up opens as they reach 50 (60 to 63 for the larger
+    401(k) one, 55 for the HSA). Limits otherwise keep pace with inflation,
+    so in today's dollars they hold still. Same as pcCap with no ages. */
+export function pcCapAhead(pi: PcInput, s: PcStep, a: PcAmounts, k: number): number {
+  return pi.ages ? pcCap({ ...pi, ages: [shift(pi.ages[0], k), shift(pi.ages[1], k)] }, s, a) : pcCap(pi, s, a);
+}
+const shift = (x: number | null, k: number) => (x == null ? null : x + k);
 
 /** Whether a line has a limit of its own to warn against (the emergency
     fund's is only where Fill stops). */
@@ -419,7 +510,9 @@ export function pcPlanApply(pi: PcInput, k: PcPlan): { roth: PcInput["roth"]; am
     until it's gone), and whether that's none. Nothing is capped by it: past
     the range a backdoor Roth (a nondeductible IRA, converted) gets there. */
 export function pcRothRoom(pi: PcInput, r: PcRun): { direct: number; limit: number; over: boolean; reduced: boolean } {
-  const L = limits(), limit = L.ira.base, [lo, hi] = L.rothPhase[pi.status];
+  // The IRS worksheet scales the person's whole limit, catch-up included
+  // (the lower of the two, when each has their own).
+  const L = limits(), il = iraLimits(pi), limit = pi.two ? Math.min(il[0], il[1]) : il[0], [lo, hi] = L.rothPhase[pi.status];
   const f = Math.min(1, Math.max(0, (r.magi - lo) / (hi - lo)));
   const direct = f >= 1 ? 0 : f <= 0 ? limit : Math.min(limit, Math.max(200, Math.ceil((limit * (1 - f)) / 10) * 10));
   return { direct, limit, over: direct === 0, reduced: direct > 0 && direct < limit };
