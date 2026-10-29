@@ -142,7 +142,7 @@ const retirement: Tour<DashData> = { name: "Retirement", title: "Make your savin
   start: ({ s }) => ({ strategy: s.profile.strategy }),
   pages: [
     { title: "At retirement", focus: "#at-retirement", tasks: () => [
-      { h: "<b>Savings</b> is what your plan has when you retire. <b>Chance of success</b> is how often it lasted to 95 when retirement started in each month since 1926." },
+      { h: "<b>Savings</b> is what your plan has when you retire. <b>Chance of success</b> is how often it lasted to 95, or the years set on Retirement, when retirement started in each month since 1926." },
       { h: "<b>You plan to spend</b> is your spending once retired, before taxes; <b>Taxes, on top</b> is the plan's average year. <b>Social Security</b> pays part of both once it starts. The ages you claim are set on Income." },
       { h: "Under it, switch what the page shows: <b>Drawdown</b> (how you spend your savings), <b>Bridge to 59½</b> if you retire before then, and <b>Health cover</b> until and after Medicare." },
     ] },

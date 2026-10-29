@@ -18,7 +18,7 @@ import { Frame } from "./Frame";
 import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./charts";
 import { daysSince, lastedWords, longDate, money, pctDown, shortMoney } from "./format";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
-import { FACTORS, areaPoints, ageOf, answers, couple, fraYears, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
+import { FACTORS, areaPoints, ageOf, answers, couple, fraYears, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, toAges, yearAt, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
 import { explain } from "./readiness";
 import { target, type FactorId } from "@/tools/guide/calc";
@@ -93,7 +93,7 @@ function Chance({ R, accounts }: { R: Results; accounts: boolean }) {
   return (
     <Tile icon={ShieldCheckIcon} title="Chance of success" tip="chance">
       <div className="dsh-fig dsh-mt">{R.success != null ? pctDown(R.success) + "%" : "—"}</div>
-      <div className="dsh-cap dsh-mt6">{R.success != null ? (R.runs && R.success < 1 ? `${R.runs.ok} of ${R.runs.of} historical retirements lasted to age 95` : "of historical retirements lasted to age 95") : R.gap ?? "Needs your age, savings, retirement age and spending"}</div>
+      <div className="dsh-cap dsh-mt6">{R.success != null ? (R.runs && R.success < 1 ? `${R.runs.ok} of ${R.runs.of} historical retirements lasted to ${toAges(R)}` : `of historical retirements lasted to ${toAges(R)}`) : R.gap ?? "Needs your age, savings, retirement age and spending"}</div>
       <div className="dsh-foot"><span className="dsh-cap">{R.strategy ? `With your chosen strategy: ${R.strategy.name}` : accounts ? "Spending a fixed amount that rises with prices" : "Add your accounts for a sharper number"}</span></div>
     </Tile>
   );
@@ -105,7 +105,8 @@ export function timeline(d: DashData, R: Results): { lanes: Lane[]; from: number
   let to = from + 30;
   people(pr).forEach((p, i) => {
     if (!p.by) return;
-    to = Math.max(to, yearAt(p, 95));
+    const last = R.endYear ?? yearAt(p, 95);
+    to = Math.max(to, last);
     const ret = p.retire ? yearAt(p, p.retire) : null;
     const claim = (i ? R.claim2 : R.claim1) ?? fraYears(p);
     const events = [{ at: yearAt(p, 65), label: "Medicare " + yearAt(p, 65) }];
@@ -115,7 +116,7 @@ export function timeline(d: DashData, R: Results): { lanes: Lane[]; from: number
     if (!R.abroad) events.push({ at: yearAt(p, claim), label: "Social Security " + yearAt(p, claim) });
     lanes.push({
       name: nameOf(pr, i ? 1 : 0), lead: "Age " + ageOf(p),
-      spans: ret ? [{ from, to: ret, kind: "dsh-work" }, ...(early ? [{ from: ret, to: early, kind: "dsh-k2" as const, label: pr.bridge ? "Bridge plan" : "Bridge, not planned" }] : []), { from: early ?? ret, to: yearAt(p, 95), kind: "dsh-ret" }] : [],
+      spans: ret ? [{ from, to: ret, kind: "dsh-work" }, ...(early ? [{ from: ret, to: early, kind: "dsh-k2" as const, label: pr.bridge ? "Bridge plan" : "Bridge, not planned" }] : []), { from: early ?? ret, to: last, kind: "dsh-ret" }] : [],
       events, note: ret ? { at: ret, label: `Retires ${ret}, age ${p.retire}` } : undefined,
     });
   });
@@ -212,7 +213,7 @@ export function Overview() {
               </div>
             </div>
             {retAt ? <div className="dsh-sec"><div className="dsh-label">At retirement, {R.retireYear} <Tip id="atRetire" title="Net worth at retirement" /></div><div className="dsh-fig">{shortMoney(retAt.v)}</div></div> : null}
-            {end && p1.by ? <div className="dsh-sec"><div className="dsh-label">At 95, {yearAt(p1, 95)}</div><div className="dsh-fig">{shortMoney(end.v)}</div></div> : null}
+            {end && R.endYear ? <div className="dsh-sec"><div className="dsh-label">At {R.endAges.length ? R.endAges.join(" and ") : 95}, {R.endYear}</div><div className="dsh-fig">{shortMoney(end.v)}</div></div> : null}
           </div>
           <div className="dsh-mt">
             {R.path.length ? <NetWorthChart hist={hist.length ? hist : [{ t: nowYear(), v: nw }]} proj={R.path} marks={marks} until={until} describe={describe} />

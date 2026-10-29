@@ -9,7 +9,7 @@ import { FACTORS, STRATS, retPath, score, sim, strats, type FactorId, type Part,
 import type { Answers } from "@/tools/guide/store";
 import { ssFRA } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
-import { budgetFor, drawdownFor, drawdownRuns, flow, personSaving, retireMix, savingAt, stocksOf, taxState } from "./flows";
+import { budgetFor, drawdownFor, drawdownPath, flow, personSaving, retireMix, savingAt, stocksOf, taxState } from "./flows";
 import { paycheckInput } from "@/tools/budget/paycheck-math";
 import { collegeKid, collegeNeedOf, collegeYears } from "./college";
 import { yearlySaving } from "./cover";
@@ -295,8 +295,12 @@ export interface Results {
   /** Savings at retirement, and the year it begins. */
   atRetire: number | null; retireYear: number | null;
   /** Net worth over the years: savings steady to retirement, then the middle
-      of history with its 10th and 90th percentile, plus the home's equity. */
+      of history with its 10th and 90th percentile on the Retirement tab's
+      simulator (its strategy and years), plus the home's equity. */
   path: Point[];
+  /** The year the plan runs to, and each of you's age then (the simulator's
+      years: to 95, or the younger of you's 95, unless set on Retirement). */
+  endYear: number | null; endAges: number[];
   equity: number;
   /** Months of spending in cash, once accounts are in. */
   cushion: number | null;
@@ -314,6 +318,9 @@ export interface Results {
   /** Points held back from the score while retiring before 59½ has no bridge plan. */
   bridgeDock: number;
 }
+
+/** How far the plan runs, in words: "age 95", or "ages 95 and 92" for two. */
+export const toAges = (R: Results) => (R.endAges.length > 1 ? "ages " + R.endAges.join(" and ") : "age " + (R.endAges[0] ?? 95));
 
 /** What the plan still needs before it can run, in a sentence, or null. */
 export function planGap(pr: Profile): string | null {
@@ -364,9 +371,10 @@ export function results(pr: Profile, entries: Entry[]): Results {
   // a fixed amount until one is), in the score too. One run, so the headline
   // and the simulator always say the same.
   let chosen: Results["strategy"] = null, runs: Results["runs"] = null;
-  let S = S0;
+  let S = S0, dr: ReturnType<typeof drawdownPath> | null = null;
   if (S0 && ddPlan) {
-    const d = drawdownFor(pr, ddPlan), dr = drawdownRuns(d);
+    const d = drawdownFor(pr, ddPlan);
+    dr = drawdownPath(d);
     if (dr.of > 0) {
       runs = { ok: dr.ok, of: dr.of };
       S = { ...S0, success: dr.rate };
@@ -385,12 +393,18 @@ export function results(pr: Profile, entries: Entry[]): Results {
   }
   const equity = H.equity + H.other + (H.cash ?? 0) - H.debts;
   const path: Point[] = [];
-  let retireYear: number | null = null;
+  let retireYear: number | null = null, endYear: number | null = null;
+  const endAges: number[] = [];
   if (S && a.age != null) {
     const now = nowYear(), toRet = S.retire - a.age;
     retireYear = pr.p1.by != null ? pr.p1.by + S.retire : Math.round(now + toRet);
     S.path.forEach((v, i) => { if (i <= toRet) path.push({ t: now + i, v: v + equity, lo: v + equity, hi: v + equity }); });
-    retPath(S).forEach((b, y) => path.push({ t: now + toRet + y + 1, v: b.p50 + equity, lo: b.p10 + equity, hi: b.p90 + equity }));
+    // Once retired, the run the chance comes from: the strategy and years
+    // chosen on Retirement. The plan's own fixed spending only without it.
+    const bands = dr && dr.of > 0 ? dr.bands : retPath(S);
+    bands.forEach((b, y) => path.push({ t: now + toRet + y + 1, v: b.p50 + equity, lo: b.p10 + equity, hi: b.p90 + equity }));
+    endYear = Math.round(retireYear + bands.length);
+    people(pr).forEach((p) => { if (p.by) endAges.push(Math.round(endYear! - p.by)); });
   }
   const spend = spendMonth(pr);
   const F = flow(pr), efMonth = F.efTarget > 0 ? F.efTarget / F.efMonths : spend ?? 0;
@@ -404,7 +418,7 @@ export function results(pr: Profile, entries: Entry[]): Results {
     claim1: S ? S.ss.claim : null, claim2: S && couple(pr) ? S.ss.claim2 : null,
     ssYear: claimYears.length ? Math.min(...claimYears) : null, gap: planGap(pr),
     takehome: a.takehome ?? null,
-    atRetire: S ? S.fv : null, retireYear, path, equity,
+    atRetire: S ? S.fv : null, retireYear, path, equity, endYear, endAges,
     // Months of the spending the emergency fund is sized on (the budget, or the emergency budget).
     cushion: H.cash != null && efMonth > 0 ? H.cash / efMonth : null,
     strategy: chosen, ddPlan, goal: G ? G.spend / 12 : null, spend: S ? S.spend / 12 : null, abroad,

@@ -26,7 +26,7 @@ import { bridgeSummary, earlyRetirees } from "./bridge";
 import { yearlySaving } from "./cover";
 import { budgetFor, flow } from "./flows";
 import { lastedWords, money, pctDown } from "./format";
-import { FACTORS, ageOf, answers, areaPoints, holdings, nameOf, nowYear, results, spendMonth, type Results } from "./model";
+import { FACTORS, ageOf, answers, areaPoints, holdings, nameOf, nowYear, results, spendMonth, toAges, type Results } from "./model";
 import { collegeChildren } from "./college";
 import { nextSteps } from "./nextsteps";
 import { Readiness, timeline } from "./Overview";
@@ -55,7 +55,7 @@ function PlanHero() {
         <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? pctDown(R.success) + "%" : "—"}</div></div>
       </div>
       <p className="dsh-cap dsh-mt">
-        {R.success != null ? <>Your plan lasted to 95 in <b>{lastedWords(R.success, R.runs)}</b>, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of your spending and taxes once it starts, and savings pay the rest. In today&apos;s dollars{tax}.</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}
+        {R.success != null ? <>Your plan lasted to {toAges(R)} in <b>{lastedWords(R.success, R.runs)}</b>, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of your spending and taxes once it starts, and savings pay the rest. In today&apos;s dollars{tax}.</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}
       </p>
     </Tile>
   );
