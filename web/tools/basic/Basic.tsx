@@ -34,6 +34,7 @@ import { PERIOD_ADV, PeriodOptions } from "@/lib/periods";
 import { basicShare } from "./share";
 import { BASIC_DEF, BASIC_INPUTS, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
+import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SERIES } from "@/lib/hues";
@@ -128,6 +129,25 @@ export function Basic() {
   // What the balance is made of, as shares of one bar.
   const parts = R && R.fv > 0 ? [p.initial, R.contribTotal, R.growth].map((v) => Math.max(0, v) / R.fv) : null;
 
+  // The chart, drawn taller like Advanced's, and full screen.
+  const full = useFullScreen("Balance over time, in today's dollars");
+  const qChart = (px?: Px) => (
+          <BandChart id={px ? "QF" : "Q"} pts={pts} px={px} aspect={0.5} gutter={64} maxX={p.years || 1} xOffset={hasAge ? p.age : 0} enhanced ariaLabel="Projected balance in today's dollars"
+      extras={(g) => <MilestoneMarks g={g} marks={marks} />}
+      tip={(b) => (
+        <>
+          {hasAge ? <><b>Age {fmtNum(p.age + b.year)}</b> <span className="text-dimmer">{"· year " + fmtNum(b.year)}</span></> : <b>Year {fmtNum(b.year)}</b>}
+          <BandTipRows b={b} names={["Better", "Expected", "Worse"]} />
+        </>
+      )} />
+  );
+  const qLegend = (
+          <Legend id="legendQ" items={pts.length ? [
+      [SERIES.teal, "If returns run better (" + pctStr(p.real + BASIC_BAND, 2) + ")"],
+      [SERIES.plan, "Your setting (" + pctStr(p.real, 2) + ")"],
+      [SERIES.rose, "If returns run worse (" + pctStr(Math.max(0, p.real - BASIC_BAND), 2) + ")"],
+    ] : []} />
+  );
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3" id="tab-simple" role="tabpanel" aria-labelledby="tabbtn-calc">
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
@@ -199,20 +219,10 @@ export function Basic() {
         </div>
 
         <div className="border-t border-border pt-4" hidden={!pts.length}>
-          <CardHeader><CardTitle>Balance over time</CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
-          <BandChart id="Q" pts={pts} maxX={p.years || 1} xOffset={hasAge ? p.age : 0} enhanced ariaLabel="Projected balance in today's dollars"
-            extras={(g) => <MilestoneMarks g={g} marks={marks} />}
-            tip={(b) => (
-              <>
-                {hasAge ? <><b>Age {fmtNum(p.age + b.year)}</b> <span className="text-dimmer">{"· year " + fmtNum(b.year)}</span></> : <b>Year {fmtNum(b.year)}</b>}
-                <BandTipRows b={b} names={["Better", "Expected", "Worse"]} />
-              </>
-            )} />
-          <Legend id="legendQ" items={pts.length ? [
-            [SERIES.teal, "If returns run better (" + pctStr(p.real + BASIC_BAND, 2) + ")"],
-            [SERIES.plan, "Your setting (" + pctStr(p.real, 2) + ")"],
-            [SERIES.rose, "If returns run worse (" + pctStr(Math.max(0, p.real - BASIC_BAND), 2) + ")"],
-          ] : []} />
+          <CardHeader><CardTitle>Balance over time</CardTitle><CardDescription>in today&apos;s dollars</CardDescription><CardAction>{full.button}</CardAction></CardHeader>
+          {qChart()}
+          {qLegend}
+          {full.overlay(qChart, qLegend)}
         </div>
       </Card>
 

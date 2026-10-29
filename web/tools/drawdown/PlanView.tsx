@@ -449,7 +449,7 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
       title = H.monthly ? "Every historical starting month" : "Every historical starting year";
       const f = once(H, ["fan", o.years, o.initial].join(), () => fanOf(H.runs, o.years, o.initial, (r, y) => (r.rows[y - 1] ? r.rows[y - 1].realEnd : 0)));
       const ov = baseOverlay(B, "realEnd", true, null);
-      chart = <BandChart id="DD" pts={f.pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced ariaLabel="Portfolio balance through retirement"
+      chart = <BandChart id="DD" aspect={0.5} gutter={64} pts={f.pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced ariaLabel="Portfolio balance through retirement"
         traces={v.tracesOn ? f.traces : undefined} overlay={ov ?? undefined}
         tip={(b) => <><b>{lbl(age, b.year, true)}</b><FanTipRows b={b} /></>} />;
       legend = "hist";
@@ -458,7 +458,7 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
       title = "Starting in " + showLabel;
       const pts: BandPoint[] = [{ year: 0, base: o.initial, hi: o.initial, lo: 0 }, ...show.rows.map((r) => ({ year: r.year, base: r.realEnd, hi: r.realEnd, lo: 0 }))];
       const ov = baseOverlay(B, "realEnd", true, show.startIdx);
-      chart = <BandChart id="DD" pts={pts} maxX={o.years} xOffset={xOff} enhanced noLoLine overlay={ov ?? undefined} ariaLabel="Portfolio balance through retirement"
+      chart = <BandChart id="DD" aspect={0.5} gutter={64} pts={pts} maxX={o.years} xOffset={xOff} enhanced noLoLine overlay={ov ?? undefined} ariaLabel="Portfolio balance through retirement"
         tip={(b) => <><b>{lbl(age, b.year, true)}</b><br /><span className="n">{money(b.base)}</span></>} />;
       legend = swatch(SERIES.plan, "Portfolio balance, in today’s dollars") + (ov ? swatch(BASE_COLOR, "Baseline, same start") : "");
       note = "Balance in today’s dollars, retiring in " + showLabel + ".";
@@ -469,7 +469,7 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
     const pts: BandPoint[] = [{ year: 0, base: o.initial, hi: o.initial, lo: o.initial, p25: o.initial, p75: o.initial },
       ...M.bands.map((b) => ({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 }))];
     const ov = Mb ? baseLine([{ year: 0, value: R.baseInitial }, ...Mb.bands.map((b) => ({ year: b.year, value: b.p50 }))]) : undefined;
-    chart = <BandChart id="DD" pts={pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced overlay={ov} ariaLabel="Portfolio balance through retirement"
+    chart = <BandChart id="DD" aspect={0.5} gutter={64} pts={pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced overlay={ov} ariaLabel="Portfolio balance through retirement"
       tip={(b) => <><b>{lbl(age, b.year, true)}</b><FanTipRows b={b} /></>} />;
     legend = "mc";
     note = "Balance in today's dollars across " + M.trials.toLocaleString("en-US") + " simulated retirements.";
@@ -483,7 +483,7 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
           <SegmentedItem data-ddview="all" pressed={ps.view === "all"} onClick={() => ps.setView("all")}>All years</SegmentedItem>
         </SegmentedGroup>
       </CardAction></CardHeader>
-      {chart ?? <BandChart id="DD" pts={[]} maxX={1} ariaLabel="Portfolio balance through retirement" tip={() => null} />}
+      {chart ?? <BandChart id="DD" aspect={0.5} gutter={64} pts={[]} maxX={1} ariaLabel="Portfolio balance through retirement" tip={() => null} />}
       {legend === "hist" ? <HistLegend id="legendDD" tracesOn={v.tracesOn} onToggleTraces={v.toggleTraces}>{hasBase ? <BaseSwatch /> : null}</HistLegend>
         : legend === "mc" ? <McLegend id="legendDD" noDet>{hasBase ? <BaseSwatch /> : null}</McLegend>
           : <Html className="legend" id="legendDD" html={legend} />}
@@ -582,7 +582,7 @@ function IncomePanel({ v, R, view, show, showLabel }: { v: DDView; R: PlanResult
   let title = "Spending through retirement", chart: React.ReactNode = null, legend: React.ReactNode = null, note = "";
   const single = (run: DdRun, ov: ReturnType<typeof baseLine> | null) => {
     const pts: BandPoint[] = run.rows.map((r) => { const x = realOf(r); return { year: r.year, base: x, hi: x, lo: x }; });
-    chart = pts.length ? <BandChart id="DDI" pts={pts} maxX={pts.length} xOffset={xOff} enhanced overlay={ov ?? undefined} ariaLabel="Withdrawal amount over time"
+    chart = pts.length ? <BandChart id="DDI" aspect={0.5} gutter={64} pts={pts} maxX={pts.length} xOffset={xOff} enhanced overlay={ov ?? undefined} ariaLabel="Withdrawal amount over time"
       tip={(b) => <><b>{lbl(age, b.year, false)}</b><br /><i className="tipsw bg-series-plan"></i>Spending <span className="n">{money(b.base)}</span></>} /> : null;
     legend = <Html className="legend" id="legendDDI" html={swatch(SERIES.plan, "Total spending, in today's dollars") + (ov ? swatch(BASE_COLOR, "Baseline") : "")} />;
   };
@@ -590,7 +590,7 @@ function IncomePanel({ v, R, view, show, showLabel }: { v: DDView; R: PlanResult
     if (view === "all") {
       const H = R.H, f = once(H, ["spendfan", o.years].join(), () => fanOf(H.runs, o.years, null, (r, y) => (r.rows[y - 1] ? realOf(r.rows[y - 1]) : 0)));
       const ov = baseOverlay(R.B, "realSpend", false, null);
-      chart = <BandChart id="DDI" pts={f.pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced overlay={ov ?? undefined} ariaLabel="Withdrawal amount over time"
+      chart = <BandChart id="DDI" aspect={0.5} gutter={64} pts={f.pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced overlay={ov ?? undefined} ariaLabel="Withdrawal amount over time"
         traces={v.tracesOn ? f.traces : undefined}
         tip={(b) => <><b>{lbl(age, b.year, false)}</b><FanTipRows b={b} /></>} />;
       legend = <HistLegend id="legendDDI" tracesOn={v.tracesOn} onToggleTraces={v.toggleTraces}>{ov ? <BaseSwatch /> : null}</HistLegend>;
@@ -606,7 +606,7 @@ function IncomePanel({ v, R, view, show, showLabel }: { v: DDView; R: PlanResult
   return (
     <Card data-ddtabs="plan">
       <CardHeader><CardTitle id="ddIncomeChartTitle">{title}</CardTitle></CardHeader>
-      {chart ?? <BandChart id="DDI" pts={[]} maxX={1} ariaLabel="Withdrawal amount over time" tip={() => null} />}
+      {chart ?? <BandChart id="DDI" aspect={0.5} gutter={64} pts={[]} maxX={1} ariaLabel="Withdrawal amount over time" tip={() => null} />}
       {legend ?? <div className="legend" id="legendDDI"></div>}
       <div className="hint pt-0 px-4.5 pb-3.5" id="ddIncomeNote">{note}</div>
     </Card>

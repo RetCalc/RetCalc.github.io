@@ -243,3 +243,9 @@ header{padding-top:var(--sb-clear)}
 @media (max-width:760px),(hover:none) and (pointer:coarse){
   .chart-fullbtn,.chart-full{display:none}
 }
+/* A chart's full screen (components/charts/FullScreen.tsx): its title and
+   the way back, the chart filling the rest, its legend under it. */
+.chart-full-any{display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.chart-full-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.chart-full-host{flex:1;min-height:0}
+.chart-full-under{flex:none}

@@ -14,6 +14,7 @@
    is marked, the reading says what's missing and the rest folds away. On a
    phone a compact reading leads and stays pinned. */
 
+import { useFullScreen } from "@/components/charts/FullScreen";
 import { useRef } from "react";
 import { ChevronDownIcon, CircleAlertIcon, InfoIcon } from "lucide-react";
 import { BandChart, type ChartGeometry } from "@/components/charts/BandChart";
@@ -82,6 +83,7 @@ export function RentBuy() {
     { label: <Tipped text="Renter net worth" k="rbrenternw" />, id: "rbRenterNW", value: last ? money(last.renterNW) : DASH },
   ];
 
+  const rbFull = useFullScreen("Net worth over time");
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
@@ -196,6 +198,7 @@ export function RentBuy() {
         <Card className="min-w-0" hidden={!R}>
           <CardHeader>
             <CardTitle>Net worth over time</CardTitle>
+            {R ? <CardAction>{rbFull.button}</CardAction> : null}
           </CardHeader>
           {R ? (
             <BandChart id="RB" enhanced colors={{ base: SERIES.sky, hi: SERIES.teal }} maxX={inp.horizon} ariaLabel="Buyer vs renter net worth"
@@ -210,6 +213,18 @@ export function RentBuy() {
               )} />
           ) : <BandChart id="RB" pts={[]} maxX={0} ariaLabel="Buyer vs renter net worth" tip={() => null} />}
           <Legend id="legendRB" items={R ? [[SERIES.sky, "Buyer net worth"], [SERIES.teal, "Renter net worth"]] : []} />
+          {R ? rbFull.overlay((px) => (
+            <BandChart id="RBF" px={px} enhanced colors={{ base: SERIES.sky, hi: SERIES.teal }} maxX={inp.horizon} ariaLabel="Buyer vs renter net worth"
+              pts={[{ year: 0, base: 0, hi: 0, lo: 0 }, ...R.years.map((y) => ({ year: y.year, base: y.buyerNW, hi: y.renterNW, lo: Math.min(y.buyerNW, y.renterNW) }))]}
+              extras={beRow ? (g) => <BreakEvenMark g={g} year={beRow.year} value={beRow.buyerNW} /> : undefined}
+              tip={(b) => (
+                <>
+                  <b>Year {fmtNum(b.year)}</b>
+                  <br /><i className="tipsw bg-series-sky"></i>Buyer <span className="n">{money(b.base)}</span>
+                  <br /><i className="tipsw bg-series-teal"></i>Renter <span className="n">{money(b.hi!)}</span>
+                </>
+              )} />
+          ), <Legend id="legendRBF" items={[[SERIES.sky, "Buyer net worth"], [SERIES.teal, "Renter net worth"]]} />) : null}
         </Card>
 
         <div className="min-w-0" hidden={!R}>

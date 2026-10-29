@@ -6,6 +6,7 @@
    historical market since 1926 (or random draws from it). Ported from
    src/js/app/36-bridge.js, src/main/11-bridge-inputs.html and 14-bridge.html. */
 
+import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { useDeferredValue, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BandChart } from "@/components/charts/BandChart";
@@ -83,6 +84,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
   const [selKey, setSelKey] = useState<string | null>(null);
   const [pathKey, setPath] = useState<PathKey>("avg");
   const [balView, setBalView] = useState<"acct" | "hist">("acct");
+  const balFull = useFullScreen(balView === "hist" ? "Total balance, every start since " + HIST_START : "Account balances");
   const [tracesOn, setTracesOn] = useState(true);
   const compareRef = useRef<HTMLTableElement>(null), ladderRef = useRef<HTMLTableElement>(null), tableRef = useRef<HTMLTableElement>(null);
 
@@ -316,6 +318,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               <CardHeader>
                 <CardTitle id="brBalTitle">{balView === "hist" ? "Total balance, every start since " + HIST_START : "Account balances"}</CardTitle>
                 <CardDescription>{balView === "hist" ? "Today's dollars, every market rather than the one above." : P ? "Today's dollars, " + P.label + "." : "Today's dollars."}</CardDescription>
+                {R ? <CardAction>{balFull.button}</CardAction> : null}
               </CardHeader>
               <div className="px-(--card-spacing)">
                 <Segmented id="segBRBal" size="chart" attr="data-brbal" options={[["acct", "By account"], ["hist", "Across history"]] as const} value={balView} onChange={setBalView} />
@@ -328,6 +331,9 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               ) : (
                 <Balances ctx={ctx} rows={R ? rows : []} />
               )}
+              {/* Full screen: the view that's on, as it is. */}
+              {balFull.overlay((px) => (balView === "hist" ? <HistFan ctx={ctx} sel={R ? sel : null} tracesOn={tracesOn} px={px} /> : <Balances ctx={ctx} rows={R ? rows : []} px={px} part="chart" />),
+                balView === "hist" ? (R ? <HistLegend id="legendBRB" tracesOn={tracesOn} onToggleTraces={() => setTracesOn((v) => !v)} /> : null) : <Balances ctx={ctx} rows={R ? rows : []} part="legend" />)}
             </Card>
 
             <Ladder rows={rows} ctx={ctx} tableRef={ladderRef} />
@@ -591,7 +597,7 @@ function FlowNotes({ ctx, P, rows }: { ctx: BrCtx; P: { medicaid: number; cliff:
    total is the accounts' sum, not "your plan", so it takes a series color
    (lavender) rather than amber. This chart isn't copied into the share card
    or print summary (they take #chartBR). */
-function Balances({ ctx, rows }: { ctx: BrCtx; rows: BrRow[] }) {
+function Balances({ ctx, rows, px, part }: { ctx: BrCtx; rows: BrRow[]; px?: Px; part?: "chart" | "legend" }) {
   const S0 = { trad: ctx.trad + ctx.g457, roth: ctx.roth, brok: ctx.brok };
   const mk = (f: (e: BrRow["end"]) => number, start: number) => [{ year: 0, value: start }, ...rows.map((r, i) => ({ year: i + 1, value: f(r.end) }))];
   const series: Series[] = rows.length ? [
@@ -600,17 +606,14 @@ function Balances({ ctx, rows }: { ctx: BrCtx; rows: BrRow[] }) {
     { name: "Roth", color: SERIES.teal, pts: mk((e) => e.roth, S0.roth) },
     { name: "Brokerage", color: SERIES.sky, pts: mk((e) => e.brok, S0.brok) },
   ] : [];
-  return (
-    <>
-      <MultiChart id="BRB" series={series} maxX={rows.length} ariaLabel="Account balances by age" xFmt={(y) => ctx.age + y} head={(y) => <b>Age {ctx.age + y}</b>} />
-      <Legend id="legendBRB" items={series.map((x) => [x.color!, x.name])} />
-    </>
-  );
+  const chart = <MultiChart id={px ? "BRBF" : "BRB"} px={px} series={series} maxX={rows.length} ariaLabel="Account balances by age" xFmt={(y) => ctx.age + y} head={(y) => <b>Age {ctx.age + y}</b>} />;
+  const legend = <Legend id="legendBRB" items={series.map((x) => [x.color!, x.name])} />;
+  return part === "chart" ? chart : part === "legend" ? legend : <>{chart}{legend}</>;
 }
 
 /* Every historical start's total, year by year, as the same percentile fan
    the other tools use: where the plan's money went across all of them. */
-function HistFan({ ctx, sel, tracesOn }: { ctx: BrCtx; sel: RunPlan | null; tracesOn: boolean }) {
+function HistFan({ ctx, sel, tracesOn, px }: { ctx: BrCtx; sel: RunPlan | null; tracesOn: boolean; px?: Px }) {
   const runs = sel?.hist.runs ?? [], n = ctx.nB;
   const pts = runs.length ? Array.from({ length: n + 1 }, (_, y) => {
     const v = runs.map((r) => r.path[y]).sort((a, b) => a - b);
@@ -618,7 +621,7 @@ function HistFan({ ctx, sel, tracesOn }: { ctx: BrCtx; sel: RunPlan | null; trac
     return { year: y, base: at(0.5), hi: at(0.9), lo: at(0.1), p25: at(0.25), p75: at(0.75) };
   }) : [];
   return (
-    <BandChart id="BRB" pts={pts} maxX={n} mode="mc" xOffset={ctx.age} enhanced ariaLabel="Account balances by age"
+    <BandChart id={px ? "BRBF" : "BRB"} px={px} pts={pts} maxX={n} mode="mc" xOffset={ctx.age} enhanced ariaLabel="Account balances by age"
       traces={tracesOn && pts.length ? { xs: pts.map((a) => a.year), lines: runs.map((r) => Array.from(r.path.slice(0, n + 1))) } : undefined}
       tip={(b) => <><b>Age {ctx.age + b.year}</b><FanTipRows b={b} /></>} />
   );

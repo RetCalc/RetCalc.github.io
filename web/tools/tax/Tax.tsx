@@ -23,6 +23,7 @@ import { STATE_OPTIONS } from "@/lib/states";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { PRE_ROWS, TAX_DEF, itemized, runTax, taxInput, taxYears } from "./model";
 import { PreTaxDialog } from "./PreTaxDialog";
+import { PAY_FREQS, paycheckStub, payWord, type Stub, type StubRow } from "./paycheck";
 import { LOCAL_TAX } from "./local";
 import { LTCG_COLORS, stackChartSvg } from "./stackChart";
 import { BracketsCard, StateRulesCard, type Band } from "./TaxTables";
@@ -113,6 +114,9 @@ export function Tax() {
     </>
   );
   const share = (v: number) => (R.gross ? v / R.gross : 0);
+  // How often you're paid: the headline's third figure and the itemized paycheck.
+  const ppy = Math.max(1, Math.round(parseNum(s.prePay) || 26));
+  const stub = paycheckStub(s, R);
   // The pre-tax deductions by kind, when they come that way.
   type PrePerson = Record<string, number>;
   const prePeople = (R.preTax?.people ?? []) as PrePerson[];
@@ -138,8 +142,8 @@ export function Tax() {
         ? s.view === "take" ? pctStr(R.gross ? R.net / R.gross : 0, 1) + " of gross, after pre-tax deductions" : pctStr(R.gross ? netPay / R.gross : 0, 1) + " of gross, after taxes"
         : "Enter your income to begin",
       monthNote: s.view === "take" ? "In your paycheck, after pre-tax deductions" : "After all taxes",
-      thirdLabel: "Every two weeks", thirdNote: "26 paychecks a year",
-      net: money(shown), month: money(shown / 12), third: money(shown / 26),
+      thirdLabel: payWord(ppy), thirdNote: ppy + " paychecks a year",
+      net: money(shown), month: money(shown / 12), third: money(shown / ppy),
     };
     derived = {
       stdLabel: "Standard deduction", std: money(yearData(year).fedStd[inp.status]), ssRow: null,
@@ -303,6 +307,11 @@ export function Tax() {
               <div className="derived txtotal" id="txGrossTotalWrap" hidden={!split}>
                 <div><span>Household gross income</span><span className="num" id="txGrossTotalShow">{split ? money(R.gross) : ""}</span></div>
               </div>
+              {ret ? null : (
+                <SelectField id="txPayFreq" label="How often you're paid" value={String(ppy)} onChange={set("prePay")}>
+                  {PAY_FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </SelectField>
+              )}
 
               <div id="txRetSources" hidden={!ret}>
                 <div className="two bottomalign max-sm:grid-cols-2">
@@ -536,6 +545,8 @@ export function Tax() {
           ) : null}
         </Card>
 
+        {ret || !(R.gross > 0) ? null : <PaycheckCard stub={stub} two={split && parseNum(s.gross2) > 0} />}
+
         <BracketsCard id="txBrackets" bands={R.bands as Band[]} />
         <StateRulesCard id="txStateRules" state={s.state} status={s.status} year={year} figuresFrom={stateYear} />
       </div>
@@ -547,4 +558,39 @@ export function Tax() {
     Advanced). */
 function GroupHead({ first, children }: { first?: boolean; children: React.ReactNode }) {
   return <h3 className={cn("m-0 mb-3 text-sm font-semibold", !first && "mt-1 border-t border-border pt-4")}>{children}</h3>;
+}
+
+/** The itemized paycheck: gross pay down to take-home, by check and by
+    month (paycheck.ts), with a CSV like the breakdown's. */
+function PaycheckCard({ stub, two }: { stub: Stub; two: boolean }) {
+  const ref = useRef<HTMLTableElement>(null);
+  const head = (k: StubRow["kind"]) => (k === "pre" ? "Pre-tax deductions" : k === "tax" ? "Taxes" : null);
+  return (
+    <Card>
+      <CardHeader><CardTitle>Your paycheck</CardTitle><CardAction><CsvButton table={ref} label="Your paycheck" /></CardAction></CardHeader>
+      <div className="scroll" tabIndex={0} role="region" aria-label="Your paycheck">
+        <table id="txStub" ref={ref}>
+          <thead><tr><th>Item</th>{stub.cols.map((c) => <th key={c}>{c}</th>)}</tr></thead>
+          <tbody>
+            {stub.rows.flatMap((r, i) => {
+              const out = [];
+              const h = i === 0 || stub.rows[i - 1].kind !== r.kind ? head(r.kind) : null;
+              if (h) out.push(<tr key={"h-" + r.key} className="text-muted-foreground"><td colSpan={stub.cols.length + 1}>{h}</td></tr>);
+              const bold = r.kind === "gross" || r.kind === "net";
+              out.push(
+                <tr key={r.key} className={cn(bold && "font-semibold", r.kind === "net" && "border-t-2 border-t-line")}>
+                  <td className={r.kind === "pre" || r.kind === "tax" ? "pl-6" : undefined}>{r.label}</td>
+                  {r.v.map((v, i) => <td key={i}>{(r.kind === "pre" || r.kind === "tax") && v > 0.005 ? "−" + money(v, 2) : money(v, 2)}</td>)}
+                </tr>);
+              return out;
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="mcnote" id="txStubNote">
+        {two ? "Federal, state and local income taxes are your joint return's, split between you by each of your pay after pre-tax deductions. " : ""}
+        What&apos;s withheld from a real paycheck can differ from these: they&apos;re the year&apos;s tax, spread evenly over {stub.ppy === 12 ? "twelve months" : stub.ppy + " paychecks"}. A traditional IRA isn&apos;t taken out of pay, so it isn&apos;t here.
+      </div>
+    </Card>
+  );
 }

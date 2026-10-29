@@ -16,6 +16,7 @@
    On a phone a compact reading leads and stays pinned. */
 
 import { useRef, useState } from "react";
+import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { ChevronDownIcon, CircleXIcon, InfoIcon } from "lucide-react";
 import { BandChart, type ChartGeometry } from "@/components/charts/BandChart";
 import { HistBarNote } from "@/components/charts/HistNotes";
@@ -184,6 +185,28 @@ export function Fire() {
   ];
   const heroTone = !S ? "text" : never ? "loss" : "answer";
 
+  // The chart and its legend, here and in full screen.
+  const fiFull = useFullScreen("Portfolio growth");
+  const fiChart = (px?: Px) => (
+    <BandChart id={px ? "FireF" : "Fire"} px={px} aspect={0.5} gutter={64} pts={chart.pts} maxX={chart.maxX} mode={chart.mode} xOffset={p.curAge} ariaLabel="Portfolio growth to FIRE"
+      traces={hist && tracesOn && chart.H?.traces ? { xs: chart.pts.map((a) => a.year), lines: chart.H.traces } : undefined}
+      extras={marks}
+      tip={(b) => (
+        <>
+          <b>Year {b.year} Age {p.curAge + b.year}</b>
+          {hist ? <FanTipRows b={b} /> : <BandTipRows b={b} />}
+        </>
+      )} />
+  );
+  const fiLegend = (<>
+    {!chart.pts.length ? <Legend id="legendFire" items={[]} />
+      : hist ? <HistLegend id="legendFire" tracesOn={tracesOn} onToggleTraces={() => setTracesOn((v) => !v)} />
+      : <Legend id="legendFire" items={[
+        [SERIES.teal, p.band > 0 ? "At " + pctStr(p.nominal + p.band, 2) + " (+" + lbl + "%)" : "Higher"],
+        [SERIES.plan, "At " + pctStr(p.nominal, 2) + " (your rate)"],
+        [SERIES.rose, p.band > 0 ? "At " + pctStr(Math.max(0.001, p.nominal - p.band), 2) + " (−" + lbl + "%)" : "Lower"],
+      ]} />}
+  </>);
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
@@ -323,27 +346,15 @@ export function Fire() {
                   <NumberInput id="fiBand" nonNeg step={0.5} value={s.band} onValueChange={set("band")} aria-label="Return band" />
                 </Affixed>
               </span>
+              {fiFull.button}
             </CardAction>
           </CardHeader>
           <div className="hint m-0 max-w-copy px-4.5 pb-1" id="fiHistBar" hidden={!hist}>
             <span id="fiHistNote">{chart.H ? <HistBarNote H={chart.H} /> : null}</span>
           </div>
-          <BandChart id="Fire" pts={chart.pts} maxX={chart.maxX} mode={chart.mode} xOffset={p.curAge} ariaLabel="Portfolio growth to FIRE"
-            traces={hist && tracesOn && chart.H?.traces ? { xs: chart.pts.map((a) => a.year), lines: chart.H.traces } : undefined}
-            extras={marks}
-            tip={(b) => (
-              <>
-                <b>Year {b.year} Age {p.curAge + b.year}</b>
-                {hist ? <FanTipRows b={b} /> : <BandTipRows b={b} />}
-              </>
-            )} />
-          {!chart.pts.length ? <Legend id="legendFire" items={[]} />
-            : hist ? <HistLegend id="legendFire" tracesOn={tracesOn} onToggleTraces={() => setTracesOn((v) => !v)} />
-            : <Legend id="legendFire" items={[
-              [SERIES.teal, p.band > 0 ? "At " + pctStr(p.nominal + p.band, 2) + " (+" + lbl + "%)" : "Higher"],
-              [SERIES.plan, "At " + pctStr(p.nominal, 2) + " (your rate)"],
-              [SERIES.rose, p.band > 0 ? "At " + pctStr(Math.max(0.001, p.nominal - p.band), 2) + " (−" + lbl + "%)" : "Lower"],
-            ]} />}
+          {fiChart()}
+          {fiLegend}
+          {fiFull.overlay(fiChart, fiLegend)}
         </Card>
 
         <div className="min-w-0" hidden={!S}>

@@ -51,9 +51,9 @@ export function Budget() {
   // the Dashboard's housing, from its Home): shown, not changed here.
   const lockedRows = new Set(scope?.locked ?? []);
   const fixed = (r: BudgetRow) => lockedRows.has("row:" + (r.slot ?? r.desc));
-  // Inside the Dashboard, a second column: the budget cut back for living on
-  // the emergency fund.
-  const dash = scope?.name === "dashboard", emerg = dash && s.efEmerg;
+  // An emergency budget, once built: a second column, the budget cut back
+  // for living on the emergency fund.
+  const dash = scope?.name === "dashboard", emerg = !!s.efEmerg;
   // A phone has room for one amount a line: which budget it shows.
   const [emView, setEmView] = useState<"normal" | "emergency">("normal");
   // On its own, or in the Dashboard's Tools (saved scenarios, nothing kept
@@ -284,7 +284,8 @@ export function Budget() {
                 <span className="block text-label text-muted-foreground" id="efLabel">{ef}-month emergency fund</span>
                 <span className="block text-3xl leading-tight font-medium tabular-nums sm:text-display" id="efTarget">{money(efTarget)}</span>
               </div>
-              {dash ? (
+              {/* In a walkthrough the emergency fund is a figure, not a budget of its own. */}
+              {!scope || dash ? (
                 <div className="mt-3.5 grid gap-2.5">
                   <p className="hint m-0">About 6 months suits most people; up to 12 if your income varies.</p>
                   {emerg ? (

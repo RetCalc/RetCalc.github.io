@@ -11,6 +11,7 @@
    best age by lifespan beside the break-even chart; and every age and the
    years one by one, side by side. */
 
+import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { useRef, useState } from "react";
 import { CheckIcon, PlusIcon, ChartColumnIcon, MinusIcon } from "lucide-react";
 import { MultiChart } from "@/components/charts/MultiChart";
@@ -477,14 +478,20 @@ function Race({ S }: { S: SocialFigures }) {
   const color = (a: number) => a === c ? SERIES.plan : a === 62 ? SERIES.sky : a === 70 ? SERIES.lavender : SERIES.teal;
   const series = ages.map((a) => ({ name: "Claim at " + a + (a === c ? " (yours)" : ""), color: color(a), width: a === c ? 3 : 2, pts: cumulative(S.you, a, end) }));
   const marks = S.breakEvens.filter((b) => b.at && b.at < end).map((b) => ({ x: Math.round((b.at! - 62) * 10) / 10, label: String(Math.ceil(b.at!)) }));
+  const full = useFullScreen("When waiting pays off");
+  const chart = (px?: Px) => (
+    <MultiChart id={px ? "SsRaceF" : "SsRace"} px={px} half series={series} maxX={end - 62} marks={marks} ariaLabel="Your own checks added up by claiming age"
+      xFmt={(x) => x + 62} head={(y) => <b>Collected by age {y + 62}</b>} />
+  );
+  const legend = <Legend id="legendSsRace" items={series.map((x) => [x.color, x.name] as [string, string])} />;
   return (
     <Card className="min-w-0" id="ssRace">
-      <CardHeader><CardTitle>When waiting pays off<TipDot k="" text="Your own checks added up from each claiming age. A later claim starts behind and catches up; where the lines cross is the break-even age, marked on the chart. Live past it and waiting paid off. Hover or touch the chart to read any age." /></CardTitle></CardHeader>
+      <CardHeader><CardTitle>When waiting pays off<TipDot k="" text="Your own checks added up from each claiming age. A later claim starts behind and catches up; where the lines cross is the break-even age, marked on the chart. Live past it and waiting paid off. Hover or touch the chart to read any age." /></CardTitle>{S.you.pia > 0 ? <CardAction>{full.button}</CardAction> : null}</CardHeader>
       {S.you.pia > 0 ? (
         <>
-          <MultiChart id="SsRace" half series={series} maxX={end - 62} marks={marks} ariaLabel="Your own checks added up by claiming age"
-            xFmt={(x) => x + 62} head={(y) => <b>Collected by age {y + 62}</b>} />
-          <Legend id="legendSsRace" items={series.map((x) => [x.color, x.name] as [string, string])} />
+          {chart()}
+          {legend}
+          {full.overlay(chart, legend)}
         </>
       ) : <CardContent><p className="m-0 text-note text-muted-foreground">Enter your pay or your statement&apos;s benefit to see it.</p></CardContent>}
     </Card>

@@ -40,13 +40,15 @@ interface Props {
   /** In a half-width card: drawn to a narrower size so the axis labels and
       marks keep a readable size on screen (desktop; phones are unchanged). */
   half?: boolean;
+  /** Draw at exactly this many pixels (full screen). */
+  px?: { w: number; h: number };
   /** Each line's name at its end (two to four lines; on by default). */
   endLabels?: boolean;
 }
 
-export function MultiChart({ id, series, maxX, ariaLabel, head, tip, xFmt = (x) => x, yFmt = fmtAxisMoney, valFmt = money, marks = [], half = false, endLabels = true }: Props) {
-  const base = useChartSize();
-  const size = half && !base.narrow ? { ...base, W: 600, H: 330, L: 66, fs: 13, pw: 600 - 66 - base.Rp, ph: 330 - base.T - base.B } : base;
+export function MultiChart({ id, series, maxX, ariaLabel, head, tip, xFmt = (x) => x, yFmt = fmtAxisMoney, valFmt = money, marks = [], half = false, endLabels = true, px }: Props) {
+  const base = useChartSize({ px });
+  const size = half && !base.narrow && !px ? { ...base, W: 600, H: 330, L: 66, fs: 13, pw: 600 - 66 - base.Rp, ph: 330 - base.T - base.B } : base;
   const { W, Rp, L, T, pw, ph, fs, sw } = size;
   const live = series.filter((x) => x.pts.length);
   const colors = live.map((x, i) => x.color || MULTI_COLORS[i % MULTI_COLORS.length]);

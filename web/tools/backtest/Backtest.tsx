@@ -13,6 +13,7 @@
    year. Gains and losses are colored only where a return is one, with an
    arrow. On a phone a compact reading leads and stays pinned. */
 
+import { useFullScreen } from "@/components/charts/FullScreen";
 import { useMemo, useRef, useState } from "react";
 import { ChevronRightIcon, CircleAlertIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -121,6 +122,7 @@ export function Backtest() {
       note: B.maxDD < 0 ? B.ddFrom + "–" + B.ddTo : "" },
   ];
 
+  const btFull = useFullScreen("Growth of $10,000");
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
@@ -207,10 +209,14 @@ export function Backtest() {
         </Card>
 
         <Card className="min-w-0">
-          <CardHeader><CardTitle>Growth of $10,000</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Growth of $10,000</CardTitle><CardAction>{btFull.button}</CardAction></CardHeader>
           <MultiChart id="BT" ariaLabel="Historical growth of the chosen mix" maxX={B.years} xFmt={xFmt} head={head}
             series={[{ name: "Balance", color: GOLD, pts: nom }, { name: "In today's dollars", color: BLUE, pts: real, dash: "5 4", width: 2 }]} />
           <Legend id="legendBT" items={[[GOLD, "Balance"], [BLUE, "In today's dollars"]]} />
+          {btFull.overlay((px) => (
+            <MultiChart id="BTF" px={px} ariaLabel="Historical growth of the chosen mix" maxX={B.years} xFmt={xFmt} head={head}
+              series={[{ name: "Balance", color: GOLD, pts: nom }, { name: "In today's dollars", color: BLUE, pts: real, dash: "5 4", width: 2 }]} />
+          ), <Legend id="legendBTF" items={[[GOLD, "Balance"], [BLUE, "In today's dollars"]]} />)}
         </Card>
 
         <Card className="min-w-0">

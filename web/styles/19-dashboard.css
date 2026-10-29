@@ -421,17 +421,7 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 /* ---------- A tool inside the dashboard ---------- */
 .dsh-embed { min-width: 0; }
 .dsh-embed aside { top: 16px; }
-/* Spending: the Budget's lines one to a row in a narrower list, its
-   reading beside them and staying in view. */
-@media (min-width: 1024px) {
-  .dsh-embed #tab-budget { grid-template-columns: minmax(0, 640px) minmax(320px, 1fr); }
-  .dsh-embed #tab-budget > div { grid-column: auto; }
-}
 .dsh-embed #bgList .bggroup { display: block; }
-/* The emergency budget's second column, and its heading */
-.dsh-embed .bgcols { display: flex; justify-content: flex-end; gap: 8px; padding: 0 120px 6px 0; font-size: 11.5px; color: var(--ds-muted); }
-.dsh-embed .bgcols span { width: 140px; }
-.dsh-embed .bgview { display: none; }
 /* One look for every card on the dashboard: the tools' own cards (and
    Plan summary's) take the tiles' corners, surface and 14px titles. */
 .dsh [data-slot="card"] { border-radius: 16px; border-color: var(--ds-rule); background: var(--ds-surface); }
@@ -604,12 +594,6 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
   /* Paycheck lines: the name (and its Traditional/Roth switch) on a line of
      its own, the amount and Max under it, so they never overlap. */
   .dsh-embed [data-line] div:has(> b) { flex-basis: 100%; }
-  /* Budget with an emergency budget: one amount a line, the switch above
-     choosing which. */
-  .dsh-embed #bgList[data-emerg] .bgcols { display: none; }
-  .dsh-embed #bgList[data-emerg] .bgview { display: block; margin-bottom: 10px; }
-  .dsh-embed #bgList[data-emview="normal"] [data-slot="input-group"]:has([data-f="emerg"]),
-  .dsh-embed #bgList[data-emview="emergency"] [data-slot="input-group"]:has([data-f="amount"]) { display: none; }
 }
 
 /* Net worth: what was put in (a brokerage account's cost basis, a Roth's

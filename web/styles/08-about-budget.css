@@ -155,3 +155,18 @@ a.txlink:hover{text-decoration-color:currentColor}
 .privacy a{color:var(--ds-text);text-decoration:underline;text-underline-offset:3px}
 .privacy code{font-size:13px}
 .privacy-fine{font-size:12.5px;color:var(--ds-muted);margin:0}
+
+/* The emergency budget (Budget, on the site and in the Dashboard): a second
+   amount a line, under its own heading; on a phone one amount a line, the
+   switch above choosing which. The heading's right padding is the
+   period switch and the remove button beside the amounts. */
+.bgcols{display:flex;justify-content:flex-end;gap:8px;padding:0 var(--bgcols-pad,130px) 6px 0;font-size:11.5px;color:var(--ds-muted)}
+.bgcols span{width:140px}
+.dsh-embed .bgcols{--bgcols-pad:188px}
+.bgview{display:none}
+@media (max-width:640px){
+  #bgList[data-emerg] .bgcols{display:none}
+  #bgList[data-emerg] .bgview{display:block;margin-bottom:10px}
+  #bgList[data-emview="normal"] [data-slot="input-group"]:has([data-f="emerg"]),
+  #bgList[data-emview="emergency"] [data-slot="input-group"]:has([data-f="amount"]){display:none}
+}
