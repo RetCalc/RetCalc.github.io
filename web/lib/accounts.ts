@@ -36,7 +36,9 @@ export interface AccountResult {
   /** The first year's withdrawal from each account (none from the HSA,
       unless it's all there is). */
   w: { trad: number; roth: number; brok: number; hsa: number; gainPct: number };
-  wTotal: number; gainPct: number; seniors: number; tax: RetireTax; effRate: number;
+  wTotal: number; gainPct: number; seniors: number;
+  /** Each person's age in the withdrawal year, when the household profile gives them. */
+  ages?: number[]; tax: RetireTax; effRate: number;
   /** Each account's share of the balance. */
   shares: { trad: number; roth: number; brok: number; hsa: number };
   /** Each taxed account's share of the withdrawal. */
@@ -65,8 +67,17 @@ export function seniorsAt(a: Accounts, years: number, h: Household | null): numb
   return n;
 }
 
-function taxOn(a: Accounts, w: { trad: number; roth: number; brok: number; gainPct: number }, seniors: number): RetireTax {
-  return retireTax({ status: a.status, seniors, trad: w.trad, roth: w.roth, brok: w.brok,
+/* The same, as each person's age (what the state's age rules read), or
+   undefined when there is no profile age to go on. */
+export function agesAt(a: Accounts, years: number, h: Household | null): number[] | undefined {
+  if (!h || !(h.age! > 0)) return undefined;
+  const ages = [Math.round(h.age! + years)];
+  if (a.status === "m" && h.status === "m" && h.spouseAge! > 0) ages.push(Math.round(h.spouseAge! + years));
+  return ages;
+}
+
+function taxOn(a: Accounts, w: { trad: number; roth: number; brok: number; gainPct: number }, seniors: number, ages?: number[]): RetireTax {
+  return retireTax({ status: a.status, seniors, ages, trad: w.trad, roth: w.roth, brok: w.brok,
     gainPct: w.gainPct, ss: 0, pension: 0, penPublic: false, other: 0, pre: 0,
     dedType: "std", item: 0, state: a.state, _noMarginal: true });
 }
@@ -94,7 +105,7 @@ export function growthBlend(p: Plan, years: number, w: GrowthRates, rates: Growt
 }
 
 /** Each account's ending balance for a single plan, and the tax on it. */
-export function accountBreakdown(p: Plan, a: Accounts, seniors: number): AccountResult {
+export function accountBreakdown(p: Plan, a: Accounts, seniors: number, ages?: number[]): AccountResult {
   const ppy = PER_YEAR[p.period];
   const match = matchPer(a, ppy);
   const F = fvFactors(p, p.years);
@@ -116,7 +127,7 @@ export function accountBreakdown(p: Plan, a: Accounts, seniors: number): Account
   const inflYears = p.inflYears == null || p.inflYears === "" ? p.years : p.inflYears;
   return {
     ...finishAccounts(a, { trad: fvT, roth: fvR, brok: fvB, hsa: fvH }, basis0 + a.brokC * dollarsIn(gr.b),
-      Math.pow(1 + p.inflation, inflYears), p.withdrawal, seniors),
+      Math.pow(1 + p.inflation, inflYears), p.withdrawal, seniors, ages),
     match, matchTotal: match * perDollar, perDollar, rothIn: a.rothC * dollarsIn(gr.r),
   };
 }
@@ -128,7 +139,7 @@ export function accountBreakdown(p: Plan, a: Accounts, seniors: number): Account
    balances (from the HSA only when it's all there is). `fv` is in future
    dollars, `defl` converts to today's. */
 export function finishAccounts(a: Accounts, fv: { trad: number; roth: number; brok: number; hsa?: number }, basisEnd: number,
-  defl: number, withdrawal: number, seniors: number): AccountResult {
+  defl: number, withdrawal: number, seniors: number, ages?: number[]): AccountResult {
   const gainPct = fv.brok > 0 ? Math.max(0, Math.min(1, 1 - basisEnd / fv.brok)) : 0;
   const real = { trad: fv.trad / defl, roth: fv.roth / defl, brok: fv.brok / defl, hsa: (fv.hsa ?? 0) / defl };
   const three = real.trad + real.roth + real.brok;
@@ -138,9 +149,9 @@ export function finishAccounts(a: Accounts, fv: { trad: number; roth: number; br
   const wShares = three > 0 ? { trad: real.trad / three, roth: real.roth / three, brok: real.brok / three }
     : real.hsa > 0 ? { trad: 0, roth: 0, brok: 0 } : { trad: 1, roth: 0, brok: 0 };
   const w = { trad: wTotal * wShares.trad, roth: wTotal * wShares.roth, brok: wTotal * wShares.brok, hsa: three > 0 ? 0 : wTotal, gainPct };
-  const tax = taxOn(a, w, seniors);
+  const tax = taxOn(a, w, seniors, ages);
   return {
-    a, real, totalReal, w, wTotal, gainPct, seniors, tax, matchTotal: 0, wShares,
+    a, real, totalReal, w, wTotal, gainPct, seniors, ...(ages ? { ages } : {}), tax, matchTotal: 0, wShares,
     effRate: wTotal > 0 ? tax.total / wTotal : 0,
     shares: totalReal > 0
       ? { trad: real.trad / totalReal, roth: real.roth / totalReal, brok: real.brok / totalReal, hsa: real.hsa / totalReal }
@@ -155,7 +166,7 @@ export function finishAccounts(a: Accounts, fv: { trad: number; roth: number; br
 export function targetRate(B: AccountResult, target: number, fallback: number): number {
   if (!(target > 0)) return fallback;
   const s = B.wShares;
-  const net = (G: number) => G - taxOn(B.a, { trad: G * s.trad, roth: G * s.roth, brok: G * s.brok, gainPct: B.gainPct }, B.seniors).total;
+  const net = (G: number) => G - taxOn(B.a, { trad: G * s.trad, roth: G * s.roth, brok: G * s.brok, gainPct: B.gainPct }, B.seniors, B.ages).total;
   let lo = target, hi = target * 2;
   while (net(hi) < target && hi < target * 64) hi *= 2;
   for (let i = 0; i < 50; i++) {

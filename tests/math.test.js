@@ -215,6 +215,131 @@ group("State retirement rules: RI, NJ, MO, ME, MN, KS 2025-26 updates");
   near(ks.ded, 3605 + 9160 + 850, .01, "KS: standard deduction + exemption + $850 at 65");
 })();
 
+/* State age rules: each state counts a person on the age its own rule names
+   (Iowa 55, Georgia 62, Delaware 60, New Jersey 62, New York 59 1/2, Wisconsin
+   and Rhode Island 67, and so on), read as the person's age at the end of the
+   tax year. Sources are in the notes in states.retire (web/lib/engine/data/2026.js). */
+group("State age rules: the real age for each state, not 65 everywhere");
+(function () {
+  var base = { status: "s", idx: 0, seniors: 0, ages: [], trad: 0, pension: 0, penPublic: false, other: 0,
+               gain: 0, taxableSS: 0, ssGross: 0, agi: 0, pre: 0, dedType: "std", item: 0, grossForTest: 0 };
+  function st(code, o) {
+    var c = Object.assign({}, base, o, { code: code });
+    if (o.status === "m") c.idx = 1;
+    c.seniors = c.ages.filter(function (a) { return a >= 65; }).length;
+    c.grossForTest = c.trad + c.pension + c.other + c.gain;
+    if (o.agi == null) c.agi = c.grossForTest + c.taxableSS;
+    return stateRetireTax(YD.states.tax[code], c);
+  }
+  // Iowa: all retirement income from 55.
+  near(st("IA", { trad: 40000, ages: [54] }).excluded, 0, .01, "IA at 54: nothing excluded");
+  near(st("IA", { trad: 40000, ages: [55] }).excluded, 40000, .01, "IA at 55: all of it");
+  // Georgia: $35,000 from 62, $65,000 from 65.
+  near(st("GA", { trad: 80000, ages: [61] }).excluded, 0, .01, "GA at 61: nothing");
+  near(st("GA", { trad: 80000, ages: [62] }).excluded, 35000, .01, "GA at 62: $35,000");
+  near(st("GA", { trad: 80000, ages: [64] }).excluded, 35000, .01, "GA at 64: still $35,000");
+  near(st("GA", { trad: 80000, ages: [65] }).excluded, 65000, .01, "GA at 65: $65,000");
+  near(st("GA", { status: "m", trad: 200000, ages: [66, 63] }).excluded, 100000, .01, "GA couple 66 and 63: $65,000 plus $35,000");
+  // Delaware: $12,500 from 60 (and interest, dividends and gains), $2,000 of pension before.
+  near(st("DE", { pension: 30000, ages: [59] }).excluded, 2000, .01, "DE at 59: $2,000 of pension");
+  near(st("DE", { trad: 30000, ages: [59] }).excluded, 0, .01, "DE at 59: a 401(k) does not count");
+  near(st("DE", { pension: 30000, ages: [60] }).excluded, 12500, .01, "DE at 60: $12,500");
+  near(st("DE", { other: 30000, ages: [60] }).excluded, 12500, .01, "DE at 60: interest and dividends count");
+  near(st("DE", { pension: 30000, ages: [59] }).credit, 0, .01, "DE at 59: no age credit");
+  near(st("DE", { pension: 30000, ages: [60] }).credit, 110, .01, "DE at 60: $110 credit");
+  near(st("DE", { pension: 30000, ages: [64] }).ded - st("DE", { pension: 30000, ages: [65] }).ded, -2500, .01, "DE: $2,500 deduction at 65, not 60");
+  // New Jersey: $75,000 from 62; the extra $1,000 exemption stays at 65.
+  near(st("NJ", { trad: 80000, ages: [61] }).excluded, 0, .01, "NJ at 61: nothing");
+  near(st("NJ", { trad: 80000, ages: [62] }).excluded, 75000, .01, "NJ at 62: $75,000");
+  near(st("NJ", { trad: 80000, ages: [64] }).ded, 1000, .01, "NJ at 64: personal exemption only");
+  near(st("NJ", { trad: 80000, ages: [65] }).ded, 2000, .01, "NJ at 65: plus $1,000");
+  near(st("NJ", { status: "m", trad: 80000, ages: [62, 50] }).excluded, 80000, .01, "NJ joint: one spouse at 62 is enough");
+  // New York: $20,000 from 59 1/2, read as the year the person is 60.
+  near(st("NY", { pension: 30000, ages: [59] }).excluded, 0, .01, "NY at 59: nothing");
+  near(st("NY", { pension: 30000, ages: [60] }).excluded, 20000, .01, "NY at 60: $20,000");
+  // Wisconsin: $24,000 from 67; an extra $250 exemption at 65.
+  near(st("WI", { trad: 50000, ages: [66] }).excluded, 0, .01, "WI at 66: nothing");
+  near(st("WI", { trad: 50000, ages: [67] }).excluded, 24000, .01, "WI at 67: $24,000");
+  near(st("WI", { status: "m", trad: 100000, ages: [68, 66] }).excluded, 24000, .01, "WI couple 68 and 66: one $24,000");
+  near(st("WI", { trad: 50000, ages: [65] }).ded - st("WI", { trad: 50000, ages: [64] }).ded, 250, .01, "WI: $250 at 65");
+  // Rhode Island: pension and Social Security both from 67 (full retirement age).
+  near(st("RI", { pension: 40000, ages: [66] }).excluded, 0, .01, "RI at 66: nothing");
+  near(st("RI", { pension: 40000, ages: [67] }).excluded, 40000, .01, "RI at 67: all of it under $50,000");
+  near(st("RI", { taxableSS: 10000, ssGross: 12000, ages: [66] }).ssIn, 10000, .01, "RI at 66: Social Security taxed");
+  near(st("RI", { taxableSS: 10000, ssGross: 12000, ages: [67] }).ssIn, 0, .01, "RI at 67: Social Security exempt");
+  near(st("RI", { status: "m", pension: 150000, ages: [68, 68] }).excluded, 0, .01, "RI: joint limit is $133,750");
+  near(st("RI", { status: "m", pension: 130000, ages: [68, 68] }).excluded, 100000, .01, "RI: $100,000 for two people at 67 or over");
+  // Colorado: $20,000 from 55, $24,000 from 65; Social Security exempt from 55 under the AGI limit.
+  near(st("CO", { pension: 30000, ages: [54] }).excluded, 0, .01, "CO at 54: nothing");
+  near(st("CO", { pension: 30000, ages: [55] }).excluded, 20000, .01, "CO at 55: $20,000");
+  near(st("CO", { pension: 30000, ages: [65] }).excluded, 24000, .01, "CO at 65: $24,000");
+  near(st("CO", { taxableSS: 10000, ssGross: 12000, ages: [60], agi: 40000 }).ssIn, 0, .01, "CO at 60: Social Security exempt under $75,000");
+  near(st("CO", { taxableSS: 10000, ssGross: 12000, ages: [54], agi: 40000 }).ssIn, 10000, .01, "CO at 54: Social Security taxed");
+  var co = st("CO", { pension: 30000, taxableSS: 10000, ssGross: 12000, ages: [60], other: 60000, agi: 100000 });
+  near(co.excluded, 10000, .01, "CO at 60 over $75,000: benefits use the $20,000 first");
+  near(co.ssIn, 0, .01, "CO at 60 over $75,000: benefits inside the ceiling");
+  // Louisiana: from 65.
+  near(st("LA", { trad: 20000, ages: [64] }).excluded, 0, .01, "LA at 64: nothing");
+  near(st("LA", { trad: 20000, ages: [65] }).excluded, 12324, .01, "LA at 65: $12,324");
+  // New Mexico: $8,000 at 65, stepping down with income.
+  near(st("NM", { trad: 15000, ages: [64] }).excluded, 0, .01, "NM at 64: nothing");
+  near(st("NM", { trad: 15000, ages: [65] }).excluded, 8000, .01, "NM at 65, AGI under $18,000: $8,000");
+  near(st("NM", { trad: 20000, ages: [65] }).excluded, 6000, .01, "NM at $20,000: two $1,500 steps down");
+  near(st("NM", { trad: 28500, ages: [65] }).excluded, 1000, .01, "NM at $28,500: $1,000 left");
+  near(st("NM", { trad: 28501, ages: [65] }).excluded, 0, .01, "NM over $28,500: nothing");
+  // South Carolina: $3,000 of retirement income before 65, $15,000 from 65.
+  near(st("SC", { trad: 20000, ages: [60] }).excluded, 3000, .01, "SC at 60: $3,000");
+  near(st("SC", { trad: 20000, ages: [65] }).excluded, 0, .01, "SC at 65: the $15,000 deduction takes over");
+  near(st("SC", { trad: 20000, ages: [65] }).ded - st("SC", { trad: 20000, ages: [60] }).ded, 15000, .01, "SC at 65: $15,000 against any income");
+  near(st("SC", { status: "m", trad: 20000, ages: [66, 60] }).excluded, 3000, .01, "SC couple 66 and 60: $3,000 for the younger");
+  // One credit per return in Ohio, one per person in Kentucky.
+  near(st("OH", { status: "m", ages: [66, 67] }).credit, 50, .01, "OH: one $50 credit for the return");
+  near(st("KY", { status: "m", ages: [66, 67] }).credit, 80, .01, "KY: $40 each");
+  // Itemizing gives up an add-on that needs the standard deduction.
+  near(st("DC", { ages: [66] }).ded - st("DC", { ages: [66], dedType: "item", item: 0 }).ded, 2000 + 16100, .01, "DC: add-on only with the standard deduction");
+  // Without ages, every age rule reads the count of people 65 or older, as before.
+  var old = Object.assign({}, base, { code: "GA", seniors: 1, ages: undefined, trad: 80000, grossForTest: 80000, agi: 80000 });
+  near(stateRetireTax(YD.states.tax.GA, old).excluded, 65000, .01, "legacy callers: GA reads seniors");
+  old.seniors = 0;
+  near(stateRetireTax(YD.states.tax.GA, old).excluded, 0, .01, "legacy callers: nobody 65, nothing");
+  // computeRetireTax takes ages and counts the federal 65s from them.
+  var T = computeRetireTax({ status: "m", state: "TX", ages: [66, 60], trad: 50000, roth: 0, brok: 0, gainPct: 0, ss: 0, pension: 0,
+    penPublic: false, other: 0, pre: 0, dedType: "std", item: 0, _noMarginal: true });
+  eq(T.seniors, 1, "one of 66 and 60 is a senior");
+  T = computeRetireTax({ status: "s", state: "GA", ages: [62, 40], trad: 80000, roth: 0, brok: 0, gainPct: 0, ss: 0, pension: 0,
+    penPublic: false, other: 0, pre: 0, dedType: "std", item: 0, _noMarginal: true });
+  near(T.stateExcluded, 35000, .01, "a single return reads only the first age");
+  // The plan engine's tax cache keeps ages apart.
+  var c = plTaxCache("s", "GA");
+  function ga(age) {
+    return computeRetireTax({ status: "s", state: "GA", trad: 80000, roth: 0, brok: 0, gainPct: 1, ss: 0, pension: 0, penPublic: false,
+      other: 0, pre: 0, dedType: "std", item: 0, ages: [age], _noMarginal: true }).total;
+  }
+  near(plTax(c, 0, 0, 80000, 0, 61, null), ga(61), 6, "cached tax at 61");
+  near(plTax(c, 0, 0, 80000, 0, 62, null), ga(62), 6, "cached tax at 62");
+  near(plTax(c, 1, 0, 80000, 0, 66, null), ga(66), 6, "cached tax at 66");
+  eq(plTax(c, 0, 0, 80000, 0, 62, null) < plTax(c, 0, 0, 80000, 0, 61, null), true, "62 pays less than 61");
+  eq(plTax(c, 0, 0, 80000, 0, 62, null), plTax(c, 0, 0, 80000, 0, 63, null), "ages between the same steps share a cache entry");
+})();
+
+group("Roth conversions: the survivor files jointly for the year of death, single after");
+(function () {
+  var d = RC_DEFAULTS, inp = { age: d.age, spouseAge: d.spouseAge, status: "m", state: d.state, endAge: d.endAge,
+    trad: d.trad, roth: d.roth, brokerage: d.brok, basisPct: d.basis / 100, ret: d.ret / 100, spend: d.spend,
+    ss: d.ss, ssAge: d.ssAge, spSS: d.spSS, spSSAge: d.spSSAge, other: d.other, otherStart: d.otherStart,
+    deathYear: 5, strategy: "none", bracket: .22, irmaaTarget: 0, fixedAmt: d.fixed,
+    pctAmt: d.pct / 100, startAge: d.startAge, stopAge: d.stopAge, payFrom: d.payFrom, heirRate: d.heir / 100,
+    disc: d.disc / 100, irmaaOn: true };
+  var R = runRoth(inp, false);
+  eq(R.rows[4].status, "m", "joint the year before the death");
+  eq(R.rows[5].status, "m", "joint in the year of death");
+  eq(R.rows[5].widowed, false, "not yet filing as a survivor in the year of death");
+  eq(R.rows[6].status, "s", "single the year after");
+  eq(R.rows[6].widowed, true, "survivor row flagged from the year after");
+  inp.deathYear = 0;
+  eq(runRoth(inp, false).rows[10].status, "m", "no transition when left at 0");
+})();
+
 group("Plan engine: Medicare premiums from 65 when the plan prices coverage");
 (function () {
   function prep(aca) {
@@ -1175,7 +1300,8 @@ group("Articles: Roth conversions and RMDs");
   eq(P.peakRMD, 0, "no RMDs with conversions");
   says("roth", "would have peaked at " + dollars(B.peakRMD) + " per year");
   says("roth", dollars(P.lifeTax) + " with conversions against " + dollars(B.lifeTax) + " without");
-  says("roth", "converting saves " + dollars(B.lifeTaxPV - P.lifeTaxPV));
+  var pvSaved = B.lifeTaxPV - P.lifeTaxPV;
+  says("roth", pvSaved >= 0 ? "converting saves " + dollars(pvSaved) : "converting comes out about even, costing " + dollars(-pvSaved) + " more");
   says("roth", "IRMAA totals " + dollars(P.lifeIrmaa) + " instead of " + dollars(B.lifeIrmaa));
   says("roth", "at " + P.rows.filter(function (r) { return r.irmaa > 0; }).map(function (r) { return r.age; }).join(", ").replace(/, (\d+)$/, " and $1") + ",");
   says("roth", "What's left at " + d.endAge + ": " + dollars(P.endAfterTax - B.endAfterTax) + " more");

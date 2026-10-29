@@ -3,7 +3,7 @@
    (lib/retirement-contribs.ts). From readInputs() and writeInputs() in
    src/js/app/01-inputs.js and the account fields in 02-accounts-advanced.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { accountBreakdown, growthBlend, seniorsAt, targetRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
+import { accountBreakdown, agesAt, growthBlend, seniorsAt, targetRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
 import { DEFAULTS, PER_YEAR, coastFire, goalSolve, project, solveYears } from "@/lib/engine/typed";
 import type { Plan } from "@/lib/engine/types";
 import { groupDigits, oneOf, parseNum, pctStr } from "@/lib/format";
@@ -119,7 +119,7 @@ export function advancedPlan(s: AdvancedInputs, household: Household | null): Ad
   if (!s.acOn) return { p, a: null, B: null };
   const a = readAccounts(s);
   if (a.gRates) p.growth = growthBlend(p, p.years, { t: a.tradC, r: a.rothC, b: a.brokC, h: a.hsaC }, a.gRates);
-  const B = accountBreakdown(p, a, seniorsAt(a, p.years, household));
+  const B = accountBreakdown(p, a, seniorsAt(a, p.years, household), agesAt(a, p.years, household));
   p.initial = a.tradBal + a.rothBal + a.brokBal + a.hsaBal;
   p.contrib = a.tradC + a.rothC + a.brokC + a.hsaC + (B.match ?? 0);
   p.taxRate = B.effRate;

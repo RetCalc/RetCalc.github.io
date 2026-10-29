@@ -7,7 +7,7 @@
    loads math.js and drawdown.js (which read each other's names) in the
    order that works. */
 import {
-  SS_PROV, computeRetireTax, ultDivisor,
+  SS_PROV, computeRetireTax, agesKey, ultDivisor,
   rmdStartAge, irmaaAnnual, HIST_STOCK, HIST_BOND, HIST_INFL, pmtStart,
   ssEstimate, ssSpousalAdj, hcFPL, hcMedicaidFPL, hcAgeFactor, hcGrossPremium, hcCoverage
 } from "./math.js";
@@ -130,17 +130,22 @@ export function plTaxCache(status, state){
   }
   return plTaxCaches[k];
 }
-export function plTaxRaw(c, seniors, ss, ord, gain){
+/* a1 and a2 are the two people's ages that year, for the state's age rules
+   (math.js, "ages in state rules"). Left off, only `seniors` is known. */
+export function plTaxRaw(c, seniors, ss, ord, gain, a1, a2){
+  var ages = a1 == null ? undefined : (c.status === "m" && a2 != null ? [a1, a2] : [a1]);
   return computeRetireTax({status:c.status, state:c.state, trad:ord, roth:0, brok:gain,
     gainPct:1, ss:ss, pension:0, penPublic:false, other:0, pre:0, dedType:"std", item:0,
-    seniors:seniors, _noMarginal:true}).total;
+    seniors:seniors, ages:ages, _noMarginal:true}).total;
 }
-export function plTax(c, seniors, ss, ord, gain){
+export function plTax(c, seniors, ss, ord, gain, a1, a2){
   if (!(ord > 0)) ord = 0;
   if (!(gain > 0)) gain = 0;
   var fi = ord / PL_STEP, fj = gain / PL_STEP;
-  if (fi >= PL_GRID - 2 || fj >= PL_GRID - 2) return plTaxRaw(c, seniors, ss, ord, gain);
-  var key = seniors * 1e8 + Math.round(ss), m = c.maps.get(key);
+  if (fi >= PL_GRID - 2 || fj >= PL_GRID - 2) return plTaxRaw(c, seniors, ss, ord, gain, a1, a2);
+  /* The grid depends on which age rules each person has reached, not on the
+     exact ages (agesKey), so it is kept per group of ages. */
+  var key = (a1 == null ? seniors : 3 + agesKey(a1, a2)) * 1e8 + Math.round(ss), m = c.maps.get(key);
   if (!m){
     if (c.maps.size > 600) c.maps.clear();
     m = new Map(); c.maps.set(key, m);
@@ -148,10 +153,10 @@ export function plTax(c, seniors, ss, ord, gain){
   var i = Math.floor(fi), j = Math.floor(fj), di = fi - i, dj = fj - j;
   var k = i * PL_GRID + j, v00 = m.get(k), v10 = m.get(k + PL_GRID),
       v01 = m.get(k + 1), v11 = m.get(k + PL_GRID + 1);
-  if (v00 === undefined){ v00 = plTaxRaw(c, seniors, ss, i * PL_STEP, j * PL_STEP); m.set(k, v00); }
-  if (v10 === undefined){ v10 = plTaxRaw(c, seniors, ss, (i + 1) * PL_STEP, j * PL_STEP); m.set(k + PL_GRID, v10); }
-  if (v01 === undefined){ v01 = plTaxRaw(c, seniors, ss, i * PL_STEP, (j + 1) * PL_STEP); m.set(k + 1, v01); }
-  if (v11 === undefined){ v11 = plTaxRaw(c, seniors, ss, (i + 1) * PL_STEP, (j + 1) * PL_STEP); m.set(k + PL_GRID + 1, v11); }
+  if (v00 === undefined){ v00 = plTaxRaw(c, seniors, ss, i * PL_STEP, j * PL_STEP, a1, a2); m.set(k, v00); }
+  if (v10 === undefined){ v10 = plTaxRaw(c, seniors, ss, (i + 1) * PL_STEP, j * PL_STEP, a1, a2); m.set(k + PL_GRID, v10); }
+  if (v01 === undefined){ v01 = plTaxRaw(c, seniors, ss, i * PL_STEP, (j + 1) * PL_STEP, a1, a2); m.set(k + 1, v01); }
+  if (v11 === undefined){ v11 = plTaxRaw(c, seniors, ss, (i + 1) * PL_STEP, (j + 1) * PL_STEP, a1, a2); m.set(k + PL_GRID + 1, v11); }
   return v00 * (1 - di) * (1 - dj) + v10 * di * (1 - dj) + v01 * (1 - di) * dj + v11 * di * dj;
 }
 /* The federal pieces a plan steers by, worked directly (the same formulas
@@ -403,7 +408,7 @@ export function plEv(C, Y, x){
     if (rem <= 0) break;
   }
   var ord = Y.baseOrd + ordAdd;
-  var tax = plTax(C.cache, Y.seniors, Y.ss, ord, gain);
+  var tax = plTax(C.cache, Y.seniors, Y.ss, ord, gain, Y.a1, Y.a2);
   var agi = plAgi(ord, gain, Y.ss, C.status);
   var magi = ord + gain + Y.ss;
   var hl = (Y.aca ? plHealth(C, Y.y, magi) : 0) + Y.med;
@@ -445,7 +450,7 @@ export function plSolve(C, Y, total){
    `off`. `out` asks for detail: out.path (end-of-year total, real),
    out.lived (what was actually lived on), out.rows (everything, for the
    year-by-year table). Returns the run's summary. */
-export var plY = {y:0, order:null, conv:0, pen:0, gs:0, baseOrd:0, seniors:0, ss:0, aca:0, med:0,
+export var plY = {y:0, order:null, conv:0, pen:0, gs:0, baseOrd:0, seniors:0, a1:0, a2:null, ss:0, aca:0, med:0,
   people:0, look:-1, cash:0, w:0};
 export function plRun(C, K, R, PI, off, out){
   var n = C.years, st = C.status, P = C.P;
@@ -507,6 +512,7 @@ export function plRun(C, K, R, PI, off, out){
     Y.gs = brok > 0 ? Math.max(0, 1 - bBasis / brok) : 0;
     Y.baseOrd = pension + (Y.conv ? D : M);
     Y.seniors = seniors; Y.ss = ss;
+    Y.a1 = a1; Y.a2 = C.age2 == null ? null : C.age2 + y;
     Y.aca = C.acaGross[y] > 0 ? 1 : 0;
     Y.med = C.med[y];
     Y.people = seniors;

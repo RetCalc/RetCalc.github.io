@@ -31,7 +31,7 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
   const st = yearData().states.tax[a.state];
   const toTax = (e: React.MouseEvent) => {
     e.preventDefault();
-    sendYearToTax({ status: a.status, state: a.state, trad: B.w.trad, roth: B.w.roth, brok: B.w.brok, gainShare: B.gainPct, seniors: B.seniors });
+    sendYearToTax({ status: a.status, state: a.state, trad: B.w.trad, roth: B.w.roth, brok: B.w.brok, gainShare: B.gainPct, seniors: B.seniors, ages: B.ages });
     router.push("/incometax");
     toast("Loaded your first-year withdrawals into Income Tax");
   };

@@ -157,7 +157,15 @@ export var YEAR_2026 = {
          pubFull   government / public-employer pensions are exempt
          exAmt     retirement-income exclusion ceiling
          exPer     1 = exAmt applies per person rather than per return
-         exAge     1 = the exclusion requires a person marked 65 or older
+         exAge     the exclusion starts at this age (65, 62, 59.5 and so on).
+                   Ages everywhere here are a person's age at the END of the
+                   tax year, so 59.5 is met from 60. With exPer, each person
+                   counts on their own age. Without it, one person at the age
+                   is enough for the whole return.
+         exTiers   [[age, amount], ...] a per-person amount that steps up with
+                   age (Georgia 62 then 65, Colorado 55 then 65); exAmt is the top
+         exLow     {age, amt, src} an extra per-person exclusion for each person
+                   younger than age (South Carolina under 65, Delaware under 60)
          exSrc     what the exclusion may be applied against, in order:
                      "tp"  traditional, then pension            (default)
                      "t"   traditional only
@@ -167,15 +175,24 @@ export var YEAR_2026 = {
          exLessSS  "gross" or "taxable" -- the exclusion is reduced dollar for
                    dollar by Social Security received on that basis
          exCap     AGI above which the exclusion is lost
-         exPhase   "cliff" (default), "lin" over exRange, or "nj" (New Jersey's
+         exPhase   "cliff" (default), "lin" over exRange, "nj" (New Jersey's
                    own schedule: a share of retirement income by income band)
+                   or "nm" (New Mexico's: each person's amount falls by exStep
+                   for every exBand of AGI over exFull, both [single, joint])
          exRange   dollars over which a linear phase-out runs
-         sdAge     extra deduction per person 65 or older
-         peAge     extra personal exemption per person 65 or older
-         credAge   credit per person 65 or older
-         agePh     {amt, cap, rate} deduction per senior with a dollar-for-dollar
-                   (or rate-scaled) phase-out above cap
-         ssFullAge 1 = benefits are fully exempt once a person is 65 or older
+         sdAge     extra deduction per person at age sdAt (65 unless set)
+         sdStdOnly 1 = sdAge is lost when the return itemizes
+         peAge     extra personal exemption per person at age peAt (65)
+         credAge   credit per person at age credAt (65)
+         credOnce  1 = credAge is one credit per return, not per person
+         agePh     {amt, cap, rate} deduction per person at age agePhAt (65)
+                   with a dollar-for-dollar (or rate-scaled) phase-out above cap
+         ssFullAge age from which benefits are fully exempt (Colorado 65)
+         ssFullMid {age, cap} from this younger age, benefits are exempt too
+                   while AGI is within cap [single, joint]; above it they share
+                   the exclusion's ceiling (Colorado 55)
+         ssAge     age a person must reach for the ssCap exemption at all
+                   (Rhode Island: full retirement age, 67 for anyone not yet there)
          ssCap     AGI below which Social Security is fully exempt
          ssRange   dollars over which that exemption phases out linearly
          ssStep    the subtraction instead falls 10% per this many dollars of
@@ -194,90 +211,229 @@ export var YEAR_2026 = {
        year rather than an age, per-spouse ownership of the excluded income, and
        local income taxes. */
     retire: {
+      // Alabama: 65 or older, each spouse on their own age. AL Dept. of Revenue,
+      // Schedule RS and instructions (tax year 2025); Act 2022-294, no sunset.
       AL:{penFull:1, exAmt:[6000,6000], exPer:1, exAge:1, exSrc:"t",
           note:"Alabama exempts defined-benefit pension income in full, public or private, and exempts the first $6,000 of 401(k) and IRA withdrawals per person aged 65 or over."},
-      AZ:{exAmt:[2500,2500], exPer:1, exSrc:"pub",
-          note:"Arizona exempts $2,500 per person of federal, state and local government pension income. Private pensions and retirement-account withdrawals are fully taxable at the flat 2.5% rate."},
+      // Arizona: the $2,100 exemption is for age 65 by year end, per person, set in
+      // ARS 43-1023(E). The public pension subtraction has no age. AZ DOR 2025
+      // Form 140 booklet, lines 29a and 38.
+      AZ:{exAmt:[2500,2500], exPer:1, exSrc:"pub", peAge:2100,
+          note:"Arizona exempts $2,500 per person of federal, state and local government pension income, and gives an extra $2,100 exemption per person at 65. Private pensions and retirement-account withdrawals are fully taxable at the flat 2.5% rate."},
+      // Arkansas: no age for employer-plan income. A traditional IRA qualifies from
+      // 59 1/2, which is not checked. AR DFA, 2025 AR1000F instructions; A.C.A. 26-51-307.
       AR:{exAmt:[6000,6000], exPer:1, exSrc:"tp", cgPct:.50,
-          note:"Arkansas exempts $6,000 per person of pension and retirement-account income, and excludes 50% of net long-term capital gain from the state base."},
-      CA:{credAge:[153,153],
-          note:"California taxes pension and retirement-account withdrawals in full at ordinary rates, with no retirement exclusion. Social Security is exempt, and there is an extra exemption credit at 65."},
-      CO:{exAmt:[24000,24000], exPer:1, exAge:1, exSrc:"tp", exLessSS:"taxable", ssFullAge:1,
-          note:"Colorado gives each person 65 or older a subtraction of up to $24,000 of pension and annuity income. Taxable Social Security comes out of that ceiling first, which in practice exempts benefits in full and leaves whatever is left for the rest."},
+          note:"Arkansas exempts $6,000 per person of pension and retirement-account income at any age, and excludes 50% of net long-term capital gain from the state base. IRA withdrawals qualify only from 59½, which this does not check."},
+      // California: the senior exemption credit is for age 65 by December 31, each
+      // spouse separately: $158 for 2026 (CA Franchise Tax Board, Tax News, October 2026).
+      CA:{credAge:[158,158],
+          note:"California taxes pension and retirement-account withdrawals in full at ordinary rates, with no retirement exclusion. Social Security is exempt, and there is an extra exemption credit per person at 65."},
+      // Colorado: per person on their own age. $20,000 at 55 to 64, $24,000 at 65 and
+      // over, no income test. Social Security is fully subtracted at 65 and over, and
+      // from 55 to 64 while AGI is $75,000 single / $95,000 joint or less (2025 on);
+      // above that it shares the $20,000 ceiling. Colorado Dept. of Revenue,
+      // Income Tax Topics: Social Security, Pensions and Annuities (rev. January 2025).
+      // HB26-1062 and SB25-136 (lifting the ceilings) did not pass.
+      CO:{exAmt:[24000,24000], exPer:1, exAge:55, exTiers:[[55,20000],[65,24000]], exSrc:"tp", exLessSS:"taxable",
+          ssFullAge:65, ssFullMid:{age:55, cap:[75000,95000]},
+          note:"Colorado gives each person 55 or older a subtraction of up to $20,000 of pension and annuity income, and $24,000 from 65. Taxable Social Security comes out of that ceiling first. At 65 it is exempt in full, and at 55 to 64 it is exempt in full while AGI is $75,000 single or $95,000 joint or less."},
       CT:{exAmt:[1e12,1e12], exSrc:"tp", exCap:[75000,100000], exPhase:"lin", exRange:25000,
           ssCap:[75000,100000], ssPct:.25,
           note:"Connecticut exempts pension, annuity and IRA income in full below $75,000 of AGI single or $100,000 joint, phasing the exemption out over the next $25,000. Social Security is exempt below the same thresholds, and above them a quarter of the federally taxable benefit stays in the base."},
-      DE:{exAmt:[12500,12500], exPer:1, exAge:1, exSrc:"tp", sdAge:[2500,2500], credAge:[110,110],
-          note:"Delaware excludes $12,500 per person of pension and retirement-account income from age 60, and adds a $2,500 standard deduction and a $110 credit at 65."},
-      GA:{exAmt:[65000,65000], exPer:1, exAge:1, exSrc:"all",
-          note:"Georgia's retirement income exclusion is $65,000 per person at 65 and over ($35,000 from 62). It covers pensions, retirement-account withdrawals, interest, dividends, capital gain and rent alike."},
+      // Delaware: the exclusion is per person from age 60 ($12,500, and it also takes
+      // interest, dividends, gains and rent); under 60 it is $2,000 of employer pension
+      // only. The $110 extra credit is for age 60 and over. The $2,500 extra standard
+      // deduction is for age 65 and over and needs the standard deduction. DE Division
+      // of Revenue, 2025 PIT-RES instructions; 30 Del. C. 1106(b)(3), 1108(b), 1110(b)(2).
+      DE:{exAmt:[12500,12500], exPer:1, exAge:60, exSrc:"all", exLow:{age:60, amt:2000, src:"p"},
+          sdAge:[2500,2500], sdStdOnly:1, credAge:[110,110], credAt:60,
+          note:"Delaware excludes $12,500 per person of pension, retirement-account, interest, dividend, rent and capital gain income from age 60, and $2,000 of pension income before that. It adds a $110 credit per person from age 60 and a $2,500 standard deduction per person at 65."},
+      // Georgia: per person on their own age. $35,000 at 62 to 64, $65,000 at 65 and over,
+      // for tax years through 2026 (the 65 and over amount is $70,000 from 2027). No income
+      // test. Up to $5,000 of it may cover earned income, which is not modeled. GA Dept. of
+      // Revenue, 2025 IT-511 booklet and Retirement Income Exclusion page; HB 463 (2026).
+      GA:{exAmt:[65000,65000], exPer:1, exAge:62, exTiers:[[62,35000],[65,65000]], exSrc:"all",
+          note:"Georgia's retirement income exclusion is $35,000 per person from age 62 and $65,000 from 65 (2026). It covers pensions, retirement-account withdrawals, interest, dividends, capital gain and rent alike. Up to $5,000 of it can cover earned income, which this does not model."},
+      // Hawaii: the extra exemption is for age 65, per person (HRS 235-54; HI Dept. of
+      // Taxation, 2025 N-11). Employer-funded pensions have no age test.
       HI:{penFull:1, peAge:1144, cgMax:.0725,
           note:"Hawaii exempts employer-funded pension income in full, public or private, but taxes the part of a 401(k) or IRA that came from your own contributions. Long-term gain is capped at 7.25%."},
-      ID:{note:"Idaho taxes pension and retirement-account income at ordinary rates. Its retirement benefits deduction is limited to specific federal, military and public-safety retirees and is not modeled here."},
+      // Idaho: starts from federal taxable income, so the federal age 65 standard deduction
+      // add-on carries over ($2,050 single / $1,650 per spouse for 2026, Rev. Proc. 2025-32).
+      // The retirement benefits deduction is for age 65 (62 if disabled) but only for certain
+      // federal, military and public-safety plans. Idaho State Tax Commission, 2025 Form 40
+      // instructions.
+      ID:{sdAge:[2050,1650], sdStdOnly:1,
+          note:"Idaho taxes pension and retirement-account income at ordinary rates, and its standard deduction carries the federal add-on at 65. Its retirement benefits deduction is limited to specific federal, military and public-safety retirees and is not modeled here."},
+      // Illinois: no age on retirement income. The extra $1,000 exemption is for age 65
+      // (see the tax table above). IL Dept. of Revenue, Pub. 120 and the exemptions FAQ.
       IL:{penFull:1, tradFull:1,
           note:"Illinois excludes qualified retirement income from its base entirely: pensions, annuities, 401(k) and IRA withdrawals and Social Security alike. Only the taxable gain on a brokerage withdrawal and other ordinary income are subject to the 4.95% rate."},
+      // Indiana: the extra $1,000 exemption is for age 65 by December 31. A further $500
+      // at 65 applies only below $40,000 of AGI and is not modeled. IN Dept. of Revenue,
+      // 2025 Schedule 3.
       IN:{peAge:1000,
           note:"Indiana taxes pension and retirement-account income at the flat rate, with an extra $1,000 exemption per person at 65."},
-      IA:{exAmt:[1e12,1e12], exAge:1, exSrc:"tp",
-          note:"Iowa has exempted all retirement income (pensions, annuities, 401(k) and IRA withdrawals) for taxpayers 55 and over since 2023."},
+      // Iowa: all retirement income from age 55 (December 31), per person, no income test,
+      // tax years 2023 on (IA Dept. of Revenue, retirement income guidance). Extra $20 credit at
+      // 65 (2025 expanded instructions). The state standard deduction is the federal one, so
+      // the age 65 add-on carries over ($2,050 single / $1,650 per spouse for 2026).
+      IA:{exAmt:[1e12,1e12], exPer:1, exAge:55, exSrc:"tp", credAge:[20,20], sdAge:[2050,1650], sdStdOnly:1,
+          note:"Iowa exempts all retirement income (pensions, annuities, 401(k) and IRA withdrawals) from age 55, per person, and has since 2023. It adds a $20 credit per person at 65, and its standard deduction carries the federal add-on at 65."},
+      // Kansas: the extra standard deduction is for age 65 or blind, per person (K.S.A.
+      // 79-32,119(b)). Ksrevenue.gov, 2025 income tax booklet.
       KS:{pubFull:1, sdAge:[850,700],
           note:"Kansas exempts federal, state and local government pensions in full, taxes private pensions and retirement-account withdrawals, and adds an extra standard deduction at 65: $850 single, $700 per spouse (K.S.A. 79-32,119)."},
-      KY:{exAmt:[31110,31110], exPer:1, exSrc:"tp",
-          note:"Kentucky excludes $31,110 per person of pension and retirement-account income, at any age."},
-      LA:{pubFull:1, exAmt:[12000,12000], exPer:1, exAge:1, exSrc:"tp",
-          note:"Louisiana exempts federal and state government pensions in full, and exempts $12,000 per person of other retirement income at 65 and over."},
+      // Kentucky: the pension exclusion has no age. The $40 credit is for age 65 by
+      // December 31, per person. KY Dept. of Revenue, 2025 Form 740 and Schedule ITC.
+      KY:{exAmt:[31110,31110], exPer:1, exSrc:"tp", credAge:[40,40],
+          note:"Kentucky excludes $31,110 per person of pension and retirement-account income, at any age, and gives a $40 credit per person at 65."},
+      // Louisiana: age 65, per person who has retirement income. $12,324 for 2026 (indexed;
+      // LA Dept. of Revenue, Revenue Information Bulletin 26-019). The old extra $1,000
+      // exemption at 65 was repealed by Act 11 of 2024.
+      LA:{pubFull:1, exAmt:[12324,12324], exPer:1, exAge:65, exSrc:"tp",
+          note:"Louisiana exempts federal and state government pensions in full, and exempts $12,324 per person (2026) of other retirement income at 65 and over."},
+      // Maine: the pension deduction has no age (before 55 only periodic payments qualify,
+      // not modeled). The extra standard deduction is the federal one, for age 65 or blind
+      // (36 M.R.S. 5124-C; Rev. Proc. 2025-32). Maine Legislature statutes.
       ME:{exAmt:[49824,49824], exPer:1, exSrc:"tp", exLessSS:"gross",
           exCap:[125000,250000], exPhase:"lin", exRange:100000, sdAge:[2050,1650],
           note:"Maine's pension income deduction is up to $49,824 per person for 2026 (pegged to the maximum annual Social Security benefit) and covers retirement-account withdrawals, but it is reduced dollar for dollar by the Social Security you receive, and it phases out above $125,000 of AGI single or $250,000 joint."},
-      MD:{exAmt:[40600,40600], exPer:1, exAge:1, exSrc:"p", exLessSS:"gross", peAge:1000,
-          note:"Maryland's $40,600 pension exclusion at 65 (2026) covers employer plans but not IRAs, and is reduced by the Social Security you receive. Maryland's county income taxes, roughly 2.25% to 3.2% on top of the state rate, are not included here."},
+      // Maryland: the pension exclusion is for age 65 (or disabled), per person, 2026 maximum
+      // $40,600 (Comptroller guidance), less Social Security. The extra $1,000 exemption is
+      // for age 65 and is not phased out. The senior tax credit ($1,000 to $1,750 below
+      // $100,000 / $150,000) is not modeled. Comptroller of Maryland, 2025 resident booklet.
+      // County rates for 2026 run 2.25% to 3.3% (Comptroller withholding memo, 4 February 2026).
+      MD:{exAmt:[40600,40600], exPer:1, exAge:65, exSrc:"p", exLessSS:"gross", peAge:1000,
+          note:"Maryland's $40,600 pension exclusion at 65 (2026) covers employer plans but not IRAs, and is reduced by the Social Security you receive. Maryland's county income taxes, roughly 2.25% to 3.3% on top of the state rate, are not included here."},
+      // Massachusetts: the extra $700 exemption is for age 65 before the close of the year
+      // (M.G.L. c. 62 s. 3(B)). Government pensions have no age test.
       MA:{pubFull:1, peAge:700,
           note:"Massachusetts exempts Massachusetts and federal government pensions in full, taxes private pensions and retirement-account withdrawals at 5%, and adds a $700 exemption per person at 65."},
+      // Michigan: for tax year 2026 the deduction below has no age or birth-year condition
+      // (MCL 206.30(10)(d)); the age 62 and 67 alternatives in older paragraphs rarely beat it.
       MI:{exAmt:[67610,135220], exSrc:"tp",
           note:"Michigan's retirement and pension deduction is fully restored for tax year 2026, the last step of the 2023 phase-in: $67,610 single and $135,220 joint of pension and retirement-account income comes out of the base (Michigan Treasury, Public Act 4 of 2023 FAQ)."},
-      MN:{ssCap:[86410,110780], ssStep:4000,
-          note:"Minnesota exempts Social Security in full below $86,410 of AGI single or $110,780 joint (2026), and the subtraction falls 10% for each $4,000 over, so it is gone $40,000 above the line. Pension and retirement-account income is taxed at ordinary rates."},
-      MS:{penFull:1, tradFull:1,
-          note:"Mississippi exempts all qualified retirement income (pensions, annuities, 401(k) and IRA withdrawals) once you have reached the plan's retirement age."},
+      // Minnesota: the extra standard deduction is for age 65 (born before January 2 of the
+      // next year), $2,000 single or $1,600 per spouse, from the 2026 Form M1 instructions
+      // (final draft, October 2026). The age 65 Schedule M1R subtraction applies only to low
+      // incomes and is not modeled. MN Dept. of Revenue.
+      MN:{ssCap:[86410,110780], ssStep:4000, sdAge:[2000,1600], sdStdOnly:1,
+          note:"Minnesota exempts Social Security in full below $86,410 of AGI single or $110,780 joint (2026), and the subtraction falls 10% for each $4,000 over, so it is gone $40,000 above the line. Pension and retirement-account income is taxed at ordinary rates. The standard deduction adds $2,000 single or $1,600 per spouse at 65."},
+      // Mississippi: no fixed age. Retirement income is exempt once the plan's retirement age or
+      // service is met, and early distributions that owe the federal 10% additional tax are
+      // taxed, so this treats it all as exempt. The extra $1,500 exemption is for age 65, per
+      // person. MS Dept. of Revenue, 2025 Form 80-100 instructions (line 46).
+      MS:{penFull:1, tradFull:1, peAge:1500,
+          note:"Mississippi exempts retirement income (pensions, annuities, 401(k) and IRA withdrawals) once you meet the plan's retirement age or service, and taxes early distributions. This treats it all as exempt. It adds an extra $1,500 exemption per person at 65."},
+      // Missouri: the public pension exclusion has no age. Social Security is deducted at 62 and
+      // over, which is not checked here. MO Dept. of Revenue, pension FAQ.
       MO:{exAmt:[49824,49824], exPer:1, exSrc:"pub",
           note:"Missouri exempts public pension income up to the maximum Social Security benefit (about $49,800 per person for 2026), with no income limit since 2024 (SB 190). Its separate $6,000 private pension exemption cuts off at $25,000 / $32,000 and is not modeled."},
+      // Montana: the age 65 subtraction is per person and indexed each year (MCA 15-30-2120).
+      // MT Dept. of Revenue, 2025 Form 2 instructions: $5,660.
       MT:{sdAge:[5660,5660], cgB:{s:[[0,.03],[20500,.041]], m:[[0,.03],[41000,.041]]},
-          note:"Montana is one of the states that still taxes Social Security, on the federal taxable amount. It gives an extra subtraction per person at 65 ($5,500 in law, indexed each year: $5,660 for 2026) and taxes long-term gain at reduced rates of 3.0% and 4.1%."},
-      NE:{note:"Nebraska finished exempting Social Security in 2024. Pension and retirement-account income is taxed at ordinary rates."},
-      NJ:{exAmt:[75000,100000], exAge:1, exSrc:"tp", exCap:[100000,100000], exPhase:"nj", peAge:1000,
-          note:"New Jersey's pension and retirement income exclusion is $75,000 single or $100,000 joint from age 62, under a hard income test: the full exclusion below $100,000 of gross income, then a share of retirement income itself: 50% joint (37.5% single) to $125,000, half that to $150,000, and nothing above $150,000."},
-      NM:{ssCap:[100000,150000], exAmt:[8000,8000], exPer:1, exAge:1, exSrc:"all",
-          exCap:[28500,51000], cgFlat:[2500,2500],
-          note:"New Mexico exempts Social Security below $100,000 of AGI single or $150,000 joint and taxes it above. Since 2025 it deducts only the first $2,500 of net capital gain (40% applies only to selling a New Mexico business, not modeled), and gives an $8,000 exemption at 65 that only survives at quite low incomes."},
-      NY:{pubFull:1, exAmt:[20000,20000], exPer:1, exSrc:"tp",
-          note:"New York exempts New York and federal government pensions in full, and excludes $20,000 per person of private pension and retirement-account income from age 59 and a half. New York City and Yonkers resident taxes are not included here."},
+          note:"Montana is one of the states that still taxes Social Security, on the federal taxable amount. It gives an extra subtraction per person at 65 ($5,500 in law, indexed each year, $5,660 at the latest figure published) and taxes long-term gain at reduced rates of 3.0% and 4.1%."},
+      // Nebraska: the extra standard deduction is for age 65 (born before January 2), $2,050
+      // unmarried or $1,700 per married spouse for 2026 (NE Dept. of Revenue, 2026 Form 1040N
+      // estimated-tax voucher and draft Form 1040N).
+      NE:{sdAge:[2050,1700], sdStdOnly:1,
+          note:"Nebraska finished exempting Social Security in 2024. Pension and retirement-account income is taxed at ordinary rates. The standard deduction adds $2,050 unmarried or $1,700 per spouse at 65."},
+      // New Jersey: the exclusion is for age 62 (or blind or disabled), tested on the last day of
+      // the year, and one spouse at 62 is enough (only that spouse's own income is excluded,
+      // which this does not track). The extra $1,000 exemption is for age 65, per person.
+      // NJ Division of Taxation, 2025 NJ-1040 instructions and Pension/Annuity Exclusion page.
+      NJ:{exAmt:[75000,100000], exAge:62, exSrc:"tp", exCap:[100000,100000], exPhase:"nj", peAge:1000,
+          note:"New Jersey's pension and retirement income exclusion is $75,000 single or $100,000 joint from age 62 (one spouse at 62 is enough here), under a hard income test: the full exclusion below $100,000 of gross income, then a share of retirement income itself: 50% joint (37.5% single) to $125,000, half that to $150,000, and nothing above."},
+      // New Mexico: the exemption is for age 65 (or blind), per person, $8,000 stepping down
+      // $1,000 for every $1,500 of AGI over $18,000 single (every $3,000 over $30,000 joint),
+      // gone above $28,500 / $51,000 (NM Taxation and Revenue, 2025 PIT-ADJ, Table 1; statutory
+      // tables, not indexed). The standard deduction is the federal one, so the age 65 add-on
+      // carries over. Social Security has no age test.
+      NM:{ssCap:[100000,150000], exAmt:[8000,8000], exPer:1, exAge:65, exSrc:"all",
+          exCap:[28500,51000], exPhase:"nm", exFull:[18000,30000], exBand:[1500,3000], exStep:1000,
+          cgFlat:[2500,2500], sdAge:[2050,1650], sdStdOnly:1,
+          note:"New Mexico exempts Social Security below $100,000 of AGI single or $150,000 joint and taxes it above. It deducts the first $2,500 of net capital gain (40% applies only to selling a New Mexico business, not modeled). Each person 65 or older gets an exemption of up to $8,000, which falls $1,000 for every $1,500 of AGI over $18,000 single (every $3,000 over $30,000 joint) and is gone above $28,500 / $51,000. The standard deduction adds the federal amount at 65."},
+      // New York: $20,000 per person from age 59 1/2, no income test. In the year a person turns
+      // 59 1/2 only amounts received after the birthday count, which this does not track, so the
+      // exclusion starts in the year the person reaches 60. NY Dept. of Taxation and Finance,
+      // 2025 IT-201 instructions (line 29). No age-based standard deduction.
+      NY:{pubFull:1, exAmt:[20000,20000], exPer:1, exAge:59.5, exSrc:"tp",
+          note:"New York exempts New York and federal government pensions in full, and excludes $20,000 per person of private pension and retirement-account income from age 59½ (in the year you turn 59½, only what you receive after the birthday counts, which this does not track). New York City and Yonkers resident taxes are not included here."},
       NC:{note:"North Carolina taxes pension and retirement-account income at its flat rate. The Bailey exemption for certain long-vested government retirees is too narrow to model."},
       ND:{cgPct:.40,
           note:"North Dakota taxes pension and retirement-account income at ordinary rates, but excludes 40% of net long-term capital gain."},
-      OH:{credAge:[50,50], ohRet:1, exCap:[100000,100000],
-          note:"Ohio taxes pension and retirement-account income at ordinary rates, offset only by a small retirement income credit of up to $200 and a $50 senior credit, both lost above $100,000 of Ohio income."},
+      // Ohio: the $50 senior credit is for age 65, once per return, and the retirement income
+      // credit has no age. Both need Ohio income under $100,000. Ohio Dept. of Taxation, 2025
+      // IT 1040 booklet, Schedule of Credits (R.C. 5747.055).
+      OH:{credAge:[50,50], credOnce:1, ohRet:1, exCap:[100000,100000],
+          note:"Ohio taxes pension and retirement-account income at ordinary rates, offset only by a small retirement income credit of up to $200 and a $50 senior credit per return at 65, both lost above $100,000 of Ohio income."},
+      // Oklahoma: no age on the exclusion. A further $1,000 exemption at 65 applies only below
+      // $15,000 single / $25,000 joint of AGI and is not modeled. OK Tax Commission, 2025 packet.
       OK:{exAmt:[10000,10000], exPer:1, exSrc:"tp",
           note:"Oklahoma excludes $10,000 per person of pension and retirement-account income."},
+      // Oregon: the extra standard deduction is for age 65 (or blind), $1,200 single or head of
+      // household, $1,000 per person otherwise, set in ORS 316.695(7). The retirement income
+      // credit (age 62, low incomes) cannot be claimed for tax years from 2026 under ORS 316.157.
       OR:{sdAge:[1200,1000],
-          note:"Oregon taxes pension and retirement-account income at ordinary rates. Its retirement income credit applies only at low household incomes and is not modeled, nor are Portland-area local taxes."},
+          note:"Oregon taxes pension and retirement-account income at ordinary rates. Its retirement income credit for age 62 and over is set by law to end after tax year 2025 and is not modeled, nor are Portland-area local taxes."},
+      // Pennsylvania: no fixed age. Employer plans are exempt once you have retired by the plan's
+      // age or service; IRAs are exempt when no early-withdrawal penalty applies (59 1/2 or an
+      // exception). This treats it all as exempt. PA Dept. of Revenue, Personal Income Tax
+      // Guide, Gross Compensation.
       PA:{penFull:1, tradFull:1,
-          note:"Pennsylvania does not tax retirement income once you have retired. Pensions, annuities, 401(k) and IRA distributions are all outside the base. Interest, dividends and capital gain are still taxed at 3.07%."},
-      RI:{ssCap:[107000,133500], exAmt:[50000,50000], exPer:1, exAge:1, exSrc:"tp",
-          exCap:[107000,133500],
-          note:"Rhode Island exempts Social Security and up to $50,000 per person of pension, 401(k) and annuity income (raised from $20,000 for 2025), but both require Social Security's full retirement age and both cut off above $107,000 of AGI single or $133,500 joint. IRA withdrawals don't qualify for the pension exclusion, which this tool doesn't separate from other traditional withdrawals."},
-      SC:{sdAge:[15000,15000], cgPct:.44,
-          note:"South Carolina's age-65 deduction is $15,000 per person against any income, which absorbs its separate $10,000 retirement deduction. It also excludes 44% of net long-term capital gain."},
+          note:"Pennsylvania does not tax retirement income once you have retired. Pensions, annuities, 401(k) and IRA distributions are all outside the base, unless they are early withdrawals taken before retirement age, which this does not check. Interest, dividends and capital gain are still taxed at 3.07%."},
+      // Rhode Island: both the Social Security and the pension modification start at the age
+      // used for full Social Security benefits, tested per spouse (R.I. Gen. Laws 44-30-12(c)).
+      // That is 67 for anyone born 1960 or later, and everyone born before then is past 67
+      // in 2026, so 67 holds for every year modeled. $50,000 per person since 2025 ($20,000
+      // before). AGI limits are indexed: $107,000 single, $133,750 joint for 2025 (RI Division
+      // of Taxation, ADV 2025-22 and 2025 RI-1040 instructions); 2026 not yet published.
+      // IRA withdrawals do not qualify for the pension modification.
+      RI:{ssCap:[107000,133750], ssAge:67, exAmt:[50000,50000], exPer:1, exAge:67, exSrc:"tp",
+          exCap:[107000,133750],
+          note:"Rhode Island exempts Social Security and up to $50,000 per person of pension, 401(k) and annuity income (it was $20,000 through 2024). Both start at Social Security's full retirement age, which this sets at 67, and both are lost above an AGI limit. The limits here are the 2025 figures, $107,000 single and $133,750 joint, which the state adjusts each year. IRA withdrawals don't qualify for the pension exclusion, which this tool doesn't separate from other traditional withdrawals."},
+      // South Carolina: up to $3,000 per person of retirement income under 65. From 65 a $15,000
+      // deduction per person against any income, which absorbs the retirement deduction
+      // (S.C. Code 12-6-1170; SC Dept. of Revenue SC4972 instructions). Act 110 of 2026 changed
+      // the brackets and standard deduction, which are not updated here.
+      SC:{sdAge:[15000,15000], exLow:{age:65, amt:3000, src:"tp"}, cgPct:.44,
+          note:"South Carolina deducts up to $3,000 per person of retirement income before 65. From 65 it deducts $15,000 per person against any income, which absorbs that deduction. It also excludes 44% of net long-term capital gain."},
+      // Utah: the Social Security credit has no age. The $450 retirement credit is for people
+      // born before 1953 and cannot be combined with it (not modeled). Utah State Tax Commission,
+      // credit pages for tax year 2025.
       UT:{ssCredit:{rate:.045, cap:[54000,90000], phase:.025},
           note:"Utah taxes Social Security but then hands back a credit for the tax on it, withdrawn at 2.5 cents per dollar of income above $54,000 single or $90,000 joint. Pension and retirement-account income is taxed at the flat 4.5% rate."},
+      // Vermont: no age on the Social Security exemption or the $10,000 government pension
+      // exemption. Thresholds were raised $5,000 for 2025 by Act 71 and are not indexed
+      // (32 V.S.A. 5830e; VT Dept. of Taxes, 2025 IN-112 instructions).
       VT:{ssCap:[55000,70000], ssRange:10000, cgFlat:[5000,5000],
-          note:"Vermont exempts Social Security below $55,000 of AGI single or $70,000 joint (raised from $50,000 / $65,000 for 2025), phasing out over the next $10,000. It excludes $5,000 of long-term gain and otherwise taxes retirement income at ordinary rates."},
-      VA:{agePh:{amt:12000, cap:[50000,75000], rate:1},
-          note:"Virginia's age deduction is $12,000 per person at 65, but it is withdrawn dollar for dollar above $50,000 of income single or $75,000 joint, so it disappears entirely by $62,000 / $87,000."},
+          note:"Vermont exempts Social Security below $55,000 of AGI single or $70,000 joint (up $5,000 from 2025 under Act 71), phasing out over the next $10,000. It excludes $5,000 of long-term gain and otherwise taxes retirement income at ordinary rates."},
+      // Virginia: the age deduction is $12,000 per person at 65 (born by January 1 of the next
+      // year), reduced dollar for dollar by AGI less taxable Social Security over $50,000 single or
+      // $75,000 married, with both spouses' deductions pooled. The extra $800 exemption is for age
+      // 65. VA Dept. of Taxation, 2025 Form 760 instructions; Va. Code 58.1-322.03.
+      VA:{agePh:{amt:12000, cap:[50000,75000], rate:1}, peAge:800,
+          note:"Virginia's age deduction is $12,000 per person at 65, but it is withdrawn dollar for dollar above $50,000 of income single or $75,000 joint (Social Security not counted). It is gone by $62,000 single, $87,000 for a couple with one person 65 and $99,000 with both. It also gives an extra $800 exemption per person at 65."},
+      // West Virginia: age 65 (or disabled), up to $8,000 per person (W. Va. Code 11-21-12(c)(9)).
+      // It is reduced by that person's Social Security and other exclusions, which is not modeled.
+      // WV State Tax Dept., 2025 IT-140 instructions.
       WV:{sdAge:[8000,8000],
           note:"West Virginia finished phasing out its Social Security tax for 2026. It gives an $8,000 exemption per person at 65, applied against any income."},
-      WI:{exAmt:[24000,24000], exPer:1, exAge:1, exSrc:"tp", cgPct:.30,
-          note:"Wisconsin's 2025 retirement income exclusion is $24,000 per person from age 67, covering pensions and retirement-account withdrawals. It also excludes 30% of net long-term capital gain."},
-      DC:{note:"The District taxes pension and retirement-account income at ordinary rates. Its $3,000 government-pension exclusion at 62 is too narrow to model."}
+      // Wisconsin: $24,000 per person from age 67 (December 31), no income test, fixed in statute
+      // (Wis. Stat. 71.05(6)(b)54m, Act 15 of 2025), so 2026 matches 2025. Claiming it gives up
+      // Wisconsin's credits, not modeled. The extra $250 exemption is for age 65. The $5,000
+      // low-income subtraction at 65 is not modeled. WI Dept. of Revenue, Schedule SB
+      // instructions and Pub. 126.
+      WI:{exAmt:[24000,24000], exPer:1, exAge:67, exSrc:"tp", cgPct:.30, peAge:250,
+          note:"Wisconsin's retirement income subtraction is $24,000 per person from age 67 (the same in 2025 and 2026), covering pensions and retirement-account withdrawals. Taking it gives up Wisconsin's credits, which this does not model. It adds an extra $250 exemption per person at 65 and excludes 30% of net long-term capital gain."},
+      // District of Columbia: extra standard deduction for age 65 (born before January 2
+      // of the following year), $2,000 single or head of household, $1,600 per spouse,
+      // standard deduction only (DC Office of Tax and Revenue, 2025 D-40 booklet, Schedule S).
+      // The $3,000 government-pension exclusion at 62 applied only to years before 2015
+      // (D.C. Code 47-1803.02(a)(2)(N)).
+      DC:{sdAge:[2000,1600], sdStdOnly:1,
+          note:"The District taxes pension and retirement-account income at ordinary rates, and adds a standard deduction of $2,000 single or $1,600 per spouse at 65. Its old $3,000 government-pension exclusion ended with tax year 2014."},
     },
 
     /* States that still include any Social Security in taxable income for 2026.
@@ -286,7 +442,8 @@ export var YEAR_2026 = {
        dropped off in earlier years. Each of these eight has its own income-based
        exemption that this does not model — see the About tab. Colorado is the one
        exception handled here, because its subtraction is a clean full exemption
-       at 65 and over. */
+       at 65 and over (and from 55 under an AGI limit). Rhode Island's relief
+       starts at full retirement age, 67 here. */
     ssTaxed: {CO:1, CT:1, MN:1, MT:1, NM:1, RI:1, UT:1, VT:1},
 
     /* Pre-tax deductions a state does not let off its own tax: listed here,

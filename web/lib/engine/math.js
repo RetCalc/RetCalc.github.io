@@ -750,6 +750,64 @@ export function marginalRate(income, brackets){
   return r;
 }
 
+/* ---------- ages in state rules ----------
+   Every age is a person's age at the END of the tax year: someone who turns 65
+   in November counts as 65 for that whole year. That is how the federal 65 rules
+   read too. A rule at 59 1/2 (New York) is therefore met from the year the person
+   is 60, because only then are we sure they had reached it by December. A
+   projection that counts years forward passes each year's age the same way.
+
+   A return's state context carries `ages`: one entry per person on it (one when
+   single, up to two when joint). A person whose age is unknown is left off.
+   `agedN` counts how many people have reached a rule's age. A caller that has no
+   ages (only `seniors`, people 65 or older) gets the old behavior: every age rule
+   is read at 65. */
+export function agedN(c, age){
+  if (!c.ages) return c.seniors || 0;
+  let n = 0;
+  for (let i = 0; i < c.ages.length; i++) if (c.ages[i] >= age) n++;
+  return n;
+}
+
+/* Every age at which some state rule changes (and the federal 65), in order,
+   for the newest year. A tax cache keys on which of these each person has
+   reached, since two ages between the same neighbors tax alike. */
+let AGE_STEPS = null, AGE_STEPS_YEAR = 0;
+export function stateAgeSteps(){
+  const SD = yearData().states;
+  if (AGE_STEPS && AGE_STEPS_YEAR === SD.year) return AGE_STEPS;
+  const set = new Set([65]);
+  const add = a => { if (typeof a === "number" && a > 0) set.add(a); };
+  Object.keys(SD.tax).forEach(code => { if (SD.tax[code].peAge) add(SD.tax[code].peAt || 65); });
+  Object.keys(SD.retire).forEach(code => {
+    const R = SD.retire[code];
+    add(R.exAge); add(R.ssFullAge); add(R.ssAge);
+    if (R.exTiers) R.exTiers.forEach(t => add(t[0]));
+    if (R.exLow) add(R.exLow.age);
+    if (R.ssFullMid) add(R.ssFullMid.age);
+    if (R.sdAge) add(R.sdAt || 65);
+    if (R.peAge) add(R.peAt || 65);
+    if (R.credAge) add(R.credAt || 65);
+    if (R.agePh) add(R.agePhAt || 65);
+  });
+  AGE_STEPS = Array.from(set).sort((x, y) => x - y);
+  AGE_STEPS_YEAR = SD.year;
+  return AGE_STEPS;
+}
+/* How many steps a person's age has passed: a small number to key a cache on.
+   Unknown ages (null) sit apart from every real one. */
+export function ageStep(age){
+  if (age == null || !isFinite(age)) return 63;
+  const steps = stateAgeSteps();
+  let n = 0;
+  while (n < steps.length && age >= steps[n]) n++;
+  return n;
+}
+/* The cache key for a household's ages, and the people on it. */
+export function agesKey(a1, a2){
+  return ageStep(a1) * 64 + ageStep(a2);
+}
+
 /* Public pensions are exempt in some states and not others, so the tool has to
    be told which kind the pension is. Everything else about a pension --
    ordinary rates, no FICA -- is the same either way. */
@@ -760,8 +818,11 @@ export function marginalRate(income, brackets){
  * split the bill without guessing.
  *
  * @param {Object} S - the state's entry in its year's states.tax
- * @param {Object} c - context: year, status, idx, seniors, trad, pension, penPublic,
- *                     other, gain, taxableSS, ssGross, agi, pre, dedType, item
+ * @param {Object} c - context: year, status, idx, seniors, ages, trad, pension, penPublic,
+ *                     other, gain, taxableSS, ssGross, agi, pre, dedType, item.
+ *                     `seniors` counts people 65 or older (the federal rules);
+ *                     `ages` is each person's age at the end of the year, and
+ *                     decides every state rule (see agedN)
  * @returns {{tax:number, base:number, taxable:number, parts:Object, ssIn:number,
  *            excluded:number, notes:string}}
  */
@@ -776,11 +837,18 @@ export function stateRetireTax(S, c){
 
   // --- 1. Social Security ---------------------------------------------------
   // Default is full exemption: 42 states and DC leave benefits out entirely.
-  let ssIn = 0, ssTaxed = false;
+  let ssIn = 0, ssTaxed = false, midShared = false;
   if (SD.ssTaxed[c.code]){
     ssTaxed = true;
     ssIn = c.taxableSS;
-    if (R.ssFullAge && c.seniors > 0) ssIn = 0;
+    if (R.ssFullAge && agedN(c, R.ssFullAge) > 0) ssIn = 0;
+    else if (R.ssFullMid && agedN(c, R.ssFullMid.age) > 0){
+      // Colorado, 55 to 64: exempt while AGI is within the limit. Above it,
+      // benefits share the exclusion's ceiling, which step 4 works out.
+      if (c.agi <= R.ssFullMid.cap[idx]) ssIn = 0;
+      else midShared = true;
+    }
+    else if (R.ssAge && agedN(c, R.ssAge) === 0) ssIn = c.taxableSS;   // Rhode Island, before full retirement age
     else if (R.ssCap){
       const cap = R.ssCap[idx], range = R.ssRange || 0;
       if (c.agi <= cap) ssIn = 0;
@@ -814,11 +882,49 @@ export function stateRetireTax(S, c){
 
   // --- 4. the retirement income exclusion -----------------------------------
   let excluded = 0;
+  const srcOrder = src => src === "t" ? ["trad"]
+                  : src === "p" ? ["pension"]
+                  : src === "pub" ? (c.penPublic ? ["pension"] : [])
+                  : src === "all" ? ["trad", "pension", "other", "gain"]
+                  : ["trad", "pension"];
+  const box = {trad, pension, other, gain};
+  const take = (room, order) => {
+    order.forEach(k => {
+      const t = Math.min(room, box[k]);
+      box[k] -= t; room -= t; excluded += t;
+    });
+    return room;
+  };
+  // An extra exclusion for people younger than an age (South Carolina, Delaware):
+  // taken first, against its own narrower source.
+  if (R.exLow && c.ages){
+    const nLow = c.ages.filter(a => a < R.exLow.age).length;
+    take(R.exLow.amt * nLow, srcOrder(R.exLow.src));
+  }
   if (R.exAmt){
-    const people = R.exPer ? (R.exAge ? c.seniors : (st === "m" ? 2 : 1)) : 1;
-    let room = R.exAmt[idx] * (R.exPer ? people : 1);
-    if (R.exAge && c.seniors === 0) room = 0;
-    if (R.exLessSS)
+    let room;
+    if (R.exPer){
+      if (R.exTiers && c.ages){
+        // A per-person amount that steps up with age.
+        room = 0;
+        c.ages.forEach(a => {
+          let amt = 0;
+          R.exTiers.forEach(t => { if (a >= t[0]) amt = t[1]; });
+          room += amt;
+        });
+      } else {
+        const people = R.exAge ? agedN(c, R.exAge) : (st === "m" ? 2 : 1);
+        room = R.exAmt[idx] * people;
+      }
+    } else {
+      room = R.exAge && agedN(c, R.exAge) === 0 ? 0 : R.exAmt[idx];
+    }
+    if (midShared){
+      // Colorado, 55 to 64 and over the AGI limit: benefits come out of the
+      // same ceiling as pensions, benefits first.
+      const sub = Math.min(ssIn, room);
+      ssIn -= sub; room -= sub;
+    } else if (R.exLessSS)
       room = Math.max(0, room - (R.exLessSS === "gross" ? c.ssGross : c.taxableSS));
     if (R.exCap){
       const cap = R.exCap[idx];
@@ -831,6 +937,11 @@ export function stateRetireTax(S, c){
         if (g > cap + 50000) room = 0;
         else if (g > cap + 25000) room = Math.min(room, qual * (st === "m" ? .25 : .1875));
         else if (g > cap) room = Math.min(room, qual * (st === "m" ? .5 : .375));
+      } else if (R.exPhase === "nm"){
+        // New Mexico: each person's amount falls by exStep for every exBand of
+        // AGI over exFull, so the share of the full amount that is left is:
+        const bands = c.agi > R.exFull[idx] ? Math.ceil((c.agi - R.exFull[idx]) / R.exBand[idx]) : 0;
+        room *= Math.max(0, 1 - bands * R.exStep / R.exAmt[idx]);
       } else if (R.exPhase === "lin"){
         const range = R.exRange || 1;
         room *= c.agi <= cap ? 1
@@ -838,18 +949,9 @@ export function stateRetireTax(S, c){
               : 1 - (c.agi - cap) / range;
       } else if (c.agi > cap) room = 0;
     }
-    const order = R.exSrc === "t" ? ["trad"]
-                : R.exSrc === "p" ? ["pension"]
-                : R.exSrc === "pub" ? (c.penPublic ? ["pension"] : [])
-                : R.exSrc === "all" ? ["trad", "pension", "other", "gain"]
-                : ["trad", "pension"];
-    const box = {trad, pension, other, gain};
-    order.forEach(k => {
-      const take = Math.min(room, box[k]);
-      box[k] -= take; room -= take; excluded += take;
-    });
-    trad = box.trad; pension = box.pension; other = box.other; gain = box.gain;
+    take(room, srcOrder(R.exSrc));
   }
+  trad = box.trad; pension = box.pension; other = box.other; gain = box.gain;
 
   // --- 5. the base ----------------------------------------------------------
   const parts = {trad, pension, other, gain, ss:ssIn};
@@ -866,13 +968,15 @@ export function stateRetireTax(S, c){
   if (c.dedType === "item" && S.sd) ded = Math.max(c.item, 0);
   else if (S.sd) ded = S.sd[idx];
   if (S.pe) ded += S.pe[idx];
-  if (S.peAge) ded += S.peAge * c.seniors;      // Illinois
-  if (R.peAge) ded += R.peAge * c.seniors;
-  if (R.sdAge) ded += R.sdAge[idx] * c.seniors;
+  if (S.peAge) ded += S.peAge * agedN(c, S.peAt || 65);      // Illinois
+  if (R.peAge) ded += R.peAge * agedN(c, R.peAt || 65);
+  if (R.sdAge && !(R.sdStdOnly && c.dedType === "item"))
+    ded += R.sdAge[idx] * agedN(c, R.sdAt || 65);
   if (R.agePh){
     // Virginia: a flat deduction withdrawn against income above a threshold.
-    const over = Math.max(0, c.agi - R.agePh.cap[idx]) * R.agePh.rate;
-    ded += Math.max(0, R.agePh.amt * c.seniors - over);
+    // The income tested leaves out taxable Social Security.
+    const over = Math.max(0, c.agi - c.taxableSS - R.agePh.cap[idx]) * R.agePh.rate;
+    ded += Math.max(0, R.agePh.amt * agedN(c, R.agePhAt || 65) - over);
   }
   if (S.agiCap && c.agi > S.agiCap[idx]) ded = 0;   // Illinois-style cliff
 
@@ -896,9 +1000,9 @@ export function stateRetireTax(S, c){
   if (S.pec) tax = Math.max(0, tax - S.pec[idx]);
   if (S.sdc) tax = Math.max(0, tax - S.sdc[idx]);
   let credit = 0;
-  if (R.credAge && c.seniors > 0 &&
-      (!R.ohRet || !R.exCap || c.agi <= R.exCap[idx]))
-    credit += R.credAge[idx] * c.seniors;
+  const credN = R.credAge ? agedN(c, R.credAt || 65) : 0;
+  if (credN > 0 && (!R.ohRet || !R.exCap || c.agi <= R.exCap[idx]))
+    credit += R.credAge[idx] * (R.credOnce ? 1 : credN);
   if (R.ohRet && (!R.exCap || c.agi <= R.exCap[idx])){
     // Ohio's retirement income credit, a flat dollar amount by band.
     const r = trad + pension;
@@ -1125,14 +1229,19 @@ export function ssTaxable(ss, otherAgi, st){
  * @param {number} inp.pre - above-the-line deductions, in dollars
  * @param {"std"|"item"} inp.dedType - standard vs. itemized deduction
  * @param {number} inp.item - itemized total, in dollars
- * @param {number} inp.seniors - people age 65+ on the return, 0-2
+ * @param {number} [inp.seniors] - people age 65+ on the return, 0-2. Used when `ages` is left off
+ * @param {number[]} [inp.ages] - each person's age at the end of the tax year (one if single,
+ *   up to two if joint). Decides every age rule, state and federal, and sets `seniors`
  * @param {boolean} [inp._noMarginal] - internal, stops the marginal-rate probe recursing
  * @returns {Object} the same shape computeTax returns, plus retirement detail
  */
 export function computeRetireTax(inp){
   const st = inp.status, idx = st === "m" ? 1 : 0;
   const Y = yearData(inp.year), FED = Y.fed[st], SENIOR_BONUS = Y.seniorBonus;
-  const seniors = Math.max(0, Math.min(st === "m" ? 2 : 1, Math.round(inp.seniors || 0)));
+  const ages = Array.isArray(inp.ages)
+    ? inp.ages.filter(a => typeof a === "number" && isFinite(a)).slice(0, st === "m" ? 2 : 1) : undefined;
+  const seniors = ages ? ages.filter(a => a >= 65).length
+    : Math.max(0, Math.min(st === "m" ? 2 : 1, Math.round(inp.seniors || 0)));
 
   const trad  = Math.max(0, inp.trad);
   const roth  = Math.max(0, inp.roth);
@@ -1215,7 +1324,7 @@ export function computeRetireTax(inp){
   // context and take back the answer.
   const S = Y.states.tax[inp.state] || {none:1};
   const ST = stateRetireTax(S, {
-    year:Y.year, code:inp.state, status:st, idx, seniors,
+    year:Y.year, code:inp.state, status:st, idx, seniors, ages,
     trad, pension, penPublic, other, gain,
     taxableSS, ssGross, agi, pre, dedType:inp.dedType, item:inp.item,
     grossForTest: trad + pension + other + gain
@@ -1419,18 +1528,23 @@ export function runRoth(inp, doConvert){
   for (let i = 0; i < n; i++){
     const age = inp.age + i;
     const spAge = inp.spouseAge + i;
-    // The survivor files single from the year of the first death onward. That
-    // is the widow's penalty: the same income, half the brackets.
-    const widowed = inp.status === "m" && inp.deathYear > 0 && i >= inp.deathYear;
+    // The first death happens in year `deathYear`. The survivor may file jointly
+    // for that year and files single from the next one (IRS Pub. 501, "Spouse
+    // died" and "Qualifying surviving spouse"; Pub. 559). That is the widow's
+    // penalty: the same income, half the brackets. The two years of joint rates
+    // a survivor with a dependent child gets are not modeled. Benefits turn to
+    // the survivor's larger one from the death year on.
+    const survivor = inp.status === "m" && inp.deathYear > 0 && i >= inp.deathYear;
+    const widowed = inp.status === "m" && inp.deathYear > 0 && i > inp.deathYear;
     const status = (inp.status === "m" && !widowed) ? "m" : "s";
-    const seniors = status === "m"
-      ? (age >= 65 ? 1 : 0) + (spAge >= 65 ? 1 : 0)
-      : (age >= 65 ? 1 : 0);
+    // Ages for the state and federal age rules: each person's age this year.
+    // The survivor is taken as the primary person.
+    const ages = status === "m" ? [age, spAge] : [age];
 
     const mySS = age >= inp.ssAge ? inp.ss : 0;
     const spSS = (inp.status === "m" && spAge >= inp.spSSAge) ? inp.spSS : 0;
     // A surviving spouse keeps the larger of the two benefits, not both.
-    const ss = widowed ? Math.max(mySS, spSS) : mySS + spSS;
+    const ss = survivor ? Math.max(mySS, spSS) : mySS + spSS;
     const other = age >= inp.otherStart ? inp.other : 0;
 
     const tradBegin = trad;
@@ -1474,7 +1588,7 @@ export function runRoth(inp, doConvert){
         } else if (inp.strategy === "brk"){
           const top = bracketTopFor(status, inp.bracket);
           conv = rcBisect(c => rcTax({status, trad:fixedOrd + c, roth:0,
-            brok:sale, gainPct, ss, other, state:inp.state, seniors})
+            brok:sale, gainPct, ss, other, state:inp.state, ages})
             .ordTaxable - top, maxConv);
         } else if (inp.strategy === "irm"){
           const key = status === "m" ? "m" : "s";
@@ -1482,7 +1596,7 @@ export function runRoth(inp, doConvert){
           const lim = tiers[Math.min(inp.irmaaTarget,
             tiers.length - 1)][key];
           conv = rcBisect(c => rcTax({status, trad:fixedOrd + c, roth:0,
-            brok:sale, gainPct, ss, other, state:inp.state, seniors})
+            brok:sale, gainPct, ss, other, state:inp.state, ages})
             .agi - lim, maxConv);
         }
       }
@@ -1493,7 +1607,7 @@ export function runRoth(inp, doConvert){
       for (let iter = 0; iter < 6; iter++){
         const gp = brok > 0 ? Math.max(0, Math.min(1, (brok - basis) / brok)) : 0;
         T = rcTax({status, trad:rmd + conv + extraTrad, roth:rothW, brok:sale,
-          gainPct:gp, ss, other, state:inp.state, seniors});
+          gainPct:gp, ss, other, state:inp.state, ages});
         irm = (medicare > 0)
           ? irmaaAnnual(lookback == null ? T.agi : lookback, status, medicare) : 0;
 
@@ -1507,7 +1621,7 @@ export function runRoth(inp, doConvert){
         let fromConv = 0;
         if (inp.payFrom === "withhold" && conv > 0){
           const T0 = rcTax({status, trad:rmd + extraTrad, roth:rothW, brok:sale,
-            gainPct:gp, ss, other, state:inp.state, seniors});
+            gainPct:gp, ss, other, state:inp.state, ages});
           const added = Math.max(0, T.total - T0.total);
           // Under 59 1/2 the withheld dollars are themselves penalized, so
           // covering the bill takes added / 0.9.

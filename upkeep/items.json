@@ -63,15 +63,15 @@
       "id": "state-retirement",
       "area": "Taxes",
       "name": "State rules for retirement income",
-      "what": "Which states tax Social Security, pension and IRA exclusions, extra deductions or credits at 65, and states with no early-withdrawal penalty add-on.",
+      "what": "Which states tax Social Security, pension and IRA exclusions, and extra deductions or credits, each at the age the state names (Iowa 55, Delaware 60, Georgia and New Jersey 62, New York 59½, Wisconsin and Rhode Island 67, and 65 for most extras), and states with no early-withdrawal penalty add-on.",
       "where": ["web/lib/engine/data/<year>.js: states.retire, states.ssTaxed, states.noExpansion (Medicaid non-expansion; the plan engine and the Bridge)"],
       "source": "State revenue departments; Tax Foundation and AARP state guides as a cross-check",
       "cadence": "Yearly, early in the year",
-      "last_updated": "2026-10-13",
+      "last_updated": "2026-10-29",
       "data_for": "Tax year 2026",
       "next_due": "2027-03-15",
       "priority": "high",
-      "notes": "Several entries quote dollar amounts in their notes (Maryland's pension exclusion, Minnesota's AGI limits); those change yearly too. states.noExpansion was re-checked against KFF on 2026-10-29 (the same ten states). The Medicaid work-requirement note in web/lib/medicaid.ts (federal budget law, starts by 2027-01-01) needs a look when states begin and when HHS rules or dates change."
+      "notes": "Several entries quote dollar amounts in their notes (Maryland's pension exclusion, Minnesota's AGI limits); those change yearly too. Each entry's comment in states.retire names its ages, amounts and source. Rhode Island's AGI limits are the 2025 figures until the state publishes 2026's, Montana's age 65 amount is indexed each November, and Washington's capital gains deduction is set each October. states.noExpansion was re-checked against KFF on 2026-10-29 (the same ten states). The Medicaid work-requirement note in web/lib/medicaid.ts (federal budget law, starts by 2027-01-01) needs a look when states begin and when HHS rules or dates change."
     },
     {
       "id": "local-tax",

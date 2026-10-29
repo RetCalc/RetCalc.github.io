@@ -147,7 +147,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
   const toTax = () => {
     const H = handoff();
     if (!H) return;
-    sendYearToTax({ status: H.ctx.status, state: H.ctx.state, trad: H.y.trad, roth: H.y.roth, brok: H.y.brok, gainShare: H.y.gainPct, seniors: 0 });
+    sendYearToTax({ status: H.ctx.status, state: H.ctx.state, trad: H.y.trad, roth: H.y.roth, brok: H.y.brok, gainShare: H.y.gainPct, ages: H.ctx.status === "m" ? [60, 60] : [60] });
     router.push("/incometax");
     toast("Loaded a year of withdrawals at 60 into Income Tax");
   };

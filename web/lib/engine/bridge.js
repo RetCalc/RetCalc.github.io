@@ -5,7 +5,7 @@
    from src/js/app/36-bridge.js without changes to the math: the exports and
    imports are added, and brMCSeqs takes its random seed as an argument. */
 import { money } from "../format";
-import { computeRetireTax, hcAgeFactor, hcCoverage, hcFPL, hcGrossPremium, hcMedicaidFPL, mulberry32 } from "./math.js";
+import { agesKey, computeRetireTax, hcAgeFactor, hcCoverage, hcFPL, hcGrossPremium, hcMedicaidFPL, mulberry32 } from "./math.js";
 import { plMix } from "./plan.js";
 import { BR_SLT, HIST_START, yearData } from "./data/index.js";
 
@@ -60,30 +60,41 @@ export function brTaxCacheFor(status, state){
   }
   return brTaxCaches[k];
 }
-export function brTaxRaw(c, ord, gain, w){
+/* The ages the state's age rules read in a year when you are `age`: a
+   partner's age is theirs (age2) when the plan has one, and otherwise taken
+   as yours. Bridge years end before 60, so rules at 55 and 59 1/2 are the
+   ones that can bite. */
+export function brAges(ctx, age){
+  if (age == null) return undefined;
+  return ctx.status === "m" ? [age, age + (ctx.age2 != null ? ctx.age2 - ctx.age : 0)] : [age];
+}
+export function brTaxRaw(c, ord, gain, w, ages){
   return computeRetireTax({status:c.status, state:c.state, trad:ord, roth:0, brok:gain,
     gainPct:1, ss:0, pension:0, penPublic:false, other:w, pre:0, dedType:"std",
-    item:0, seniors:0, _noMarginal:true}).total;
+    item:0, seniors:0, ages:ages, _noMarginal:true}).total;
 }
-export function brTax(ctx, ord, gain, w){
+/* `age` is yours in the tax year; the cache is kept per group of ages. */
+export function brTax(ctx, ord, gain, w, age){
   var c = ctx.cache;
+  var ages = brAges(ctx, age);
   if (!(ord > 0)) ord = 0;
   if (!(gain > 0)) gain = 0;
   w = Math.round(w || 0);
+  var wk = ages ? w * 4096 + agesKey(ages[0], ages[1]) : w;
   var fi = ord / BR_STEP, fj = gain / BR_STEP;
-  if (fi >= BR_GRID - 2 || fj >= BR_GRID - 2) return brTaxRaw(c, ord, gain, w);
-  var m = c.maps[w];
+  if (fi >= BR_GRID - 2 || fj >= BR_GRID - 2) return brTaxRaw(c, ord, gain, w, ages);
+  var m = c.maps[wk];
   if (!m){
     if (++c.n > 40){ c.maps = {}; c.n = 1; }
-    m = c.maps[w] = new Map();
+    m = c.maps[wk] = new Map();
   }
   var i = Math.floor(fi), j = Math.floor(fj), di = fi - i, dj = fj - j;
   var k = i * BR_GRID + j, v00 = m.get(k), v10 = m.get(k + BR_GRID),
       v01 = m.get(k + 1), v11 = m.get(k + BR_GRID + 1);
-  if (v00 === undefined){ v00 = brTaxRaw(c, i * BR_STEP, j * BR_STEP, w); m.set(k, v00); }
-  if (v10 === undefined){ v10 = brTaxRaw(c, (i + 1) * BR_STEP, j * BR_STEP, w); m.set(k + BR_GRID, v10); }
-  if (v01 === undefined){ v01 = brTaxRaw(c, i * BR_STEP, (j + 1) * BR_STEP, w); m.set(k + 1, v01); }
-  if (v11 === undefined){ v11 = brTaxRaw(c, (i + 1) * BR_STEP, (j + 1) * BR_STEP, w); m.set(k + BR_GRID + 1, v11); }
+  if (v00 === undefined){ v00 = brTaxRaw(c, i * BR_STEP, j * BR_STEP, w, ages); m.set(k, v00); }
+  if (v10 === undefined){ v10 = brTaxRaw(c, (i + 1) * BR_STEP, j * BR_STEP, w, ages); m.set(k + BR_GRID, v10); }
+  if (v01 === undefined){ v01 = brTaxRaw(c, i * BR_STEP, (j + 1) * BR_STEP, w, ages); m.set(k + 1, v01); }
+  if (v11 === undefined){ v11 = brTaxRaw(c, (i + 1) * BR_STEP, (j + 1) * BR_STEP, w, ages); m.set(k + BR_GRID + 1, v11); }
   return v00 * (1 - di) * (1 - dj) + v10 * di * (1 - dj) + v01 * (1 - di) * dj + v11 * di * dj;
 }
 
@@ -129,14 +140,14 @@ export function brRungFor(ctx, age, convNext){
   var W = brWage(ctx, age), base = Math.max(0, ctx.spend - W * (1 - BR_FICA)), R = base;
   for (var i = 0; i < 8; i++){
     var c = convNext ? R : 0;
-    R = base + brTax(ctx, c, 0, W) + brHealth(ctx, age, c + W).cost;
+    R = base + brTax(ctx, c, 0, W, age) + brHealth(ctx, age, c + W).cost;
   }
   return (ctx.rungMemo[key] = R);
 }
 /* The 72(t) payment that covers the first year on its own. */
 export function brSeppNeed(ctx){
   var W = brWage(ctx, ctx.age), base = Math.max(0, ctx.spend - W * (1 - BR_FICA)), P = base;
-  for (var i = 0; i < 8; i++) P = base + brTax(ctx, P, 0, W) + brHealth(ctx, ctx.age, P + W).cost;
+  for (var i = 0; i < 8; i++) P = base + brTax(ctx, P, 0, W, ctx.age) + brHealth(ctx, ctx.age, P + W).cost;
   return P;
 }
 /* Largest first-year payment the traditional balance could support. The
@@ -218,7 +229,7 @@ export function brYear(ctx, p, s, y, age, W, sp, F, C){
       else if (key === "rungEarly") pb += t;
     }
     var O = fixedOrd + ord, magi = O + gain + W;
-    var tax = brTax(ctx, O, gain, W), pen = pb * penRate, hl = brHealth(ctx, age, magi);
+    var tax = brTax(ctx, O, gain, W, age), pen = pb * penRate, hl = brHealth(ctx, age, magi);
     return {x:x, net:fixedCash + x - ctx.spend - tax - pen - fica - hl.cost,
       tax:tax, pen:pen, hl:hl, magi:magi, ord:O, gain:gain, pb:pb};
   }

@@ -24,6 +24,9 @@ function sj(pair){
     : money(pair[0]) + " single / " + money(pair[1]) + " joint";
 }
 
+/* An age as people say it: 59.5 is "59½". */
+function ageWord(a){ return a === Math.floor(a) ? String(a) : Math.floor(a) + "\u00bd"; }
+
 /* Row 1: how the state taxes a dollar of ordinary income. */
 function ruleOrdinary(code, S, st){
   if (S.none) return "No individual income tax. Wages, pensions, retirement-account " +
@@ -60,9 +63,9 @@ function ruleOrdinary(code, S, st){
 function ruleGain(code, S, R){
   if (S.none) return code === "WA"
     ? "No tax on ordinary capital gain at the individual level, but Washington " +
-      "levies a separate excise tax on long-term gains above roughly $270,000 " +
-      "per year: 7%, and 9.9% above $1 million. Real estate and retirement accounts " +
-      "are exempt. That tax is not calculated here."
+      "levies a separate excise tax on long-term gains above about $278,000 " +
+      "per year (the 2025 figure, adjusted each year): 7%, and 9.9% above $1 million. " +
+      "Real estate and retirement accounts are exempt. That tax is not calculated here."
     : "Not taxed.";
   let out = "";
   if (R.cgPct) out = rp(R.cgPct) + " of net long-term gain is excluded from the " +
@@ -87,11 +90,14 @@ function ruleSS(code, S, R, taxed){
     return "Fully exempt. Benefits are subtracted from the state base no matter " +
       "how large they are or what else you earn.";
   let out = "Taxed, on the amount that is taxable federally under \u00a786. ";
-  if (R.ssFullAge) out += "Fully exempt once you are 65 or older, which is what " +
-    "this assumes when you mark someone 65+.";
+  if (R.ssFullAge) out += "Fully exempt once you are " + ageWord(R.ssFullAge) +
+    " or older" + (R.ssFullMid ? ", and from " + ageWord(R.ssFullMid.age) + " while AGI is " +
+    sj(R.ssFullMid.cap) + " or less" : "") + ".";
   else if (R.ssCredit) out += "A credit then refunds the tax on those benefits, " +
     "withdrawn at " + rp(R.ssCredit.phase) + " of income above " + sj(R.ssCredit.cap) +
     ", so the relief disappears well before the top of the income range.";
+  else if (R.ssAge && R.ssCap) out += "From age " + ageWord(R.ssAge) + ", fully exempt below " +
+    sj(R.ssCap) + " of AGI and fully taxable above it. Before that age, fully taxable.";
   else if (R.ssCap && R.ssPct) out += "Fully exempt below " + sj(R.ssCap) +
     " of AGI; above that, " + rp(R.ssPct) + " of the federally taxable benefit stays " +
     "in the base.";
@@ -151,19 +157,26 @@ function exclusionSentence(R, which){
   if (!hits) return "";
   const big = R.exAmt[0] >= 1e11;
   let out = big ? "Exempt in full" : "Up to " + sj(R.exAmt) + " is excluded";
+  if (R.exTiers) out = "Up to " + R.exTiers.map(t => money(t[1]) + " from " + ageWord(t[0])).join(", then ") +
+    " is excluded";
   if (R.exPer) out += " per person";
   if (src === "all") out += ", and the same allowance covers interest, dividends, " +
     "rent and capital gain";
   if (src === "pub") out += ", and only for government pensions";
-  out += R.exAge ? ", from age 65 as modeled here" : ", at any age";
+  out += R.exAge ? ", from age " + ageWord(R.exAge) : ", at any age";
+  if (R.exAge && !R.exPer) out += " (one person at that age is enough)";
   out += ".";
+  if (R.exLow) out += " Before that, " + money(R.exLow.amt) + " per person" +
+    (R.exLow.src === "p" ? ", pension income only." : ".");
   if (R.exLessSS === "gross") out += " The allowance is reduced dollar for dollar " +
     "by the Social Security you receive, so a large benefit can consume it outright.";
   else if (R.exLessSS === "taxable") out += " Taxable Social Security comes out of " +
     "that ceiling first, which exempts benefits in full and leaves whatever is " +
     "left over for the rest.";
   if (R.exCap){
-    if (R.exPhase === "nj") out += " Full below " + money(R.exCap[0]) +
+    if (R.exPhase === "nm") out += " Each person's amount falls by " + money(R.exStep) +
+      " for every " + sj(R.exBand) + " of AGI over " + sj(R.exFull) + ", and is gone above " + sj(R.exCap) + ".";
+    else if (R.exPhase === "nj") out += " Full below " + money(R.exCap[0]) +
       " of income, then a share of retirement income itself: 50% joint (37.5% single) to " +
       money(R.exCap[0] + 25000) + ", half that to " +
       money(R.exCap[0] + 50000) + ", nothing above.";
@@ -176,28 +189,32 @@ function exclusionSentence(R, which){
   return out;
 }
 
-/* Row 6: what arrives at 65. */
+/* Row 6: what arrives with age, each at the age the state names. */
 function ruleSenior(code, S, R){
   if (S.none) return "No income tax, so nothing to give.";
   const bits = [];
-  if (R.sdAge) bits.push("Extra deduction of " + sj(R.sdAge) + " per person, " +
-    "against income of any kind.");
-  if (R.agePh) bits.push("Deduction of " + money(R.agePh.amt) + " per person, " +
-    "withdrawn dollar for dollar above " + sj(R.agePh.cap) + " of income, so it is " +
+  const at = a => " at " + ageWord(a || 65);
+  if (R.sdAge) bits.push("Extra deduction of " + sj(R.sdAge) + " per person" + at(R.sdAt) +
+    (R.sdStdOnly ? ", if you take the standard deduction." : ", against income of any kind."));
+  if (R.agePh) bits.push("Deduction of " + money(R.agePh.amt) + " per person" + at(R.agePhAt) + ", " +
+    "withdrawn dollar for dollar above " + sj(R.agePh.cap) + " of income, so one person's is " +
     "gone by " + money(R.agePh.cap[0] + R.agePh.amt) + " single / " +
     money(R.agePh.cap[1] + R.agePh.amt) + " joint.");
   if (R.peAge || S.peAge) bits.push("Extra personal exemption of " +
-    money(R.peAge || S.peAge) + " per person.");
-  if (R.credAge) bits.push("Credit of " + sj(R.credAge) + " per person" +
-    (R.ohRet ? ", plus a retirement income credit of up to $200, both lost above " +
+    money(R.peAge || S.peAge) + " per person" + at(R.peAt || S.peAt) + ".");
+  if (R.credAge) bits.push("Credit of " + sj(R.credAge) + (R.credOnce ? " per return" : " per person") +
+    at(R.credAt) + (R.ohRet ? ", plus a retirement income credit of up to $200, both lost above " +
       sj(R.exCap) + " of state income." : "."));
   else if (R.ohRet) bits.push("Retirement income credit of up to $200.");
-  if (R.exAge && R.exAmt) bits.push("Reaching 65 also qualifies you for the " +
+  if (R.exAge && R.exAmt && R.exAge !== 65) bits.push("The retirement exclusion in the rows above " +
+    "starts at " + ageWord(R.exAge) + ", not 65.");
+  else if (R.exAge && R.exAmt) bits.push("Reaching 65 also qualifies you for the " +
     "retirement exclusion in the rows above.");
-  if (R.ssFullAge) bits.push("Social Security becomes fully exempt at 65.");
+  if (R.ssFullAge) bits.push("Social Security becomes fully exempt at " + ageWord(R.ssFullAge) + ".");
+  if (R.ssAge) bits.push("Social Security relief starts at " + ageWord(R.ssAge) + ".");
   return bits.length ? bits.join(" ")
     : "Nothing beyond the federal age-65 deductions. The state gives no extra " +
-      "deduction, exemption or credit at 65.";
+      "deduction, exemption or credit for age.";
 }
 
 /* Row 7: pre-tax deductions going in, by kind, from the year's
@@ -231,10 +248,10 @@ const STATE_GAPS = {
   AZ:"Arizona's small-business alternative return, and the full exemption for military retirement pay.",
   AR:"Arkansas's low-income tax tables, which override the brackets at the bottom of the range.",
   CA:"State disability insurance, 1.3% of all wages with no cap, which works like a payroll tax on the working side. California's own itemized deduction rules differ from the federal ones.",
-  CO:"The $20,000 version of the pension subtraction available from 55 to 64, and TABOR-driven rate reductions that temporarily cut the flat rate in some years.",
+  CO:"TABOR-driven rate reductions that temporarily cut the flat rate in some years. The rule that IRA withdrawals before 59½ do not count for the pension subtraction.",
   CT:"Connecticut's benefit recapture, which claws back the value of the lower brackets at higher incomes and can add several hundred dollars. Also the personal exemption's own phase-out.",
   DE:"Wilmington's 1.25% city wage tax on earned income.",
-  GA:"The $5,000 sublimit on earned income inside the retirement exclusion, and the $35,000 version available from 62 to 64.",
+  GA:"The $5,000 sublimit on earned income inside the retirement exclusion. The amount at 65 rises to $70,000 in 2027.",
   HI:"Working out how much of a 401(k) was employer-funded, since that share is exempt too. This assumes none of it was, so the real Hawaii bill may be lower.",
   ID:"Idaho's retirement benefits deduction for federal Civil Service, military and public-safety retirees, which is generous where it applies.",
   IL:"Nothing large. Illinois has no local income taxes and its retirement treatment is unusually simple.",
@@ -244,11 +261,11 @@ const STATE_GAPS = {
   KY:"Local occupational license taxes of roughly 1% to 2.5% on earned income in Louisville, Lexington and elsewhere. The full exemption for service credited before 1998.",
   LA:"Parish-level differences and Louisiana's own itemized deduction rules, which depart from the federal ones.",
   ME:"Maine's alternative minimum tax and the phase-out of its personal exemption at higher incomes.",
-  MD:"County and Baltimore City income taxes, which run 2.25% to 3.20% on top of the state rate and apply to retirement income. Maryland's senior tax credit of $1,000 to $1,750 below $100,000 / $150,000 of income.",
+  MD:"County and Baltimore City income taxes, which run 2.25% to 3.3% on top of the state rate and apply to retirement income. Maryland's senior tax credit of $1,000 to $1,750 below $100,000 / $150,000 of income.",
   MA:"Working out the previously-taxed contribution basis in an IRA, which Massachusetts lets you recover tax-free. The 4% surtax above roughly $1.08 million is in the brackets above.",
   MI:"City income taxes in Detroit, Grand Rapids and about two dozen others, roughly 1% to 2.4%, which reach retirement income.",
   MN:"Minnesota's alternative minimum tax and its separate public-pension subtraction for certain retirees.",
-  MS:"The rule that early distributions taken before the plan's retirement age lose the exemption and are taxed in full.",
+  MS:"The rule that early distributions taken before the plan's retirement age lose the exemption and are taxed in full. This treats every withdrawal as exempt.",
   MO:"Earnings taxes of 1% in Kansas City and St. Louis. The $6,000 private pension exemption below $25,000 / $32,000 of income.",
   MT:"Montana's capital gain credit interaction with its reduced gain rates, and its elderly homeowner credit.",
   NE:"Nebraska's full exemption for military retirement benefits.",
@@ -261,14 +278,14 @@ const STATE_GAPS = {
   OK:"Oklahoma's full exemption for military retirement and its separate federal Civil Service allowance.",
   OR:"Multnomah County and Portland-area local income taxes, which stack to several percent on higher incomes. Oregon's retirement income credit at low household incomes, and its federal tax subtraction.",
   PA:"Local earned income taxes of roughly 1% to 3.9%, though these fall on wages rather than retirement income. Distributions taken before retirement age lose the exemption.",
-  RI:"The requirement that you have actually reached full retirement age, not merely 65, for either the Social Security or pension relief.",
+  RI:"The 2026 income limits, which the state has not published yet (this uses 2025's). Each spouse's own full retirement age, which this sets at 67 for everyone.",
   SC:"South Carolina's separate treatment of military retirement, and its two-wage-earner credit.",
   UT:"Utah's credit phase-out runs on a modified AGI that adds back some untaxed income, so the real credit can be smaller than shown. The $450 retirement credit for taxpayers born before 1953.",
   VT:"Vermont's alternative minimum tax, and the $10,000 exclusion for Civil Service and military retirement.",
   VA:"The rule that the age deduction is unlimited for taxpayers born before 1939, and Virginia's separate military benefits subtraction.",
   WV:"West Virginia's separate full exemptions for state police, teachers' and federal Civil Service retirement, and its senior citizen property tax credit.",
-  WI:"The requirement that you are 67, not 65, for the $24,000 exclusion. Marking someone 65+ here grants it two years early. Wisconsin's married-couple credit and school property tax credit.",
-  DC:"The District's $3,000 exclusion for government pensions at 62, and its own itemized deduction limits.",
+  WI:"The credits you give up by taking the $24,000 subtraction, among them the school property tax credit and the married couple credit, and the separate $5,000 subtraction at 65 for low incomes.",
+  DC:"The District's own itemized deduction limits. DC does not follow the federal senior deduction.",
   AK:"Nothing. Alaska has no individual income tax and no local income taxes.",
   FL:"Nothing at the income tax level. Florida's tangible and documentary taxes are unrelated.",
   NV:"Nothing. Nevada has no individual income tax.",
@@ -276,7 +293,7 @@ const STATE_GAPS = {
   SD:"Nothing. South Dakota has no individual income tax.",
   TN:"Nothing. Tennessee's Hall tax on interest and dividends was repealed in 2021.",
   TX:"Nothing. Texas has no individual income tax.",
-  WA:"The excise tax on long-term capital gains above roughly $270,000 per year (7%, and 9.9% above $1 million), which is not calculated here. Real estate and retirement accounts are exempt from it.",
+  WA:"The excise tax on long-term capital gains above about $278,000 per year (the 2025 figure, adjusted each year), at 7%, and 9.9% above $1 million. It is not calculated here. Real estate and retirement accounts are exempt from it.",
   WY:"Nothing. Wyoming has no individual income tax."
 };
 
@@ -298,7 +315,7 @@ export function stateRuleRows(code, st, year){
     ["Social Security", ruleSS(code, S, R, !!SD.ssTaxed[code])],
     ["Pension / annuity", rulePension(code, S, R)],
     ["Traditional 401(k) / IRA", ruleTrad(code, S, R)],
-    ["Age 65 and over", ruleSenior(code, S, R)],
+    ["Age-based rules", ruleSenior(code, S, R)],
     ["Pre-tax deductions", rulePreTax(code, S, (SD.preTaxed || {})[code] || {})]
   ];
 }

@@ -13,7 +13,15 @@ export const TAX_DEFAULTS = {
   view: "net" as "net" | "take",
   gross: g(100000), gross2: g(0), status: "s", state: "IL", pre: g(0), dedType: "std", item: g(0),
   trad: g(40000), roth: g(10000), brok: g(20000), gainPct: "40", ss: g(30000), pension: g(0),
-  penType: "priv", other: g(0), seniors: "1",
+  penType: "priv", other: g(0),
+  /** Retirement mode: each person's age in the year being taxed (their age
+      at the end of it). Federal rules read 65, and every state has its own
+      ages (Iowa 55, Georgia 62, New York 59½ and so on). The spouse's counts
+      only on a joint return. */
+  age: "65", spouseAge: "65",
+  /** Where an older saved copy or share link left "Age 65 or older" (0, 1 or
+      2 people). It decodes to ages in \`clean\` and is empty otherwise. */
+  seniors: "",
   /** Normal mode's pre-tax deductions by kind and earner (the Pre-tax
       deductions pop-up), in place of the one figure in `pre` while
       `itemize` is on. The spouse's (…2) count only on a joint return. */
@@ -61,9 +69,28 @@ export function preTotal(t: TaxInputs): number {
   return preBuckets(t).reduce((a, p) => a + Object.values(p).reduce((x, y) => x + y, 0), 0);
 }
 
+/** The ages an older "how many are 65 or older" answer stands for: a person
+    who counted is 65, one who did not is 50 (younger than every state's age
+    rule, so the answer comes out as it always did). */
+export function agesFromSeniors(seniors: number, joint: boolean): [number, number] {
+  const n = Math.max(0, Math.min(joint ? 2 : 1, seniors));
+  return [n >= 1 ? 65 : 50, n >= 2 ? 65 : 50];
+}
+
 export const TAX_DEF: ToolDef<TaxInputs> = {
   id: "tax", label: "Tax", noun: "tax scenario", defaults: TAX_DEFAULTS,
-  clean: (t) => ({ ...t, status: oneOf(t.status, ["s", "m"], "s"), dedType: oneOf(t.dedType, ["std", "item"], "std") }),
+  clean: (t) => {
+    const status = oneOf(t.status, ["s", "m"], "s");
+    const out = { ...t, status, dedType: oneOf(t.dedType, ["std", "item"], "std") };
+    // A copy from before the age fields: turn its "65 or older" answer into ages.
+    if (out.seniors !== "") {
+      const [a, b] = agesFromSeniors(parseInt(out.seniors, 10) || 0, status === "m");
+      out.age = String(a);
+      out.spouseAge = String(b);
+      out.seniors = "";
+    }
+    return out;
+  },
 };
 
 /** The years the Tax year picker offers, newest first. It shows only once
@@ -85,7 +112,11 @@ export function taxYearOf(t: TaxInputs): number {
 export function taxInput(t: TaxInputs, ownYear = false) {
   const n = (v: string) => parseNum(v);
   const status = t.status;
-  const seniors = Math.min(status === "m" ? 2 : 1, parseInt(t.seniors, 10) || 0);
+  // Each person's age (blank is left out, so no age rule applies to them), and
+  // how many are 65 or older for the federal rules.
+  const ageOf = (v: string) => { const x = parseNum(v); return v.trim() !== "" && isFinite(x) ? Math.max(0, Math.min(120, x)) : null; };
+  const ages = (status === "m" ? [t.age, t.spouseAge] : [t.age]).map(ageOf).filter((a): a is number => a != null);
+  const seniors = ages.filter((a) => a >= 65).length;
   const trad = n(t.trad), roth = n(t.roth), brok = n(t.brok), ss = n(t.ss), pension = n(t.pension), other = n(t.other);
   // A spouse's income is separate only in Normal mode, where FICA's
   // per-earner wage cap makes the split matter.
@@ -94,7 +125,7 @@ export function taxInput(t: TaxInputs, ownYear = false) {
     mode: t.mode,
     gross: t.mode === "retire" ? trad + roth + brok + ss + pension + other : n(t.gross),
     gross2, trad, roth, brok, ss, pension, other,
-    penPublic: t.penType === "pub", gainPct: n(t.gainPct) / 100, seniors,
+    penPublic: t.penType === "pub", gainPct: n(t.gainPct) / 100, seniors, ages,
     status: status as "s" | "m", state: t.state,
     pre: itemized(t) ? preTotal(t) : n(t.pre), ded: itemized(t) ? preBuckets(t) : undefined, dedType: t.dedType as "std" | "item", item: n(t.item),
     year: ownYear ? taxYearOf(t) : taxYears()[0],
@@ -106,4 +137,11 @@ export function taxInput(t: TaxInputs, ownYear = false) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the engine's result is described where it's read
 export function runTax(inp: ReturnType<typeof taxInput>): any {
   return inp.mode === "retire" ? computeRetireTax(inp) : computeTax(inp);
+}
+
+/** The deduction line under "How the federal tax was figured": the label and
+    the amount follow the deduction the return takes, standard or itemized.
+    Retirement mode adds the age 65 amounts that came with it. */
+export function deductionLine(dedType: string, seniors: number, fedDed: number): { label: string; amount: number } {
+  return { label: (dedType === "item" ? "Itemized deduction" : "Standard deduction") + (seniors > 0 ? ", incl. 65+" : ""), amount: fedDed };
 }
