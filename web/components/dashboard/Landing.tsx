@@ -10,10 +10,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ArrowRightIcon, BanknoteIcon, CalculatorIcon, CheckIcon, ClipboardListIcon, ClockIcon, GraduationCapIcon, HouseIcon,
-  LayoutGridIcon, ListChecksIcon, LockIcon, MessageCircleIcon, PiggyBankIcon, ReceiptIcon, SunsetIcon, WalletIcon,
+  LayoutGridIcon, ListChecksIcon, LockIcon, MessageCircleIcon, PiggyBankIcon, PlayIcon, ReceiptIcon, SunsetIcon, WalletIcon,
   WrenchIcon, CircleDollarSignIcon, type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,32 @@ function Shot({ name, w, h, alt, sizes }: { name: string; w: number; h: number; 
       <Image className="dl-lt" src={`/dashboard-landing/v2/${name}-light.png`} width={w} height={h} alt={alt} sizes={sizes} />
       <Image className="dl-dk" src={`/dashboard-landing/v2/${name}-dark.png`} width={w} height={h} alt={alt} sizes={sizes} />
     </>
+  );
+}
+
+/** The 90-second tour: the Dashboard's own picture with a play button on it.
+    The video (a separate, large file) is only asked for once the button is
+    pressed, so the page loads as it did before; when it ends, the picture
+    comes back. The video is the dark theme in both of the site's themes. */
+function Tour() {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <div className="dl-tour">
+      {playing ? (
+        <video className="dl-video" src="/dashboard-landing/dashboard-tour.mp4" controls autoPlay playsInline
+          aria-label="A 90-second tour of the Dashboard, with music and on-screen text" onEnded={() => setPlaying(false)} />
+      ) : (
+        <>
+          <Shot name="dash" w={2880} h={1800} sizes="(max-width: 1330px) 100vw, 1290px"
+            alt="The Dashboard: a one-line answer, net worth today and projected, readiness score, chance of success, retirement income and Social Security" />
+          <div className="dl-play">
+            <Button size="xl" onClick={() => setPlaying(true)}>
+              <PlayIcon data-icon="inline-start" aria-hidden="true" />Watch the 90-second tour
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -110,8 +136,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
         <div className="dl-stage">
           <div className="dl-window">
             <div className="dl-chrome" aria-hidden="true"><i /><i /><i /><span>retcalc.app/dashboard</span></div>
-            <Shot name="dash" w={2880} h={1800} sizes="(max-width: 1330px) 100vw, 1290px"
-              alt="The Dashboard: a one-line answer, net worth today and projected, readiness score, chance of success, retirement income and Social Security" />
+            <Tour />
           </div>
           {/* On a phone, the same page in an iPhone: its titanium edge, side
               buttons and Dynamic Island are drawn here; the status bar and

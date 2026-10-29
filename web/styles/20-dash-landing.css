@@ -40,6 +40,12 @@
 .dl-chrome i{width:10px;height:10px;border-radius:50%;background:var(--ds-rule-strong)}
 .dl-chrome span{margin:0 auto;padding:3px 14px;border:1px solid var(--ds-rule);border-radius:7px;background:var(--ds-surface);
   font-size:12.5px;color:var(--ds-muted)}
+/* The tour: the Dashboard's picture cropped to the video's 16:9, a play button
+   on it; the same box holds the video once it is playing. */
+.dl-tour{position:relative;aspect-ratio:16/9;background:var(--ds-surface)}
+.dl-tour img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.dl-video{position:absolute;inset:0;width:100%;height:100%;background:#0e1116}
+.dl-play{position:absolute;left:50%;top:50%;translate:-50% -50%}
 .dl-phone{display:none}
 
 /* sections */
