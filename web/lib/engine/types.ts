@@ -140,7 +140,7 @@ export interface BrInput {
 }
 export interface BrMix { r: ArrayLike<number>; pi: ArrayLike<number>; n: number; real: number; infl: number; first?: number; rEnd?: ArrayLike<number>; realEnd?: number }
 export interface BrCtx extends BrInput {
-  mix: BrMix; real: number; infl: number; adults: number; fpl: number; nB: number;
+  mix: BrMix; real: number; infl: number; adults: number; fpl: number; mfpl: number; nB: number;
   r55Age: number; r55: boolean; stateCA: boolean;
 }
 /** A market to run through: returns and inflation from `off`, for `len` years. */

@@ -25,6 +25,7 @@ import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/com
 import { KV } from "@/components/common/Readout";
 import { DASH, dollarsField, money, parseNum } from "@/lib/format";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
+import { MEDICAID_WORK_NOTE } from "@/lib/medicaid";
 import { HC_STATES, HC_YEAR, HEALTHCARE_DEF, healthcareCompute, type HealthcareInputs } from "./model";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -93,7 +94,7 @@ export function Healthcare() {
   });
 
   const {
-    joint, household, state, magi, magi65, acaMagi, bridgeYears, pctFPL, acaAge, spouseOn, acaAge2, kids, grossMonthly, std, enh, usingStateEst,
+    joint, household, state, magi, magi65, acaMagi, bridgeYears, fpl, pctFPL, cov, medicaidLine, acaAge, spouseOn, acaAge2, kids, grossMonthly, std, enh, usingStateEst,
     tier, partB, partDIrmaa, partD, totalLow, totalHigh, hasIrmaa, people, prev, next, save, nextThreshold, nextCost, cliff400, bronze, gold,
   } = healthcareCompute(s);
   const coveredDesc = (spouseOn ? (acaAge2 === acaAge ? "two adults age " + acaAge : "ages " + acaAge + " and " + acaAge2) : "age " + acaAge) +
@@ -106,7 +107,7 @@ export function Healthcare() {
   const nearIrmaa = medReady && !!next && nextThreshold - magi65 < 25000;
 
   /* The reading's figures, in the words and formats the cards below use. */
-  const acaPrem = acaReady ? "$" + r(std.eligible ? std.net : grossMonthly) + "/mo" : DASH;
+  const acaPrem = acaReady ? "$" + r(cov.net) + "/mo" : DASH;
   const yearsVal = acaReady ? bridgeYears + " yr" + (bridgeYears !== 1 ? "s" : "") : DASH;
   const medPer = medReady ? "~$" + r(totalLow) + "–$" + r(totalHigh) + "/mo" : DASH;
   const medCouple = medReady ? "~$" + r(totalLow * 2) + "–$" + r(totalHigh * 2) + "/mo" : DASH;
@@ -116,7 +117,8 @@ export function Healthcare() {
   const heroReady = bridge ? acaReady : medReady;
   const hero: ReadingFigure = bridge
     ? { label: "ACA premium before 65", id: "hcHeroAca", value: acaPrem,
-      note: acaReady ? "Est. net Silver premium" + (spouseOn || kids ? ", whole household" : "") : "" }
+      note: !acaReady ? "" : cov.kind === "medicaid" ? "Medicaid, no premium"
+        : "Est. net Silver premium" + (cov.kind === "gap" ? ", no credit" : "") + (spouseOn || kids ? ", whole household" : "") }
     : { label: "Medicare from 65", id: "hcHeroMed", value: medMain, note: medNote };
   const figures: ReadingFigure[] = bridge
     ? [
@@ -144,15 +146,25 @@ export function Healthcare() {
   } else if (acaReady) {
     const pctFPLStr = (pctFPL * 100).toFixed(0) + "%";
     const incNote = acaMagi > magi + 0.5 ? " (your MAGI plus " + money(acaMagi - magi) + " of untaxed Social Security, which the ACA counts)" : "";
-    const medicaid = pctFPL < 1.0;
+    const mpctStr = (cov.mpct * 100).toFixed(0) + "%";
     const showEnhanced = (!std.eligible && enh.eligible) || (std.eligible && Math.abs(enh.net - std.net) > 5);
     const tierRow = "hc-tier-row";
     aca = (
       <>
-        {medicaid ? (
+        {cov.kind === "medicaid" ? (
           <>
-            <p className={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household. Premium tax credits only begin at 100% FPL, so ACA subsidies do not apply here.</p>
-            <div className="hc-insight max-w-copy">In the 40 states (plus DC) that expanded Medicaid under the ACA, an income this low typically qualifies you for Medicaid at little or no monthly premium. In the remaining non-expansion states there is a coverage gap: income is too high for Medicaid but too low for ACA subsidies, leaving limited options for subsidized coverage. Check your state&apos;s Medicaid eligibility rules.</div>
+            <p className={lead}>Your income of {money(acaMagi)}{incNote} is <b>{mpctStr} of the {HC_YEAR.year} federal poverty level</b> for a {household}-person household. {state} expanded Medicaid, so adults with income below {money(medicaidLine)} (138%) qualify for Medicaid instead of a marketplace plan.</p>
+            <KV k="Medicaid premium" v="$0/mo" />
+            <div className="kv total"><span className="k">Your net premium</span><span className="v">$0/mo</span></div>
+            <div className="hc-insight max-w-copy">Medicaid is the coverage here, so there is no premium tax credit to compute. Your state&apos;s Medicaid agency makes the final decision, so check at <a href="https://healthcare.gov" target="_blank">healthcare.gov</a>. {MEDICAID_WORK_NOTE}</div>
+          </>
+        ) : cov.kind === "gap" ? (
+          <>
+            <p className={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household. {state} did not expand Medicaid, and the premium tax credit starts at 100% of the poverty level ({money(fpl)}). Below that line most adults get neither, which is the coverage gap.</p>
+            <KV k={<>Benchmark Silver plan {usingStateEst ? <Sub>({state} est., {coveredDesc})</Sub> : <Sub>your entered premium</Sub>}</>} v={"$" + r(grossMonthly) + "/mo"} />
+            <KV k="Premium tax credit" v={<span className="text-dimmer">none (income below 100% FPL)</span>} />
+            <div className="kv total"><span className="k">Your net premium, full price</span><span className="v">${r(grossMonthly)}/mo</span></div>
+            <div className="hc-insight max-w-copy">This is the full unsubsidized price. Income of {money(fpl)} or more brings the credit back. A few non-expansion states, such as Georgia and Wisconsin, cover some adults below the poverty level under waivers, so check your state&apos;s Medicaid rules.</div>
           </>
         ) : (
           <>
@@ -193,7 +205,7 @@ export function Healthcare() {
             ? "Benchmark Silver premium is a state-level estimate for " + state + " scaled by age, for " + coveredDesc + ". " +
               (kids ? "Children are priced as under-15 enrollees. At lower incomes many qualify for CHIP or Medicaid instead. " : "")
             : "Using your entered benchmark premium. "}
-          Enter your actual quote from <a href="https://healthcare.gov" target="_blank">healthcare.gov</a> in the ACA benchmark premium field for a closer estimate. Credits for {HC_YEAR.year} use the IRS&apos;s {HC_YEAR.year} contribution percentages and the {HC_YEAR.year - 1} poverty guidelines. The enhanced credits of 2021–2025, which removed the 400% FPL cliff and capped contributions at 8.5% of income, expired at the end of 2025. The House passed an extension in January 2026, but it has not become law.
+          Enter your actual quote from <a href="https://healthcare.gov" target="_blank">healthcare.gov</a> in the ACA benchmark premium field for a closer estimate. Credits for {HC_YEAR.year} use the IRS&apos;s {HC_YEAR.year} contribution percentages and the {HC_YEAR.year - 1} poverty guidelines. Medicaid uses the {HC_YEAR.year} guidelines. The enhanced credits of 2021–2025, which removed the 400% FPL cliff and capped contributions at 8.5% of income, expired at the end of 2025. The House passed an extension in January 2026, but it has not become law.
         </div>
       </>
     );

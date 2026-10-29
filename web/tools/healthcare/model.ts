@@ -1,7 +1,7 @@
 /* The Healthcare Cost Planner's inputs and Medicare tables. From
    src/js/app/34-healthcare.js and src/main/22-healthcare-inputs.html. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { HC_AGE40_MULT, hcCalcACA, hcFPL, hcGrossPremium, ssTaxable, yearData } from "@/lib/engine/typed";
+import { HC_AGE40_MULT, hcCalcACA, hcCoverage, hcFPL, hcGrossPremium, hcMedicaidFPL, ssTaxable, yearData } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
 
 /* Its own state list, as the old page had it ("DC", in this order). */
@@ -66,11 +66,16 @@ export function healthcareCompute(s: HealthcareInputs) {
   const childPrem = ((HC_YEAR.aca.premium40[state] || 500) / (HC_AGE40_MULT as number)) * 0.765;
   const grossMonthly = manualPremium > 0 ? manualPremium
     : hcGrossPremium(state, acaAge, 0) + (spouseOn ? hcGrossPremium(state, acaAge2, 0) : 0) + kids * childPrem;
-  const std = hcCalcACA(acaMagi, grossMonthly, pctFPL, false);
+  /* Medicaid, the coverage gap or the credit: one rule for every tool (hcCoverage). */
+  const mfpl = hcMedicaidFPL(household);
+  const cov = hcCoverage(acaMagi, household, state, grossMonthly, fpl, mfpl);
+  const std = { credit: cov.credit, net: cov.net, eligible: cov.eligible, pct: cov.contribPct };
   const enh = hcCalcACA(acaMagi, grossMonthly, pctFPL, true);
   const usingStateEst = manualPremium <= 0;
 
   const cliff400 = fpl * 4.0;
+  const medicaidLine = mfpl * 1.38;
+  const expansion = !HC_YEAR.states.noExpansion[state];
   // The same credit applied to the cheaper and dearer tiers.
   const bronze = Math.max(0, grossMonthly * 0.75 - std.credit);
   const gold = Math.max(0, grossMonthly * 1.25 - std.credit);
@@ -90,7 +95,7 @@ export function healthcareCompute(s: HealthcareInputs) {
   const nextThreshold = next ? next[joint ? 1 : 0] : 0;
   const nextCost = next ? next[2] - partB + (next[3] - partDIrmaa) : 0;
   return {
-    retireAge, joint, household, state, manualPremium, magi, magi65, ssGross, ssTaxed, acaMagi, bridgeYears, fpl, pctFPL, acaAge, spouseAge, spouseOn, acaAge2, kids, childPrem, grossMonthly, std, enh, usingStateEst,
+    retireAge, joint, household, state, manualPremium, magi, magi65, ssGross, ssTaxed, acaMagi, bridgeYears, fpl, mfpl, pctFPL, cov, medicaidLine, expansion, acaAge, spouseAge, spouseOn, acaAge2, kids, childPrem, grossMonthly, std, enh, usingStateEst,
     tier, partB, partDIrmaa, partD, totalLow, totalHigh, hasIrmaa, people, prev, next, save, nextThreshold, nextCost, cliff400, bronze, gold,
   };
 }

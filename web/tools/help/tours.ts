@@ -348,6 +348,7 @@ const healthcare: Tour = { name: "Healthcare Cost Planner", title: "Health cover
     { title: "Before 65: the marketplace", focus: "#hcACABody", tasks: () => [
       { h: "The subsidy, a <b>premium tax credit</b>, caps what you pay for the benchmark Silver plan at a share of your income. The government pays the rest, straight to the insurer." },
       { h: "Above 400% of the poverty line the credit stops completely, so one dollar over can cost thousands per year. The tool warns you when you're close." },
+      { h: "At the low end, the card changes. In a state that expanded Medicaid, income below 138% of the poverty line is Medicaid at no premium. In a state that didn't, income below 100% is a coverage gap with no credit, so the full price shows." },
       { h: "The same credit applies to any plan tier: <b>Bronze</b> costs less each month but more when you use care; <b>Gold</b> the reverse. Below about 250% of the poverty line, Silver plans also come with lower deductibles." },
     ] },
     { title: "From 65: Medicare", focus: "#hcMedicareBody", tasks: () => [

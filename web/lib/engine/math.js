@@ -2242,6 +2242,35 @@ export function hcCalcACA(income, grossPremium, pctFPL, enhanced){
   return {credit:credit, net:net, eligible:true, pct:pct};
 }
 
+/* What the year's income means for health coverage before 65. One rule,
+   used by the Healthcare Cost Planner, the Early Retirement Bridge and the
+   plan engine, so they cannot disagree:
+   - An expansion state (every state but yearData().states.noExpansion) covers
+     adults below 138% of the current year's poverty guideline (hcMedicaidFPL)
+     on Medicaid, at no premium and with no marketplace credit. Sources:
+     HealthCare.gov, "Medicaid expansion & health coverage"; KFF, "Status of
+     State Action on the Medicaid Expansion Decision" (10 states, October 2026).
+   - A non-expansion state with income below 100% of the prior year's guideline
+     (hcFPL, the line the credit uses) is in the coverage gap: no Medicaid for
+     most adults and no credit, so the full premium. Sources: HealthCare.gov,
+     "The coverage gap"; KFF, "The Coverage Gap" (2026).
+   - Anyone else gets the premium tax credit, with the 400% cliff (the enhanced
+     credits expired after 2025).
+   Monthly figures. `fpl` and `mfpl` may be passed when the caller has them.
+   kind is "medicaid", "gap", "aca" or "cliff". pct is income over the credit's
+   poverty line, mpct over Medicaid's, contribPct the share of income the credit
+   expects you to pay.
+   @returns {{kind:string, net:number, credit:number, gross:number, pct:number, mpct:number, contribPct:number, eligible:boolean}} */
+export function hcCoverage(magi, size, state, grossMonthly, fpl, mfpl){
+  fpl = fpl > 0 ? fpl : hcFPL(size);
+  mfpl = mfpl > 0 ? mfpl : hcMedicaidFPL(size);
+  var pct = magi / fpl, mpct = magi / mfpl, expansion = !yearData().states.noExpansion[state];
+  if (expansion && mpct < 1.38) return {kind:"medicaid", net:0, credit:0, gross:grossMonthly, pct:pct, mpct:mpct, contribPct:0, eligible:false};
+  if (!expansion && pct < 1) return {kind:"gap", net:grossMonthly, credit:0, gross:grossMonthly, pct:pct, mpct:mpct, contribPct:0, eligible:false};
+  var r = hcCalcACA(magi, grossMonthly, pct, false);
+  return {kind:r.eligible ? "aca" : "cliff", net:r.net, credit:r.credit, gross:grossMonthly, pct:pct, mpct:mpct, contribPct:r.pct, eligible:r.eligible};
+}
+
 
 /* ---------- Social Security claiming ----------
    The claiming tool: a benefit at every age from 62 to 70, for one person

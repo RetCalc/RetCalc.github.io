@@ -1206,6 +1206,45 @@ group("Articles: Healthcare");
   says("healthcare", dollars(hcFPL(1) * 4) + " for one person and " + dollars(fpl * 4) + " for a household of two");
   says("healthcare", "$" + (YD.medicare.irmaa.tiers[1].b - YD.medicare.irmaa.partB).toFixed(2) + " per month more per person");
   says("healthcare", "$" + YD.medicare.irmaa.partB.toFixed(2) + " per month in 2026");
+  // The Medicaid line the article quotes: 138% of the current year's guideline.
+  says("healthcare", dollars(1.38 * hcMedicaidFPL(1)) + " for one person and " + dollars(1.38 * hcMedicaidFPL(2)) + " for two");
+})();
+
+group("Coverage before 65: Medicaid, the coverage gap and the credit (hcCoverage)");
+(function () {
+  var m1 = hcMedicaidFPL(1), f1 = hcFPL(1), g = 700;
+  // An expansion state (IL): below 138% of the current-year guideline is Medicaid, $0, no credit.
+  [0, .5, 1.0, 1.2, 1.37].forEach(function (x) {
+    var c = hcCoverage(x * m1, 1, "IL", g);
+    eq(c.kind, "medicaid", "IL at " + Math.round(x * 100) + "% of the Medicaid line is Medicaid");
+    eq(c.net, 0, "Medicaid costs nothing at " + Math.round(x * 100) + "%"); eq(c.credit, 0, "and no credit is computed");
+  });
+  // At 138% and above the credit takes over.
+  var a = hcCoverage(1.38 * m1, 1, "IL", g);
+  eq(a.kind, "aca", "IL at exactly 138% is on the credit"); ok(a.credit > 0 && a.net < g, "and the credit is paid");
+  eq(hcCoverage(1.5 * m1, 1, "IL", g).kind, "aca", "IL at 150% gets the credit");
+  // The two poverty lines: Medicaid tests the current year's, the credit the year before's.
+  eq(hcCoverage(15800, 1, "IL", g).kind, "medicaid", "Medicaid tests the current-year line, not the credit's");
+  // A non-expansion state (TX): under 100% of the prior-year guideline is the gap, at the full price.
+  var gap = hcCoverage(0.95 * f1, 1, "TX", g);
+  eq(gap.kind, "gap", "TX at 95% is the coverage gap"); eq(gap.net, g, "the gap costs the full premium"); eq(gap.credit, 0, "with no credit");
+  eq(hcCoverage(0, 1, "TX", g).kind, "gap", "TX with no income is the gap");
+  // 100% and up in TX is the normal credit, including between 100% and 138%.
+  eq(hcCoverage(f1, 1, "TX", g).kind, "aca", "TX at exactly 100% gets the credit");
+  var tx = hcCoverage(1.2 * m1, 1, "TX", g);
+  eq(tx.kind, "aca", "TX at 120% is not Medicaid"); near(tx.net, Math.max(0, g - tx.credit), 1e-9, "and pays premium less credit");
+  eq(hcCoverage(1.2 * m1, 1, "IL", g).kind, "medicaid", "the same income in IL is Medicaid");
+  // The 400% cliff: the credit stops, full price, in either kind of state.
+  var cliff = hcCoverage(4.01 * f1, 1, "IL", g), top = hcCoverage(3.99 * f1, 1, "IL", g);
+  eq(cliff.kind, "cliff", "over 400% is the cliff"); eq(cliff.net, g, "at the full price"); eq(top.kind, "aca", "just under 400% keeps the credit");
+  eq(hcCoverage(4.01 * f1, 1, "TX", g).kind, "cliff", "the cliff is the same in TX");
+  // The state list the rule reads: the ten KFF lists (October 2026).
+  eq(Object.keys(YD.states.noExpansion).sort().join(","), "AL,FL,GA,KS,MS,SC,TN,TX,WI,WY", "the ten non-expansion states");
+  // The plan engine prices the same way (annual figures from the monthly premium).
+  var C = {acaGross: [g], fpl: f1, mfpl: m1, state: "IL"}, C2 = {acaGross: [g], fpl: f1, mfpl: m1, state: "TX"};
+  eq(plHealth(C, 0, 1.2 * m1), 0, "the plan engine: Medicaid in IL");
+  eq(plHealth(C2, 0, 0.9 * f1), g * 12, "the plan engine: the gap in TX");
+  near(plHealth(C, 0, 1.5 * m1), hcCoverage(1.5 * m1, 1, "IL", g).net * 12, 1e-9, "the plan engine matches hcCoverage on the credit");
 })();
 
 group("Articles: FIRE");

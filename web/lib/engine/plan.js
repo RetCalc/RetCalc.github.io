@@ -9,7 +9,7 @@
 import {
   SS_PROV, computeRetireTax, ultDivisor,
   rmdStartAge, irmaaAnnual, HIST_STOCK, HIST_BOND, HIST_INFL, pmtStart,
-  ssEstimate, ssSpousalAdj, hcFPL, hcMedicaidFPL, hcAgeFactor, hcGrossPremium, hcCalcACA
+  ssEstimate, ssSpousalAdj, hcFPL, hcMedicaidFPL, hcAgeFactor, hcGrossPremium, hcCoverage
 } from "./math.js";
 import { HIST_SV, HIST_CASH } from "./drawdown.js";
 import { yearData, HIST_START } from "./data/index.js";
@@ -195,10 +195,7 @@ export function plLargest(f, max){
 export function plHealth(C, y, magi){
   var gross = C.acaGross[y];
   if (!(gross > 0)) return 0;
-  var pct = magi / C.fpl;
-  if (magi < 1.38 * C.mfpl && !yearData().states.noExpansion[C.state]) return 0;
-  if (pct < 1) return gross * 12;
-  return hcCalcACA(magi, gross, pct, false).net * 12;
+  return hcCoverage(magi, 1, C.state, gross, C.fpl, C.mfpl).net * 12;
 }
 
 /* ---- the household, ready to run ----

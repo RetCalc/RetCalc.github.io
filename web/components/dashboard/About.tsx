@@ -784,6 +784,13 @@ export function About() {
                     cost, which matters when weighing Roth conversions, capital gains realizations,
                     or IRA withdrawal timing against ACA premium exposure.</dd>
 
+                    <dt>Low incomes: Medicaid and the coverage gap</dt>
+                    <dd>In a state that expanded Medicaid, income below 138% of the poverty line
+                    (the 2026 guidelines) means Medicaid at no premium and no marketplace credit.
+                    In the ten states that didn&apos;t, income below 100% of the poverty line (the
+                    2025 guidelines, which the credit uses) gets neither, so the tool shows the full
+                    price. Every tool that prices health coverage uses this same rule.</dd>
+
                     <dt>State and age adjustment</dt>
                     <dd>The benchmark Silver premium is KFF&apos;s 2026 average for each state for a 40-year-old,
                     scaled to your retirement age via the HHS multiplier table (except in New York and Vermont, where every adult pays the same rate). Enter your own
