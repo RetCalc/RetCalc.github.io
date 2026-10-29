@@ -28,10 +28,10 @@ export const LOCAL_TAX: Record<string, LocalTaxInfo> = {
   MD: { base: "state", links: [["Maryland Comptroller", "https://www.marylandcomptroller.gov"]], note: "Every Maryland county and Baltimore City has an income tax on your Maryland taxable income, roughly 2.25% to 3.3%." },
   MI: { base: "wages", links: [["Michigan Department of Treasury", "https://www.michigan.gov/taxes"]], note: "About two dozen Michigan cities tax income, Detroit the largest. People who live in the city pay a higher rate than people who only work there." },
   MO: { base: "wages", links: [], note: "Kansas City and St. Louis tax the earnings of people who live or work there. Elsewhere in Missouri there's none." },
-  NY: { base: "state", links: [["New York State Department of Taxation and Finance", "https://www.tax.ny.gov"]], note: "New York City taxes its residents on their state taxable income, at about 3% to 3.9%. Yonkers charges a share of your state tax instead. Elsewhere in the state there's none." },
+  NY: { base: "state", links: [["New York State Department of Taxation and Finance", "https://www.tax.ny.gov"]], note: "New York City taxes its residents on their state taxable income, at about 3.1% to 3.9%. Yonkers charges a share of your state tax instead. Elsewhere in the state there's none." },
   OH: { base: "wages", links: [["Ohio's The Finder, by address", "https://thefinder.tax.ohio.gov"]], note: "Most Ohio cities and villages tax wages earned there, and many school districts tax income too." },
   OR: { base: "state", links: [["Oregon Department of Revenue", "https://www.oregon.gov/dor"]], note: "In the Portland area, Metro and Multnomah County tax incomes above set thresholds. Elsewhere in Oregon there's none (the small statewide transit tax isn't counted here)." },
-  PA: { base: "wages", links: [["Pennsylvania's local rates (DCED)", "https://dced.pa.gov/local-government/local-income-tax-information/psd-codes-and-eit-rates/"]], note: "Almost every Pennsylvania municipality and school district taxes earned income, usually about 1% to 2%; Philadelphia's is higher." },
+  PA: { base: "wages", links: [["Pennsylvania's local rates (DCED)", "https://dced.pa.gov/local-government/local-income-tax-information/psd-codes-and-eit-rates/"]], note: "Almost every Pennsylvania municipality and school district taxes earned income, usually about 1% to 2%. Philadelphia's is higher." },
   WV: { base: "wages", links: [], note: "A few West Virginia cities charge a small flat weekly fee on people who work there, not a percentage. You can leave this at 0." },
 };
 

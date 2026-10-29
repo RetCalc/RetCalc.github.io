@@ -72,7 +72,7 @@ function MixDialog({ v, close }: { v: DDView; close: () => void }) {
       <MixRows f={f} up={up} totId="ddMixTot" />
       <div className="formfield"><Label className="mb-1.5"><span>Glide stocks to <Badge variant="outline" className="ml-1.25">optional</Badge></span></Label><Affixed suffix="% by the last year">
         <NumberInput nonNeg step={5} max={100} id="ddMixGlide" aria-label="Stocks at the end" value={f.glide} onValueChange={up("glide")} /></Affixed>
-        <div className="formhint">Moves the stocks&apos; total in a straight line, small value keeping its share of the stocks. What leaves stocks goes to bonds and cash in the proportions you hold them (and what joins them comes from both the same way). Leave blank to hold the mix.</div></div>
+        <div className="formhint">Moves the stocks&apos; total in a straight line, small value keeping its share of the stocks. What leaves stocks goes to bonds and cash in the proportions you hold them, and what joins stocks comes from both the same way. Leave blank to hold the mix.</div></div>
       <div className="ddmixg"><h4>Set aside for guaranteed income <Badge variant="outline" className="ml-1.25">optional</Badge></h4>
         <div className="formhint">Part of the portfolio can buy income that doesn&apos;t depend on markets. It isn&apos;t invested or rebalanced: it&apos;s spent once, at retirement, and pays you every year. The mix above applies to the rest.</div>
         <div className="ddmixrow"><div><b>Share of the portfolio</b></div><Affixed suffix="%" className="w-27.5 flex-none"><NumberInput nonNeg step={5} max={100} id="ddMG" placeholder="0" aria-label="Share for guaranteed income" value={f.g} onValueChange={up("g")} /></Affixed></div>
@@ -112,9 +112,10 @@ function GuideDialog({ v, close }: { v: DDView; close: () => void }) {
     <Modal size="guide" onClose={close} focus="[data-modal-x]">
       <ModalTop title="How the withdrawal strategies compare" onClose={close} />
       <p className="sg-intro">Every strategy trades a steady income against protection from running out.
-        Rules that never cut spending can run dry in a bad decade; rules that follow the market can&apos;t run out,
-        but your income moves with it. The minimum and maximum spending limits work with every strategy except fixed amount,
-        and the spending path and guaranteed income with all of them. To see them all at the same risk, open <b>Compare strategies</b> in the results.</p>
+        Rules that never cut spending can run dry in a bad decade. Rules that take a share of the portfolio can&apos;t run out,
+        but your income moves with the market. The minimum and maximum spending limits work with every strategy except fixed amount.
+        The spending path works with Fixed amount and the Kitces ratchet, and guaranteed income with all of them.
+        To see them all at the same risk, open <b>Compare strategies</b> in the results.</p>
       <div className="sg-cmpwrap"><table className="sg-cmp"><thead><tr><th>Strategy</th><th>Income stability</th><th>Can run out</th><th>Left at the end</th></tr></thead>
         <tbody>{CMP_ROWS.map((r) => <tr key={r[0]}>{r.map((c, i) => <td key={i}>{c}</td>)}</tr>)}</tbody></table></div>
       {Object.keys(DD_FAMILY).map((fam) => {
@@ -147,7 +148,7 @@ function GuideDialog({ v, close }: { v: DDView; close: () => void }) {
           </Fragment>
         );
       })}
-      <p className="sg-foot">Test any of them against every retirement since 1926 with the simulator; the success rate
+      <p className="sg-foot">Test any of them against every retirement since 1926. The success rate
         and the income chart show the trade-off for your own numbers.</p>
       <div className="formactions"><Button variant="outline" className="flex-1" data-guideclose onClick={close}>Close</Button></div>
     </Modal>
@@ -170,7 +171,7 @@ function StudyDialog({ v, close }: { v: DDView; close: () => void }) {
   return (
     <Modal size="study" onClose={close} focus="[data-modal-x]">
       <ModalTop title="Classic studies, reproduced" onClose={close} />
-      <div className="formhint">Each study set up as the paper did, run on this record: stocks, bonds and inflation since 1926. What the paper found, and what the simulator finds.</div>
+      <div className="formhint">Each study is set up as the paper did and run on this record of stocks, bonds and inflation since 1926. Under each: what the paper found, and what the simulator finds.</div>
       {found.map(({ S, f }) => {
         const U = (DD_STUDY_UI as Record<string, StudyUI>)[S.id];
         return (

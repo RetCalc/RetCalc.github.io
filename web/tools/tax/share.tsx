@@ -50,7 +50,7 @@ export function taxShare(s: TaxInputs): ShareKit {
           ["State tax", money(R.state)], ...local(R), ["Total tax", money(R.total)], ["Effective rate", pctStr(R.effTotal, 1)], ["Marginal rate", pctStr(R.marginal, 1)]]
         : [["Federal tax", money(R.federal)], ["State tax", money(R.state)], ...local(R),
           ...(inp.status === "m" ? [["Your Social Security", money(R.ss1)], ["Spouse's Social Security", money(R.ss2)]] as SheetRows : [["Social Security", money(R.ss)]] as SheetRows),
-          ["Medicare" + (R.addl > 0 ? " (+ surtax)" : ""), money(R.med + R.addl)], ["Total tax", money(R.total)], ["Effective rate", pctStr(R.effTotal, 1)], ["Marginal rate", pctStr(R.marginal, 0)]];
+          ["Medicare" + (R.addl > 0 ? " (incl. surtax)" : ""), money(R.med + R.addl)], ["Total tax", money(R.total)], ["Effective rate", pctStr(R.effTotal, 1)], ["Marginal rate", pctStr(R.marginal, 0)]];
       const pay: SheetRows = ret
         ? [["Income after tax, per year", money(R.net)], ["Per month", money(R.net / 12)],
           ...(R.gain > 0 ? [["Gain realized", money(R.gain)]] as SheetRows : []), ...(R.zeroRoom > 0 ? [["Room left in 0% band", money(R.zeroRoom)]] as SheetRows : [])]
@@ -62,7 +62,7 @@ export function taxShare(s: TaxInputs): ShareKit {
           big={[[ret ? "Income after tax" : "Take-home pay", money(R.net), "per year"], ["Total tax", money(R.total), pctStr(R.effTotal, 1) + " effective"],
             ["Per month", money(R.net / 12), ret ? "after tax" : "take-home"]]}
           foot={"Based on published " + (stateYear === inp.year ? inp.year + " federal and state rates" : inp.year + " federal and " + stateYear + " state rates") +
-            ". Omits credits, local taxes and many special cases. Not tax advice."}>
+            ". Omits many credits and special cases, and counts a local tax only if you enter a rate. Not tax advice."}>
           <div className="flex gap-4 mb-2.5 items-stretch">
             {chart ? <SheetChart html={chart} className="w-36 flex-none m-0" /> : null}
             <div className="flex-1 flex gap-4">

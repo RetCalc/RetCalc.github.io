@@ -394,7 +394,7 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
       { name: "The usual way", color: SERIES.gray, dash: "5 4", pts: r0.map((r) => ({ x: r.age, y: spent(r) })) },
       { name: "Your roadmap", color: SERIES.plan, w: 2.4, pts: rb.map((r) => ({ x: r.age, y: spent(r) })) }]} />
     {tool ? taxLegend : null}
-    <p className="op-cap">Paying some tax early, in the low-income years, to pay much less later is usually the whole trick.</p>
+    <p className="op-cap">Paying some tax early, in the low-income years, usually means paying much less later.</p>
   </>) : null;
   const balLegend = legend(<><span><s className="bg-series-plan"></s>After tax, your roadmap</span><span><s className="bg-series-gray"></s>After tax, the usual way</span>
     <span><s className="bg-series-rose"></s>Traditional</span><span><s className="bg-series-teal"></s>Roth</span><span><s className="bg-series-lavender"></s>Brokerage</span></>);
@@ -407,7 +407,7 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
       { name: "After tax, the usual way", color: SERIES.gray, dash: "5 4", w: 2, pts: r0.map((r) => ({ x: r.age, y: net(r) })) },
       { name: "After tax, your roadmap", color: SERIES.plan, w: 2.8, pts: rb.map((r) => ({ x: r.age, y: net(r) })) }]} />
     {tool ? balLegend : null}
-    <p className="op-cap">After tax counts traditional money at {pctStr(1 - h, 0)} of its value: it still owes income tax, whoever takes it out.</p>
+    <p className="op-cap">After tax counts traditional money at {pctStr(1 - h, 0)} of its value, since it still owes income tax whoever takes it out.</p>
   </>);
   const alts = res.alts.length && !res.same ? wrap("Other strong plans", "close behind, and different", (
     <ul className="op-alts">{res.alts.map((a, i) => (
@@ -419,9 +419,9 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
     <p className="op-fine">{(res.goal === "spend" && res.best.spend ? "The best plan lives on " + money(res.best.spend) + " per year after tax and the usual way on " + money(res.base.spend) +
       ", each the most it can in " + pctStr(res.target, 0) + " of markets (the roadmap, charts and table show each at that spending),"
       : "Every plan lives on the same " + money(res.P.spend) + " per year after tax") + " and runs to age " + (res.age1 + res.years) +
-      ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " per year after inflation with " + (typeof res.P.mix === "number" ? res.P.mix : res.P.mix.us + res.P.mix.sv) + "% in stocks. " +
+      ". Typical means the median of all " + res.windows + " historical retirements. The roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " per year after inflation with " + (typeof res.P.mix === "number" ? res.P.mix : res.P.mix.us + res.P.mix.sv) + "% in stocks. " +
       "Left after tax counts traditional money at " + pctStr(1 - h, 0) + " of its value, for the income tax whoever inherits it will owe; Roth and brokerage count in full. " +
-      "Tax is " + yearData().year + " federal and " + (state ? state.n : "state") + " law, held in today's dollars. Both of you are assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice."}</p>
+      "Tax is " + yearData().year + " federal and " + (state ? state.n : "state") + " law, held in today's dollars. " + (res.married ? "Both of you are" : "You are") + " assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice."}</p>
   );
 
   if (!tool) return (

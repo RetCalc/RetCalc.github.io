@@ -78,11 +78,11 @@ const PAGES: { icon: LucideIcon; name: string; what: string }[] = [
   { icon: LayoutGridIcon, name: "Dashboard", what: "Your main numbers on one screen" },
   { icon: ClipboardListIcon, name: "Plan summary", what: "The whole plan on one page" },
   { icon: WalletIcon, name: "Net worth", what: "Accounts and debts, kept by date" },
-  { icon: HouseIcon, name: "Home", what: "Your mortgage and what owning costs, or your rent" },
+  { icon: HouseIcon, name: "Your home", what: "Your mortgage and what owning costs, or your rent" },
   { icon: BanknoteIcon, name: "Income", what: "Pay, the employer match and Social Security" },
   { icon: ReceiptIcon, name: "Spending", what: "Your budget and emergency fund" },
   { icon: PiggyBankIcon, name: "Taxes & Savings", what: "This year's taxes on your pay, and where each paycheck goes" },
-  { icon: CalculatorIcon, name: "Calculator", what: "Your saving, stage by stage" },
+  { icon: CalculatorIcon, name: "Calculator", what: "Your savings to retirement, and the changes ahead" },
   { icon: SunsetIcon, name: "Retirement", what: "Withdrawal strategies, early retirement and health cover" },
   { icon: WrenchIcon, name: "Tools", what: "All 14, opened with your numbers" },
   { icon: ListChecksIcon, name: "Next steps", what: "Changes ranked by how much they help" },
@@ -126,7 +126,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
         <p className="dl-lede">Net worth, pay, taxes, spending, saving and retirement, all worked out from <b>one profile</b>. Come back each month or quarter, update your balances, and see where you stand.</p>
         <Ways who={who} />
         {who === "new" ? (
-          <p className="dl-started"><ClockIcon aria-hidden="true" /><span><b>Eight short steps.</b> Skip anything you don&apos;t know yet; each answer is saved as you go, so you can stop and finish later.</span></p>
+          <p className="dl-started"><ClockIcon aria-hidden="true" /><span><b>Up to eight short steps.</b> Skip anything you don&apos;t know yet. Each answer is saved as you go, so you can stop and finish later.</span></p>
         ) : null}
         <div className="dl-fine">
           <span><CheckIcon aria-hidden="true" />Free</span>
@@ -187,7 +187,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
       </section>
 
       <Feature kicker="Net worth" title="Your net worth now, and where it's heading." sub="Your accounts, home and debts added up, then projected through retirement."
-        points={["Your own entries over time, then the projection", "The range of 8 in 10 past markets, not one guess", "All in today's dollars, so it compares with what things cost now"]}>
+        points={["Your own entries over time, then the projection", "The range of 8 in 10 past markets", "All in today's dollars, so it compares with what things cost now"]}>
         <Shot name="networth-tile" w={1734} h={982} sizes="(max-width: 900px) 100vw, 760px" alt="Net worth chart with entries, the projection and the range of past markets" />
       </Feature>
       <Feature flip kicker="Income, taxes, spending and savings" title="See where each paycheck goes." sub="Pay, taxes, your budget and your saving are worked out together, so the numbers match on every page."
@@ -230,7 +230,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
 
       <section className="dl-final">
         <h2 className="dl-h2">{who === "set" ? "Your Dashboard" : "Set up your Dashboard"}</h2>
-        <p className="dl-sub">{who === "set" ? "Pick up where you left off, and update your balances while you're there." : who === "new" ? "Eight short steps. You can skip any of them and come back later." : "Create a free account and go through eight short steps. You can skip any of them and come back later."}</p>
+        <p className="dl-sub">{who === "set" ? "Pick up where you left off, and update your balances while you're there." : who === "new" ? "Up to eight short steps. You can skip any of them and come back later." : "Create a free account and go through up to eight short steps. You can skip any of them and come back later."}</p>
         <Ways who={who} />
       </section>
     </div>

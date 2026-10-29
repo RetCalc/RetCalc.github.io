@@ -62,7 +62,7 @@ export const CHAPTERS = [
 const need = (yes: boolean, why: string) => (yes ? null : why);
 /** The monthly split starts as 50% traditional, 25% Roth and 25% taxable, written only where none is given. */
 const splitPrep: StepDecl["prep"] = (a, put) => { if (!SPLIT_KEYS.some((k) => ok(a[k]))) SPLIT_KEYS.forEach((k) => put(k, SPLIT_DEFAULT[k], "default")); };
-const splitNeeds = (a: Answers) => { const t = splitOff(a); return t == null ? null : "Your split adds up to " + Math.round(t * 10) / 10 + "%; it needs to add up to 100%"; };
+const splitNeeds = (a: Answers) => { const t = splitOff(a); return t == null ? null : "Your split adds up to " + Math.round(t * 10) / 10 + "%. It needs to add up to 100%"; };
 
 export const STEPS: StepDecl[] = [
   { id: "welcome", chapter: 0, title: "Welcome", type: "welcome", pace: "quick", minutes: 0.5 },
@@ -70,7 +70,7 @@ export const STEPS: StepDecl[] = [
   /* Already retired: the on-ramp into the Drawdown Simulator (doc 2), the
      whole route when it's chosen; no plan is run and there's no score. */
   { id: "retired", chapter: 1, title: "Already retired", type: "question", pace: "quick", minutes: 2, tripMinutes: 10, tool: "drawdown",
-    needs: (a) => need(ok(a.age) && pos(a.saved) && pos(a.retSpend), "Enter your age, your savings and what you spend a year") },
+    needs: (a) => need(ok(a.age) && pos(a.saved) && pos(a.retSpend), "Enter your age, your savings and what you spend per year") },
 
   /* 1 · You and your timeline */
   { id: "about", chapter: 1, title: "About you", type: "question", pace: "quick", minutes: 1, sync: true, teaches: ["two-clocks"],
@@ -82,7 +82,7 @@ export const STEPS: StepDecl[] = [
   { id: "income", chapter: 2, title: "Income and take-home", type: "question", pace: "quick", minutes: 1, tripMinutes: 3, tool: "tax", sync: true,
     teaches: ["take-home"],
     needs: (a) => !ok(a.income) ? "Enter your yearly income"
-      : ok(a.takehome) && !pos(a.takehome) && gross(a) > 0 ? "Your take-home needs to be more than $0, or leave it blank for our estimate" : null },
+      : ok(a.takehome) && !pos(a.takehome) && gross(a) > 0 ? "Your take-home needs to be more than $0, or leave it blank to use the estimate" : null },
   { id: "spending", chapter: 2, title: "What you spend", type: "question", pace: "quick", minutes: 1, tripMinutes: 15, tool: "budget",
     teaches: ["keystone"], needs: (a) => need(pos(a.spend), "Enter your monthly spending, or use the slider") },
   { id: "cash", chapter: 2, title: "Your safety net", type: "question", pace: "quick", minutes: 0.5, tool: "budget",

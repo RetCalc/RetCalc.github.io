@@ -52,7 +52,7 @@ export function SavingsCard() {
           </> : null}>
           <p>Money saved early has the longest to grow, and its growth grows too: <Term k="compound">compound growth</Term>. At a {riskLabel(real)} mix&apos;s
             {" "}{rate(real)} per year after inflation, a dollar saved at {fmtNum(age)} is worth <b>${A.toFixed(2)}</b> by {fmtNum(retire)}.</p>
-          {C ? <p>That&apos;s why the years matter more than the amount. {money(mo)} a month from now comes to <b>{money(C.curves[0].fv)}</b> by {fmtNum(retire)}.
+          {C ? <p>That&apos;s why the years matter more than the amount. {money(mo)} per month from now comes to <b>{money(C.curves[0].fv)}</b> by {fmtNum(retire)}.
             {" "}Stop after {yrs(kept)} and it&apos;s still {money(C.curves[1].fv)}; start {yrs(C.gap)} late and save for the same {yrs(kept)}, and it&apos;s {money(C.curves[2].fv)}.</p> : null}
           {a.match === "none" ? <p>Self-employed? Consider a SEP IRA or a solo 401(k): either lets you put in far more than an IRA alone, since you contribute as both the employer and the employee.</p> : null}
         </Lesson>
@@ -122,9 +122,9 @@ function SavingsReadout() {
       <li>By {fmtNum(a.retire!)}, at the {riskLabel(P.real)} mix&apos;s {rate(P.real)} per year after inflation: today&apos;s <b>{money(a.saved!)}</b> grows to <b>{money(P.fromSaved)}</b>
         {coast ? "." : <>, and what you add comes to <b>{money(P.fromSaving)}</b>.</>} Together, <b>{rounded(P.total)}</b>: your number so far, in today&apos;s dollars.</li>
       {rp ? <li>Savings rate scores {Math.round(rp.p * 20)} of 20{rp.p >= 1 && r != null && r < 0.15 ? ": under 15%, but your plan already lasts" : ""}.</li> : null}
-      {a.match === "partial" ? <li>You&apos;re missing part of your employer&apos;s match: getting all of it is the best return there is, and the first move on your plan.</li>
+      {a.match === "partial" ? <li>You&apos;re missing part of your employer&apos;s match. Getting all of it is an instant 50% to 100% return, and it is one of your next moves.</li>
         : !a.match ? <li>Does your employer match? Answer under <b>More detail</b>; until then the plan treats it as not sure.</li> : null}
-      {g.pace === "quick" && allTrad && pos(a.saved) ? <li>The Quick check counts it all as traditional, taxed when it comes out; <b>Where it sits</b>, on the route, splits it.</li> : null}
+      {g.pace === "quick" && allTrad && pos(a.saved) ? <li>The Quick check counts it all as traditional, taxed when it comes out. <b>Where it sits</b>, on the route, splits it.</li> : null}
     </ul>
   );
 }
@@ -143,7 +143,7 @@ export function InvestedCard() {
           <p>Every figure in this guide is in today&apos;s dollars: growth after inflation, a <Term k="realreturn">real return</Term>.
             {P ? <> So {rounded(P.total)} at {fmtNum(a.retire!)} means what {rounded(P.total)} buys now, </> : " So a figure decades away means what it would buy now, "}
             and your saving is assumed to rise with prices, so it stays the same in real terms.</p>
-          <p>Since {h.first}, a {h.label.toLowerCase()} mix earned about <b>{pc1(h.cagr)}</b> per year after inflation; the guide assumes <b>{rate(h.real)}</b>, a little less.
+          <p>Since {h.first}, a {h.label.toLowerCase()} mix earned about <b>{pc1(h.cagr)}</b> per year after inflation. The guide assumes <b>{rate(h.real)}</b>, a little less.
             {" "}The average hides the range: its ten-year stretches ran from <b>{pc1(h.worst)}</b> to <b>{pc1(h.best)}</b> per year. More stocks raise the average and widen the range.</p>
         </Lesson>
       </Learn>
@@ -173,7 +173,7 @@ function MixReadout() {
         ))}</tbody>
       </table>
       <ul className="gd-read">
-        <li>In history, a {h.label.toLowerCase()} mix&apos;s ten-year stretches ran from <b>{pc1(h.worst)}</b> to <b>{pc1(h.best)}</b> per year after inflation; the middle one, <b>{pc1(h.med)}</b>.</li>
+        <li>In history, a {h.label.toLowerCase()} mix&apos;s ten-year stretches ran from <b>{pc1(h.worst)}</b> to <b>{pc1(h.best)}</b> per year after inflation, with a middle of <b>{pc1(h.med)}</b>.</li>
         <li>This is the mix while you save. In retirement the plan holds 60% in stocks unless you change it on a trip into the Drawdown Simulator.</li>
       </ul>
     </>
@@ -192,7 +192,7 @@ export function AccountsCard() {
           <p>Retirement money sits in three tax buckets. <Term k="bkttrad">Traditional</Term> accounts, a 401(k), 403(b) or IRA, took no tax going in, so every
             {" "}dollar is taxed as income coming out. <Term k="bktroth">Roth</Term> accounts were taxed going in and are never taxed again. A brokerage account is
             {" "}taxed only on its gains, the growth above its <Term k="basis">cost basis</Term>.</p>
-          <p>The split doesn&apos;t change what you&apos;re on course for. It changes the tax: Roth and brokerage dollars let the plan keep taxable income low in
+          <p>The split changes the tax, not what you&apos;re on course for. Roth and brokerage dollars let the plan keep taxable income low in
             {" "}retirement, which can lower the tax on Social Security and raise a healthcare subsidy before 65.</p>
         </Lesson>
       </Learn>

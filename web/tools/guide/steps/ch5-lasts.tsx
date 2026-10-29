@@ -42,10 +42,10 @@ export function NumberCard() {
         <Lesson id="income-sources" figure={<Coverage port={S.portIncome} ss={S.ss.total} pen={S.pension} need={spendNeed} />}
           caption={"A typical year of your retirement, in today's dollars, Social Security from " + S.ss.claim + "."}>
           <p>A year of retirement is paid from three places: your savings, Social Security, and any pension. A common rule says savings can pay about 4% of
-            {" "}their starting balance a year, rising with prices: a <Term k="swr">safe withdrawal rate</Term>. For you that&apos;s <b>{money(S.portIncome)}</b> per year
+            {" "}their starting balance per year, rising with prices: a <Term k="swr">safe withdrawal rate</Term>. For you that&apos;s <b>{money(S.portIncome)}</b> per year
             {" "}from {rounded(S.fv)}. The year has to cover what you live on and its tax: <b>{money(spendNeed)}</b>.</p>
-          <p>The 4% rule is a rough guide drawn from history. Rather than trust it, the guide tests your own plan, year by year, through every market since
-            {" "}{S.H.first}: that&apos;s the next card, and it&apos;s where &ldquo;what the plan needs&rdquo; comes from.</p>
+          <p>The 4% rule is a rough guide drawn from history, so the guide tests your own plan, year by year, through every market since
+            {" "}{S.H.first}. That&apos;s the next card, and it&apos;s where &ldquo;what the plan needs&rdquo; comes from.</p>
         </Lesson>
       </Learn>
       <BackNote step="number" />
@@ -72,7 +72,7 @@ export function NumberCard() {
         // The Full walkthrough hands off to Advanced, with the guide's own
         // changes ahead written in (Stages was folded into it, 28 Oct).
         <Task id="advanced" head="See your saving year by year in Advanced" label={a.advSeen ? "Open Advanced again" : null}
-          after={<After>Optional. Advanced goes deeper on the saving years, with fees, raises, account types and your changes ahead; the guide&apos;s number stays the one for retirement.</After>} />
+          after={<After>Optional. Advanced goes deeper on the saving years, with fees, raises, account types and your changes ahead. The guide&apos;s number stays the one for retirement.</After>} />
       ) : <Task id="basic" head="See it in the Basic calculator" after={<After>Optional. Any change you make there can come back with you.</After>} />}
     </>
   );
@@ -92,8 +92,8 @@ export function LastingCard() {
       <Learn>
         <Lesson id="sequence" figure={L.length ? <Starts list={L} retire={r0} /> : null} caption="Your plan, the same in every way but the year it started.">
           <p>An average return hides the real risk: the order the returns arrive in. Retire into a bad decade and you sell low to live, so less is left to
-            {" "}recover. The same average can end very differently: that&apos;s <Term k="sequence">sequence risk</Term>, and it&apos;s why the guide replays your
-            {" "}plan through each real retirement since {S.H.first} rather than trusting one average.</p>
+            {" "}recover. The same average can end very differently. That&apos;s <Term k="sequence">sequence risk</Term>, and it&apos;s why the guide replays your
+            {" "}plan through each real retirement since {S.H.first} instead of trusting one average.</p>
           <p>Each replay spends {money(S.spend)} per year after tax, rising with prices, pays that year&apos;s tax{S.hcYears ? " and health premiums before Medicare" : ""},
             {" "}starts Social Security at {S.ss.claim}{S.pension ? ", adds your pension" : ""}, and holds {S.mix}% in stocks.</p>
         </Lesson>

@@ -60,14 +60,14 @@ function ruleOrdinary(code, S, st){
 function ruleGain(code, S, R){
   if (S.none) return code === "WA"
     ? "No tax on ordinary capital gain at the individual level, but Washington " +
-      "levies a separate 7% excise tax on long-term gains above roughly $270,000 " +
-      "per year, with real estate and retirement accounts exempt. That tax is not " +
-      "calculated here."
+      "levies a separate excise tax on long-term gains above roughly $270,000 " +
+      "per year: 7%, and 9.9% above $1 million. Real estate and retirement accounts " +
+      "are exempt. That tax is not calculated here."
     : "Not taxed.";
   let out = "";
   if (R.cgPct) out = rp(R.cgPct) + " of net long-term gain is excluded from the " +
-    "state base; the remainder is taxed at the ordinary rates above. ";
-  else if (R.cgFlat) out = sj(R.cgFlat) + " of long-term gain is excluded; the " +
+    "state base. The remainder is taxed at the ordinary rates above. ";
+  else if (R.cgFlat) out = sj(R.cgFlat) + " of long-term gain is excluded. The " +
     "remainder is taxed at the ordinary rates above. ";
   else if (R.cgMax) out = "Long-term gain is capped at " + rp(R.cgMax) +
     ", computed as an alternative that can never cost more than ordinary rates. ";
@@ -75,7 +75,7 @@ function ruleGain(code, S, R){
     R.cgB.s.map(x => rp(x[1])).join(" then ") + ", instead of the ordinary rates. ";
   else out = "Taxed at the same ordinary rates as everything else. No preferential " +
     "long-term rate, and no equivalent of the federal 0% band. ";
-  out += "Only the gain portion of a brokerage sale is taxed; your basis comes back " +
+  out += "Only the gain portion of a brokerage sale is taxed. Your basis comes back " +
     "untouched, as federally.";
   return out;
 }
@@ -97,6 +97,10 @@ function ruleSS(code, S, R, taxed){
     "in the base.";
   else if (R.ssCap && R.ssRange) out += "Fully exempt below " + sj(R.ssCap) +
     " of AGI, phasing back in over the next " + money(R.ssRange) + ".";
+  else if (R.ssCap && R.ssStep) out += "Fully exempt below " + sj(R.ssCap) +
+    " of AGI. Above that, 10% more of the federally taxable benefit stays in the base " +
+    "for each " + money(R.ssStep) + " of AGI (or part of it) over, all of it once AGI is " +
+    money(R.ssStep * 10) + " over.";
   else if (R.ssCap) out += "Fully exempt below " + sj(R.ssCap) + " of AGI and fully " +
     "taxable above it, a cliff, not a phase-out.";
   else out += "No income test and no exemption: the federal taxable amount goes " +
@@ -123,7 +127,7 @@ function ruleTrad(code, S, R){
   const bits = [];
   if (R.tradFull) bits.push("Fully exempt. Qualified plan and IRA distributions " +
     "are outside the state base entirely.");
-  else bits.push("Taxed at ordinary rates, the same as a pension would be.");
+  else bits.push("Taxed at ordinary rates.");
   if (code === "HI") bits.push("Hawaii's exemption covers only the employer-funded " +
     "share of a plan, so the part of a 401(k) that came from your own deferrals " +
     "stays taxable. This treats the whole balance as your own deferrals, which is " +
@@ -132,7 +136,7 @@ function ruleTrad(code, S, R){
     "not reach IRA distributions.");
   const ex = exclusionSentence(R, "t");
   if (ex) bits.push((R.exSrc === "t" ? "" :
-    "It shares one allowance with pension income rather than getting its own. ") + ex);
+    "It shares one allowance with pension income. ") + ex);
   return bits.join(" ");
 }
 
@@ -160,9 +164,10 @@ function exclusionSentence(R, which){
     "left over for the rest.";
   if (R.exCap){
     if (R.exPhase === "nj") out += " Full below " + money(R.exCap[0]) +
-      " of income, half to " + money(R.exCap[0] + 25000) + ", a quarter to " +
+      " of income, then a share of retirement income itself: 50% joint (37.5% single) to " +
+      money(R.exCap[0] + 25000) + ", half that to " +
       money(R.exCap[0] + 50000) + ", nothing above.";
-    else if (R.exPhase === "lin") out += " Withdrawn dollar for dollar as AGI " +
+    else if (R.exPhase === "lin") out += " Phased out evenly as AGI " +
       "rises above " + sj(R.exCap) + ", so it is gone by " +
       money(R.exCap[0] + R.exRange) + " single / " +
       money(R.exCap[1] + R.exRange) + " joint.";
@@ -187,9 +192,8 @@ function ruleSenior(code, S, R){
     (R.ohRet ? ", plus a retirement income credit of up to $200, both lost above " +
       sj(R.exCap) + " of state income." : "."));
   else if (R.ohRet) bits.push("Retirement income credit of up to $200.");
-  if (R.exAge && R.exAmt) bits.push("Reaching 65 is also what unlocks the " +
-    "retirement exclusion in the rows above, which is the main thing age buys " +
-    "here, rather than a separate senior deduction.");
+  if (R.exAge && R.exAmt) bits.push("Reaching 65 also qualifies you for the " +
+    "retirement exclusion in the rows above.");
   if (R.ssFullAge) bits.push("Social Security becomes fully exempt at 65.");
   return bits.length ? bits.join(" ")
     : "Nothing beyond the federal age-65 deductions. The state gives no extra " +
@@ -212,7 +216,7 @@ function rulePreTax(code, S, keep){
     "base too: " + list(off) + ".";
   let out = "Come off the state base: " + list(off) + ". Stay taxed by " + (S.n || "the state") +
     " in the year you contribute: " + list(taxed) + ".";
-  if (code === "NJ") out += " Of retirement-plan deferrals only 401(k)s come off; 403(b) and " +
+  if (code === "NJ") out += " Of retirement-plan deferrals only 401(k)s come off. 403(b) and " +
     "457 deferrals stay taxed, and the figure above treats the line as a 401(k).";
   if (code === "PA") out += " In return, Pennsylvania doesn't tax plan or IRA withdrawals " +
     "after 59½: the money was taxed going in.";
@@ -226,7 +230,7 @@ const STATE_GAPS = {
   AL:"Municipal occupational taxes of roughly 1% to 2% in Birmingham and other cities. Alabama's standard deduction phases down with income.",
   AZ:"Arizona's small-business alternative return, and the full exemption for military retirement pay.",
   AR:"Arkansas's low-income tax tables, which override the brackets at the bottom of the range.",
-  CA:"State disability insurance, 1.2% of all wages with no cap, which functions like a payroll tax on the working side. California's own itemized deduction rules differ from the federal ones.",
+  CA:"State disability insurance, 1.3% of all wages with no cap, which works like a payroll tax on the working side. California's own itemized deduction rules differ from the federal ones.",
   CO:"The $20,000 version of the pension subtraction available from 55 to 64, and TABOR-driven rate reductions that temporarily cut the flat rate in some years.",
   CT:"Connecticut's benefit recapture, which claws back the value of the lower brackets at higher incomes and can add several hundred dollars. Also the personal exemption's own phase-out.",
   DE:"Wilmington's 1.25% city wage tax on earned income.",
@@ -248,8 +252,8 @@ const STATE_GAPS = {
   MO:"Earnings taxes of 1% in Kansas City and St. Louis. The $6,000 private pension exemption below $25,000 / $32,000 of income.",
   MT:"Montana's capital gain credit interaction with its reduced gain rates, and its elderly homeowner credit.",
   NE:"Nebraska's full exemption for military retirement benefits.",
-  NJ:"New Jersey taxes 401(k) contributions going in, so part of every withdrawal is a tax-free return of basis that this does not track; the real New Jersey bill is usually lower than shown. Also the property tax deduction and senior freeze.",
-  NM:"The cap on New Mexico's capital gain deduction, which limits the 40% figure at higher gain amounts.",
+  NJ:"New Jersey taxes IRA, 403(b) and 457 contributions going in, so part of every withdrawal is a tax-free return of basis that this does not track. The real New Jersey bill is usually lower than shown. Also the property tax deduction and senior freeze.",
+  NM:"New Mexico's 40% capital gain deduction for selling a New Mexico business.",
   NY:"New York City resident tax of roughly 3.1% to 3.9%, and Yonkers's surcharge, both of which reach pension and retirement-account income. New York's supplemental tax recapture at high incomes.",
   NC:"The Bailey exemption for government retirees vested before August 1989, which exempts their pensions entirely.",
   ND:"Nothing large. North Dakota's rates are low enough that the gain exclusion does most of the work.",
@@ -263,7 +267,7 @@ const STATE_GAPS = {
   VT:"Vermont's alternative minimum tax, and the $10,000 exclusion for Civil Service and military retirement.",
   VA:"The rule that the age deduction is unlimited for taxpayers born before 1939, and Virginia's separate military benefits subtraction.",
   WV:"West Virginia's separate full exemptions for state police, teachers' and federal Civil Service retirement, and its senior citizen property tax credit.",
-  WI:"The requirement that you are 67, not 65, for the $24,000 exclusion, marking someone 65+ here grants it two years early. Wisconsin's married-couple credit and school property tax credit.",
+  WI:"The requirement that you are 67, not 65, for the $24,000 exclusion. Marking someone 65+ here grants it two years early. Wisconsin's married-couple credit and school property tax credit.",
   DC:"The District's $3,000 exclusion for government pensions at 62, and its own itemized deduction limits.",
   AK:"Nothing. Alaska has no individual income tax and no local income taxes.",
   FL:"Nothing at the income tax level. Florida's tangible and documentary taxes are unrelated.",
@@ -272,7 +276,7 @@ const STATE_GAPS = {
   SD:"Nothing. South Dakota has no individual income tax.",
   TN:"Nothing. Tennessee's Hall tax on interest and dividends was repealed in 2021.",
   TX:"Nothing. Texas has no individual income tax.",
-  WA:"The 7% excise tax on long-term capital gains above roughly $270,000 per year, which is not calculated here. Real estate and retirement accounts are exempt from it.",
+  WA:"The excise tax on long-term capital gains above roughly $270,000 per year (7%, and 9.9% above $1 million), which is not calculated here. Real estate and retirement accounts are exempt from it.",
   WY:"Nothing. Wyoming has no individual income tax."
 };
 

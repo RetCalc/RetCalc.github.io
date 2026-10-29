@@ -75,7 +75,7 @@ function HouseholdForm({ states, onDone, autoFocus }: { states: StateOption[]; o
       return;
     }
     if (h.age != null && h.retire != null && h.retire <= h.age) {
-      toast("Retire-at age needs to be after your current age first", "warn");
+      toast("Retire-at age must be after your current age", "warn");
       return;
     }
     const done = save({ ...h, savedAt: Date.now() });
@@ -120,9 +120,9 @@ function HouseholdForm({ states, onDone, autoFocus }: { states: StateOption[]; o
         <MoneyField id="hhSpend" label="Spending in retirement" unit="/yr" value={form.spend} onValueChange={set("spend")} />
       </div>
       <div className="hh-foot">
-        <div className="hint">Any field can stay blank. Saving fills these numbers in to the
-          calculators and the tools that use them. You can still change any tool afterwards
-          without touching this. Stored in this browser, and in your account if you sign in.</div>
+        <div className="hint">Any field can stay blank. Saving fills these numbers into the
+          Calculator and the tools that use them. You can still change any tool afterwards.
+          Stored in this browser, and in your account if you sign in.</div>
         <div className="hh-btns">
           <Button variant="outline" className="max-sm:flex-auto" id="hhClear" onClick={onClear}>Clear</Button>{" "}
           {onDone ? <><DialogClose render={<Button variant="outline" className="max-sm:flex-auto" id="hhCancel" />}>Close</DialogClose>{" "}</> : null}
@@ -152,7 +152,7 @@ export function HouseholdPanel({ states }: { states: StateOption[] }) {
           <span className="hh-ic" aria-hidden="true"><HomeIcon /></span>
           <div>
             <h2 id="hhPanelTitle">Your household</h2>
-            <p>Enter a few details once and every tool starts from your numbers.</p>
+            <p>Enter a few details once and most tools start from your numbers.</p>
           </div>
         </div>
         <HouseholdForm states={states} onDone={() => setPanelOpen(false)} autoFocus />

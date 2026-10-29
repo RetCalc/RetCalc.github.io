@@ -94,7 +94,7 @@ function EventRow({ ev }: { ev: ChangeEvent }) {
           <div className="field"><Label className="mb-1.5" htmlFor={"gdev-" + ev.id + "-dir"}><span>Saving</span></Label>
             <NativeSelect id={"gdev-" + ev.id + "-dir"} value={ev.delta < 0 ? "less" : "more"}
               onChange={(e) => G.set("events", (G.a.events || []).map((x) => (x.id === ev.id && x.kind === "custom" ? { ...x, delta: Math.abs(x.delta) * (e.target.value === "less" ? -1 : 1) } : x)), true)}>
-              <option value="less">Less a month</option><option value="more">More a month</option></NativeSelect></div>
+              <option value="less">Less per month</option><option value="more">More per month</option></NativeSelect></div>
           <EvField ev={ev} k="delta" label="By" money affix="/mo" />
         </> : null}
       </div>
@@ -221,7 +221,7 @@ function PlannedSpacing() {
           </div>
         ))}
       </div>
-      <p className="hint mx-0 mt-1.5 mb-0">Years after the planned child before it.{" "}
+      <p className="hint mx-0 mt-1.5 mb-0">Years after the child before it.{" "}
         <Button variant="quiet" size="inline-xs" onClick={() => G.set("kidGaps", null, true)}>Same spacing for all</Button></p>
     </div>
   );
@@ -259,9 +259,9 @@ function ChangesMeans() {
         {H.length > 1 ? <li>Your household before 65: {and(H.map((h, i) => (i ? h.n + " from " + h.age : h.n + " now")))}. {ret < 65 ? "The plan prices health insurance before Medicare for a household of " + householdAtRetire(a, ret) + "." : ""}</li> : null}
         {W.map((w, i) => (
           <li key={i}>{W.length > 1 ? (i === 0 ? "Your first child" : i === 1 ? "Your second" : "Child " + (i + 1)) : "Your child"} starts college at {w.from}{w.from >= ret ? ", after you retire" : ", " + yrs(ret - w.from) + " before you retire"}
-            {w.to > ret && w.from < ret ? ": those years overlap your retirement, so the plan card asks you to check the college line is funded" : ""}.</li>
+            {w.to > ret && w.from < ret ? ". Those years overlap your retirement, so your next moves ask you to check the college line is funded" : ""}.</li>
         ))}
-        {W.length ? <li>College isn&apos;t in this schedule; Home and big goals&apos; college question keeps a line for it.</li> : null}
+        {W.length ? <li>College isn&apos;t in this schedule. The college question on Home and big goals keeps a line for it.</li> : null}
       </ul>
     </Means>
   );

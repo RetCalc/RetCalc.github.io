@@ -434,7 +434,7 @@ export function brPlans(ctx, steady){
   return [blend,
     {key:"ladder", name:"Roth conversion ladder", phrase:"a Roth conversion ladder", conv:"ladder",
       off:ctx.nB > 5 ? "" : "A conversion made at " + ctx.age + " wouldn't open up until after 59½",
-      desc:"Convert every year; spend each conversion five years later",
+      desc:"Convert every year and spend each conversion five years later",
       order:function(mat){ return mat > 0 ? ["roth", "brok"].concat(BR_FB) : ["brok", "roth"].concat(BR_FB); }},
     {key:"brok", name:"Brokerage, then Roth contributions", phrase:"the brokerage, then Roth contributions",
       conv:"none", desc:"No conversions; sell taxable investments first",

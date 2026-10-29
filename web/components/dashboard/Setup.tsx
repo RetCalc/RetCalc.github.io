@@ -89,7 +89,7 @@ const STEPS: Step[] = [
     }),
   },
   {
-    id: "retire", label: "Retirement", title: () => "When do you hope to retire?", help: "A goal, not a promise. You can try other ages on the dashboard.",
+    id: "retire", label: "Retirement", title: () => "When do you hope to retire?", help: "You can try other ages on the Dashboard.",
     body: ({ pr, setP }) => (
       <div className="dsh-row">
         {keys(pr).map((k) => {
@@ -106,7 +106,7 @@ const STEPS: Step[] = [
   },
   {
     id: "pay", label: "Pay", title: () => "What do you earn?",
-    help: "Before taxes, the way it shows on your offer letter or pay stub, and where you live, for the taxes on it.",
+    help: "Before taxes, as it shows on your offer letter or pay stub. Where you live sets the taxes on it.",
     body: ({ pr, set, setP }) => {
       const abroad = pr.state === OUTSIDE_US;
       return (
@@ -118,7 +118,7 @@ const STEPS: Step[] = [
               <PayFields pr={pr} k={k} setP={setP} />
             </div>
           ))}
-          {abroad ? <Note>Outside the US, we don&apos;t work out taxes or Social Security. Enter your pay after taxes; figures for retirement are <b>before taxes</b>.</Note>
+          {abroad ? <Note>Outside the US, we don&apos;t work out taxes or Social Security. Enter your pay after taxes. Retirement figures are <b>before taxes</b>.</Note>
             : <Note>Not sure of your take-home pay? <b>We estimate it</b> from this, with the taxes on it.</Note>}
         </>
       );
@@ -256,7 +256,7 @@ export function Setup() {
       <div>
         <div className="dsh-q-eyebrow">All set</div>
         <h1 className="dsh-q-title">Here&apos;s your starting point{pr.p1.name.trim() ? ", " + pr.p1.name.trim() : ""}</h1>
-        <p className="dsh-q-help">Your dashboard is ready. Some tiles start empty; filling them in sharpens every number.</p>
+        <p className="dsh-q-help">Your dashboard is ready. Some tiles start empty. Filling them in sharpens every number.</p>
         <div className="dsh-ready">
           <div className="dsh-tile"><div className="dsh-label">Net worth today</div><div className="dsh-fig dsh-key dsh-mt6">{shortMoney(nw)}</div></div>
           <div className="dsh-tile"><div className="dsh-label">At retirement{R.retireYear ? ", " + R.retireYear : ""}</div><div className="dsh-fig dsh-mt6">{R.atRetire != null ? shortMoney(R.atRetire + R.equity) : "—"}</div></div>

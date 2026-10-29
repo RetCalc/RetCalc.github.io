@@ -69,7 +69,7 @@ export const CARDS: Partial<Record<Slug | "dashboard", Card>> = {
   roth: { title: "Roth Conversion Calculator", art: "roth",
     text: "See whether converting to a Roth IRA could lower your lifetime taxes." },
   rmd: { title: "RMD Calculator", art: "rmd",
-    text: "Calculate your required minimum distributions for every year to age 100." },
+    text: "Calculate your required minimum distributions for every year up to age 100." },
   healthcare: { title: "Healthcare Cost Planner", art: "health",
     text: "Estimate health insurance costs before and after Medicare." },
   fire: { title: "FIRE Calculator", art: "fire",

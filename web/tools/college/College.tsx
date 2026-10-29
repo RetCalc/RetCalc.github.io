@@ -207,8 +207,8 @@ export function College() {
                         <NumberField id={first ? "clCollegeYrs" : undefined} label="Years of college" unit="yrs" max={8} data-f="collegeYrs" data-i={i} value={k.collegeYrs}
                           onValueChange={(v) => setKid(i, { collegeYrs: v })} aria-label={`${name} years of college`} />
                       </div>
-                      {badCost ? <FieldWarn id={costWarn}>Enter what a year of college costs today{multi ? "; until then this child is left out." : "."}</FieldWarn> : null}
-                      {badYears ? <FieldWarn id={yearsWarn}>College has to be at least a year away{multi ? "; until then this child is left out." : "."}</FieldWarn> : null}
+                      {badCost ? <FieldWarn id={costWarn}>Enter what a year of college costs today{multi ? ". Until then this child is left out." : "."}</FieldWarn> : null}
+                      {badYears ? <FieldWarn id={yearsWarn}>College has to be at least a year away{multi ? ". Until then this child is left out." : "."}</FieldWarn> : null}
                     </div>
                   );
                 })}

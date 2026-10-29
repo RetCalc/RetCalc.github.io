@@ -60,8 +60,8 @@ export function LeversLesson({ ahead }: { ahead: boolean }) {
     <Learn>
       <Lesson id="levers" figure={<LeverTable ahead={ahead} />} caption="The same fixed changes every visit, so you can compare one visit with the next. Savings and needs in today's dollars.">
         <p>Four levers move a plan: saving more, working longer, spending less in retirement, and how long you keep saving. They don&apos;t move it equally.
-          {" "}A year of work adds a year of saving and takes a year off what the savings must fund, which is why it&apos;s usually the strongest; spending
-          {" "}moves what the plan needs; saving moves what you&apos;ll have.</p>
+          {" "}A year of work adds a year of saving and takes a year off what the savings must fund, which is why it&apos;s usually the strongest. Spending
+          {" "}moves what the plan needs, and saving moves what you&apos;ll have.</p>
         <p>The table runs your plan again with one change at a time{ahead ? ", including ways to use what you have to spare" : ""}, before any option below is
           {" "}chosen. The options then solve for the exact change that {ahead ? "uses the margin" : "closes the gap"}.</p>
       </Lesson>
@@ -115,7 +115,7 @@ export function BridgeCard() {
       {v.retire! >= 55 ? <><H3>Will you leave a job with a 401(k) at 55 or later?</H3>
         <div className="gd-choices two"><Choice k="rule55" val="yes" title="Yes" sub="The rule of 55 lets that 401(k) pay out without the penalty" /><Choice k="rule55" val="no" title="No, or not sure" /></div></> : null}
       <BackNote step="bridge" />
-      <Task id="bridge" head="Plan it in the Early Retirement Bridge" after={<After>Optional: it also compares 72(t) payments, which this plan doesn&apos;t use.</After>} />
+      <Task id="bridge" head="Plan it in the Early Retirement Bridge" after={<After>Optional. It also compares 72(t) payments, which this plan doesn&apos;t use.</After>} />
     </>
   );
 }

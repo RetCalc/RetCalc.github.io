@@ -157,7 +157,7 @@ export function Budget() {
         <Card>
           <CardHeader>
             <CardTitle>Your budget</CardTitle>
-            {empty ? <CardDescription>Type what each line costs you, per month or per year; leave the ones you don&apos;t have at 0.</CardDescription> : null}
+            {empty ? <CardDescription>Type what each line costs you, per month or per year. Leave the ones you don&apos;t have at 0.</CardDescription> : null}
             <CardAction><CsvButton id="bgCsv" label="budget" title="Download your budget as a CSV" rows={csvRows} filename="retcalc-budget.csv" /></CardAction>
           </CardHeader>
           <CardContent>
@@ -287,7 +287,7 @@ export function Budget() {
               {/* In a walkthrough the emergency fund is a figure, not a budget of its own. */}
               {!scope || dash ? (
                 <div className="mt-3.5 grid gap-2.5">
-                  <p className="hint m-0">About 6 months suits most people; up to 12 if your income varies.</p>
+                  <p className="hint m-0">Most people aim for 3 to 6 months, or 6 to 12 if income varies.</p>
                   {emerg ? (
                     <>
                       <div className="flex"><Segmented id="efBasis" attr="data-efb" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={s.efBasis} onChange={set("efBasis")} /></div>

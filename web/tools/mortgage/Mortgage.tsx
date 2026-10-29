@@ -118,9 +118,9 @@ export function Mortgage() {
 
   const pmiNote = R.ltv > 0.8
     ? R.pmiEndMonth
-      ? `PMI applies below 20% down. At this pace it ends around ${when(R.pmiEndMonth)} (federal law requires automatic removal at 22% equity either way).`
+      ? `PMI applies below 20% down. At this pace it ends around ${when(R.pmiEndMonth)}, and federal law requires automatic removal at 22% equity either way.`
       : "PMI applies below 20% down. You can have it removed once you reach 20% equity, and federal law ends it automatically at 22%."
-    : "No PMI; you're at or above 20% down.";
+    : "No PMI, since you're at or above 20% down.";
 
   // Name only what's actually in the figure.
   const escParts = ([[R.tax, "tax"], [R.ins, "insurance"], [R.pmi, "PMI"], [R.hoa, "HOA"], [R.maint, "upkeep"], [R.util, "utilities"]] as const)
@@ -296,7 +296,7 @@ export function Mortgage() {
                 </div>
                 <SelectField id="moRecast" wrapId="moRecastWrap" label={<Tipped text="After that payment" k="recast" />} value={s.recast} onChange={set("recast")}>
                   <option value="0">Keep the same payment, finish early</option>
-                  <option value="1">Recast &mdash; lower the payment instead</option>
+                  <option value="1">Recast: lower the payment instead</option>
                 </SelectField>
               </div>
               <div className="min-w-0 border-t border-border pt-4 max-sm:order-3 sm:order-2">
@@ -327,8 +327,8 @@ export function Mortgage() {
                             {saves ? "Saves" : "Costs"} <span className="whitespace-nowrap">{(saves ? "−" : "+") + money(Math.abs(RF.monthlyDelta)) + "/mo"}</span>
                           </span>
                         } />
-                        <Stat label="Breaks even on closing costs" words value={RF.breakEvenMonths == null ? "Never — payment doesn't drop"
-                          : RF.breakEvenMonths <= 0 ? "Immediately — no closing costs to recover" : dur(RF.breakEvenMonths)} />
+                        <Stat label="Breaks even on closing costs" words value={RF.breakEvenMonths == null ? "Never, the payment doesn't drop"
+                          : RF.breakEvenMonths <= 0 ? "Immediately, no closing costs to recover" : dur(RF.breakEvenMonths)} />
                         <Stat label="Over the life of the loan" tone={lifeSaves ? "gain" : "loss"} words value={
                           <span className="inline-flex items-center gap-1.5">
                             {lifeSaves ? <CircleCheckIcon className="size-4 shrink-0" aria-hidden="true" /> : <CircleAlertIcon className="size-4 shrink-0" aria-hidden="true" />}

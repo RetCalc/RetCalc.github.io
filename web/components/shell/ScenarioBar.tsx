@@ -93,7 +93,7 @@ export function ScenarioBar({ compareHref = "/compare", resetTo, sharePath }: {
     if (!tool || !id) return;
     const hash = encodeShare(id, tool.state);
     if (!sharePath) history.replaceState(history.state, "", hash);
-    sendLink(location.origin + (sharePath ?? location.pathname) + hash, "Link copied; it opens with these exact numbers", toast);
+    sendLink(location.origin + (sharePath ?? location.pathname) + hash, "Link copied. It opens with these exact numbers", toast);
   };
 
   return (
@@ -159,7 +159,7 @@ export function ScenarioBar({ compareHref = "/compare", resetTo, sharePath }: {
               const d = kit.card!();
               if (typeof d === "string") toast(d); else f(d, toast);
             };
-            acts.push([{ label: "Save image card", desc: "A square PNG of your headline numbers" }, card(saveCard)]);
+            acts.push([{ label: "Save image card", desc: "A PNG of your headline numbers" }, card(saveCard)]);
             acts.push([{ label: "Copy image card", desc: "Put that image straight on the clipboard" }, card(copyCard)]);
           }
           const c = await showPopup(kit?.link?.title ?? "Share", acts.map((x) => x[0]));

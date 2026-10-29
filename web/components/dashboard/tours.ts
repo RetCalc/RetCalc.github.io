@@ -24,14 +24,14 @@ const accounts: Tour<DashData> = { name: "Net worth", title: "Keep track of what
     ] },
     { title: "Your accounts and debts", focus: "#assets", tasks: ({ s }) => [
       { h: "Press <b>Update balances</b> and list each account with today's balance: 401(k)s and IRAs, Roth accounts, brokerage, HSA, checking and savings, and your home if you own one.", ok: done(hasAccounts(s.entries)) },
-      { h: "The <b>Type</b> matters: retirement accounts and brokerage pay for retirement, each taxed its own way; checking and savings are your emergency fund; your home counts toward net worth but isn't spent in retirement. A 457(b) is its own type, since it can be drawn from without the 10% penalty once you leave that job." },
+      { h: "The <b>Type</b> matters: retirement accounts and brokerage pay for retirement, each taxed its own way. Checking and savings are your emergency fund. Your home counts toward net worth but isn't spent in retirement. A 457(b) is its own type, since it can be drawn from without the 10% penalty once you leave that job." },
       { h: "A couple says <b>Whose</b> each retirement account is: each opens without the penalty at its owner's 59½. It's guessed from the name, and <b>Not sure</b> counts it half each." },
       { h: "<b>What you put in</b> is optional: a brokerage account's <b>cost basis</b> (only the gain above it is taxed when you sell) and a Roth's <b>own contributions</b> (they can come out any time). Your brokerage and Roth statements show them. Once saved, a brokerage row shows its gain or loss in green or red." },
       { h: "Under <b>Debts</b>, add each loan and card with its balance and <b>Interest rate</b>. Debt at 8% or more usually comes first in your next steps." },
-      { h: "Rough figures are fine. Your bank's app or last statement has them; round to the nearest hundred." },
+      { h: "Rough figures are fine. Your bank's app or last statement has them. Round to the nearest hundred." },
     ] },
     { title: "Come back and update", focus: "#entries", tasks: ({ s, base }) => [
-      { h: "<b>Save as new entry</b> keeps today's balances as a dated entry. Come back each month or quarter and save another; the date can be set back if you're catching up.", ok: done(s.entries.length > Number(base.entries ?? 0)) },
+      { h: "<b>Save as new entry</b> keeps today's balances as a dated entry. Come back each month or quarter and save another. You can set the date back if you're catching up.", ok: done(s.entries.length > Number(base.entries ?? 0)) },
       { h: "<b>Your entries</b> lists every one, with the change since the one before." + (last(s) ? " Your latest: <b>" + money(netWorth(last(s)!)) + "</b>." : "") },
       { h: "Saved one by mistake? The <b>×</b> at the end of its row deletes it, after asking." },
     ] },
@@ -56,7 +56,7 @@ const income: Tour<DashData> = { name: "Income", title: "Everything that comes i
     { title: "Social Security", focus: "#social-security", tasks: ({ s }) => [
       { h: "Each benefit is estimated from today's pay until you give the real one. Your statement at <b>ssa.gov</b> shows your benefit at full retirement age (67 for anyone born in 1960 or later).", ok: done(s.profile.ss.checked) },
       { h: "No statement handy? <b>Estimate from my pay history</b> works it out from what you earned each year." },
-      { h: "<b>Claims</b> is the age each of you starts. Claiming at 62 cuts the check for life; each year you wait past 67 adds 8%, up to 70. They're set only here, and Retirement uses them." },
+      { h: "<b>Claims</b> is the age each of you starts. Claiming at 62 cuts the check for life. Each year you wait past 67 adds 8%, up to 70. They're set only here, and Retirement uses them." },
       { h: "<b>Share of the benefit you expect</b> plans for cuts: Social Security's trust fund is projected to run short in the 2030s, and benefits could then be cut to roughly 80%. Set it lower than 100% and every benefit in your plan is scaled by it.", ok: done(s.profile.ss.pct != null && s.profile.ss.pct < 100) },
     ] },
   ],
@@ -72,8 +72,8 @@ const spending: Tour<DashData> = { name: "Spending", title: "Build a budget that
     { title: "Your budget", focus: "#bgList", tasks: ({ s }) => {
       const lines = (budgetFor(s.profile).rows ?? []).filter((r) => parseFloat(String(r.amount).replace(/,/g, "")) > 0).length;
       return [
-        { h: "Open your last two or three months of bank and card statements and work down the list. Rough is fine; a guess beats a blank.", ok: done(lines >= 5) },
-        { h: "For bills that come once or twice a year, like car insurance, travel, gifts or repairs, tap <b>/yr</b> on the line and enter the yearly total. They're the ones budgets usually forget." },
+        { h: "Open your last two or three months of bank and card statements and work down the list. Rough is fine. A guess beats a blank.", ok: done(lines >= 5) },
+        { h: "For bills that come once or twice a year, like car insurance, travel, gifts or repairs, tap <b>Per year</b> on the line and enter the total for the year. They're the ones budgets usually forget." },
         { h: "Click a line's name to rename it, <b>+</b> on a group adds a line, and <b>×</b> removes one you don't need." },
         { h: "Lines marked <b>from Home</b> are your rent, or your mortgage and what owning costs. They're set on Home, so they're the same everywhere." },
       ];
@@ -88,7 +88,7 @@ const spending: Tour<DashData> = { name: "Spending", title: "Build a budget that
 const savings: Tour<DashData> = { name: "Taxes & Savings", title: "Your taxes, and a place for every dollar", read: plan,
   pages: [
     { title: "Taxes this year", focus: "#taxes", tasks: () => [
-      { h: "<b>Pay after taxes</b> is what reaches your bank account each month, after income taxes, Social Security and Medicare, and anything taken out before tax (401(k), HSA, health premiums)." },
+      { h: "<b>Pay after taxes</b> is what reaches your bank account each month, after income taxes, Social Security and Medicare, and health premiums." },
       { h: "<b>Federal</b> and <b>State income tax</b> are worked out from your pay, filing status and state, the same way your paycheck below figures them. <b>Social Security and Medicare</b> is a flat 7.65% of pay, up to a yearly limit for Social Security. <b>Of your pay</b> is all of it as a share of your pay." },
     ] },
     { title: "Your deduction", focus: "#taxChoices", tasks: ({ s }) => [
@@ -97,7 +97,7 @@ const savings: Tour<DashData> = { name: "Taxes & Savings", title: "Your taxes, a
     ] },
     { title: "Each month", focus: "#month", tasks: () => [
       { h: "<b>You save and invest</b> is what goes into your accounts each month, and <b>Employer match</b> what your employer adds on top." },
-      { h: "<b>Not assigned</b> is what's left after taxes, spending and saving. It sits in checking earning nothing; giving it a place below raises your plan." },
+      { h: "<b>Not assigned</b> is what's left after taxes, spending and saving. It sits in checking earning nothing. Giving it a place below raises your plan." },
       { h: "<b>Savings rate, with the match</b> is all of it as a share of your pay before taxes. Around 15% is a common goal." },
     ] },
     { title: "Where the rest goes", focus: "#pcSliders", tasks: ({ s }) => {
@@ -105,7 +105,7 @@ const savings: Tour<DashData> = { name: "Taxes & Savings", title: "Your taxes, a
       return [
         { h: "Each slider is an account, in the order most people fill them: the 401(k) up to the match first, then an HSA, an IRA, more 401(k), then a brokerage account.", ok: done(F.invested > 0) },
         { h: "<b>Traditional</b> lowers your taxes now and is taxed when you take it out; <b>Roth</b> is taxed now and comes out tax-free. Lower earners often favor Roth, higher earners traditional." },
-        { h: "<b>Max</b> fills a line to its legal limit for the year. A line you can't reach the limit on is fine; anything helps." },
+        { h: "<b>Max</b> fills a line to its legal limit for the year. Not reaching a line's limit is fine. Anything helps." },
         { h: "<b>Start from a plan</b> sets every slider at once: <b>The usual order</b>, <b>Max tax breaks</b> or <b>Stay flexible</b>. Drag from there." },
       ];
     } },
@@ -125,11 +125,11 @@ const calculator: Tour<DashData> = { name: "Calculator", title: "How your saving
     ] },
     { title: "The stages behind this", focus: "#btnStagesBehind", tasks: () => [
       { h: "Your plan and the changes ahead, year by year, become <b>stages</b>: stretches of years when you save about the same. A child arriving, college, a line reaching its limit or a change starting each begins a new one." },
-      { h: "<b>See the stages</b> lists them by age: what goes into each account a month, how fast it rises after inflation, the return, any lump sum on the stage's first day, and what's going on. They're read, not edited: change one of the changes ahead to change them." },
+      { h: "<b>See the stages</b> lists them by age: what goes into each account a month, how fast it rises after inflation, the return, any lump sum on the stage's first day, and what's going on. They're read-only. Edit the changes ahead to change them." },
     ] },
     { title: "Your savings", focus: "#calcFacts", tasks: () => [
       { h: "Today's balances by account come from your latest entry on Net worth: <b>Traditional</b> (taxed when it comes out), <b>Roth</b> (tax-free), <b>Brokerage</b> with its cost basis, and <b>HSA</b>." },
-      { h: "Pay and the match come from Income, and filing status, state and inflation from Profile. They're listed here rather than typed, so they're the same everywhere: change them where they're set." },
+      { h: "Pay and the match come from Income, and filing status, state and inflation from Profile. They're listed here, not typed, so they're the same everywhere. Change them where they're set." },
     ] },
     { title: "What you'll have", focus: "#xFVreal", tasks: () => [
       { h: "This is what you'll have saved when you retire, in today's dollars. It's your plan's savings at retirement everywhere: Retirement, the chance of success and the overview all start from it." },
@@ -143,7 +143,7 @@ const retirement: Tour<DashData> = { name: "Retirement", title: "Make your savin
   pages: [
     { title: "At retirement", focus: "#at-retirement", tasks: () => [
       { h: "<b>Savings</b> is what your plan has when you retire. <b>Chance of success</b> is how often it lasted to 95 when retirement started in each month since 1926." },
-      { h: "<b>You plan to spend</b> is your spending once retired, before taxes; <b>Taxes, on top</b> is the plan's average year. <b>Social Security</b> pays part of both once it starts; the ages you claim are set on Income." },
+      { h: "<b>You plan to spend</b> is your spending once retired, before taxes; <b>Taxes, on top</b> is the plan's average year. <b>Social Security</b> pays part of both once it starts. The ages you claim are set on Income." },
       { h: "Under it, switch what the page shows: <b>Drawdown</b> (how you spend your savings), <b>Bridge to 59½</b> if you retire before then, and <b>Health cover</b> until and after Medicare." },
     ] },
     { title: "Choose a strategy", focus: "#strategies", tasks: ({ s, base }) => [
@@ -152,7 +152,7 @@ const retirement: Tour<DashData> = { name: "Retirement", title: "Make your savin
       { h: "<b>How the withdrawal strategies compare</b> lays them side by side on your own numbers." },
     ] },
     { title: "Try it in the simulator", focus: "#ddRate", tasks: ({ s }) => [
-      { h: "The simulator runs your plan through every market since 1926. Your savings at retirement (from the Calculator), the retirement age and Social Security are listed at the top of its inputs and in <b>Income in retirement</b>; change them where they're set. The mix, the years, the starting rate and the strategy's settings are yours here, saved to your plan." },
+      { h: "The simulator runs your plan through every market since 1926. Your savings at retirement (from the Calculator), the retirement age and Social Security are listed at the top of its inputs and in <b>Income in retirement</b>. Change them where they're set. The mix, the years, the starting rate and the strategy's settings are yours here, saved to your plan." },
       { h: "<b>Asset mix</b> is how your savings are invested once retired: US stocks, small-cap value, bonds and cash, and whether the stocks glide down over the years. It's your plan's mix everywhere." },
       { h: "<b>Starting withdrawal rate</b> is the share of your savings the first year takes, taxes included. Change it and your plan spends what that rate gives; Profile's spending stays as your goal.", ok: done(s.profile.ddOwn?.rate != null) },
       { h: "Around 4% has lasted through almost every market in history for a 30-year retirement. A longer retirement, or a strategy that never cuts, needs a lower rate." },
@@ -203,13 +203,13 @@ const health: Tour<DashData> = { name: "Health cover", title: "Health cover unti
 const home: Tour<DashData> = { name: "Home", title: "What your home costs", read: plan,
   pages: [
     { title: "Your mortgage", focus: "#mortgage || #rentbuy", tasks: ({ s }) => [
-      { h: "What your home is worth and what's left on the mortgage come from Net worth. Here, give the mortgage's <b>interest rate</b> and its <b>payment</b> (principal and interest only); that gives when it's paid off.", ok: done(s.profile.mortPay != null || s.profile.home === "rent") },
+      { h: "What your home is worth and what's left on the mortgage come from Net worth. Here, give the mortgage's <b>interest rate</b> and its <b>payment</b> (principal and interest only) to see when it's paid off.", ok: done(s.profile.mortPay != null || s.profile.home === "rent") },
       { h: "Once it's paid off before you retire, and you haven't set your spending once retired yourself, your plan leaves the payment out of retirement spending." },
     ] },
     { title: "What owning costs", focus: "#owning || #rentbuy", tasks: ({ s }) => [
-      { h: "The Mortgage Calculator on your own loan. Set <b>property tax</b>, <b>insurance</b>, <b>PMI</b>, <b>HOA</b>, <b>maintenance</b> and <b>utilities</b>: they become your budget's housing lines on Spending.", ok: done(!!s.profile.homeCosts) },
+      { h: "This is the Mortgage Calculator on your own loan. Set <b>property tax</b>, <b>insurance</b>, <b>PMI</b>, <b>HOA</b>, <b>maintenance</b> and <b>utilities</b>, and they become your budget's housing lines on Spending.", ok: done(!!s.profile.homeCosts) },
       { h: "Try <b>extra payments</b> or a <b>refinance</b> to see how much sooner it's paid off, and the interest saved." },
-      { h: "Renting? Your rent and renter's insurance are your budget's lines instead, and the Rent vs. Buy Calculator starts from your rent." },
+      { h: "Renting? Your rent and renter's insurance are your budget's lines instead, and Rent vs. Buy starts from your rent." },
     ] },
   ],
   chip: () => "" };

@@ -22,12 +22,12 @@ export function collegeShare(s: CollegeInputs): ShareKit {
         const P = collegePlanCalc(inp);
         if (!P) return "Set an annual cost first";
         return (
-          <SheetPage title="College Savings Plan" sub={fmtNum(P.kids.length) + " children"}
+          <SheetPage title="College Savings Plan" sub={fmtNum(P.kids.length) + (P.kids.length === 1 ? " child" : " children")}
             big={[["Save per month", money(P.monthly), phaseNote(P)], ["Total cost, all children", money(P.totalFuture), "at future prices"], ["Needed today", money(P.pvToday), "present value"]]}
             chart={copyChart("#chartCl")} foot={FOOT}>
             <div className="sh-cols">
               <SheetSection t="Children" rows={inp.kids.map((k, i) => ["Child " + (i + 1), k.annualCost > 0 && k.yearsUntil > 0
-                ? money(k.annualCost) + "/yr today, in " + fmtNum(k.yearsUntil) + " yrs, for " + fmtNum(k.collegeYrs) : "left out"])} />
+                ? money(k.annualCost) + "/yr today, in " + fmtNum(k.yearsUntil) + " yrs, for " + fmtNum(k.collegeYrs) + " yrs" : "left out"])} />
               <SheetSection t="Assumptions" rows={assumptions(inp)} />
               <SheetSection t="Results" rows={[["Total cost, all children", money(P.totalFuture)], ["Needed today", money(P.pvToday)],
                 ...P.phases.map((x, i) => [i ? "Then, from year " + fmtNum(Math.round((x.from / 12) * 10) / 10) : "Monthly savings needed", money(x.monthly) + "/mo"] as [string, string]),
@@ -61,7 +61,7 @@ export function collegeShare(s: CollegeInputs): ShareKit {
       const chart = { sel: "#chartCl", w: 900, h: 300 };
       if (family) {
         const P = collegePlanCalc(inp);
-        return { title: "College savings plan", bigLabel: "Save per month", big: P ? money(P.monthly) : DASH, sub: P ? fmtNum(P.kids.length) + " children · " + phaseNote(P) : "",
+        return { title: "College savings plan", bigLabel: "Save per month", big: P ? money(P.monthly) : DASH, sub: P ? fmtNum(P.kids.length) + (P.kids.length === 1 ? " child · " : " children · ") + phaseNote(P) : "",
           rows: P ? [["Total cost, all children", money(P.totalFuture)], ["Needed today", money(P.pvToday)],
             ...P.kids.map((k) => ["Child " + (k.index + 1) + ", in " + fmtNum(k.yearsUntil) + " yrs", money(k.total)] as [string, string]), ...assumptions(inp)] : [], chart };
       }

@@ -19,11 +19,11 @@ export function histWhen(w: HistWindow | undefined): string {
 /** What the run covers: how many windows, over which years. */
 export function HistBarNote({ H, perStage }: { H: HistRuns | null; perStage?: boolean }) {
   if (!H || !H.count) {
-    return <>{H?.tooLong ? "No window fits: history runs " + H.first + "–" + H.last + "." : "Add some years to run this."}</>;
+    return <>{H?.tooLong ? "No window fits: history runs from " + H.first + " to " + H.last + "." : "Add some years to run this."}</>;
   }
   return (
     <>
-      <b>{fmtNum(H.count)}</b> rolling windows of {fmtYears(H.totalYears)}, compounded month by month, {H.first}{"–"}{H.last}.{" "}
+      <b>{fmtNum(H.count)}</b> rolling windows of {fmtYears(H.totalYears)}, compounded month by month, from {H.first} to {H.last}.{" "}
       {perStage ? "Each stage uses its own stock mix, set on the cards above. " : ""}Your rate of return and inflation inputs are ignored in this mode.
     </>
   );
@@ -35,7 +35,7 @@ export function HistSummary({ id, H, target, label }: { id: string; H: HistRuns 
   if (!H || !H.count) {
     return (
       <div className="mcnote" id={id} hidden={!H?.tooLong}>
-        {H?.tooLong ? <><b className="warn"><Short />{fmtYears(H.totalYears)}</b> is longer than the {H.span} years of history available ({H.first}{"–"}{H.last}). Shorten the plan to use this mode.</> : null}
+        {H?.tooLong ? <><b className="warn"><Short />{fmtYears(H.totalYears)}</b> is longer than the {H.span} years of history available ({H.first} to {H.last}). Shorten the plan to use this mode.</> : null}
       </div>
     );
   }

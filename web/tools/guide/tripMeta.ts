@@ -79,5 +79,5 @@ export const TRIP_META: Record<string, TripMeta> = {
   backtest: { tool: "backtest", path: "/backtest", store: "backtest", name: "Portfolio Backtest", mins: 5, title: "See what your mix has earned", learn: "what your mix actually earned, year by year, since 1926",
     preview: ["Your mix is set from the guide's answer, rebalanced each year.",
       "You see every year since 1926 after inflation, with its worst falls.",
-      "Rolling ten-year stretches show the best and worst you could have lived through."] },
+      "Rolling returns show the best and worst 1, 5, 10, 20 and 30-year stretches you could have lived through."] },
 };

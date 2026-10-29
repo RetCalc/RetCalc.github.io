@@ -142,7 +142,7 @@ export function Tax() {
         ? s.view === "take" ? pctStr(R.gross ? R.net / R.gross : 0, 1) + " of gross, after pre-tax deductions" : pctStr(R.gross ? netPay / R.gross : 0, 1) + " of gross, after taxes"
         : "Enter your income to begin",
       monthNote: s.view === "take" ? "In your paycheck, after pre-tax deductions" : "After all taxes",
-      thirdLabel: payWord(ppy), thirdNote: ppy + " paychecks a year",
+      thirdLabel: payWord(ppy), thirdNote: ppy + " paychecks per year",
       net: money(shown), month: money(shown / 12), third: money(shown / ppy),
     };
     derived = {
@@ -218,8 +218,8 @@ export function Tax() {
   const maxAmt = live.reduce((a, o) => Math.max(a, o.b.withdrawn), 0);
   let bucketNote = "", gainNote = "";
   if (ret) {
-    bucketNote = "The Roth column is zero by construction, and only the gain portion of the brokerage withdrawal is taxable; the rest is your own basis coming back. " +
-      "Ordinary tax is split across the traditional, Social Security and other-income rows in proportion to what each contributed to ordinary taxable income.";
+    bucketNote = "Roth withdrawals aren't taxed. Only the gain portion of the brokerage withdrawal is taxable, and the rest is your own basis coming back. " +
+      "Ordinary tax is split across the traditional, Social Security, pension and other-income rows in proportion to what each contributed to ordinary taxable income.";
     if (R.ssGross > 0)
       bucketNote += " Your provisional income is " + money(R.provisional) + ", which puts " +
         (R.ssTier === 0 ? "none of your benefits in the tax base." : "up to " + R.ssTier + "% of your benefits in the tax base: " + money(R.taxableSS) + " of " + money(R.ssGross) + ".");
@@ -228,7 +228,7 @@ export function Tax() {
       if (R.stateExcluded > 0) bucketNote += " That removed " + money(R.stateExcluded) + " from the state tax base here.";
     }
     if (R.gain > 0) {
-      gainNote = "You realized " + money(R.gain) + " of long-term gain on a " + money(R.brok) + " brokerage withdrawal; " + money(R.basis) + " of that was basis and never touched the return. ";
+      gainNote = "You realized " + money(R.gain) + " of long-term gain on a " + money(R.brok) + " brokerage withdrawal. The other " + money(R.basis) + " was basis and never touched the return. ";
       gainNote += R.gainTaxable > 0
         ? "The gain sits on top of " + money(R.ordTaxable) + " of ordinary taxable income, so it is taxed at a blended <b>" + pctStr(R.ltcgRate, 1) + "</b>, costing " + money(R.ltcg) + ". "
         : "Your deductions cover everything, so none of the gain is taxable at all. ";
@@ -380,7 +380,7 @@ export function Tax() {
                     </SelectField>
                   </div>
                   <div className="hint -mt-1 mb-3.5" id="txLocalNote">
-                    {localInfo.note} Rates and rules vary by place, so this is an estimate. Your pay stub shows any local tax taken out{localInfo.links.length ? ", or look up your rate: " : "; your city or county tax office has the rate."}
+                    {localInfo.note} Rates and rules vary by place, so this is an estimate. Your pay stub shows any local tax taken out{localInfo.links.length ? ", or look up your rate: " : ". Your city or county tax office has the rate."}
                     {localInfo.links.map(([label, url], i) => <span key={url}>{i ? ", " : ""}<a href={url} target="_blank" rel="noopener noreferrer">{label}</a></span>)}{localInfo.links.length ? ", or your city or county tax office." : null}
                   </div>
                 </>
@@ -588,7 +588,7 @@ function PaycheckCard({ stub, two }: { stub: Stub; two: boolean }) {
         </table>
       </div>
       <div className="mcnote" id="txStubNote">
-        {two ? "Federal, state and local income taxes are your joint return's, split between you by each of your pay after pre-tax deductions. " : ""}
+        {two ? "Federal, state and local income taxes are your joint return's, split between you by each person's pay after pre-tax deductions. " : ""}
         What&apos;s withheld from a real paycheck can differ from these: they&apos;re the year&apos;s tax, spread evenly over {stub.ppy === 12 ? "twelve months" : stub.ppy + " paychecks"}. A traditional IRA isn&apos;t taken out of pay, so it isn&apos;t here.
       </div>
     </Card>

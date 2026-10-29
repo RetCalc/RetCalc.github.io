@@ -103,7 +103,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
       widow = "Filing switches to single at age " + wRow.age + ". The same income now meets single brackets and a single standard deduction: " + rateTxt + ", and " + taxTxt + ".";
     }
     const verdict = taxSaved >= 0 && nwDelta >= 0 ? "Converting wins on both measures."
-      : taxSaved < 0 && nwDelta < 0 ? "Converting loses on both measures here." : "The two measures disagree; read them together, not separately.";
+      : taxSaved < 0 && nwDelta < 0 ? "Converting loses on both measures here." : "The two measures disagree, so read them together.";
     // A plan that converts nothing is doing nothing: there's no contest to call.
     const kind: keyof typeof VERDICT = !(plan.totalConv > 0) ? "none" : taxSaved >= 0 && nwDelta >= 0 ? "win" : taxSaved < 0 && nwDelta < 0 ? "lose" : "mixed";
     const pts = plan.rows.map((p, i) => {
@@ -277,7 +277,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
           </div>
           {R ? (
             <p className="m-0 max-w-copy px-5.5 pb-4.5 text-note text-muted-foreground max-sm:px-4" id="rcVerdictNote">
-              Lifetime tax is what you and your heirs hand over; after-tax net worth is what is left standing at age {inp.endAge}, with traditional dollars discounted at {pctStr(inp.heirRate, 0)} because they are still owed to the IRS.
+              Lifetime tax is what you pay through age {inp.endAge}. After-tax net worth is what is left at that age, with traditional dollars discounted at {pctStr(inp.heirRate, 0)} because they are still owed to the IRS.
             </p>
           ) : null}
           {/* What the plan settles about required distributions and the

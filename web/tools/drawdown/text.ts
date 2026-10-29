@@ -40,9 +40,9 @@ export const DD_UI: Record<string, UI> = {
   riskgr: { name: "Risk-based guardrails", short: "Risk-based", dial: "rgTarget", blocks: ["ddRgWrap"],
     blurb: "Holds spending until history's odds of it lasting leave a band, then resets to the target." },
   floorceil: { name: "Floor & ceiling", short: "Floor & ceiling", dial: "rate", rate: "Target withdrawal rate", blocks: ["ddFloorWrap"],
-    blurb: "Aims at a share of the portfolio, but moves spending at most a set step a year." },
+    blurb: "Aims at a share of the portfolio, but moves spending by at most a set step per year." },
   vanguard: { name: "Vanguard dynamic spending", short: "Vanguard", dial: "rate", rate: "Target withdrawal rate", blocks: ["ddVgWrap"],
-    blurb: "Floor and ceiling with Vanguard's limits: up 5% or down 2.5% at most a year." },
+    blurb: "Floor and ceiling with Vanguard's limits: up 5% or down 2.5% per year at most." },
   yale: { name: "Yale Endowment", short: "Yale", dial: "yaleRate", rate: "Starting withdrawal rate", blocks: ["ddYaleWrap", "ddYaleNote"],
     blurb: "Mostly last year's spending, partly a share of today's portfolio." },
   hebeler: { name: "Hebeler Autopilot II", short: "Autopilot II", dial: "hebRate", blocks: ["ddHebWrap"],
@@ -58,6 +58,7 @@ export const DD_STRAT_NAMES: Record<string, string> = Object.fromEntries(Object.
 /* ---- small words ---- */
 /** A setting as words would write it: 0.5, 33.7, 2.25, 90, no padding. */
 export const ddN = (v: number) => String(+(Math.round(v * 100) / 100));
+const yrs = (n: number) => n + (n === 1 ? " year" : " years");
 export const pct1 = (x: number) => (x < 0 ? "−" : "") + pctStr(Math.abs(x), 1);
 
 /** The year of retirement as an age, once one is set. */
@@ -107,7 +108,7 @@ export function mixText(o: DdOpts): string {
 }
 /** How often the mix is put back, as a short phrase. */
 export function rebalText(o: { rebal: string; rebalN: number; rebalBand: number }): string {
-  return o.rebal === "every" ? "Every " + o.rebalN + " years" : o.rebal === "band" ? "When off by more than " + ddN(o.rebalBand) + " points"
+  return o.rebal === "every" ? "Every " + yrs(o.rebalN) : o.rebal === "band" ? "When off by more than " + ddN(o.rebalBand) + " points"
     : o.rebal === "never" ? "Never" : "Every year";
 }
 export function rebalNote(o: DdOpts): string {
@@ -141,7 +142,7 @@ export function lineWords(c: number | number[], age: number | null, unit = ""): 
 export function planLabel(o: DdOpts): string {
   const u = DD_UI[o.strategy] || ({} as UI), D = DD_STRAT[o.strategy]?.dial;
   return (u.card || u.name || o.strategy) + (D ? ", " + dialText(o.strategy, o[D.key] as number, o) : "") + ", " +
-    mixText(o) + ", " + fmtNum(o.years) + " years" + (o.monthly ? ", every month" : "");
+    mixText(o) + ", " + (o.years === 1 ? "1 year" : fmtNum(o.years) + " years") + (o.monthly ? ", every month" : "");
 }
 
 /** The hard start a strategy is shown through: 1966 when the record has it
@@ -174,7 +175,7 @@ export function stratNote(o: DdOpts, firstW: number, r1: number): string {
       return "Takes " + p(o.initialPct) + " of the portfolio each year, " + yr1 + " in year one, but never less than " +
         ddN(o.clyFloor) + "% of last year's spending in dollars, so a crash brings a run of small cuts rather than one big one.";
     case "oneovern":
-      return "Year one takes 1/" + o.years + " of the portfolio, " + yr1 + ". The share rises every year, to all of what's left in the last.";
+      return "Year one takes 1/" + o.years + " of the portfolio, " + yr1 + ". The share rises every year, to all of what's left in the final year.";
     case "rmd": {
       const age = o.retireAge != null ? o.retireAge : 65;
       return "Year one takes the portfolio ÷ " + ddN(Math.round(ddRmdDivisor(age) * 10) / 10) + ", " + yr1 + " (" + pctStr(r1, 2) + ")" +
@@ -183,7 +184,7 @@ export function stratNote(o: DdOpts, firstW: number, r1: number): string {
     }
     case "riskgr":
       return "Year one: " + yr1 + " (" + pctStr(r1, 2) + "), the spending with a " + ddN(o.rgTarget) + "% chance of lasting " +
-        o.years + " years at your stock mix, by history, counting Social Security and other income still to come. It then holds, with inflation, " +
+        yrs(o.years) + " at your stock mix, by history, counting Social Security and other income still to come. It then holds, with inflation, " +
         "until that chance falls below " + ddN(o.rgLo) + "% or rises above " + ddN(o.rgHi) + "%, and resets to " + ddN(o.rgTarget) + "%.";
     case "vanguard":
       return "Aims at " + p(o.initialPct) + " of the current portfolio, " + yr1 + " in year one, but spending never rises more than " +
@@ -192,7 +193,7 @@ export function stratNote(o: DdOpts, firstW: number, r1: number): string {
       return "Aims at " + p(o.initialPct) + " of the current portfolio, but moves spending at most " + ddN(o.floorPct) +
         "% down or " + ddN(o.ceilPct) + "% up from last year's, after inflation.";
     case "hebeler":
-      return "Year one takes the payment that would spend the portfolio over " + o.years + " years at " + p(o.hebRate) + " real, " +
+      return "Year one takes the payment that would spend the portfolio over " + yrs(o.years) + " at " + p(o.hebRate) + " real, " +
         yr1 + " (" + pctStr(r1, 2) + "). After that, " + ddN(o.hebWeight) + "% of last year's spending with inflation, plus " +
         ddN(100 - o.hebWeight) + "% of that payment, worked out again on what's left.";
     case "sensible":
@@ -234,16 +235,16 @@ export function dialFields(o: DdOpts, id: string, v: number, T?: DdTarget): Reco
 /* ---- Monte Carlo ---- */
 /** What the Monte Carlo runs draw, in words. */
 export function mcWords(o: DdOpts): string {
-  const span = (HIST_START + 1) + "–" + (HIST_START + HIST_STOCK.length - 1);
+  const span = (HIST_START + 1) + " to " + (HIST_START + HIST_STOCK.length - 1);
   let w = o.mcBlock > 1
-    ? "Each run strings together " + o.years + " years from the " + span + " record, " + o.mcBlock +
+    ? "Each run strings together " + yrs(o.years) + " from the " + span + " record, " + o.mcBlock +
       " consecutive years at a time, so the streaks history had, good and bad, stay together."
-    : "Each run draws " + o.years + " years at random from the " + span + " record. This captures the range " +
-      "of possible returns but not the way bad years clustered; drawing several years together, or the historical view, shows that.";
+    : "Each run draws " + yrs(o.years) + " at random from the " + span + " record. This captures the range " +
+      "of possible returns but not how bad years clustered. Drawing several years together, or the historical view, shows that.";
   if (o.mcOwn) {
     const H = ddMCHistory(), parts: string[] = [];
     const add = (k: keyof typeof H, name: string) => {
-      if (Math.abs(o.mcRet[k] - H[k]) >= 0.05) parts.push(name + " " + ddN(o.mcRet[k]) + "% a year (history " + H[k].toFixed(1) + "%)");
+      if (Math.abs(o.mcRet[k] - H[k]) >= 0.05) parts.push(name + " " + ddN(o.mcRet[k]) + "% per year (history " + H[k].toFixed(1) + "%)");
     };
     add("stock", "US stocks");
     if (o.svPct > 0) add("sv", "small value");
@@ -299,11 +300,12 @@ export function whyText(o: DdOpts, r: DdHistRun, H: DdHist, age: number | null):
   const rate = nx && row.realEnd > 0 ? nx.realWithdrawal / row.realEnd : null;
   const where = below < 0.1 ? "among the worst on record" : below < 0.33 ? "weaker than most" : below >= 0.9 ? "among the best on record" :
     below >= 0.67 ? "stronger than most" : "about typical";
-  let txt = "<b>" + lead + ":</b> its first " + n + " years returned " + pct1(d.port) + " per year after inflation at your mix " +
+  const firstN = n === 1 ? "first year" : "first " + n + " years";
+  let txt = "<b>" + lead + ":</b> its " + firstN + " returned " + pct1(d.port) + " per year after inflation at your mix " +
     "(stocks " + pct1(d.stock) + ", bonds " + pct1(d.bond) + ", with inflation at " + pctStr(d.infl, 1) + " per year), " + where +
-    "; the typical start's returned " + pct1(med) + ". ";
+    ". The typical start returned " + pct1(med) + ". ";
   if (n < o.years)
-    txt += "Withdrawing through them left " + pctStr(left, 0) + " of the starting balance, after inflation" +
+    txt += "Withdrawing through " + (n === 1 ? "it" : "them") + " left " + pctStr(left, 0) + " of the starting balance, after inflation" +
       (rate != null ? ", so year " + (n + 1) + "'s withdrawal was " + pctStr(rate, 1) + " of what was left" : "") + ". ";
   if (r.depleted) {
     const when = age != null ? "at age " + ageVal(age, r.depletedYear!) : "in year " + r.depletedYear;
@@ -331,6 +333,6 @@ export function wdOrder(list: PathStage[]) {
 /** A custom income or expense in a line. */
 export function describeItem(it: DdItem, age: number | null): string {
   const when = it.startYear === 1 ? "starting immediately" : age != null ? "starting at age " + ageVal(age, it.startYear) : "starting year " + it.startYear;
-  const dur = it.duration.type === "once" ? "one time" : it.duration.type === "years" ? "for " + it.duration.years + " years" : "rest of retirement";
+  const dur = it.duration.type === "once" ? "one time" : it.duration.type === "years" ? "for " + it.duration.years + (it.duration.years === 1 ? " year" : " years") : "rest of retirement";
   return money(it.annual) + "/yr, " + when + ", " + dur + " · " + (it.inflate ? "inflation-adjusted" : "fixed amount");
 }

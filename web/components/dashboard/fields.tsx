@@ -74,7 +74,7 @@ export function takeHomeOf(pr: Profile, k: PKey): number | null {
   return A.takehome && gross > 0 ? (A.takehome * ((k === "p1" ? A.income : A.income2) ?? 0)) / gross : null;
 }
 
-const PAID_OPTIONS = [["52", "Every week"], ["26", "Every two weeks"], ["24", "Twice a month"], ["12", "Once a month"]] as const;
+const PAID_OPTIONS = [["52", "Every week"], ["26", "Every two weeks"], ["24", "Twice a month"], ["12", "Monthly"]] as const;
 
 /** One person's pay: amount, how often, before or after taxes, and what
     it comes to. */

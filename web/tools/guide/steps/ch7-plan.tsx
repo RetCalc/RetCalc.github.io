@@ -141,7 +141,7 @@ export function PlanCard() {
         <section className="gd-box" aria-labelledby="gdHeroNum">
           <h3 id="gdHeroNum" className="k">Your number</h3>
           <div className="v key" id="gdProjected">{rounded(S.fv)}</div>
-          <p>On course at {fmtNum(S.retire)}{F.need != null ? <>, against about <b id="gdNeeded">{rounded(F.need)}</b> a plan like it needs</> : null}.</p>
+          <p>On course at {fmtNum(S.retire)}{F.need != null ? <>, against about <b id="gdNeeded">{rounded(F.need)}</b> that the plan needs</> : null}.</p>
           <p>Lasted in <b id="gdLasted">{pctStr(S.success, 0)}</b> of historical retirements since {S.H.first}.</p>
         </section>
         <section className="gd-box" aria-labelledby="gdHeroScore">

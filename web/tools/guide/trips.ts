@@ -73,9 +73,9 @@ const TRIPS: Record<string, TripDef<never>> = {
     prefill: (a: Answers, s: TaxInputs) => ({ ...s, mode: "normal", status: mar(a) ? "m" : "s", gross2: g(mar(a) ? a.income2 || 0 : 0),
       ...(ok(a.income) ? { gross: g(a.income) } : {}), ...(a.state ? { state: a.state } : {}), ...(ok(a.txPre) ? { pre: g(a.txPre) } : {}) }),
     tasks: ({ s }: Ctx<TaxInputs>) => [
-      { h: "Check <b>Filing status</b> and <b>State</b> under Your situation. We filled them in from your answers." },
+      { h: "Check <b>Filing status</b> and <b>State</b> under Your return. We filled them in from your answers." },
       { h: "<b>Gross income</b> holds your salary. If your paycheck puts money into a 401(k), 403(b) or HSA before tax, enter the yearly total in <b>Pre-tax deductions</b>.", ok: taxInput(s).pre > 0 ? true : undefined },
-      { h: "Above the results, switch <b>Net pay</b> to <b>Take-home pay</b>: what actually reaches your bank account.", ok: s.view === "take" },
+      { h: "Above the results, switch <b>After tax</b> to <b>Take-home</b>: what actually reaches your bank account.", ok: s.view === "take" },
       { h: "<b>Per month</b> is your monthly take-home. Tap <b>Back to guide</b> and it comes with you." },
     ],
     chip: ({ s }: Ctx<TaxInputs>) => { const R = runTax(taxInput(s)); return R.gross > 0 ? "Take-home<br><b>" + money(R.net / 12) + "/mo</b>" : ""; },
@@ -242,9 +242,9 @@ const TRIPS: Record<string, TripDef<never>> = {
         { h: "Your age, retirement age, savings and monthly saving (yours plus your employer's) are filled in on the left." +
           (ok(a.stopAge) && a.stopAge < a.retire! && !coastNow(a) ? " Basic saves right up to retirement, so it doesn't show your plan to stop at " + fmtNum(a.stopAge) + ": its figure runs higher. The <b>Advanced</b> calculator shows the coast, as one of its changes ahead." : "") },
         { h: "<b>Value at retirement</b> is what your savings could grow to, in today's dollars, so you can compare it with prices now." },
-        { h: "Raise <b>How much do you save</b> by $100 or $200 and watch it move. Then try retiring a year or two later.", ok: tried },
+        { h: "Raise <b>How much do you save for retirement?</b> by $100 or $200 and watch it move. Then try retiring a year or two later.", ok: tried },
         { h: "The shaded band on the chart is the same plan in better and worse markets." },
-        { h: "Want taxes, fees and account types? <b>Open these numbers in Advanced</b> at the bottom goes deeper." },
+        { h: "Want taxes, fees and account types? <b>Open these numbers in Advanced</b>, at the bottom." },
       ];
     },
     chip: ({ s }: Ctx<BasicInputs>) => { const p = basicInput(s); return p.years > 0 ? "At " + fmtNum(p.retire) + "<br><b>" + money(projectBasic(p).fv) + "</b>" : ""; },
@@ -300,9 +300,9 @@ const TRIPS: Record<string, TripDef<never>> = {
       ({ a, trip }: Ctx<DrawdownState>) => {
         const S = sim(a), b = trip.base as { est: boolean } | undefined;
         return [
-          { h: "Your plan is loaded on the left: " + (S ? money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " per year plus about " + money(S.taxYr) + " for tax, since the simulator doesn't work tax out itself (a <b>Starting withdrawal rate</b> of " + pctStr((S.spend + S.taxYr) / Math.max(1, S.fv), 1) + ")" : "your savings and spending") +
+          { h: "Your plan is loaded on the left: " + (S ? money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " per year plus about " + money(S.taxYr) + " for tax, since the simulator doesn't figure tax itself (a <b>Starting withdrawal rate</b> of " + pctStr((S.spend + S.taxYr) / Math.max(1, S.fv), 1) + ")" : "your savings and spending") +
             ", Social Security" + (b && !b.est ? " as a known benefit" : "") + " and " + (pos(a.pension) ? "your pension under <b>Other income</b>." : "no other income yet.") },
-          { h: "<b>Success rate</b> is the share of real retirements since 1926 where the money never ran out. 85% or more is solid; close to 100% can mean room to spend more." },
+          { h: "<b>Success rate</b> is the share of real retirements since 1926 where the money never ran out. 85% or more is solid. Close to 100% can mean room to spend more." },
           { h: "<b>Median ending balance</b> is what's typically left at the end, in today's dollars. <b>Worst case</b> is the leanest ending on record." },
           { h: "The sentence under the headline names the starting years that failed, if any. They're where the rest of this tour looks." },
         ];
@@ -311,7 +311,7 @@ const TRIPS: Record<string, TripDef<never>> = {
         { h: "<b>How each starting year fared</b> lists every retirement tested. Sort by <b>Ending balance</b> to bring the worst to the top, then tap one." },
         { h: "Above the chart, switch to <b>Selected year</b> to watch that retirement play out.", ok: on('#segDDView [data-ddview="year"].on') },
         { h: "<b>What your income looked like</b> and <b>Year by year</b> show what you'd have lived on, and where the balance went, each year." },
-        { h: "Retiring into a falling market early on does the most damage: it's called sequence risk, and it's why averages alone mislead." },
+        { h: "Retiring into a falling market early on does the most damage. This is sequence risk, and it's why averages alone mislead." },
       ],
       ({ a, s, trip }: Ctx<DrawdownState>) => {
         const base = (trip.base || {}) as { seen?: Record<string, 1>; floor?: number };
@@ -333,21 +333,21 @@ const TRIPS: Record<string, TripDef<never>> = {
       ({ s, trip }: Ctx<DrawdownState>) => {
         const b = trip.base as { stock: number } | undefined;
         return [
-          { h: "<b>Stocks</b> is " + (b ? b.stock : 60) + "%, the rest in bonds. Try 40% and 80%: more stocks usually lifts the median, and can cut either way on the worst case.", ok: b && parseNum(String(s.stock)) !== b.stock ? true : undefined },
-          { h: "<b>Glide to</b> moves the mix gradually over retirement, for example from 60% down to 40% stocks, or up, which some research favors." },
+          { h: "<b>Asset mix</b> has stocks at " + (b ? b.stock : 60) + "%, the rest in bonds. Try 40% and 80%: more stocks usually lifts the median, and can cut either way on the worst case.", ok: b && parseNum(String(s.stock)) !== b.stock ? true : undefined },
+          { h: "<b>Glide stocks to</b>, in the same pop-up, moves the mix gradually over retirement, for example from 60% down to 40% stocks, or up, which some research favors." },
           { h: "<b>Fees</b> come off every year. Try 0.5% or 1% to see what an advisor or pricier funds would cost over a whole retirement." },
         ];
       },
       ({ a, s, trip }: Ctx<DrawdownState>) => {
         const b = trip.base as { est: boolean; claim: number } | undefined;
         if (b && b.est) return [
-          { h: "<b>Claim at age</b> sets when your benefit starts. Waiting raises it about 8% per year from 67 to 70; claiming at 62 cuts it about 30%, for life." },
+          { h: "<b>Claim at age</b> sets when your benefit starts. Waiting raises it about 8% per year from 67 to 70. Claiming at 62 cuts it about 30%, for life." },
           { h: "Scroll to <b>Social Security claiming age comparison</b>, near the bottom, for your success rate claiming at 62, 64, 67 and 70." },
           { h: "Later claiming means drawing more from savings first, but a bigger check for the rest of your life, and for a surviving spouse.", ok: parseNum(String(s.ssClaim)) !== b.claim ? true : undefined },
         ];
         return [
           { h: "Your benefit is entered as a known amount" + (a.ssOwn ? ", from your statement" : ", from the guide's estimate") + ", starting at " + (b ? b.claim : 67) + "." },
-          { h: "Waiting raises a benefit about 8% per year from 67 to 70, and claiming at 62 cuts it about 30%. To try a different age, change <b>When will you claim it?</b> on the guide's Social Security card: the guide works out the new amount." },
+          { h: "Waiting raises a benefit about 8% per year from 67 to 70. Claiming at 62 cuts it about 30%. To try a different age, change <b>When will you claim it?</b> on the guide's Social Security card: the guide works out the new amount." },
         ];
       },
       ({ s }: Ctx<DrawdownState>) => [
@@ -402,7 +402,7 @@ const TRIPS: Record<string, TripDef<never>> = {
           { h: "Your savings at " + fmtNum(r) + ", about <b>" + money(B.total) + "</b> in today's dollars, are split into <b>Traditional</b>, <b>Roth</b> and <b>Brokerage</b>" +
             (split ? " in the same shares you have today." : ". The guide didn't know your split, so it's all under Traditional: move what's in a Roth or a taxable account.") },
           { h: "<b>Of that, contributions</b> is what you put into Roth accounts yourself, which can come out any time" +
-            (B.basis > 0 ? ". We used today's Roth balance as a guess; your records or Form 8606 have the real number." : ". Enter it if you have a Roth.") },
+            (B.basis > 0 ? ". We used today's Roth balance as a guess. Your records or Form 8606 have the real number." : ". Enter it if you have a Roth.") },
           { h: "<b>Cost basis</b> is how much of the brokerage is money you put in rather than growth. 60% is a placeholder; your broker shows it." },
           { h: "<b>Yearly spending</b> is your retirement spending" + (bridgeSpend(a) < (a.retSpend || 0) - 1
             ? ", less the health premiums you added: the tool prices ACA coverage for each plan itself."
@@ -425,7 +425,7 @@ const TRIPS: Record<string, TripDef<never>> = {
         const b = trip.base as { fill: string } | undefined;
         return [
           { h: "The table shows each account at 59½ in an <b>Average</b> market, and in <b>Above average</b> and <b>Below average</b> ones, all real starts from history." },
-          { h: "Switch between them at the top of that panel; the charts and the year-by-year table follow.", ok: !on('#segBRPath [data-brpath="avg"].on') ? true : undefined },
+          { h: "Switch between them at the top of that panel, and the charts and the year-by-year table follow.", ok: !on('#segBRPath [data-brpath="avg"].on') ? true : undefined },
           { h: "Under <b>Account balances</b>, switch to <b>Across history</b> to see the range over every start since 1926.", ok: on('#segBRBal [data-brbal="hist"].on') ? true : undefined },
           { h: "<b>Blended plan converts</b>, on the left, picks how much to convert automatically. Try <b>To the top of the 12% bracket</b> to see what converting more costs now in tax and health premiums.",
             ok: b && s.fill !== b.fill ? true : undefined },
@@ -462,7 +462,7 @@ const TRIPS: Record<string, TripDef<never>> = {
     tasks: () => [
       { h: "Retirement age, filing status, household size and state are filled in from your answers." },
       { h: "<b>Retirement MAGI</b> starts at your planned yearly spending, a cautious guess. Roth withdrawals and cash savings don't count toward it, so yours may be lower, which can mean a bigger subsidy." },
-      { h: "Read the <b>Pre-65</b> section for your monthly premium before Medicare, then <b>Post-65</b> for what Medicare costs after." },
+      { h: "Read <b>Before 65: the ACA bridge</b> for your monthly premium before Medicare, then <b>From 65: Medicare</b> for what Medicare costs after." },
       { h: "Make sure those premiums fit inside the retirement spending you gave the guide." },
     ],
     chip: () => { const v = hcPrem(); return v != null ? "Premium before 65<br><b>" + money(v) + "/mo</b>" : ""; },
@@ -524,7 +524,7 @@ const TRIPS: Record<string, TripDef<never>> = {
       return [
         { h: "Your plan is carried over: savings as <b>Starting value</b>, your monthly saving, your age, <b>Time period</b> until retirement, and a <b>Rate of return</b> for your mix, before inflation. Figures are in future dollars unless marked <b>inflation adjusted</b>." +
           (advFrom.length ? " Your changes from the guide are under <b>Changes ahead</b>: " + advFrom.map((x) => x.toLowerCase()).join(", ") + "." : "") },
-        { h: "Plainly: Advanced leaves out Social Security and the guide's year-by-year taxes and health premiums, using one flat tax rate instead, so its numbers are for your savings alone. The guide's number stays the one for the retirement years." },
+        { h: "Advanced leaves out Social Security and the guide's year-by-year taxes and health premiums and uses one flat tax rate, so its numbers cover your savings alone. The guide's number stays the one for the retirement years." },
         { h: "Under <b>Changes ahead</b>, <b>Add a change</b> for the next big one: a promotion, a paid-off car, going part-time, children. Change what you save there and it comes back to the guide as your own edit, with an undo.", ok: n > advFrom.length ? true : undefined },
         { h: "<b>Contribution growth</b> raises what you save each year. It's set to match inflation; try 4% or 5% if you expect raises." },
         { h: "Turn on <b>Split by account type</b> to enter traditional, Roth, brokerage and HSA balances separately, plus your employer match. The <b>By account type</b> table then shows the tax on what you'd withdraw.", ok: s.acOn ? true : undefined },
@@ -586,7 +586,7 @@ const TRIPS: Record<string, TripDef<never>> = {
       const mix = mixFor(a.risk), era = q("#segBTEra button.on");
       const moved = (era && era.getAttribute("data-era") !== "all") || parseNum(String(s.stock)) !== mix || parseNum(String(s.sv)) > 0 || parseNum(String(s.cash)) > 0;
       return [
-        { h: "<b>Asset mix</b> is set to " + mix + "% stocks, close to your " + riskLabel(a.risk || 0.045) + " mix; the rest is bonds. This shows what that mix actually earned, year by year, since 1926." },
+        { h: "<b>Asset mix</b> is set to " + mix + "% stocks, close to your " + riskLabel(a.risk || 0.045) + " mix, with the rest in bonds. This shows what that mix actually earned, year by year, since 1926." },
         { h: "<b>After inflation</b> is the figure to compare with the " + pctStr(a.risk || 0.045, 1) + " per year the guide assumed for your plan. <b>Return, per year</b> is the same before inflation." },
         { h: "Try <b>Last 30</b> or <b>Last 50</b>, and a different mix, to see how much the answer moves with the period you pick.", ok: !!moved },
         { h: "<b>Worst year</b> and <b>Deepest fall</b> show what you'd have had to sit through. If a drop like that would have made you sell, a lower stock mix may suit you better." },

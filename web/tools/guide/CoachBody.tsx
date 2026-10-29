@@ -66,7 +66,7 @@ export default function CoachBody() {
       min={g.coachMin} onToggle={() => setGuide((x) => { x.coachMin = !x.coachMin; })} closeLabel="Close the guide panel"
       onClose={() => {
         setGuide((x) => { x.trip = null; });
-        toast("Guide closed. It's saved under the Guide tab whenever you want to pick it back up.");
+        toast("Guide closed. Your progress is saved, so you can pick it back up from the Guide tab.");
       }}
       tasks={meta.learn ? [{ h: "<b>Here you'll learn</b> " + meta.learn + "." }, ...tasks] : tasks} next={here && nextTask ? "<span>Next</span>" + nextTask.h.replace(/<em>.*?<\/em>/g, "") : undefined}
       part={here && pages && meta.pages ? { i: pi, titles: meta.pages.map((p) => p.title), focus: meta.pages[pi]?.focus, go: (d) => {

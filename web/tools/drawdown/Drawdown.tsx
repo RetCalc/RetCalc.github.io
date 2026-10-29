@@ -220,13 +220,13 @@ export function Drawdown({ landing }: { landing?: string }) {
         <Card id="ddIntro" hidden={introSeen === "1" || !!landing}>
           <CardContent className="flex items-start gap-3.5">
             <div className="min-w-0 flex-auto">
-              <div className="mb-1.5 font-semibold text-foreground">New here? Here&apos;s the idea.</div>
+              <div className="mb-1.5 font-semibold text-foreground">What this tool answers</div>
               <div className="hint m-0 max-w-copy">
-                Every other tool answers &quot;how much will I have?&quot; This one answers the
-                harder question: once you start spending it, <b>will it last?</b> Set a
+                A projection answers &quot;how much will I have?&quot; This tool asks what
+                comes next: once you start spending it, <b>will it last?</b> Set a
                 portfolio value and a withdrawal strategy, then test it against every
-                real retirement since 1926: not a guess, actual market history.
-                Click any row in the table below to see exactly what that year looked
+                real retirement since 1926, using actual market history.
+                Click any row in the table below to see what that year looked
                 like, year by year.
               </div>
             </div>
@@ -311,7 +311,7 @@ function readoutFigures(o: DdOpts, mode: "hist" | "mc", R: PlanResult | null, H:
       F.worst = money(H.worstEnd);
       F.worstNote = H.failCount ? "Ran out in " + H.failCount + " of " + H.total + " retirements" : "Never ran out";
       F.verdict = H.successRate >= 0.99
-        ? "<b>This plan survived every historical period.</b> Including the Great Depression, the 1970s stagflation, and the 2008 crash."
+        ? "<b>This plan survived every historical period,</b> including the Great Depression, the 1970s stagflation and the 2008 crash."
         : H.successRate >= 0.9
           ? "<b>This plan survived most historical periods.</b> It failed only when retirement began in " + H.failYears.slice(0, 6).join(", ") +
             (H.failYears.length > 6 ? " and others" : "") + ", the worst sequences on record."
@@ -368,7 +368,7 @@ function Readout({ v, F, pinned, setMode, pin, unpin }: {
           <SegmentedItem data-dd="mc" pressed={mode === "mc"} onClick={() => setMode("mc")}>Monte Carlo</SegmentedItem>
         </SegmentedGroup>
         <Badge variant="outline" id="ddBadge">{F.badge}</Badge>
-        <Button variant="outline" size="sm" className="ml-auto max-sm:ml-0 max-sm:w-full" id="ddPin" title="Keep these results to compare your next changes against" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</Button>
+        <Button variant="outline" size="sm" className="ml-auto max-sm:ml-0 max-sm:w-full" id="ddPin" title="Keep these results to compare against your next changes" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</Button>
       </div>
       <HeroReading tone={F.tone}
         hero={{
@@ -385,7 +385,7 @@ function Readout({ v, F, pinned, setMode, pin, unpin }: {
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-border px-5.5 py-2.5 text-note max-sm:px-4" id="ddBaseBar" hidden={!pinned}>
         <span className="text-label text-muted-foreground">Baseline</span><span className="font-semibold text-foreground" id="ddBaseLabel">{pinned?.label ?? ""}</span>
-        <span className="min-w-0 flex-auto text-muted-foreground">Changes since are marked <b className="pos">better</b> or <b className="neg">worse</b>; the charts draw it dashed.</span>
+        <span className="min-w-0 flex-auto text-muted-foreground">Changes since are marked <b className="pos">better</b> or <b className="neg">worse</b>, and the charts draw the baseline dashed.</span>
         <Button variant="outline" size="sm" id="ddBaseClear" onClick={unpin}>Clear</Button>
       </div>
     </Card>

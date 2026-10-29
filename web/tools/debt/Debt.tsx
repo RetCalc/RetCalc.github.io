@@ -106,12 +106,12 @@ export function Debt() {
 
     // The verdict: the real trade-off between the two orderings.
     if (Math.abs(dInt) < 1 && dMon === 0) {
-      verdict = "With these debts the two orderings land in the same place; pick whichever you'll actually stick to.";
+      verdict = "With these debts the two orderings land in the same place. Pick whichever you'll actually stick to.";
     } else {
       verdict = "Avalanche costs " + money(Math.abs(dInt)) + " less in interest" + (dMon > 0 ? " and finishes " + debtDur(dMon) + " sooner" : "") + ". ";
       verdict += dFirst < 0
-        ? "Snowball clears your first debt " + debtDur(-dFirst) + " earlier. That early win is the whole argument for it, and here it costs " + money(Math.abs(dInt)) + "."
-        : "Snowball offers nothing in return here: it clears the first debt no sooner.";
+        ? "Snowball clears your first debt " + debtDur(-dFirst) + " earlier, at a cost of " + money(Math.abs(dInt)) + " in extra interest."
+        : "Snowball gains nothing here, since it clears the first debt no sooner.";
     }
     verdict += " Your blended rate is " + pctStr(rate / 100, 1) + " across " + live.length + (live.length === 1 ? " debt" : " debts") +
       ", and you're putting " + money(pick.monthlyPool, 0) + " per month at it.";
@@ -295,7 +295,7 @@ export function Debt() {
               <AlertDescription>
                 <div id="dtWarn" className="text-body text-pretty" hidden={!warn.length}>
                   {warn.length ? (
-                    <><b>{warn.join(", ")}</b>: the minimum doesn&apos;t cover one month of interest, so that balance grows on its own. The payoff below only works because {extra > 0 ? "of the extra payment" : "each cleared debt's minimum rolls over to the next"}; check the minimum you entered.</>
+                    <><b>{warn.join(", ")}</b>: the minimum doesn&apos;t cover one month of interest, so that balance grows on its own. The payoff below only works because {extra > 0 ? "of the extra payment" : "each cleared debt's minimum rolls over to the next"}. Check the minimum you entered.</>
                   ) : null}
                 </div>
               </AlertDescription>

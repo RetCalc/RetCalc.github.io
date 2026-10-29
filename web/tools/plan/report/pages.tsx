@@ -182,7 +182,7 @@ function Road({ R, p }: { R: PlanReport; p: Page }) {
     <Sheet R={R} p={p}>
       <Lead h={<>{money(A.total)} at {S.retire}, in today&apos;s dollars.</>}>
         {Math.round(S.years)} years of saving at {pctStr(a.nominal, 1)} per year before {pctStr(a.inflation, 1)} inflation{a.fees > 0 ? " and " + pctStr(a.fees, 2) + " in fees" : ""}.
-        {" "}Withdrawing {pctStr(A.withdrawal, 1)} the first year gives {money(A.afterTax)} after tax{S.stages ? ", with the stages on page " + (p.n + 1) + " in it" : ""}.
+        {" "}Withdrawing {pctStr(A.withdrawal, 1)} the first year gives {money(A.afterTax)} after tax{S.stages ? ", including the stages on page " + (p.n + 1) : ""}.
       </Lead>
       <Sec>Your savings by age, by account</Sec>
       <ClimbChart S={S} h={340} />
@@ -190,7 +190,7 @@ function Road({ R, p }: { R: PlanReport; p: Page }) {
         <span><i className="line" style={{ "--sw": C.trail } as React.CSSProperties} />Total</span></div>
       <div className="rp-g3 gap">
         <div className="rp-side"><h5>In future dollars</h5><div className="rp-fig sm">{money(A.fv)}</div><p className="rp-body">What your statements will say at {S.retire}, before adjusting for inflation.</p></div>
-        <div className="rp-side"><h5>A year to spend</h5><div className="rp-fig sm">{money(A.afterTax)}</div><p className="rp-body">After tax at about {pctStr(A.taxRate, 1)}, from a {pctStr(A.withdrawal, 1)} withdrawal, in today&apos;s dollars.</p></div>
+        <div className="rp-side"><h5>To spend per year</h5><div className="rp-fig sm">{money(A.afterTax)}</div><p className="rp-body">After tax at about {pctStr(A.taxRate, 1)}, from a {pctStr(A.withdrawal, 1)} withdrawal, in today&apos;s dollars.</p></div>
         <div className="rp-side"><h5>Milestones</h5>
           <dl className="rp-facts">{S.milestones.map((m) => <div key={m.label}><dt>{m.label}</dt><dd>age {m.age}</dd></div>)}</dl></div>
       </div>
@@ -248,7 +248,7 @@ function Stages({ R, p, part }: { R: PlanReport; p: Page; part: number }) {
       </> : null}
       {tail ? <div className="rp-g2 top gap">
         <div className="rp-side"><h5>What a child costs here</h5><p className="rp-body">Per month, unless you changed them: {money(CHILD_COST.noCare)} before school plus childcare where it&apos;s paid (about {money(CHILD_COST.care.suburb)} in a suburb, {money(CHILD_COST.care.city)} in a big city, {money(CHILD_COST.care.rural)} in rural areas), {money(CHILD_COST.school)} from 6 to 12 and {money(CHILD_COST.teen)} from 13 to 18. A later child costs 20% less: they share a room, clothes and gear. College isn&apos;t included.</p></div>
-        <div className="rp-side"><h5>Other changes</h5><p className="rp-body">Any change to saving can be a stage: a raise, a move, part-time years, each with its own saving and return.</p></div>
+        <div className="rp-side"><h5>Other changes</h5><p className="rp-body">Any change to saving can be a stage: a raise, a bigger house, easing off for a while, each with its own saving and return.</p></div>
       </div> : null}
     </Sheet>
   );
@@ -269,12 +269,12 @@ function Method({ R, p }: { R: PlanReport; p: Page }) {
         <div><Sec>Your answers and the assumptions</Sec><dl className="rp-facts">{facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></div>
         <div className="rp-side"><h5>How it&apos;s figured</h5>
           <p>Taxes use the year&apos;s federal brackets and standard deduction, your state&apos;s rules, and Social Security and Medicare, with pre-tax money taken off what each one taxes.</p>
-          <p className="gap">The years ahead grow every account at the same return, contributions rising each year, the match landing in traditional. Balances are shown in today&apos;s dollars.</p>
+          <p className="gap">Every account grows at the same return, contributions rise each year, and the match goes into the traditional account. Balances are shown in today&apos;s dollars.</p>
           {S.stages ? <p className="gap">What children cost: {S.kidSource}.</p> : null}
-          <p className="gap">The tax on withdrawals is what the first year&apos;s withdrawal from each account would pay. Social Security and other income aren&apos;t included; the Drawdown Simulator and the Readiness Guide go further.</p></div>
+          <p className="gap">The tax on withdrawals is what the first year&apos;s withdrawal from each account would pay. Social Security and other income aren&apos;t included. The Drawdown Simulator and the Guide go further.</p></div>
       </div>
       <Sec>Please note</Sec>
-      <p className="rp-body">An educational plan, not financial, tax or investment advice. Returns are an assumption; markets don&apos;t move in a straight line, and past returns don&apos;t predict future ones. Tax figures are estimates from published rules.</p>
+      <p className="rp-body">An educational plan, not financial, tax or legal advice. Returns are an assumption. Markets don&apos;t move in a straight line, and past returns don&apos;t predict future ones. Tax figures are estimates from published rules.</p>
     </Sheet>
   );
 }

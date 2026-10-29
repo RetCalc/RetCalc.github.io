@@ -110,7 +110,7 @@ function build(key: YoursKey, P: Plan): Out | null {
       const spendY = R.goal * 12, ssY = (R.ss ?? 0) * 12, fromSav = Math.max(0, spendY - ssY);
       return {
         rows: [["Spending in retirement per year", money(spendY)], ["Social Security per year", money(ssY)], ["Left for savings to cover", money(fromSav)], ["25 times that", money(fromSav * 25)], ["Projected savings at retirement", money(R.atRetire ?? 0)]],
-        line: <>{P.sample ? "Sam and Jordan's" : "Your"} savings need to cover about <b>{money(fromSav)} per year</b> after Social Security; 25 times that is <b>{money(fromSav * 25)}</b>.</>,
+        line: <>{P.sample ? "Sam and Jordan's" : "Your"} savings need to cover about <b>{money(fromSav)} per year</b> after Social Security. 25 times that is <b>{money(fromSav * 25)}</b>.</>,
       };
     }
     case "horizon": {
@@ -150,7 +150,7 @@ function build(key: YoursKey, P: Plan): Out | null {
       return {
         rows: [["Stocks once retired", st + "%" + (M.sv > 0 ? ` (${Math.round(M.sv)}% small-cap value)` : "")], ["Bonds", Math.max(0, Math.round(100 - st - M.cash)) + "%"],
           ...(M.cash > 0 ? [["Cash", Math.round(M.cash) + "%"] as [string, string]] : []), ...(M.end != null && Math.round(M.end) !== st ? [["Stocks by the end", Math.round(M.end) + "%"] as [string, string]] : [])],
-        line: <>{P.sample ? "Their" : "Your"} plan holds <b>{st}% in stocks</b> once retired; {P.sample ? "it's" : "you can change it"} set in the Retirement simulator.</>,
+        line: <>{P.sample ? "Their" : "Your"} plan holds <b>{st}% in stocks</b> once retired. {P.sample ? "It's set" : "You can change it"} in the Retirement simulator.</>,
       };
     }
     case "band": {
@@ -194,7 +194,7 @@ function build(key: YoursKey, P: Plan): Out | null {
       const early = R.ss && R.ssYear && R.ssYear > (R.retireYear ?? 0) && rate > 0.045;
       return {
         rows,
-        note: early ? <>The 4% rule assumes one withdrawal, raised with inflation, for all 30 years. Here the rate is high only until Social Security starts in {R.ssYear}; after that, withdrawals come to {pct(later, 1)} of the starting balance.</> : undefined,
+        note: early ? <>The 4% rule assumes one withdrawal, raised with inflation, for all 30 years. Here the rate is high only until Social Security starts in {R.ssYear}. After that, withdrawals come to {pct(later, 1)} of the starting balance.</> : undefined,
         line: <>{P.sample ? "Their" : "Your"} plan starts by withdrawing <b>{pct(rate, 1)}</b> of savings{R.ss && R.ssYear && R.ssYear > (R.retireYear ?? 0) ? <>, falling to about {pct(later, 1)} once Social Security starts in {R.ssYear}</> : null}.</>,
       };
     }
@@ -210,7 +210,7 @@ function build(key: YoursKey, P: Plan): Out | null {
       if (R.success == null) return need("a plan that can run");
       return {
         rows: [["Strategy", R.strategy ? R.strategy.name : "Not chosen (a fixed amount)"], ["Chance of success", pct(R.success)], ...(R.strategy ? [["First year's spending", money10(R.strategy.first) + " per month"] as Row] : [])],
-        line: R.strategy ? <>{P.sample ? "Their" : "Your"} plan uses <b>{R.strategy.name}</b>, which lasted in {pct(R.success)} of past retirements.</> : <>{P.sample ? "Their" : "Your"} plan hasn&rsquo;t chosen a strategy, so it spends a fixed amount; pick one on the Retirement tab to compare.</>,
+        line: R.strategy ? <>{P.sample ? "Their" : "Your"} plan uses <b>{R.strategy.name}</b>, which lasted in {pct(R.success)} of past retirements.</> : <>{P.sample ? "Their" : "Your"} plan hasn&rsquo;t chosen a strategy, so it spends a fixed amount. Pick one on the Retirement tab to compare.</>,
       };
     }
     case "rmd": {
@@ -224,12 +224,12 @@ function build(key: YoursKey, P: Plan): Out | null {
       const fra = fraOf(pr.p1.by), c = R.claim1 ?? 67;
       return {
         rows: [["Full retirement age", ageLabel(fra)], ["Claiming at", c], ["Benefit per month, today's dollars", money10(R.ss1)], ["First check", `${pr.p1.by + Math.ceil(c)}`]],
-        note: pr.ss.checked ? undefined : <>An estimate from pay; a statement from ssa.gov makes it exact.</>,
+        note: pr.ss.checked ? undefined : <>An estimate from pay. A statement from ssa.gov makes it exact.</>,
         line: <>{P.sample ? "Sam's" : "Your"} plan claims at <b>{c}</b>, for about <b>{money10(R.ss1)} per month</b> in today&rsquo;s dollars; full retirement age is {ageLabel(fra)}.</>,
       };
     }
     case "couple-ss": {
-      if (!couple(pr)) return { rows: [], note: <>This one is about couples; {yourP} plan is for one person.</>, line: null };
+      if (!couple(pr)) return { rows: [], note: <>This one is about couples, and {yourP} plan is for one person.</>, line: null };
       if (R.ss1 == null || R.ss2 == null || !pr.p1.by || !pr.p2.by) return need("both your birth years and pay");
       // A survivor gets the larger of their own check and the one who died's,
       // and never less than 82.5% of the one who died's full benefit.

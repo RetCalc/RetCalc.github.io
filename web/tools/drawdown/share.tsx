@@ -37,7 +37,7 @@ function planRows(o: DdOpts): SheetRows {
     case "sensible": out.push(["Plus, of real gains", ddN(o.sensExtra) + "%"]); break;
     case "cape": out.push(["Rate each year", p(o.capeA) + " + " + ddN(o.capeB) + " × 1/CAPE"]); break;
   }
-  if (o.path === "ease") out.push(["Spending path", "Easing " + ddN(o.pathEase) + "% a year"]);
+  if (o.path === "ease") out.push(["Spending path", "Easing " + ddN(o.pathEase) + "% per year"]);
   else if (o.path === "smile") out.push(["Spending path", "The retirement spending smile"]);
   else if (o.path === "stages") wdOrder(o.pathStages || []).forEach((w) => out.push([w.st.name || "Stage " + (w.i + 2),
     ddN(w.st.level == null ? 100 : w.st.level) + "% of year one from " + (o.retireAge != null ? "age " + ddN(o.retireAge + w.start - 1) : "year " + w.start)]));
@@ -81,11 +81,11 @@ export function drawdownShare(o: DdOpts, sel: number | null): ShareKit {
       const rows = show.rows.filter((r, i) => i === 0 || i === show.rows.length - 1 || i % step === 0);
       const other = (o.incomeItems || []).some((it) => it.on !== false);
       return (
-        <SheetPage title="Will My Money Last?" sub={<>{fmtNum(o.years)} year retirement &middot; tested since {H.first}</>}
+        <SheetPage title="Will my money last?" sub={<>{fmtNum(o.years)}-year retirement &middot; tested since {H.first}</>}
           big={[["Success rate", pctStr(H.successRate, 0), H.survived + " of " + H.total + " periods"], ["Median ending balance", money(H.medianEnd), "today's dollars"],
             ["Worst case", money(H.worstEnd), "today's dollars"]]}
           chart={copyChart("#chartDD")}
-          foot={verdict + " Tested against real US market history (" + H.first + "–" + (HIST_START + HIST_STOCK.length - 1) + "). Surviving every period is evidence a plan is reasonable, not a guarantee. Not financial advice."}>
+          foot={verdict + " Tested against real US market history (" + H.first + " to " + (HIST_START + HIST_STOCK.length - 1) + "). Surviving every period is evidence a plan is reasonable, not a guarantee. Not financial advice."}>
           <div className="sh-cols">
             <SheetSection t="Plan" rows={inputs} />
             <SheetSection t="Results" rows={[["Success rate", pctStr(H.successRate, 1)], ["Tested against", H.total + " periods since " + H.first], ["Survived", H.survived + " of " + H.total],
@@ -93,7 +93,7 @@ export function drawdownShare(o: DdOpts, sel: number | null): ShareKit {
             <SheetSection t={"Spending, retiring " + label} rows={spend} />
           </div>
           <SheetTable t={<>Year by year &middot; retiring in {label}{show.depleted ? " (ran out " + (age != null ? "at age " + ageVal(age, show.depletedYear!) : "in year " + show.depletedYear) + ")" : " (survived)"}</>}
-            head={[age != null ? "Age" : "Year", "Withdrawal", "Soc. Sec.", ...(other ? ["Other Income"] : []), "Return", "End balance"]}
+            head={[age != null ? "Age" : "Year", "Withdrawal", "Soc. Sec.", ...(other ? ["Other income"] : []), "Return", "End balance"]}
             rows={rows.map((r) => [ageVal(age, r.year), money(r.withdrawal), r.ss > 0 ? money(r.ss) : DASH, ...(other ? [r.customIncome > 0 ? money(r.customIncome) : DASH] : []),
               r.ret.toFixed(1) + "%", money(r.realEnd)])} />
         </SheetPage>
@@ -108,7 +108,7 @@ export function drawdownShare(o: DdOpts, sel: number | null): ShareKit {
       if (inc.length) rows.push(["Other income", inc.length === 1 ? inc[0].name : inc.length + " sources"]);
       if (exp.length) rows.push(["Future expenses", exp.length === 1 ? exp[0].name : exp.length + " planned"]);
       return { title: "Will my money last?", bigLabel: "Success rate, tested since " + HIST_START, big: pctStr(H.successRate, 0),
-        sub: fmtNum(o.years) + " year retirement · " + mixText(o), rows,
+        sub: fmtNum(o.years) + "-year retirement · " + mixText(o), rows,
         verdict: H.successRate >= 0.99 ? "Survived every historical period on record." : H.successRate >= 0.9 ? "Survived the large majority of historical periods." : "Failed in a meaningful share of historical periods.",
         chart: { sel: "#chartDD", w: 900, h: 300 } };
     },

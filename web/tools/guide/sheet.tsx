@@ -40,7 +40,7 @@ export function GuideSheet({ a, src }: { a: Answers; src: Sources }) {
   const d = new Date();
   return (
     <SheetPage title="Retirement Readiness Plan" sub={<>{d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} &middot; every figure in today&apos;s dollars</>}
-      big={[["Your number at " + fmtNum(S.retire), money(S.fv), want > 0 ? "a plan like it needs about " + money(want) : "projected"],
+      big={[["Your number at " + fmtNum(S.retire), money(S.fv), want > 0 ? "the plan needs about " + money(want) : "projected"],
         ["Readiness score", R.score + " / 100", rt.label], ["Lasted in", pctStr(S.success, 0), "of retirements since " + S.H.first]]}
       foot={<>Savings grow at {pctStr(S.real, 1)} per year after inflation for a {riskLabel(S.real)} mix, with contributions rising with inflation.
         {" "}Retirement is tested against every historical retirement since {S.H.first} with {S.mix}% in stocks, spending a fixed amount that rises with inflation.

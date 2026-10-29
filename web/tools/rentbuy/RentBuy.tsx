@@ -115,7 +115,7 @@ export function RentBuy() {
                     const mo = toolInputs("mortgage", MORTGAGE_DEFAULTS);
                     const price = parseNum(mo.price);
                     if (!(price > 0)) {
-                      toast("Set up the Mortgage tool first");
+                      toast("Set up the Mortgage Calculator first");
                       return;
                     }
                     // Only 30, 20 and 15 years here: a 10-year mortgage takes 15,
@@ -170,7 +170,7 @@ export function RentBuy() {
           <HeroReading tone={ready ? "answer" : "text"} sized={ready} hero={hero} figures={figures}>
             <div className="mt-4" hidden={!R}>
               <span className="block text-label text-muted-foreground">Break-even</span>
-              <span className="text-body text-foreground" id="rbBreakEven">{R ? (R.breakEven ? "Year " + fmtNum(R.breakEven) + " \u2014 buying pulls ahead" : "Renting stays ahead throughout") : ""}</span>
+              <span className="text-body text-foreground" id="rbBreakEven">{R ? (R.breakEven ? "Year " + fmtNum(R.breakEven) + ": buying pulls ahead" : "Renting stays ahead throughout") : ""}</span>
             </div>
           </HeroReading>
           {!ready ? (

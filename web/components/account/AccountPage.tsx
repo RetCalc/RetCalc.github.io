@@ -24,6 +24,8 @@ function label(key: string): string {
   if (key === "household") return "Your household";
   if (key === "guide") return "Your Retirement Readiness Guide";
   if (key === "dashboard") return "Your dashboard";
+  if (key === "paycheck-plan") return "Your Paycheck to Retirement plan";
+  if (key === "learn") return "Lessons you've read";
   if (key.startsWith("scenarios-")) return "Saved scenarios: " + key.slice("scenarios-".length);
   return key;
 }
@@ -114,7 +116,7 @@ export function AccountPage({ states }: { states: StateOption[] }) {
       <Card>
         <CardHeader>
           <CardTitle>{account.firstName ? `Hi, ${account.firstName}` : "Your account"}</CardTitle>
-          <CardDescription>Signed in as {account.email}. {sync === "offline" ? "Account sync is unavailable right now; everything still saves in this browser." : "Your household, saved scenarios and Guide sync to this account."}</CardDescription>
+          <CardDescription>Signed in as {account.email}. {sync === "offline" ? "Account sync is unavailable right now. Everything still saves in this browser." : "Your household, saved scenarios and Guide sync to this account."}</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="acct-form" onSubmit={async (e) => {
@@ -138,7 +140,7 @@ export function AccountPage({ states }: { states: StateOption[] }) {
       <Card>
         <CardHeader>
           <CardTitle>What your account holds</CardTitle>
-          <CardDescription>Stored with Supabase in the US. Never sold or shared.</CardDescription>
+          <CardDescription>Stored with Supabase in the US. Never sold or shared with advertisers.</CardDescription>
         </CardHeader>
         <CardContent>
           {unread ? <p className="acct-fine" role="status">Couldn&apos;t reach your account to list what it holds. Check your connection, then reload this page.</p>

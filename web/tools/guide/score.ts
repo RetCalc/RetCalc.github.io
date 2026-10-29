@@ -67,7 +67,7 @@ export function headroom(id: FactorId, P: Part | undefined, a: Answers): { pts: 
   if (!P) return null;
   const w = FACTORS.find((f) => f.id === id)!.w, pts = Math.round((1 - P.p) * w);
   if (pts < 1) return null;
-  if (P.bad) return { pts, line: "An answer it can't use; fix it to score this area" };
+  if (P.bad) return { pts, line: "An answer it can't use. Fix it to score this area" };
   let line = "";
   if (id === "outlook") {
     line = P.p < 0.85 ? "Lasting in 85% of history earns " + Math.round(0.85 * w) + "; 95% earns " + w : "Lasting in 95% of history earns " + w;

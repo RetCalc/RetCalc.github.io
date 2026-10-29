@@ -129,7 +129,7 @@ export function Retirement() {
         <div className="dsh-more">
           <Button variant="outline" onClick={() => setAllStrats((v) => !v)} aria-expanded={allStrats}>{allStrats ? "Show fewer" : "Show all " + Object.keys(DD_UI).length + " strategies"}</Button>
         </div>
-        <p className="dsh-cap dsh-mt">For each one&apos;s pros and cons side by side, open &ldquo;How the withdrawal strategies compare&rdquo;. Everything you set in the simulator below (the mix, the starting rate, guardrails, floors and ceilings, a spending path) is saved to your plan as you change it.</p>
+        <p className="dsh-cap dsh-mt">For each one&apos;s pros and cons side by side, open &ldquo;How the withdrawal strategies compare&rdquo;. Everything you set in the simulator below is saved to your plan as you change it: the mix, the starting rate, guardrails, floors and ceilings, and a spending path.</p>
         </CollapsibleContent>
       </Tile></Collapsible></div>
 
@@ -137,7 +137,7 @@ export function Retirement() {
         {plan ? (
           <Tile id="drawdown" icon={ArrowDownToLineIcon} title="Your drawdown" right={<span className="dsh-cap">On your savings at retirement, through every market since 1926</span>}>
             {own.length ? (
-              <p className="dsh-cap dsh-mt6">Your own {own.map((k) => OWN_WORDS[k]).join(" and ")} {own.length > 1 ? "are" : "is"} saved to your plan in place of its figures.{ownRate ? " Your strategy's spending is now the plan's; Profile's spending is your goal." : ""}{" "}
+              <p className="dsh-cap dsh-mt6">Your own {own.map((k) => OWN_WORDS[k]).join(" and ")} {own.length > 1 ? "are" : "is"} saved to your plan in place of its figures.{ownRate ? " Your strategy's spending is now the plan's, and Profile's spending is your goal." : ""}{" "}
                 <Button variant="link" size="inline" onClick={() => { set((p) => ({ ...p, ddOwn: undefined })); setRev((r) => r + 1); }}>Use the plan&apos;s figures</Button></p>
             ) : null}
             <div className="dsh-mt">
@@ -216,7 +216,7 @@ function BridgeTile() {
             <Button variant="link" size="inline" onClick={() => set((p) => ({ ...p, bridge: undefined }))}>Remove it</Button></p>
         ) : (
           <div className="dsh-mt6 dsh-tip">
-            <span>{who} at {early.retire}, {yrs} years before 401(k)s and IRAs open without the 10% penalty. Plan how you&apos;ll pay for those years below{R.bridgeDock > 0 ? <>; until you do, <b>{R.bridgeDock} points</b> are held back from your readiness score</> : null}.</span>
+            <span>{who} at {early.retire}, {yrs} years before 401(k)s and IRAs open without the 10% penalty. Plan how you&apos;ll pay for those years below{R.bridgeDock > 0 ? <>. Until you do, <b>{R.bridgeDock} points</b> are held back from your readiness score</> : null}.</span>
             <Button size="sm" onClick={use}>Use this bridge plan</Button>
           </div>
         )}
@@ -257,7 +257,7 @@ function BridgeFacts({ pr, entries, inputs }: { pr: Profile; entries: Entry[]; i
     ...(partner ? [[`${partner.name}'s pay`, `${money(partner.pay)} per year until ${Math.floor(early!.from + (partner.until - early!.retire))}, with their job's health plan`] as [string, string]] : []),
   ];
   return (
-    <PlanFacts id="brFacts" rows={rows} note={<>Balances are what each account holds when you retire, from the <To href="/dashboard/calculator">Calculator</To>; cost basis and Roth contributions from <To href="/dashboard/accounts#assets">Net worth</To>{H.rothBasis == null ? " (add your Roth contributions there, or type them below)" : ""}; the mix from Retirement&apos;s Drawdown; the rest from <To href="/dashboard/profile">Profile</To> and <To href="/dashboard/income">Income</To>. The bridge runs to {early?.name === "You" ? "your" : (early?.name ?? "your") + "'s"} 59½; each of your traditional accounts opens at its owner&apos;s 59½, by whose it is on Net worth (not said, half each).</>} />
+    <PlanFacts id="brFacts" rows={rows} note={<>Balances are what each account holds when you retire, from the <To href="/dashboard/calculator">Calculator</To>. Cost basis and Roth contributions come from <To href="/dashboard/accounts#assets">Net worth</To>{H.rothBasis == null ? " (add your Roth contributions there, or type them below)" : ""}, the mix from Retirement&apos;s Drawdown, and the rest from <To href="/dashboard/profile">Profile</To> and <To href="/dashboard/income">Income</To>. The bridge runs to {early?.name === "You" ? "your" : (early?.name ?? "your") + "'s"} 59½. Each traditional account opens at its owner&apos;s 59½, as set on Net worth (half each if no owner is given).</>} />
   );
 }
 
@@ -291,7 +291,7 @@ function HealthTile() {
     <div className="dsh-r4">
       <Tile id="health" icon={HeartPulseIcon} title="Health cover" right={<span className="dsh-cap">{gap ? `${gap.from} to ${gap.to}, then Medicare` : "Medicare from 65"}</span>}>
         <p className="dsh-cap dsh-mt6">{gap
-          ? <>{healthWords(pr, gap)} Until then it&apos;s a marketplace plan, priced on your income: your plan counts about <b>{money(before)} per month</b> for it on average, on top of your spending{earlyRetirees(pr).length ? " (the bridge counts it before 59½)" : ""}. From 65, Medicare&apos;s premiums.</>
+          ? <>{healthWords(pr, gap)} Until then it&apos;s a marketplace plan, priced on your income: your plan counts about <b>{money(before)} per month</b> for it on average, on top of your spending{earlyRetirees(pr).length ? " (the bridge counts it before 59½)" : ""}. From 65, your plan counts Medicare&apos;s premiums.</>
           : <>Work stops at 65 or later, so Medicare covers you from then. It isn&apos;t free: Part B, a drug plan and usually a supplement, more at higher incomes. Your plan counts Medicare&apos;s premiums on top of your spending.</>}</p>
         <div className="dsh-mt">
           <Hosted key={JSON.stringify(inputs)} household={null} locked={["household", "income"]}

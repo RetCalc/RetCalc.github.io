@@ -94,7 +94,7 @@ function calcLead(data: PickerData, yours: string | undefined): ToolsLead {
         <div className="tp-lead-body">
           <div>
             <h3 className="tp-lead-q">{CALC_Q}</h3>
-            <p className="toolcard-desc">The site&apos;s Advanced calculator, filled in from your plan with every input open: balances, saving, returns, taxes and the changes ahead. Try anything; your plan stays as it is.</p>
+            <p className="toolcard-desc">The Advanced Calculator, filled in from your plan with every input open: balances, saving, returns, taxes and the changes ahead. Try anything. Your plan stays as it is.</p>
             {yours ? <div className="tp-yours">{yours}</div> : null}
           </div>
           <div className="tp-chart"><GrowthChart values={data.growth} /></div>
@@ -174,7 +174,7 @@ function Tool({ sub }: { sub: DashTool }) {
         </div>
       ) : tab ? (
         <div>
-          <Note>Filled in from your plan, to try things on: changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id + (tab.hash ?? "")} />}>{tab.name}</Button>.</Note>
+          <Note>Filled in from your plan, to try things on. Changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id + (tab.hash ?? "")} />}>{tab.name}</Button>.</Note>
         </div>
       ) : null}
       <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={opening} household={household} scenarios

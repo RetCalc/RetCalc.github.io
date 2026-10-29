@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ssRules, type Person, type PersonInputs, type Who } from "./model";
 
-const TIP_PAY = "Every year of your career. Click a bar to change that year. For past years, type what you actually earned that year, as your Social Security statement at ssa.gov/myaccount lists it; Social Security raises past pay by how much average wages have grown since, and the bars show it that way. For future years, type pay in today's dollars: a change carries forward, so later years rise from it, for a promotion or a cut.";
+const TIP_PAY = "Every year of your career. Click a bar to change that year. For past years, type what you actually earned that year, as your Social Security statement at ssa.gov/myaccount lists it. Social Security raises past pay by how much average wages have grown since, and the bars show it that way. For future years, type pay in today's dollars. A change carries forward, so later years rise from it, as for a promotion or a cut.";
 
 function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] {
   const ref = useRef<T>(null);
@@ -84,7 +84,7 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
   const counts = Math.abs(s.pay - s.earned) >= 1 ? ` Counts as ${money(s.pay)} in today's wages.` : "";
   const ctx = s.now ? "Today's pay, the same as in the sentence above." : s.past
     ? (s.edited ? `Earned in ${s.year}, as paid.${counts}` : `Estimated. Type what you earned in ${s.year}, as paid.${counts}`)
-    : s.edited ? `In today's dollars. Later years follow this, rising ${gAhead}% per year.` : "In today's dollars. Type a promotion or a cut; later years follow it.";
+    : s.edited ? `In today's dollars. Later years follow this, rising ${gAhead}% per year.` : "In today's dollars. Type a promotion or a cut. Later years follow it.";
   const shown = draft && draft.age === age && draft.who === who ? draft.text : groupDigits(Math.round(s.earned), true);
 
   return (
@@ -94,7 +94,7 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
           {who === "you" ? "Your pay, year by year" : "Your spouse's pay, year by year"}<TipDot k="" text={TIP_PAY} />
         </h2>
         {both ? <div className="mb-0.5"><Segmented attr="data-who" options={[["you", "You"], ["spouse", "Spouse"]] as const} value={who} onChange={(w) => { setWho(w); setSel(null); setDraft(null); }} /></div> : null}
-        <Field id="ssGPast" className="m-0 w-37.5 max-sm:flex-1" label={<span className="tipglue">Raises before today<TipDot k="" text="How much faster than average wages your pay grew each year before today. 2% is a typical career that rose with experience; 0% is pay that just kept up." /></span>}>
+        <Field id="ssGPast" className="m-0 w-37.5 max-sm:flex-1" label={<span className="tipglue">Raises before today<TipDot k="" text="How much faster than average wages your pay grew each year before today. 2% is a typical career that rose with experience. 0% is pay that only kept up." /></span>}>
           <Affixed suffix="%/yr"><NumberInput id="ssGPast" step={0.5} value={inputs.gPast} onValueChange={setP("gPast")} /></Affixed>
         </Field>
         <Field id="ssGAhead" className="m-0 w-37.5 max-sm:flex-1" label={<span className="tipglue">Raises from today<TipDot k="" text="How much faster than average wages you expect your pay to grow from here. Changes you add below keep rising at this rate." /></span>}>
@@ -107,7 +107,7 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
           tabIndex={0}
           // A click picks a year without focusing the chart (no ring around
           // it while the button is held); the keyboard still reaches it by Tab.
-          onMouseDown={(e) => e.preventDefault()} aria-label="Pay by year. Left and right arrows pick a year; Enter edits it." id="ssPayChart"
+          onMouseDown={(e) => e.preventDefault()} aria-label="Pay by year. Left and right arrows pick a year. Enter edits it." id="ssPayChart"
           onKeyDown={(e) => {
             if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); pick(L[Math.max(0, Math.min(L.length - 1, i + (e.key === "ArrowRight" ? 1 : -1)))].age); }
             if (e.key === "Enter") { e.preventDefault(); pick(age, true); }

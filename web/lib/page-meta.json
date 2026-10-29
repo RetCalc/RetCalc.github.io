@@ -19,7 +19,7 @@
 "guide": {
 "h1": "Retirement Readiness Guide",
 "title": "Retirement Readiness Check: Are You on Track? | RetCalc",
-"desc": "A guided retirement check-up: your number, a readiness score out of 100, and your plan tested against every market since 1926, and the moves that matter."
+"desc": "A guided retirement check-up: your number, a readiness score out of 100, your plan tested against every market since 1926, and the moves that matter."
 },
 "guide/paycheck": {
 "h1": "Paycheck to Retirement",
@@ -44,7 +44,7 @@
 "privacy": {
 "h1": "Privacy",
 "title": "Privacy | RetCalc",
-"desc": "What RetCalc keeps and where: nothing without an account, and only your household, saved scenarios and Guide answers if you choose to sign in. Never sold."
+"desc": "What RetCalc keeps and where: nothing without an account, and only your household, saved scenarios and plans if you choose to sign in. Never sold."
 },
 "drawdown": {
 "h1": "Drawdown Simulator",
@@ -69,7 +69,7 @@
 "vanguard-dynamic-spending": {
 "h1": "Vanguard Dynamic Spending Calculator",
 "title": "Vanguard Dynamic Spending Calculator | RetCalc",
-"desc": "Test Vanguard's dynamic spending rule, where spending rises at most 5% and falls at most 2.5% a year, against every retirement since 1926."
+"desc": "Test Vanguard's dynamic spending rule, where spending rises at most 5% and falls at most 2.5% per year, against every retirement since 1926."
 },
 "risk-based-guardrails": {
 "h1": "Risk-Based Guardrails Calculator",
@@ -109,12 +109,12 @@
 "roth": {
 "h1": "Roth Conversion Calculator",
 "title": "Roth Conversion Calculator: Should You Convert? | RetCalc",
-"desc": "Test Roth conversion strategies year by year to age 100 with 2026 taxes, Social Security, RMDs and IRMAA. See lifetime tax and after-tax wealth."
+"desc": "Test Roth conversion strategies year by year, up to age 100, with 2026 taxes, Social Security, RMDs and IRMAA. See lifetime tax and after-tax wealth."
 },
 "rmd": {
 "h1": "RMD Calculator",
 "title": "RMD Calculator: Required Minimum Distributions by Age",
-"desc": "Project your required minimum distributions to age 100 with the IRS Uniform Lifetime Table, and see if Roth conversions would cut lifetime tax."
+"desc": "Project your required minimum distributions, up to age 100, with the IRS Uniform Lifetime Table, and see if Roth conversions would cut lifetime tax."
 },
 "healthcare": {
 "h1": "Healthcare Cost Planner",
@@ -128,7 +128,7 @@
 "backtest": {
 "h1": "Portfolio Backtest Calculator",
 "title": "Portfolio Backtest: Stocks, Bonds & Cash Since 1926",
-"desc": "See what any mix of stocks, small-cap value, bonds and cash returned since 1926: real return, volatility, worst year and every rolling 1 to 30-year period."
+"desc": "See what any mix of stocks, small-cap value, bonds and cash returned since 1926: real return, volatility, worst year and rolling 1, 5, 10, 20 and 30-year returns."
 },
 "incometax": {
 "h1": "Income Tax Calculator",

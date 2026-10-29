@@ -268,7 +268,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
             <p className="hint m-0 max-w-copy px-4.5 pt-2.5 pb-1.5" id="brHoldKey" hidden={!R}>
               In Holds to 59½, <CircleCheckIcon className="relative -top-px inline size-3.5 align-middle text-gain" role="img" aria-label="a check" /> marks 95% or more
               and <CircleXIcon className="relative -top-px inline size-3.5 align-middle text-destructive" role="img" aria-label="a cross" /> under 80%; between, no mark.
-              Pay the 10% penalty isn&apos;t marked: for it only running short counts.
+              Pay the 10% penalty isn&apos;t marked, since only running short counts for it.
             </p>
             <div className="hint max-w-copy px-4.5 pt-0 pb-3.5" id="brCompareNote">
               {R ? "Success rates " + (R.mc ? "come from " + BR_TRIALS + " random sequences of historical years" : "come from every start year since " + HIST_START) +
@@ -428,7 +428,7 @@ function Reading({ R, F, ctx, seppMax, mode, setMode, t72 }: {
               {R.mc ? t.of + " random markets drawn from the record" : t.of + " historical starts since " + HIST_START}.{" "}
               On the steady path you arrive with <b>{money(st.end.total)}</b>: {money(st.end.trad)} traditional, {money(st.end.roth)} Roth and {money(st.end.brok)} in the brokerage.
               {b.key !== "pen" && pen?.steady && pen.steady.cost > st.cost + 1 ? (
-                <> That&apos;s <b>{money(pen.steady.cost - st.cost)}</b> less in tax, penalties{ctx.aca ? " and premiums" : ""} than simply paying the penalty.</>
+                <> That&apos;s <b>{money(pen.steady.cost - st.cost)}</b> less in tax, penalties{ctx.aca ? " and premiums" : ""} than paying the penalty.</>
               ) : null}
             </p>
           </div>
@@ -685,7 +685,7 @@ function Rules({ ctx }: { ctx: BrCtx }) {
       ? "Your " + money(ctx.rothBasis) + " of contributions can come out any time, tax- and penalty-free. " +
         "The IRS ordering rules take contributions first, then conversions oldest first, then earnings, " +
         "and earnings before 59½ are taxed and penalized."
-      : "Contributions to a Roth can come out any time tax- and penalty-free; enter yours to use them."],
+      : "Contributions to a Roth can come out any time tax- and penalty-free. Enter yours to use them."],
     ["Roth conversion ladder", "Each conversion is taxed as income the year you make it, then waits " +
       "five tax years before it can come out penalty-free. Converting from your first year of retirement " +
       "means the first five years" + (ctx.nB > 5 ? " (ages " + ctx.age + "–" + (ctx.age + 4) + ")" : "") +
@@ -701,7 +701,7 @@ function Rules({ ctx }: { ctx: BrCtx }) {
       "switch from amortization to the RMD method is allowed."],
     ["Rule of 55", ctx.k401 > 0
       ? (ctx.r55 ? "Leaving your job at " + ctx.age + " opens the " + money(ctx.k401) + " 401(k) you're leaving to penalty-free withdrawals. "
-        : "Retiring at " + ctx.age + " is too early: the rule needs you to leave in or after the year you turn " + ctx.r55Age + ". ") +
+        : "Retiring at " + ctx.age + " is too early. The rule needs you to leave in or after the year you turn " + ctx.r55Age + ". ") +
         "It covers only that employer's plan. Rolling it to an IRA loses it, and older 401(k)s and IRAs " +
         "don't qualify, though you can roll them into the current plan before you leave."
       : "Leaving a job in or after the year you turn 55 opens that employer's 401(k) penalty-free. Enter its balance to use it."],
@@ -709,7 +709,7 @@ function Rules({ ctx }: { ctx: BrCtx }) {
   if (ctx.g457 > 0) rules.push(["457(b)", "A governmental 457(b) has no 10% penalty at all once you've left the " +
     "employer, whatever your age. Every plan here uses your " + money(ctx.g457) + " before anything penalized."]);
   if (ctx.aca) rules.push(["Health insurance and MAGI", "Your premium depends on MAGI: conversions, 401(k) and IRA " +
-    "withdrawals, 72(t) payments and capital gains all count; Roth withdrawals and the cost basis of " +
+    "withdrawals, 72(t) payments and capital gains all count. Roth withdrawals and the cost basis of " +
     "what you sell don't. For a household of " + Math.max(ctx.household, ctx.adults) + ", the subsidy " +
     "disappears entirely above " + money(ctx.fpl * 4) + " (400% of the poverty line)" +
     (yearData().states.noExpansion[ctx.state] ? ", and below " + money(ctx.fpl) + " " + stN + " offers no subsidy or Medicaid for most adults."

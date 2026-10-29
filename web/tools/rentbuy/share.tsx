@@ -30,7 +30,7 @@ export function rentBuyShare(inp: RentBuyInput): ShareKit {
           big={[["Better choice", buyWins ? "Buying" : "Renting", "by " + money(diff)], ["Buyer net worth", money(last.buyerNW), "after " + fmtNum(inp.horizon) + " years"],
             ["Renter net worth", money(last.renterNW), "after " + fmtNum(inp.horizon) + " years"]]}
           chart={copyChart("#chartRB")}
-          foot="Property tax, insurance and maintenance grow with home value; PMI is included above 80% loan-to-value. Excludes the mortgage interest deduction and non-financial factors like stability. Projections, not predictions.">
+          foot="Property tax, insurance and maintenance grow with home value. PMI is included above 80% loan-to-value. Excludes the mortgage interest deduction and non-financial factors like stability. Projections, not predictions.">
           <div className="sh-cols">
             <SheetSection t="Assumptions" rows={[["Home price", money(inp.price)], ["Down payment", pctStr(inp.downPct / 100, 0)], ["Interest rate", pctStr(inp.rate / 100, 2)],
               ["Loan term", fmtNum(inp.term) + " years"], ["Monthly rent (start)", money(inp.rent)], ["Rent increase", pctStr(inp.rentInc / 100, 1) + "/yr"],

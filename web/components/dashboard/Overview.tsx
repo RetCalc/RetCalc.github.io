@@ -84,7 +84,7 @@ function Answer({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entri
   return (
     <p className="dsh-answer">
       {R.success >= goal ? <><b>You&apos;re on track:</b> {at}, and your plan lasted in {lasted}.</>
-        : <><b>Not there yet:</b> your plan lasted in {lasted}; it aims for {Math.round(goal * 100)}%.{how ? <> One way there: {how.charAt(0).toLowerCase() + how.slice(1)}.</> : null}</>}
+        : <><b>Not there yet:</b> your plan lasted in {lasted}. It aims for {Math.round(goal * 100)}%.{how ? <> One way there: {how.charAt(0).toLowerCase() + how.slice(1)}.</> : null}</>}
     </p>
   );
 }
@@ -229,7 +229,7 @@ export function Overview() {
         <Tile icon={BanknoteIcon} title="Retirement income" tip="retIncome">
           <div className="dsh-fig dsh-mt">{R.S ? money((R.S.spend + R.S.taxYr) / 12) : "—"}<small>per month</small></div>
           <div className="dsh-cap dsh-mt6">{R.S ? <>To spend <b>{money(R.S.spend / 12)}</b>{!R.abroad ? <> and pay about <b>{money(R.S.taxYr / 12)}</b> in taxes</> : null}, in today&apos;s dollars{tax}</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}</div>
-          {R.S ? <div className="dsh-foot"><span className="dsh-cap">{R.ss ? <>Social Security pays <b>{money(R.ss)}</b> of it from {R.ssYear}; savings pay the rest.</> : "Savings pay all of it."}</span></div> : null}
+          {R.S ? <div className="dsh-foot"><span className="dsh-cap">{R.ss ? <>Social Security pays <b>{money(R.ss)}</b> of it from {R.ssYear}. Savings pay the rest.</> : "Savings pay all of it."}</span></div> : null}
         </Tile>
         {R.abroad ? (
           <Tile icon={IdCardIcon} title="Social Security"><div className="dsh-fig dsh-mt">Not counted</div><div className="dsh-cap dsh-mt6">Outside the US, your plan leaves it out.</div></Tile>
@@ -239,7 +239,7 @@ export function Overview() {
             <div className="dsh-cap dsh-mt6">{nameOf(pr, 0)} at {R.claim1} ({money(R.ss1 ?? 0)}){p2 && R.ss2 != null ? `, ${nameOf(pr, 1)} at ${R.claim2} (${money(R.ss2)})` : ""}{pr.ss.checked ? "" : ". Estimated from today's pay"}</div>
             <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income#social-security" />}>{pr.ss.checked ? "When to claim →" : "Check your benefit →"}</Button></div>
           </Tile>
-        ) : <Empty icon={IdCardIcon} title="Social Security" ghost="$—" text="Add your pay, and we'll estimate your benefit; or type the figure from your statement." action="Check your benefit" href="/dashboard/income#social-security" />}
+        ) : <Empty icon={IdCardIcon} title="Social Security" ghost="$—" text="Add your pay and we'll estimate your benefit, or type the figure from your statement." action="Check your benefit" href="/dashboard/income#social-security" />}
         {R.strategy ? (
           <Tile icon={ArrowDownToLineIcon} title="Withdrawal strategy" tip="strategy">
             <div className="dsh-fig dsh-name dsh-mt">{R.strategy.name}</div>
@@ -250,7 +250,7 @@ export function Overview() {
         {R.cushion != null ? (
           <Tile icon={ShieldCheckIcon} title="Emergency fund" tip="cushion">
             <div className="dsh-fig dsh-mt">{R.cushion.toFixed(1).replace(/\.0$/, "")}<small>months</small></div>
-            <div className="dsh-cap dsh-mt6">{money(H.cash ?? 0)} set aside{(H.cash ?? 0) < EF.efTarget ? `; ${money(EF.efTarget - (H.cash ?? 0))} more reaches your ${EF.efMonths}-month goal` : `, your ${EF.efMonths}-month goal or more`}</div>
+            <div className="dsh-cap dsh-mt6">{money(H.cash ?? 0)} set aside{(H.cash ?? 0) < EF.efTarget ? `, with ${money(EF.efTarget - (H.cash ?? 0))} more to reach your ${EF.efMonths}-month goal` : `, your ${EF.efMonths}-month goal or more`}</div>
             <div className="dsh-foot"><div className="dsh-segs dsh-grow" aria-hidden="true">{Array.from({ length: EF.efMonths }, (_, k) => k + 1).map((i) => <i key={i} className={i <= R.cushion! ? "dsh-on" : undefined} />)}</div></div>
           </Tile>
         ) : <Empty icon={ShieldCheckIcon} title="Emergency fund" ghost="— months" text="Add a savings or checking account to see how many months of spending you have set aside." action="Add cash accounts" href="/dashboard/accounts#assets" />}

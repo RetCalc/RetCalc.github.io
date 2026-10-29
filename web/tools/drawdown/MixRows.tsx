@@ -39,7 +39,7 @@ export function MixRows({ f, up, totId }: { f: MixForm; up: (k: keyof MixForm) =
       {/* A total that isn't 100% is an error: Loss, with an icon and the words. */}
       <div className={ok ? "ddmixtot" : "ddmixtot text-loss"} id={totId}>
         {ok ? null : <CircleAlertIcon className="relative -top-px mr-1.5 inline size-3.75 align-middle" aria-hidden="true" />}
-        Total: <b>{ddN(t)}%</b>{ok ? "" : " — it needs to add up to 100%"}</div>
+        Total: <b>{ddN(t)}%</b>{ok ? "" : " (it needs to add up to 100%)"}</div>
     </>
   );
 }

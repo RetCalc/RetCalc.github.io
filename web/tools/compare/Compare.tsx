@@ -105,7 +105,7 @@ function CompareSaved() {
       <CompareHead backId="cmpBack" title="Compare scenarios">
         <span id="cmpHelp" hidden={!enough}>
           {HELP}
-          {blank.length ? <>{" "}<b className="font-semibold text-foreground">{blank.map((x) => x.name + " has nothing saved for " + CMP_MODE_LABEL[x.mode]).join("; ") + "."}</b></> : null}
+          {blank.length ? <>{" "}<b className="font-semibold text-foreground">{blank.map((x) => x.name + " has nothing saved for " + CMP_MODE_LABEL[x.mode]).join(". ") + "."}</b></> : null}
         </span>
       </CompareHead>
 

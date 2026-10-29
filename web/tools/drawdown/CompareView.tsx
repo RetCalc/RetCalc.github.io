@@ -55,7 +55,7 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
     const top = met.slice().sort((a, b) => b.life - a.life)[0];
     const steady = met.filter((x) => x.cuts < 0.05).sort((a, b) => b.life - a.life)[0];
     if (!job.stale) intro = "Each strategy is set to spend as much as it can while " + targetWords(sT, v.age) + "." +
-      (so.path && so.path !== "flat" ? " All are compared on steady spending; your spending path applies to the steady strategies only." : "") +
+      (so.path && so.path !== "flat" ? " All are compared on steady spending, so your spending path is left out here." : "") +
       (sT.crit === "comfort" ? " The flexible ones are held at that line or above, as their minimum, so the risk they carry is running out of money while holding it." : "");
     // the answer: the most spent at this risk, and the steadiest that never cuts
     if (!job.stale && top) best = { top, steady: steady && steady.id !== top.id ? steady : null };
@@ -139,8 +139,8 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
             </tbody>
           </table>
         </div>
-        <Html className="hint ddpad" id="ddShowNote" html={res ? "Year one, the leanest year and lifetime spending are what was actually spent: the strategy's spending with " +
-          "Social Security, other income and any guaranteed income, in today's dollars, without extra expenses. “Typical” is the median start. " +
+        <Html className="hint ddpad" id="ddShowNote" html={res ? "Year one and the leanest year are the strategy's spending in today's dollars, including what Social Security, other income and " +
+          "guaranteed income cover, without extra expenses. Lifetime spending also counts extra expenses. “Typical” is the median start. " +
           "Use sets the strategy and the setting found" + (sT.crit === "comfort" ? ", with the comfort line as its minimum spending" : "") + "." : ""} />
       </Card>
       <SpotPanel v={v} res={res} o={so} T={sT} charted={chartedNow} />
@@ -207,8 +207,8 @@ function SpotPanel({ v, res, o, T, charted }: { v: DDView; res: DdShow | null; o
       <MultiChart id="DDSP" series={series} maxX={o.years} ariaLabel="Each charted strategy's spending through one hard start"
         xFmt={(y) => (age != null ? ageVal(age, y) : y)} head={(y) => <b>{age != null ? "Age " + ageVal(age, y) : "Year " + fmtNum(y)}</b>} />
       <Html className="legend" id="legendDDSP" html={series.map((x) => swatch(x.color!, escapeHtml(x.name))).join("")} />
-      <div className="hint ddpad" id="ddSpotNote">{!res || !win ? "" : series.length > 1
-        ? "Each charted strategy's spending, year by year, in today's dollars, at the setting it was tuned to above. Tick Chart in the table to add or remove one."
+      <div className="hint ddpad" id="ddSpotNote">{!res || !win ? "" : series.length > (T.crit === "comfort" ? 1 : 0)
+        ? "Each charted strategy's spending, year by year, in today's dollars, at the setting it was tuned to above. Tick Chart in the table above to add or remove one."
         : "Tick Chart in the table above to draw a strategy here."}</div>
     </Card>
   );

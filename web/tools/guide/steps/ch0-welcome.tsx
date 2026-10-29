@@ -13,7 +13,7 @@ import { ReportThumb } from "../report/Thumb";
 
 const PACES: { id: Pace; title: string; lines: string[] }[] = [
   { id: "quick", title: "Quick check", lines: [
-    "Twelve short cards, with three questions at most on each.",
+    "Twelve short cards with a few questions each.",
     "Your number by the sixth card, then a test of whether it lasts.",
     "Defaults stand in for the details, and every one says so.",
   ] },
@@ -57,7 +57,7 @@ export function Welcome() {
         <ReportThumb />
         <p><b>Either pace ends with your full report.</b>A full-color plan in your own numbers, to print or save as a PDF: what you&apos;ll have, how it holds up against every market since 1926, Social Security, taxes and health insurance, and your next moves.</p>
       </div>
-      <Callout>Switch pace whenever you like; nothing you&apos;ve answered is lost. Your answers are saved in this browser, and to your account only if you sign in.</Callout>
+      <Callout>Switch pace whenever you like. Nothing you&apos;ve answered is lost. Your answers are saved in this browser, and to your account only if you sign in.</Callout>
       <p className="hint mt-3">Already retired?{" "}
         <Button variant="quiet" size="inline" data-gd="retired" onClick={() => { G.set("retired", true, true); G.go("retired"); }}>Start from what you have instead</Button></p>
     </>

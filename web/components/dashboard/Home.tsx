@@ -49,7 +49,7 @@ export function Home() {
         </Tile>
         <div className="dsh-r4">
           <Tile id="rentbuy" icon={ScaleIcon} title="Renting or buying" right={<span className="dsh-cap">On your own rent</span>}>
-            <p className="dsh-cap dsh-mt6">The Rent vs. Buy Calculator, starting from your rent: what buying a home would cost over the years against renting and investing the difference. Change the home and the market to try it out; what you try is kept here.</p>
+            <p className="dsh-cap dsh-mt6">Rent vs. Buy, starting from your rent: what buying a home would cost over the years against renting and investing the difference. Change the home and the market to try it out. What you try is kept here.</p>
             <div className="dsh-mt">
               <Hosted key={String(pr.rent)} household={null}
                 seed={(id) => (id === "rentbuy" ? ({ ...(seedFor(pr, entries)("rentbuy") as unknown as RentBuyInputs), ...withDefaults(RENTBUY_DEF, (pr.tools.rentbuy ?? {}) as Partial<RentBuyInputs>), ...(pr.rent ? { rent: groupDigits(pr.rent, true) } : {}) } as unknown as ToolInputs) : undefined)}

@@ -125,8 +125,8 @@ function Compare({ a }: { a: Answers }) {
   ];
   const notes: string[] = [];
   if (T.retire < 60 && T.retire < S.retire)
-    notes.push("Retiring at " + fmtNum(T.retire) + " means living on savings before 59½, when most 401(k) and IRA withdrawals carry a 10% penalty. The rule of 55, Roth contributions, a taxable brokerage account or 72(t) payments can bridge those years; the Getting to 59½ step plans them.");
-  if (T.retire < 65 && S.retire >= 65) notes.push("Before 65 you'll need health insurance until Medicare starts. A healthcare step joins your plan to price it.");
+    notes.push("Retiring at " + fmtNum(T.retire) + " means living on savings before 59½, when most 401(k) and IRA withdrawals carry a 10% penalty. The rule of 55, Roth contributions, a taxable brokerage account or 72(t) payments can bridge those years. The Getting to 59½ step plans them.");
+  if (T.retire < 65 && S.retire >= 65) notes.push("Before 65 you'll need health insurance until Medicare starts. A healthcare step joins your route to price it.");
   if (!T.ss.own && T.ss.total < S.ss.total - 1)
     notes.push("Fewer working years also lower your Social Security estimate, from " + money(S.ss.total / 12) + " to " + money(T.ss.total / 12) + " per month. That's already counted above.");
   if (T.stop != null && (a.employer || 0) > 0)
@@ -185,7 +185,7 @@ export function TuneStep() {
         {S.stop != null && S.stop <= a.age! ? <><b>coast</b> with no new saving</> : <>save <b>{money(S.monthly) + "/mo"}</b>{S.stop != null ? " until " + fmtNum(S.stop) : ""}</>}
         , then spend <b>{money(S.spend) + " per year"}</b>.{" "}
         It reaches {money(S.fv)} and lasted in {pctStr(S.success, 0)} of historical retirements
-        {want > 0 ? "; lasting in " + (goal >= 1 ? "every one" : pctStr(goal, 0)) + " takes about " + money(want) : ""}.{" "}
+        {want > 0 ? ". Lasting in " + (goal >= 1 ? "every one" : pctStr(goal, 0)) + " takes about " + money(want) : ""}.{" "}
         {!O.ahead ? "Each option below closes the gap on its own." : big ? "That's more than it needs, and there's more than one way to use the extra." : "It's close to its target, so the options are small."}</p>
       <BackNote step="adjust" />
       <div className="gd-target"><span>Aim for plans that lasted in</span>

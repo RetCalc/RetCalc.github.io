@@ -81,7 +81,7 @@ export function KidsDialog({ kids, age, retire, base, cover = true, close, save,
     <Modal size="study" onClose={close} focus="#kdNow">
       <h3>Children</h3>
       <div className="formhint">The biggest change to saving for most people: childcare before school, then the school years, then saving can rise again.
-        The costs below are typical ones, in today&apos;s dollars; change any of them to your own. Up to {MAX_KIDS} children in all.</div>
+        The costs below are typical ones, in today&apos;s dollars. Change any of them to your own. Up to {MAX_KIDS} children in all.</div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-3 max-sm:grid-cols-1">
         {costsOnly ? <div className="col-span-full text-note">{costsOnly}</div> : <>
         <CountedBoxes id="kdNow" countLabel="Children you have now" countAffix="children" max={MAX_KIDS} values={now} onChange={setNow}
@@ -197,7 +197,7 @@ export function CoverStagesDialog({ segs, today, ppy, F, initial, base, close, s
       <div className="formhint">Today you save <b>{money(C.today.brok + C.today.roth + C.today.trad + C.today.hsa)}</b> per month:{" "}
         {COVER_ORDER.filter((k) => C.today[k] > 0).map((k) => (k === "brok" || k === "trad" ? ACCT[k].toLowerCase() : ACCT[k]) + " " + money(C.today[k])).join(", ") || "nothing yet"}.
         {" "}{order ? <>Each stage&apos;s children come out of {order}.</> : <>Each stage&apos;s children come out of the brokerage first, so the tax-advantaged accounts stay full, then Roth, then traditional
-        (where the 401(k) match is), then the HSA.</>} Type over any amount to take it from somewhere else; what saving can&apos;t cover comes out of spending.
+        (where the 401(k) match is), then the HSA.</>} Type over any amount to take it from somewhere else. What saving can&apos;t cover comes out of spending.
         {F || coverFn ? " Money kept out of a traditional account or the HSA is taxed as pay again, so a cut there frees less than its size: each one is cut far enough to cover the cost after that tax." : null}</div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-170 text-note tabular-nums">

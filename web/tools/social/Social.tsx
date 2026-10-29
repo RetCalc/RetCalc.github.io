@@ -189,12 +189,12 @@ function Sentence({ s, S, setP, setOther, setSrc, payOpen, setPayOpen, anyPay, t
           I was born in <Num value={y.birth} onChange={setP("you", "birth")} label="Year you were born" max={2100} />
           <TipDot k="ssbirth" />
           {y.src === "pay" ? (
-            <> and earn <Cash value={y.pay} onChange={setP("you", "pay")} label="Your pay per year" /> per year<TipDot k="" text="Your pay this year before tax. Every other year of your career is estimated from it; open Edit pay year by year to see or change any of them." />.
+            <> and earn <Cash value={y.pay} onChange={setP("you", "pay")} label="Your pay per year" /> per year<TipDot k="" text="Your pay this year before tax. Every other year of your career is estimated from it. Open Edit pay year by year to see or change any of them." />.
               {" "}I started working at <Num value={y.start} onChange={setP("you", "start")} label="Age you started working" max={80} /> and will stop at <Num value={y.stop} onChange={setP("you", "stop")} label="Age you stop working" max={90} /><TipDot k="" text="Social Security averages your best 35 years of pay. A career shorter than 35 years averages in zeros." />.</>
           ) : (
             <>, and my statement shows <Cash value={y.pia} onChange={setP("you", "pia")} label="Full benefit from your statement, per month" /> per month at full retirement age<TipDot k="sspia" />.</>
           )}
-          {" "}I&apos;ll claim at <Pick id="ssClaim1" value={y.claim} onChange={setP("you", "claim")} label="Age you claim" /> and expect to live to about <Num value={y.through} onChange={setP("you", "through")} label="Expect to live to" max={110} /><TipDot k="" text="How long the totals run. Nobody knows, so try a few: a 65-year-old today lives to about 84 on average, and in a couple one of the two usually passes 90." />.
+          {" "}I&apos;ll claim at <Pick id="ssClaim1" value={y.claim} onChange={setP("you", "claim")} label="Age you claim" /> and expect to live to about <Num value={y.through} onChange={setP("you", "through")} label="Expect to live to" max={110} /><TipDot k="" text="How long the totals run. Nobody knows, so try a few: a 65-year-old today lives to about 84 on average, and in a couple one of the two often passes 90." />.
           {S.you.claim < S.you.fra ? (
             <> Until {Math.round(S.you.fra)}, I&apos;ll still earn <Cash value={y.earn} onChange={setP("you", "earn")} label="Pay from work while collecting before full retirement age" /> per year from work<TipDot k="" text={`Pay from work while you collect before full retirement age. Over ${money(earnLimit)} per year, Social Security holds back $1 of benefit for every $2. Those months aren't lost: your check is raised at full retirement age to make up for them.`} />.</>
           ) : null}
@@ -298,7 +298,7 @@ function Stage({ S, narrow, claim }: { S: SocialFigures; narrow: boolean; claim:
           </div>
           {married && S.H.spouse ? (
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 border-t border-border pt-3" id="ssSurvivor">
-              <span className="flex items-center gap-1.25 text-note text-muted-foreground">Survivor benefit<TipDot k="" text="When one spouse passes away, the other keeps the larger of your two checks, including any credits for waiting, and the smaller one stops. So the household drops to one check, and that check is whichever was bigger. Waiting to claim the bigger check raises it for as long as either of you lives." /></span>
+              <span className="flex items-center gap-1.25 text-note text-muted-foreground">Survivor benefit<TipDot k="" text="When one spouse passes away, the other keeps the larger of your two checks, including any credits for waiting, and the smaller one stops. Waiting to claim the bigger check raises it for as long as either of you lives." /></span>
               <span className="text-right text-xl font-semibold tabular-nums">{money(S.survivor)}/mo</span>
               <span className="mt-0.5 basis-full text-label text-muted-foreground">
                 After the first of you passes away, the other keeps {S.H.you.laterMonthly >= S.H.spouse.laterMonthly ? "your" : "your spouse's"} check, in place of {money(S.monthly)} for both.
@@ -352,7 +352,7 @@ const Op = ({ children }: { children: React.ReactNode }) => <span className="sel
 function Facts({ S }: { S: SocialFigures }) {
   const yr = S.monthly * 12;
   const items: [string, string, string, string][] = [
-    ["Full retirement age", fraLabel(S.you.fra), "Born " + S.you.birth, "The age your full benefit starts. Claim before it and the check is cut for life; wait past it and it grows 8% per year until 70."],
+    ["Full retirement age", fraLabel(S.you.fra), "Born " + S.you.birth, "The age your full benefit starts. Claim before it and the check is cut for life. Wait past it and it grows 8% per year until 70."],
     ["Taxed as income", pct(S.taxedShare), money(S.taxedShare * yr) + " per year", "The share of your yearly benefit counted as federal taxable income, set by your other income. The rest is tax-free. Most states don't tax Social Security."],
     ["Checks start in", String(S.you.birth + S.you.claim), Math.max(0, S.you.birth + S.you.claim - NEWEST_YEAR) + " years from now", "The calendar year you turn your claiming age."],
     S.married
@@ -434,7 +434,7 @@ function Lifespan({ S, setThrough }: { S: SocialFigures; setThrough: (v: string)
   const t = Math.max(70, Math.min(100, S.you.through));
   return (
     <Card className="min-w-0" id="ssLifespan">
-      <CardHeader><CardTitle>Best age, by how long you live<TipDot k="" text="The claiming age that collects the most in all if you live to each age, in today's dollars, before tax. A 65-year-old today lives to about 84 on average; in a couple, one of the two usually passes 90." /></CardTitle></CardHeader>
+      <CardHeader><CardTitle>Best age, by how long you live<TipDot k="" text="The claiming age that collects the most in all if you live to each age, in today's dollars, before tax. A 65-year-old today lives to about 84 on average. In a couple, one of the two often passes 90." /></CardTitle></CardHeader>
       <CardContent>
         {/* A phone keeps the bar at a readable width and scrolls it sideways. */}
         <div className="swipehint px-0!">Swipe the bar sideways to see every age.</div>
@@ -486,7 +486,7 @@ function Race({ S }: { S: SocialFigures }) {
   const legend = <Legend id="legendSsRace" items={series.map((x) => [x.color, x.name] as [string, string])} />;
   return (
     <Card className="min-w-0" id="ssRace">
-      <CardHeader><CardTitle>When waiting pays off<TipDot k="" text="Your own checks added up from each claiming age. A later claim starts behind and catches up; where the lines cross is the break-even age, marked on the chart. Live past it and waiting paid off. Hover or touch the chart to read any age." /></CardTitle>{S.you.pia > 0 ? <CardAction>{full.button}</CardAction> : null}</CardHeader>
+      <CardHeader><CardTitle>When waiting pays off<TipDot k="" text="Your own checks added up from each claiming age. A later claim starts behind and catches up. Where the lines cross is the break-even age, marked on the chart. Live past it and waiting paid off. Hover or touch the chart to read any age." /></CardTitle>{S.you.pia > 0 ? <CardAction>{full.button}</CardAction> : null}</CardHeader>
       {S.you.pia > 0 ? (
         <>
           {chart()}

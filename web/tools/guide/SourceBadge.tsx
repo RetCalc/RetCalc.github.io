@@ -12,7 +12,7 @@ import type { Source, SourceKind } from "./store";
 export const TOOL_NAMES: Record<string, string> = {
   budget: "Budget", tax: "Income Tax", debt: "Debt Payoff", mortgage: "Mortgage Calculator", college: "College Savings",
   drawdown: "Drawdown Simulator", bridge: "Early Retirement Bridge", healthcare: "Healthcare Cost Planner", fire: "FIRE Calculator",
-  basic: "Basic calculator", stages: "Stages", advanced: "Advanced", backtest: "Portfolio Backtest", optimizer: "Retirement Plan Optimizer",
+  basic: "Basic calculator", stages: "Advanced", advanced: "Advanced", backtest: "Portfolio Backtest", optimizer: "Retirement Plan Optimizer",
 };
 
 /** The badge's words: "you entered", "from Budget", "estimated", "default". */

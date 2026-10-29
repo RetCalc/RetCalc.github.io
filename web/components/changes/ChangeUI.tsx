@@ -131,7 +131,7 @@ export function ChangesDialog({ rows, years: Y, kidSpan, figureOf, sentenceOf, w
 /* ---------- adding one: the kind, then its form ---------- */
 
 export interface Kind { kind: ScenarioKind; icon: ReactNode; title: string; sub: string; over: Partial<Scenario> }
-export const SAVING_KIND: Kind = { kind: "saving", icon: <TrendingUpIcon aria-hidden="true" />, title: "Save more or less", sub: "A raise, a bigger house, easing off: more or less saving from an age on, by dollars a month or a share, all at once or phased in.", over: { name: "", amount: 500, acct: "auto" } };
+export const SAVING_KIND: Kind = { kind: "saving", icon: <TrendingUpIcon aria-hidden="true" />, title: "Save more or less", sub: "A raise, a bigger house, easing off: more or less saving from an age on, by dollars per month or a share, all at once or phased in.", over: { name: "", amount: 500, acct: "auto" } };
 export const LUMP_KIND: Kind = { kind: "lump", icon: <GiftIcon aria-hidden="true" />, title: "A lump sum", sub: "An inheritance or a home sale put in, or a big expense taken out, at an age.", over: {} };
 export const RETURNS_KIND: Kind = { kind: "returns", icon: <LineChartIcon aria-hidden="true" />, title: "Different returns", sub: "A higher or lower return from an age on, stepped or climbing.", over: {} };
 export const CHILDREN_KIND: Kind = { kind: "children", icon: <UsersIcon aria-hidden="true" />, title: "Children", sub: "Children you have or plan to have: what they cost as they grow, out of what you save.", over: {} };

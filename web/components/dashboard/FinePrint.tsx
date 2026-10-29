@@ -23,14 +23,14 @@ export function FinePrint() {
         <p>Found a bug, a number that looks off, or have an idea for a tool? Email{" "}
         <MailMe user="contact" domain="retcalc.app" />.
         Every message is read, and reports of anything that looks wrong are the most
-        useful of all.</p>
-        <p>One thing it can&apos;t do: give personal financial or tax advice. For decisions
+        useful.</p>
+        <p>RetCalc can&apos;t give personal financial or tax advice. For decisions
         about your own money, a fee-only financial planner or a tax professional can
         look at your whole situation.</p>
       </div>
       <div className="about" id="disclaimer">
         <h3>Disclaimer</h3>
-        <p><b>Tax figures are estimates.</b> The income tax tool uses published 2026
+        <p><b>Tax figures are estimates.</b> The Income Tax tool uses published 2026
         rates but omits credits, local taxes and many special cases, and tax law
         changes. It is not tax advice and should not be used to file or to decide
         withholding. For anything that matters, talk to a tax professional.</p>

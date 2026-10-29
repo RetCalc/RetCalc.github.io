@@ -86,7 +86,7 @@ export function Income() {
     <Frame current="income" title="Income" sub={R.takehome ? `About ${money(R.takehome)} per month coming in, after taxes` : "What comes in"}>
       <Tile icon={BanknoteIcon} title="Coming in">
         <div className="dsh-stats">
-          <div className="dsh-stat"><div className="dsh-label">Pay after taxes</div><div className="dsh-fig dsh-key">{R.takehome ? money(R.takehome) : "—"}<small>per month</small></div></div>
+          <div className="dsh-stat"><div className="dsh-label">All income after taxes</div><div className="dsh-fig dsh-key">{R.takehome ? money(R.takehome) : "—"}<small>per month</small></div></div>
           {!abroad ? <div className="dsh-stat"><div className="dsh-label">Pay before taxes</div><div className="dsh-fig dsh-md">{F.gross ? money(F.gross * 12) : "—"}<small>per year</small></div></div> : null}
           {!abroad ? <div className="dsh-stat"><div className="dsh-label">Employer match</div><div className="dsh-fig dsh-md">{money(F.match)}<small>per month</small></div></div> : null}
           {otherMonth(pr) ? <div className="dsh-stat"><div className="dsh-label">Other income</div><div className="dsh-fig dsh-md">{money(otherMonth(pr))}<small>per month</small></div></div> : null}
@@ -104,7 +104,7 @@ export function Income() {
             <Tile id="match" icon={Building2Icon} title="Employer 401(k) match" tipK="match">
               <div className="dsh-fields dsh-fields-sm">{[matchRow(0), ...(twoIncomes ? [matchRow(1)] : [])]}</div>
               <p className="dsh-cap dsh-mt">
-                {F.fullMatch == null ? "Set the match to 0% if there isn't one." : F.fullMatch ? "You're saving enough to get all of it." : "You're not saving enough to get all of it: see Savings."}
+                {F.fullMatch == null ? "Set the match to 0% if there isn't one." : F.fullMatch ? "You're saving enough to get all of it." : "You're not saving enough to get all of it: see Taxes & Savings."}
               </p>
             </Tile>
           ) : null}

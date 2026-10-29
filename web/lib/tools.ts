@@ -67,7 +67,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "q": "Should I convert to Roth before RMDs start?",
         "path": "roth",
         "name": "Roth Conversion Calculator",
-        "desc": "Project required distributions to age 100, then test a conversion schedule against doing nothing: lifetime tax, after-tax net worth, IRMAA surcharges and the survivor's bracket.",
+        "desc": "Project required distributions through any age up to 100, then test a conversion schedule against doing nothing: lifetime tax, after-tax net worth, IRMAA surcharges and the survivor's bracket.",
         "i": 4
       },
       {
@@ -90,15 +90,15 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "q": "When does work become optional?",
         "path": "fire",
         "name": "FIRE Calculator",
-        "desc": "Find when your portfolio reaches financial independence. Toggle to Coast FIRE mode to see the moment you can stop contributing and let compound growth carry you the rest of the way.",
+        "desc": "Find when your portfolio reaches financial independence. Switch to Coast FIRE to see when you can stop contributing and let growth alone reach your target.",
         "i": 6
       },
       {
         "sub": "backtest",
-        "q": "What would this mix have actually done?",
+        "q": "What would this mix have done?",
         "path": "backtest",
         "name": "Portfolio Backtest",
-        "desc": "Pick a mix of stocks, small value, bonds and cash, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.",
+        "desc": "Pick a mix of stocks, small value, bonds and cash, then see what it did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.",
         "i": 7
       },
       {
@@ -114,7 +114,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "q": "Should I rent or buy?",
         "path": "rentbuy",
         "name": "Rent vs. Buy",
-        "desc": "Compare buyer and renter net worth over any horizon, counting what the down payment could have earned and what the home gains in value.",
+        "desc": "Compare buyer and renter net worth over 1 to 40 years, counting what the down payment could have earned and what the home gains in value.",
         "i": 9
       }
     ]
@@ -145,7 +145,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "q": "Which debt should I pay off first?",
         "path": "debt",
         "name": "Debt Payoff",
-        "desc": "List what you owe, then watch avalanche and snowball race each other: payoff date, total interest, and exactly what ordering by motivation instead of rate costs you.",
+        "desc": "List what you owe, then compare avalanche (highest rate first) and snowball (smallest balance first) on payoff date and total interest.",
         "i": 12
       },
       {

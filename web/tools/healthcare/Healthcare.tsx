@@ -156,11 +156,11 @@ export function Healthcare() {
           </>
         ) : (
           <>
-            <p className={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household — this ratio drives your subsidy. {std.eligible
+            <p className={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household. This ratio drives your subsidy. {std.eligible
               ? "The ACA sets what you're expected to contribute toward health coverage at " + (std.pct * 100).toFixed(2) + "% of your income. The government covers whatever the Silver plan costs above that amount, in the form of a monthly premium tax credit applied at enrollment."
               : "That income is above the 400% FPL cutoff, so there is no credit and you would pay the Silver plan's full list price. The enhanced credits that removed this cutoff (capping your share at 8.5% of income) expired after 2025."}</p>
             <h3 className={cn(head, "mt-4 mb-1 pt-3.5")}>{HC_YEAR.year} ACA rules</h3>
-            <KV k={<>Benchmark Silver plan {usingStateEst ? <Sub>({state} est., {coveredDesc}) — the reference used to price your credit</Sub> : <Sub>your entered premium</Sub>}</>} v={"$" + r(grossMonthly) + "/mo"} />
+            <KV k={<>Benchmark Silver plan {usingStateEst ? <Sub>({state} est., {coveredDesc}), the reference used to price your credit</Sub> : <Sub>your entered premium</Sub>}</>} v={"$" + r(grossMonthly) + "/mo"} />
             {!std.eligible ? (
               <>
                 <KV k="Premium tax credit" v={<span className="text-dimmer">none (income above 400% FPL)</span>} />
@@ -179,9 +179,9 @@ export function Healthcare() {
               </Fold>
             ) : null}
             <Fold title="Plan tier comparison" aside="(same credit applies to any tier)">
-              <div className={tierRow}><span><b>Bronze:</b> lowest monthly cost; high deductible — you pay most costs out-of-pocket until you hit it</span><span>~${r(bronze)}/mo</span></div>
-              <div className={cn(tierRow, "hc-tier-sel")}><span><CheckIcon className="mr-1.5 inline size-3.5 align-middle" aria-hidden="true" /><b>Silver:</b> the credit is built around this tier; also unlocks cost-sharing reductions at lower incomes</span><span>${r(std.net)}/mo</span></div>
-              <div className={tierRow}><span><b>Gold:</b> higher monthly cost; lower deductible and copays — better if you expect to use a lot of care</span><span>~${r(gold)}/mo</span></div>
+              <div className={tierRow}><span><b>Bronze:</b> lowest monthly cost, high deductible. You pay most costs out of pocket until you hit it</span><span>~${r(bronze)}/mo</span></div>
+              <div className={cn(tierRow, "hc-tier-sel")}><span><CheckIcon className="mr-1.5 inline size-3.5 align-middle" aria-hidden="true" /><b>Silver:</b> the credit is built around this tier, and it unlocks cost-sharing reductions at lower incomes</span><span>${r(std.net)}/mo</span></div>
+              <div className={tierRow}><span><b>Gold:</b> higher monthly cost, lower deductible and copays. Better if you expect to use a lot of care</span><span>~${r(gold)}/mo</span></div>
             </Fold>
             {spouseOn ? (
               <div className="hc-insight max-w-copy">For a couple, <b>both spouses need their own plan</b>, and the figures above cover both of you. The credit is worked out for the household as a whole: the benchmark for both plans, less one contribution based on your combined income. {std.eligible ? "That's why a subsidized couple pays about what one person at the same income would, not double." : "Above the 400% cliff there is no credit, so you pay both full premiums."}</div>
@@ -191,9 +191,9 @@ export function Healthcare() {
         <div className={note}>
           {usingStateEst
             ? "Benchmark Silver premium is a state-level estimate for " + state + " scaled by age, for " + coveredDesc + ". " +
-              (kids ? "Children are priced as under-15 enrollees; at lower incomes many qualify for CHIP or Medicaid instead. " : "")
+              (kids ? "Children are priced as under-15 enrollees. At lower incomes many qualify for CHIP or Medicaid instead. " : "")
             : "Using your entered benchmark premium. "}
-          Enter your actual quote from <a href="https://healthcare.gov" target="_blank">healthcare.gov</a> in the sidebar for precision. Credits for {HC_YEAR.year} use the IRS&apos;s {HC_YEAR.year} contribution percentages and the {HC_YEAR.year - 1} poverty guidelines. The enhanced credits of 2021–2025, which removed the 400% FPL cliff and capped contributions at 8.5% of income, expired at the end of 2025; the House passed an extension in January 2026, but it has not become law.
+          Enter your actual quote from <a href="https://healthcare.gov" target="_blank">healthcare.gov</a> in the ACA benchmark premium field for a closer estimate. Credits for {HC_YEAR.year} use the IRS&apos;s {HC_YEAR.year} contribution percentages and the {HC_YEAR.year - 1} poverty guidelines. The enhanced credits of 2021–2025, which removed the 400% FPL cliff and capped contributions at 8.5% of income, expired at the end of 2025. The House passed an extension in January 2026, but it has not become law.
         </div>
       </>
     );
@@ -205,7 +205,7 @@ export function Healthcare() {
   } else {
     medicare = (
       <>
-        <p className={lead}><b>Part B</b> covers doctor visits, outpatient care, and preventive services. <b>Part D</b> covers prescription drugs. Most enrollees add a <b>Medigap supplement</b> (like Plan G) which covers deductibles and copays that Parts A and B leave unpaid, capping your out-of-pocket exposure. Higher incomes trigger IRMAA surcharges that raise the Part B and Part D premiums.</p>
+        <p className={lead}><b>Part B</b> covers doctor visits, outpatient care, and preventive services. <b>Part D</b> covers prescription drugs. Many people add a <b>Medigap supplement</b> such as Plan G, which covers deductibles and copays that Parts A and B leave unpaid and caps your out-of-pocket costs. Higher incomes trigger IRMAA surcharges that raise the Part B and Part D premiums.</p>
         <div className="mb-3.5">
           <Badge variant={hasIrmaa ? "destructive" : "positive"}>
             {hasIrmaa ? <TriangleAlertIcon aria-hidden="true" /> : <CircleCheckIcon aria-hidden="true" />}
@@ -220,7 +220,7 @@ export function Healthcare() {
         {prev ? (
           <div className="hc-insight max-w-copy">Your income is <b>{money(magi65 - prev[joint ? 1 : 0], 0)} above</b> the {TIER_NAMES[tier]} threshold (${prev[joint ? 1 : 0].toLocaleString()}). Reducing MAGI below that threshold saves <b>${r(save)}/mo per person</b> (${r(save * people * 12).toLocaleString()}/yr{joint ? " for the couple" : ""}) in Medicare premiums. Roth conversions and capital gains realizations both count toward IRMAA.</div>
         ) : null}
-        <div className={note}>Medicare costs use CMS&apos;s {HC_YEAR.year} figures: a ${HC_YEAR.medicare.irmaa.partB.toFixed(2)} standard Part B premium and {HC_YEAR.year} IRMAA tiers. Medicare applies the surcharge based on your income from <b>two years prior</b>, so income in retirement year 1 may not affect Part B until year 3. Part D estimate is a national average plus IRMAA; your actual plan premium varies. Medigap Plan G estimates are rough national ranges at age 65, and state, insurer, and enrollment age make a significant difference. Medicare Advantage (Part C) plans often have lower monthly premiums but different cost-sharing and network rules.</div>
+        <div className={note}>Medicare costs use CMS&apos;s {HC_YEAR.year} figures: a ${HC_YEAR.medicare.irmaa.partB.toFixed(2)} standard Part B premium and {HC_YEAR.year} IRMAA tiers. Medicare applies the surcharge based on your income from <b>two years prior</b>, so income in retirement year 1 may not affect Part B until year 3. The Part D estimate is a national average plus IRMAA, and your actual plan premium varies. Medigap Plan G estimates are rough national ranges at age 65, and state, insurer, and enrollment age make a significant difference. Medicare Advantage (Part C) plans often have lower monthly premiums but different cost-sharing and network rules.</div>
       </>
     );
   }

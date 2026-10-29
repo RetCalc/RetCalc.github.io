@@ -36,7 +36,7 @@ export default function GlobalError({ error, retry }: { error: Error & { digest?
         <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:py-20">
           <h1 className="toolhead-name">Something went wrong</h1>
           <p className="mt-2 mb-0 text-body text-muted-foreground">The page hit an error and couldn&apos;t finish. It has been reported, and trying again usually works.</p>
-          <p className="mt-2 mb-0 text-body text-muted-foreground">If it happens again, start the page fresh. That clears the numbers typed into the tools in this tab; your household and saved scenarios stay.</p>
+          <p className="mt-2 mb-0 text-body text-muted-foreground">If it happens again, start the page fresh. That clears the numbers typed into the tools in this tab. Your household and saved scenarios stay.</p>
           <div className="mt-5 flex flex-wrap gap-2.5">
             <button type="button" onClick={() => retry()} className={buttonVariants({ variant: "default" })}>Try again</button>
             <button type="button" onClick={startFresh} className={buttonVariants({ variant: "secondary" })}>Start the page fresh</button>

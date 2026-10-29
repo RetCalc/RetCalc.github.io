@@ -222,7 +222,7 @@ const SORT_COLS: [key: string, label: string, title?: string][] = [
   ["year", "Retired in"], ["outcome", "Outcome"], ["end", "Ending balance"], ["med", "Median year spending"], ["low", "Lowest year's spending"],
   ["stock", "Stocks / yr", "Stocks' yearly return over this retirement, compounded, before inflation"],
   ["bond", "Bonds / yr", "Bonds' yearly return over this retirement, compounded, before inflation"],
-  ["infl", "Inflation / yr", "Inflation a year over this retirement, compounded"],
+  ["infl", "Inflation / yr", "Inflation per year over this retirement, compounded"],
   ["cape", "CAPE at start", "Shiller's CAPE the month this retirement began: the S&P 500's price over ten years of its earnings, after inflation"],
 ];
 function sortValue(r: DdHistRun, col: string, age: number | null): number | string {
@@ -342,28 +342,31 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
   const failLow = low.filter((r) => r.depleted).length, failTop = top.filter((r) => r.depleted).length;
   const unit = mo ? "starting months" : "starts";
   const firstN = n === 1 ? "first year" : "first " + n + " years";
+  const kept = M.name === "what was left", vb = kept ? "left" : "spent", per = kept ? "" : " per year";
+  const firstW = n === 10 ? "first decades" : n === 1 ? "first years" : "first " + n + " years";
   let txt = "The " + firstN + (n === 1 ? " decides" : " decide") + " most retirements: that's when withdrawals are largest against the balance, " +
     "so losses then are locked in. The third of " + unit + " with the weakest " + firstN + " (under " +
     pct1(low[low.length - 1].dec1.port) + " per year after inflation, at your mix) " +
-    (failLow ? "ran out in <b>" + failLow + " of " + low.length + "</b>, and " : "") + "left a typical <b>" + money(med(low)) + "</b>" +
-    (M.name === "what was left" ? "" : " per year") + "; the strongest third (over " + pct1(top[0].dec1.port) + ") " +
-    (failTop ? "ran out in " + failTop + " and " : "") + "left <b>" + money(med(top)) + "</b>. ";
+    (failLow ? "ran out in <b>" + failLow + " of " + low.length + "</b>, and " : "") + vb + " a typical <b>" + money(med(low)) + "</b>" +
+    per + ". The strongest third (over " + pct1(top[0].dec1.port) + ") " +
+    (failTop ? "ran out in " + failTop + " and " : "") + vb + " <b>" + money(med(top)) + "</b>" + per + ". ";
   const pr = seqPair(H, M);
   if (pr && pr.kind === "beat")
     txt += "Retiring in " + startLabel(pr.a, mo) + " ran out though its " + o.years + " years averaged " + pct1(pr.a.full.port) +
       " per year after inflation, while " + startLabel(pr.b, mo) + " lasted on " + pct1(pr.b.full.port) +
-      ": their first decades returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + ".";
+      ": their " + firstW + " returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + ".";
   else if (pr)
     txt += "Retiring in " + startLabel(pr.a, mo) + " and in " + startLabel(pr.b, mo) + " both averaged about " + pct1(pr.a.full.port) +
-      " per year after inflation over " + o.years + " years, yet one left " + money(M.of(pr.a)) + " and the other " + money(M.of(pr.b)) +
-      ": their first decades returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + ".";
+      " per year after inflation over " + o.years + " years, yet one " + (kept ? "left " + money(M.of(pr.a)) + " and the other " + money(M.of(pr.b))
+        : "spent a typical " + money(M.of(pr.a)) + " per year and the other " + money(M.of(pr.b))) +
+      ": their " + firstW + " returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + ".";
   const eras = DD_ERAS.filter((e) => e.to >= lo && e.from <= hi);
   const seqChart = (px?: Px) => (
       <Scatter id={px ? "DDQF" : "DDQ"} px={px} pts={pts} ariaLabel="Each start's first ten years against how its retirement ended"
         opt={{
           small: pts.length > 150, yZero: true, yFmt: fmtAxisMoney,
           xFmt: dec ? (x) => fmtNum(x) + "%" : (x) => String(Math.round(x)),
-          xLabel: dec ? (n === 1 ? "First year's" : "First " + n + " years'") + " return a year, after inflation →" : "Retired in →",
+          xLabel: dec ? (n === 1 ? "First year's" : "First " + n + " years'") + " return per year, after inflation →" : "Retired in →",
           yLabel: dec ? M.axis : null,
           marks: dec ? null : DD_ERAS.filter((e) => e.year >= lo && e.year <= hi).map((e) => ({ x: e.year, label: String(e.year) })),
         }}
@@ -375,8 +378,8 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
           const r = p.run, era = ddEraFor(r.startYear);
           return <>
             <b>Retiring in {startLabel(r, mo)}</b>
-            <br />First {r.dec1.years} years <span className="n">{pct1(r.dec1.port)}/yr</span>
-            <br />All {o.years} years <span className="n">{pct1(r.full.port)}/yr</span>
+            <br />First {r.dec1.years} {r.dec1.years === 1 ? "year" : "years"} <span className="n">{pct1(r.dec1.port)}/yr</span>
+            <br />All {o.years} {o.years === 1 ? "year" : "years"} <span className="n">{pct1(r.full.port)}/yr</span>
             <br />{r.depleted ? <span className="neg">{outcomeText(r, v.age)}</span> : <>Left <span className="n">{money(r.endReal)}</span></>}
             {era ? <><br /><span className="ddtip-era">{era.title}</span></> : null}
             <br /><span className="ddtip-era">Tap to see it year by year</span>
@@ -574,7 +577,7 @@ function SpendStatsAll({ H, o }: { H: DdHist | null; o: DdOpts }) {
       </div>
       <div>
         <KV k="Median total spent over retirement" id="ddAggTotalMed" v={f ? money(f.totalMed) : ""} />
-        <KV k="Total spent, lowest to highest scenario" id="ddAggTotalRange" v={f ? (Math.round(f.totalMax - f.totalMin) < 1 ? money(f.totalMin) + " in every one" : money(f.totalMin) + " – " + money(f.totalMax)) : ""} />
+        <KV k="Total spent, lowest to highest scenario" id="ddAggTotalRange" v={f ? (Math.round(f.totalMax - f.totalMin) < 1 ? money(f.totalMin) + " in every one" : money(f.totalMin) + " to " + money(f.totalMax)) : ""} />
         <KV k="Years spending was cut, on average" id="ddAggCutsAvg" v={f ? f.cutsAvg.toFixed(1) + " of " + o.years + " years" : ""} />
         <KV k="Biggest single-year cut, ever" id="ddAggMaxCut" v={f ? (f.maxCut > 0 ? "−" + money(f.maxCut) + " in one year" : "None") : ""} />
       </div>
@@ -582,10 +585,10 @@ function SpendStatsAll({ H, o }: { H: DdHist | null; o: DdOpts }) {
   );
 }
 function spendAllNote(H: DdHist, o: DdOpts): string {
-  const f = once(H, "spend", () => spendAll(H)), n = H.runs.length;
+  const f = once(H, "spend", () => spendAll(H)), n = H.runs.length, unit = H.monthly ? "starting months" : "starting years";
   return Math.round(f.high - f.low) < 1
-    ? "Across all " + n + " historical starting years, spending held at " + money(f.low) + " per year in today's dollars, " + money(f.totalMin) + " over a full " + o.years + "-year retirement."
-    : "Across all " + n + " historical starting years. A single year's spending ranged from " + money(f.low) + " to " + money(f.high) +
+    ? "Across all " + n + " historical " + unit + ", spending held at " + money(f.low) + " per year in today's dollars, " + money(f.totalMin) + " over a full " + o.years + "-year retirement."
+    : "Across all " + n + " historical " + unit + ", a single year's spending ranged from " + money(f.low) + " to " + money(f.high) +
       " in today's dollars, and a full " + o.years + "-year retirement totaled anywhere from " + money(f.totalMin) + " to " + money(f.totalMax) + " depending on when it began.";
 }
 
@@ -607,7 +610,7 @@ function IncomePanel({ v, R, view, show, showLabel }: { v: DDView; R: PlanResult
         traces={v.tracesOn ? f.traces : undefined}
         tip={(b) => <><b>{lbl(age, b.year, false)}</b><FanTipRows b={b} /></>} />;
       legend = <HistLegend id="legendDDI" tracesOn={v.tracesOn} onToggleTraces={v.toggleTraces}>{ov ? <BaseSwatch /> : null}</HistLegend>;
-      note = "Median, 10th–90th and 25th–75th percentile spending by year of retirement, across all " + R.H.total + " historical " + (R.H.monthly ? "starting months." : "starting years.");
+      note = "Median, 10th to 90th and 25th to 75th percentile spending by year of retirement, across all " + R.H.total + " historical " + (R.H.monthly ? "starting months." : "starting years.");
     } else if (show) {
       title = "Spending through retirement, retiring in " + showLabel;
       single(show, baseOverlay(R.B, "realSpend", false, show.startIdx));
@@ -674,7 +677,7 @@ function DistPanel({ v, R }: { v: DDView; R: PlanResult | null }) {
         </NativeSelect>
       </CardAction></CardHeader>
       <Histogram id="DDH" bins={n ? roundBins(vals) : []} mark={!bal && line > 0 ? line : null} ariaLabel="How the outcomes spread"
-        tip={(b) => <><b>{money(b.lo)} – {money(b.hi)}</b><br /><span className="n">{b.n.toLocaleString("en-US")}</span> {isMc ? "runs" : "retirements"}</>} />
+        tip={(b) => <><b>{money(b.lo)} to {money(b.hi)}</b><br /><span className="n">{b.n.toLocaleString("en-US")}</span> {isMc ? "runs" : "retirements"}</>} />
       <Html className="ddstats" id="ddDistStats" html={stats} />
     </Card>
   );
@@ -686,7 +689,7 @@ function DetailTable({ run, age, items, tableRef }: { run: DdRun | null; age: nu
   return (
     <table id="ddTable" ref={tableRef}>
       <thead><tr><th id="ddTableYearHeader">{age != null ? "Age" : "Year"}</th><th>Start, today&apos;s $</th><th>Social Security</th>
-        <th id="ddOtherIncomeHeader" hidden={!other}>Other Income</th><th id="ddGuarHeader" hidden={!hasG}>Guaranteed</th>
+        <th id="ddOtherIncomeHeader" hidden={!other}>Other income</th><th id="ddGuarHeader" hidden={!hasG}>Guaranteed</th>
         <th>From portfolio</th><th>Total spend</th><th>Spend, today&apos;s $</th><th>Return</th><th>End balance, today&apos;s $</th></tr></thead>
       <tbody>
         {run?.rows.map((r, i) => (
@@ -717,7 +720,7 @@ function Sensitivity({ rows, label }: { rows: { rate: number; median: number }[]
               const drag = DD_DRAGS[i];
               return (
                 <tr key={i} className={drag === 0 ? "font-semibold" : undefined}>
-                  <td>{drag === 0 ? label : drag > 0 ? "-" + drag + "% / yr" : "+" + -drag + "% / yr"}</td>
+                  <td>{drag === 0 ? label : drag > 0 ? "−" + drag + "% / yr" : "+" + -drag + "% / yr"}</td>
                   <td className={cn("whitespace-nowrap", rateClass(r.rate))}><ToneGlyph tone={rateTone(r.rate)} />{pctStr(r.rate, 1)}</td><td>{money(r.median)}</td>
                 </tr>
               );

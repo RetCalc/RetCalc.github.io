@@ -214,7 +214,7 @@ function EditList({ items, side, names, onChange }: { items: Item[]; side: Item[
       <Button variant="outline" size="sm" onClick={() => { setGone(null); onChange([...items, { id: newId(), side, kind: kinds[0].kind, name: "", value: 0, ...(side === "debt" ? { rate: null } : {}) }]); }}>
         <PlusIcon aria-hidden="true" />{side === "asset" ? "Add an asset" : "Add a debt"}
       </Button>
-      {debt ? null : <p className="dsh-cap">What you put in is optional: for a brokerage account its <TipLabel text="cost basis" id="costBasis" />, for a Roth <TipLabel text="your own contributions" id="rothContrib" />. A 457(b) is its own type: it can be drawn from without the 10% penalty once you leave that job.{whose ? " Say whose each retirement account is: each opens at its owner's 59½. Not sure counts it half each." : ""}</p>}
+      {debt ? null : <p className="dsh-cap">What you put in is optional: for a brokerage account its <TipLabel text="cost basis" id="costBasis" />, for a Roth <TipLabel text="your own contributions" id="rothContrib" />. A 457(b) is its own type because it can be drawn from without the 10% penalty once you leave that job.{whose ? " Say whose each retirement account is, since each opens at its owner's 59½. If you're not sure, it counts half each." : ""}</p>}
     </div>
   );
 }
@@ -266,7 +266,7 @@ export function Accounts() {
   const leave = (save: boolean) => { if (save) saveEntry(); else setDraft(null); const to = leaving!; setLeaving(null); router.push(to); };
 
   return (
-    <Frame current="accounts" title="Net worth" sub={last ? (draft ? "Editing; saving adds a new entry" : "As of " + longDate(last.date)) : "Nothing entered yet"}>
+    <Frame current="accounts" title="Net worth" sub={last ? (draft ? "Editing. Saving adds a new entry." : "As of " + longDate(last.date)) : "Nothing entered yet"}>
       <Tile id="picture" icon={ChartBarIcon} title="Assets and debts" right={
         <Segmented aria-label="Today or over time">
           <SegmentedItem pressed={view === "today"} onPressedChange={() => setView("today")}>Today</SegmentedItem>

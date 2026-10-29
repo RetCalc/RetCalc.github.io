@@ -126,7 +126,7 @@ export function Paycheck({ s, set, setState }: {
                           {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                         </SelectField>
                       </div>
-                      <div className="hint -mt-1.5 mb-3.5">Planned by the month, since two paychecks rarely line up; the itemized paycheck shows each of your checks. Taxed together as a joint return.</div>
+                      <div className="hint -mt-1.5 mb-3.5">Planned by the month, since two paychecks rarely line up. The itemized paycheck shows each of your checks. Taxed together as a joint return.</div>
                     </>
                   ) : (
                     <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
@@ -365,7 +365,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
         </div>
         <p className="mt-1.5 mb-1 text-note text-muted-foreground" id="pcPlanNote">
           {plan ? <>{PC_PLANS[plan].note}{pi.efOn ? (plan === "tax" ? ", with the emergency fund before the IRA." : ", with the emergency fund right after the match.") : "."}</>
-            : "A plan sets every slider at once; drag from there."}
+            : "A plan sets every slider at once. Drag from there."}
         </p>
 
         <div id="pcSliders">

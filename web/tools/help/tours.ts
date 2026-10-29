@@ -69,8 +69,8 @@ const tax: Tour<TaxInputs> = { name: "Income Tax", title: "How your taxes are fi
         { h: "<b>Marginal federal rate</b>, on the left, is the tax on your next $1,000 of traditional withdrawals. In retirement it can run above your bracket, because more income can pull more Social Security into tax with it." },
       ];
       return [
-        { h: "<b>Net pay</b> is your pay minus taxes. Switch to <b>Take-home pay</b> to also take out pre-tax savings: that's what reaches your bank account.", ok: n(s.pre) > 0 ? s.view === "take" : undefined },
-        { h: "<b>Per month</b> and <b>Every two weeks</b> are the same thing, per paycheck." },
+        { h: "<b>Net pay</b> is your pay minus taxes. Switch to <b>Take-home</b> to also take out pre-tax savings: that's what reaches your bank account.", ok: n(s.pre) > 0 ? s.view === "take" : undefined },
+        { h: "<b>Per month</b> and the figure beside it are the same pay, shown per month and per paycheck. The second follows <b>How often you're paid</b>, every two weeks unless you change it." },
         { h: "<b>Tax breakdown</b> splits the bill: federal and state income tax, and FICA, the 6.2% for Social Security and 1.45% for Medicare that comes out of every paycheck." },
         { h: "<b>Effective rate</b> is tax divided by income: your average rate. It's always lower than your bracket, because only your top dollars pay the top rate." },
       ];
@@ -98,9 +98,9 @@ const mortgageTour: Tour<MortgageInputs> = { name: "Mortgage Calculator", title:
     { title: "The home and loan", focus: "#asideMort", tasks: ({ s, base }) => [
       { h: "<b>Home price</b> and <b>Down payment</b>, as a percent or a dollar amount. Put down less than 20% and lenders add <b>PMI</b>, insurance that protects them, until you own 20% of the home." },
       { h: "<b>Interest rate</b> starts at a recent national average. Your own rate depends on your credit score and the loan, so a lender's quote makes this much more accurate." },
-      { h: "<b>Length</b>: a 30-year loan has the lowest payment; a 15-year loan costs more each month but far less interest over its life. Try both.", ok: tried(s.term !== base.term) },
+      { h: "<b>Length</b>: a 30-year loan has the lowest payment, and a 15-year loan costs more each month but far less interest over its life. Try both.", ok: tried(s.term !== base.term) },
       { h: "<b>Property tax</b>, <b>Insurance</b> and <b>HOA</b> vary a lot by area. Your county's tax rate and an insurance quote are worth looking up." },
-      { h: "<b>Maintenance</b>: owners should expect to spend about 1% of the home's value a year on repairs. It's not part of the bill, but it is part of the cost." },
+      { h: "<b>Maintenance</b>: owners should expect to spend about 1% of the home's value per year on repairs. It's not part of the bill, but it is part of the cost." },
     ] },
     { title: "Your monthly cost", focus: "#moTotal", tasks: ({ s, base }) => [
       { h: "<b>Monthly payment</b> is everything together. <b>Principal &amp; interest</b> is the loan itself; <b>Everything else</b> is tax, insurance, PMI, HOA and upkeep." },
@@ -126,7 +126,7 @@ const budget: Tour<BudgetInputs> = { name: "Budget", title: "Build a budget that
     { title: "Your spending", focus: "#bgList", tasks: ({ s }) => {
       const B = budgetNums(s);
       return [
-        { h: "Open your last two or three months of bank and card statements and work down the list. Rough is fine; a guess beats a blank." + (B.lines ? "<em>" + B.lines + " filled</em>" : ""), ok: tried(B.lines >= 5) },
+        { h: "Open your last two or three months of bank and card statements and work down the list. Rough is fine, and a guess beats a blank." + (B.lines ? "<em>" + B.lines + " filled</em>" : ""), ok: tried(B.lines >= 5) },
         { h: "For bills that come once or twice a year, like car insurance, travel, gifts or repairs, tap <b>/yr</b> on the line and enter the yearly total. They're the ones budgets usually forget." },
         { h: "Click any item's name to rename it. The <b>+</b> on a group adds a line to it, <b>Add custom item</b> covers anything else, and <b>×</b> removes a line you don't need." },
         { h: "Saving isn't a line here: the <b>Paycheck</b> tab plans it from what's left after these. <b>+ College savings</b> brings that goal in from its tool." },
@@ -134,7 +134,7 @@ const budget: Tour<BudgetInputs> = { name: "Budget", title: "Build a budget that
     } },
     { title: "Reading it", focus: "#bgTotal || #bgWhere", tasks: () => [
       { h: "<b>Your budget, per month</b> is every line added up, with yearly bills spread over the year. <b>Where it goes</b> splits it by group, largest first." },
-      { h: "A common starting point is the 50/30/20 split of take-home pay: about half on needs, 30% on wants and 20% to savings and extra debt payments. Treat it as a gauge, not a rule." },
+      { h: "A common starting point is the 50/30/20 split of take-home pay: about half on needs, 30% on wants and 20% to savings and extra debt payments. Treat it as a gauge." },
       { h: "Then the <b>Paycheck</b> tab, at the top: your gross pay, what taxes take, how each check covers this budget, and where the rest goes." },
       { h: "<b>Emergency fund</b> sizes a cash cushion from your spending. Three to six months is typical; more if your income is irregular or you're the only earner." },
       { h: "<b>CSV</b>, next to the title, downloads the budget as a spreadsheet." },
@@ -151,8 +151,8 @@ const college: Tour<CollegeInputs> = { name: "College Savings", title: "Saving f
       { h: "<b>Currently saved</b> is what's already set aside, in a 529 plan or anywhere else." },
     ] },
     { title: "The assumptions", focus: "#clReturn", tasks: () => [
-      { h: "<b>Investment return</b> is what the savings earn each year. 5% to 6% is a reasonable middle; 529 plans usually shift toward safer investments as college gets close." },
-      { h: "<b>Tuition inflation</b> is how fast college prices rise. It has run ahead of everyday prices for decades; 4% to 5% is a common assumption." },
+      { h: "<b>Investment return</b> is what the savings earn each year. 5% to 6% is a reasonable middle. 529 plans usually shift toward safer investments as college gets close." },
+      { h: "<b>Tuition inflation</b> is how fast college prices rise. It has run ahead of everyday prices for decades. 4% to 5% is a common assumption." },
     ] },
     { title: "Reading the result", focus: "#clMonthly", tasks: () => [
       { h: "<b>Save per month</b> is what to set aside from now until college starts." },
@@ -199,7 +199,7 @@ const drawdown: Tour<DrawdownState> = { name: "Drawdown Simulator", title: "Will
       { h: "<b>Withdrawal strategy</b> and its rate decide each year's spending. The 4% rule takes 4% of savings the first year and raises it with inflation. Amounts are before income tax." },
     ] },
     { title: "Your result", focus: "#ddSuccess", show: ddTab("plan"), tasks: () => [
-      { h: "Each test is a real retirement: one starting every month since 1926, 835 of them for a 30-year plan. <b>Success rate</b> is the share where the money never ran out." },
+      { h: "Each test is a real retirement: one starting every month from July 1926, 835 of them for a 30-year plan. <b>Success rate</b> is the share where the money never ran out." },
       { h: "<b>Median ending balance</b> is what's typically left, in today's dollars. <b>Worst case</b> is the leanest ending on record." },
       { h: "<b>Pin as baseline</b> keeps these results. Change anything and every figure shows whether it got better or worse, and the charts draw the baseline dashed.", ok: tried(text("#ddPin") === "Pin again") },
       { h: "The <b>Spending scorecard</b> below measures what living on the plan was like: how often spending stayed above your <b>comfort line</b> (set your own under Goals), the leanest year, cuts, and what a typical retirement spent in all." },
@@ -286,7 +286,7 @@ const debt: Tour<DebtInputs> = { name: "Debt Payoff", title: "Your fastest way o
     { title: "Your debts", focus: "#dtList", tasks: ({ s }) => {
       const D = debtNums(s);
       return [
-        { h: "Enter each debt: a name, the <b>Balance</b>, the <b>Rate</b> (the APR on your statement) and the <b>Minimum</b> payment. <b>Add a debt</b> gives you another row. Sample debts are there to start; replace them." + (D.live.length ? "<em>" + D.live.length + " entered</em>" : "") },
+        { h: "Enter each debt: a name, the <b>Balance</b>, the <b>Rate</b> (the APR on your statement) and the <b>Minimum</b> payment. <b>Add a debt</b> gives you another row. Sample debts are there to start, so replace them." + (D.live.length ? "<em>" + D.live.length + " entered</em>" : "") },
         { h: "Include credit cards, car loans, student loans and personal loans. A mortgage is usually left out: it's long, cheap debt with its own tool." },
         { h: "If a minimum doesn't even cover the interest, the balance grows no matter what, and the tool will warn you. Check the figure on your statement." },
       ];
@@ -347,7 +347,7 @@ const healthcare: Tour = { name: "Healthcare Cost Planner", title: "Health cover
     ] },
     { title: "Before 65: the marketplace", focus: "#hcACABody", tasks: () => [
       { h: "The subsidy, a <b>premium tax credit</b>, caps what you pay for the benchmark Silver plan at a share of your income. The government pays the rest, straight to the insurer." },
-      { h: "Above 400% of the poverty line the credit stops completely, so one dollar over can cost thousands a year. The tool warns you when you're close." },
+      { h: "Above 400% of the poverty line the credit stops completely, so one dollar over can cost thousands per year. The tool warns you when you're close." },
       { h: "The same credit applies to any plan tier: <b>Bronze</b> costs less each month but more when you use care; <b>Gold</b> the reverse. Below about 250% of the poverty line, Silver plans also come with lower deductibles." },
     ] },
     { title: "From 65: Medicare", focus: "#hcMedicareBody", tasks: () => [
@@ -372,7 +372,7 @@ const fire: Tour<FireInputs> = { name: "FIRE Calculator", title: "When could wor
       { h: "<b>Withdrawal rate</b> turns spending into a savings target. At 4%, you need 25 times your yearly spending; 3.5% is more cautious for early retirees, whose money has to last longer." },
     ] },
     { title: "Reading the result", focus: "#fiAge", tasks: ({ s, base }) => [
-      { h: "<b>FIRE age</b> is when you'd reach the target, <b>Portfolio at FIRE</b> what you'd have then in today's dollars, and <b>Years until FIRE</b> how far away it is." },
+      { h: "<b>FIRE age</b> is when you'd reach the target, <b>Portfolio at FIRE</b> what you'd have then in today's dollars. The note under the age says how many years away that is." },
       { h: "Raise the <b>Contribution</b> a little and see how many years it takes off. Early on, saving more speeds things up far more than a higher return.", ok: tried(n(s.contrib) !== base.contrib) },
       { h: "At the top of the result, switch <b>Rate band</b> to <b>Historical</b> to see when you'd have reached it in real markets since 1926, with a slider for how sure you want to be." },
       { h: "Retiring early usually needs a plan for health insurance before 65 and for reaching retirement accounts before 59½. The Early Retirement Bridge and Healthcare tools cover both." },
@@ -415,7 +415,7 @@ const social: Tour<SocialInputs> = { name: "Social Security Calculator", title: 
   start: ({ s }) => ({ claim: n(s.you.claim), through: n(s.you.through) }),
   pages: [
     { title: "About you", focus: "#ssSentence", tasks: ({ s }) => [
-      { h: "Fill in the blanks. Your <b>birth year</b> sets your <b>full retirement age</b>: 66 for 1943 to 1954, rising two months a year to 67 for 1960 and later." },
+      { h: "Fill in the blanks. Your <b>birth year</b> sets your <b>full retirement age</b>: 66 for 1943 to 1954, rising two months per year to 67 for 1960 and later." },
       { h: "<b>Your pay</b> today estimates a whole career: the ages you started and will stop, and raises around today's pay. <b>Edit pay year by year</b> shows every year; type a past year's pay as you earned it (the tool indexes it to today's wages, as Social Security does), or a future year for a promotion, and the years after follow it." },
       { h: "Have your statement from ssa.gov/myaccount? <b>I have my Social Security statement</b> takes its monthly figure at full retirement age instead.", ok: tried(s.you.src === "statement") },
       { h: "<b>Add my spouse</b> for a couple: a lower earner can get a top-up to half the other's benefit, and the survivor keeps the larger check." },
@@ -451,7 +451,7 @@ const optimizer: Tour<OptimizerInputs> = { name: "Retirement Plan Optimizer", ti
     ] },
     { title: "The search and your roadmap", focus: "#opGoals", tasks: () => [
       { h: "Pick what the best plan should do: <b>Leave the most</b> after tax, <b>Make it last</b> in the most markets, or <b>Spend the most</b> each year while still lasting." },
-      { h: "Press <b>Find my best plan</b>. The search runs in your browser and takes a moment; it checks thousands of combinations.", ok: tried(text("#opOut").length > 0) },
+      { h: "Press <b>Find my best plan</b>. The search runs in your browser and takes a moment because it checks thousands of combinations.", ok: tried(text("#opOut").length > 0) },
       { h: "The answer compares <b>Your roadmap</b> with <b>The usual way</b> (claiming at the age you gave, spending from brokerage, then traditional, then Roth, with no conversions). The badge shows what the difference is worth." },
       { h: "<b>Show every year</b> lays out the roadmap year by year: what to convert to Roth, which account each year's spending comes from, and the taxable income that leaves." },
     ] },

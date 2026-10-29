@@ -109,7 +109,7 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
     const { C, V } = changesCompute(s, household, freed);
     if (C.cutShort) for (const r of rows) if (r.on && r.kind === "saving" && r.amount < 0) {
       const off = compileChanges(withChange(s, { ...r, on: false }), household, freed).cutShort;
-      if (!off || off.most < C.cutShort.most - 0.5) out[r.id] = `More than you save from ${Y.ages ? Y.base + C.cutShort.from : "year " + C.cutShort.from}: ${money(C.cutShort.most)} per month short. Saving stops at $0 there; lower it or start it later.`;
+      if (!off || off.most < C.cutShort.most - 0.5) out[r.id] = `More than you save from ${Y.ages ? Y.base + C.cutShort.from : "year " + C.cutShort.from}: ${money(C.cutShort.most)} per month short. Saving stops at $0 there. Lower it or start it later.`;
     }
     for (const L of lumpShorts(C, V)) for (const r of rows) if (r.on && r.kind === "lump" && r.amount < 0 && r.from === L.from) {
       const where = L.acct ? ({ t: "traditional", r: "Roth", b: "brokerage", h: "HSA" } as const)[L.acct] : "your savings";
@@ -155,7 +155,7 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
     let cant: string | null = null;
     if (c.kind === "saving" && c.amount < 0) {
       const a = compileChanges(on, household, freed).cutShort, b = changesOn(off) ? compileChanges(off, household, freed).cutShort : null;
-      if (a && (!b || b.most < a.most - 0.5)) cant = `More than you save from ${Y.ages ? Y.base + a.from : "year " + a.from}: ${money(a.most)} per month short. Saving stops at $0 there; lower it or start it later.`;
+      if (a && (!b || b.most < a.most - 0.5)) cant = `More than you save from ${Y.ages ? Y.base + a.from : "year " + a.from}: ${money(a.most)} per month short. Saving stops at $0 there. Lower it or start it later.`;
     }
     if (c.kind === "lump" && c.amount < 0) {
       const R = changesCompute(on, household, freed), L = lumpShorts(R.C, R.V).find((y) => y.from === c.from);
@@ -180,7 +180,7 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
           ))}
         </ol>
       ) : (
-        <p className="hint mt-0 mb-2.5">None yet. A raise, a bigger house, easing off before you retire, an inheritance, children, or a different view on returns: add one and see what it does.</p>
+        <p className="hint mt-0 mb-2.5">None yet. Add a raise, a bigger house, easing off before you retire, an inheritance, children or a different view on returns, and see what it does.</p>
       )}
       <div className="dsh-sc-btns mb-3.5">
         {rows.length ? <Button variant="outline" className="flex-1" id="btnViewChanges" onClick={() => setDlg({ at: "list" })}><PencilIcon aria-hidden="true" />View or edit</Button> : null}
@@ -199,14 +199,14 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
       ) : null}
       {dlg?.at === "pick" ? (
         <PickKind kinds={[SAVING_KIND, LUMP_KIND, RETURNS_KIND, CHILDREN_KIND]} close={done} pick={(k) => pick(k, dlg.back)}
-          note={"What do you see coming? Pick one, then put a name, " + (Y.ages ? "ages" : "years") + " and amounts to it." + (Y.ages ? "" : " Your age, under Your savings, lets the changes read by age.")} />
+          note={"What do you see coming? Pick one, then give it a name, " + (Y.ages ? "ages" : "years") + " and amounts." + (Y.ages ? "" : " Your age, under Your savings, lets the changes read by age.")} />
       ) : null}
       {dlg?.at === "edit" ? (
         <ChangeDialog s={dlg.c} fresh={dlg.fresh} years={Y} accounts={acOn} label={tipLabel} effectOf={effectOf}
           sentence={(x) => scenarioSentence(x, Y.end, nominal, { years: !Y.ages, pot: !acOn })}
           where={(k) => `The rest comes out of the others once ${acctWord(k)} runs out: brokerage, Roth, traditional, then the HSA.`}
           note={(x) => (!freed && acOn && x.kind === "saving" && x.amount < 0 && !(x.mode === "pct" && x.amount <= -100) && x.acct !== "brok" && x.acct !== "roth"
-            ? "A cut from traditional or HSA saving frees less than this after tax, since that money is taxed as pay again. Here a dollar cut is counted as a dollar; the Paycheck to Retirement guide and the Dashboard work it out from your paycheck." : null)}
+            ? "A cut from traditional or HSA saving frees less than this after tax, since that money is taxed as pay again. Here a dollar cut is counted as a dollar. The Paycheck to Retirement guide and the Dashboard work it out from your paycheck." : null)}
           close={done} save={(x) => { setState((c) => withChange(c, stored(x, Y))); done(); }}
           remove={() => { remove(dlg.c.id); done(); }} />
       ) : null}
@@ -232,15 +232,15 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
     return, a lump sum on its first day and what's going on. */
 function StagesTable({ shown: list, Y, split }: { shown: ShownStage[]; Y: Years; split: boolean }) {
   const hsa = split && list.some((x) => x.monthly.hsa > 0), anyLump = list.some((x) => x.lump);
-  const span = (x: ShownStage) => (Y.ages ? fmtNum(Y.base + x.from) + " to " + fmtNum(Y.base + x.to) : "Year " + fmtNum(x.from) + " – " + fmtNum(x.to));
+  const span = (x: ShownStage) => (Y.ages ? fmtNum(Y.base + x.from) + " to " + fmtNum(Y.base + x.to) : "Year " + fmtNum(x.from) + " to " + fmtNum(x.to));
   const total = (m: Monthly) => m.brok + m.roth + m.trad + m.hsa;
   return (
     <>
-      <p className="hint mt-0 mb-3">Amounts are a month, in today&apos;s dollars: your own money{split ? ", before the match" : ""}. Per month is the first year&apos;s and, where it moves, the last year&apos;s. Rises is how much the first year&apos;s grows into the next, after inflation.{anyLump ? " On day one is a lump sum put in or taken out on the stage's first day." : ""}</p>
+      <p className="hint mt-0 mb-3">Amounts are per month, in today&apos;s dollars: your own money{split ? ", before the match" : ""}. Per month is the first year&apos;s and, where it moves, the last year&apos;s. Rises is how much the first year&apos;s grows into the next, after inflation.{anyLump ? " On day one is a lump sum put in or taken out on the stage's first day." : ""}</p>
       <div className="swipehint">Swipe the table sideways to see every column.</div>
       <div className="scroll" tabIndex={0} role="region" aria-label="The stages behind your plan">
         <table id="stagesBehindA">
-          <thead><tr><th>Stage</th><th>{Y.ages ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="advrises" /></th>{anyLump ? <th><Tipped text="On day one" k="advlump" /></th> : null}<th>Return</th><th className="text-center">What&apos;s going on</th></tr></thead>
+          <thead><tr><th>Stage</th><th>{Y.ages ? "Ages" : "When"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="advrises" /></th>{anyLump ? <th><Tipped text="On day one" k="advlump" /></th> : null}<th>Return</th><th className="text-center">What&apos;s going on</th></tr></thead>
           <tbody>
             {list.map((x, i) => (
               <tr key={i}><td>{i + 1}</td><td>{span(x)}</td><td>{fmtNum(Math.round((x.to - x.from) * 100) / 100)}</td><td className="whitespace-nowrap"><b>{money(total(x.monthly))}</b>{Math.abs(total(x.monthlyEnd) - total(x.monthly)) >= 1 ? <> → <b>{money(total(x.monthlyEnd))}</b></> : null}</td>

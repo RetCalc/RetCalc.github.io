@@ -37,7 +37,7 @@ export function RetSpendCard() {
         <Lesson id="eighty">
           <p>Most people spend less once they stop work: no commute, no saving for retirement, no payroll tax, often no mortgage. That&apos;s where the
             {" "}common rule of 80% of today&apos;s spending comes from, a <Term k="replacement">replacement rate</Term>. Travel, hobbies and health can push it
-            {" "}back up, so it&apos;s a starting point, not an answer.</p>
+            {" "}back up, so treat it as a starting point.</p>
           <p>Enter what you&apos;ll live on <b>after</b> income tax, at today&apos;s prices. The plan works out each year&apos;s tax itself, from where the money
             {" "}comes from, so adding it here would count it twice. Leave out health insurance before 65 too: the plan prices that as well.</p>
         </Lesson>
@@ -93,7 +93,7 @@ function NeedMeans() {
             {pos(a.spend) ? <li>That&apos;s <b>{pctStr(S.spend / (a.spend * 12), 0)}</b> of what you spend today.</li> : null}
             <li>Income tax comes on top, worked out by the plan: about <b>{money(S.taxYr)}</b> in a typical year
               {S.hcYr > 0 ? <>, and about <b>{money(S.hcYr)}</b> per year for health insurance for the {yrs(S.hcYears)} before Medicare</> : null}.</li>
-            <li>That counts Social Security {S.ss.own ? "from your statement" : "as estimated from your income"}; the next card checks it.</li>
+            <li>That counts Social Security {S.ss.own ? "from your statement" : "as estimated from your income"}. The next card checks it.</li>
           </ul>
         )}
     </Means>
@@ -114,7 +114,7 @@ export function SocialCard() {
         <Lesson id="wait" figure={P.pia1 > 0 ? <Ladder groups={groups} /> : null}
           caption={P.pia1 > 0 ? "A month, in today's dollars, " + (P.own ? "from your statement" : "estimated from your income") + ", claimed at each age." : null}>
           <p>Your benefit is set by your highest 35 years of earnings. What it pays at full retirement age, 67, is your <Term k="pia">PIA</Term>. Claim at 62 and
-            {" "}it&apos;s cut by 30%, for life; every year you wait past 67 adds 8%, up to 124% at 70. Whenever it starts, it rises with inflation after.</p>
+            {" "}it&apos;s cut by 30%, for life; every year you wait past 67 adds 8%, up to 124% at 70. Once it starts, it rises with inflation.</p>
           <p>{m ? <>For a couple, the survivor keeps the larger of the two benefits, so the higher earner waiting protects you both. A spouse with a small record
             {" "}gets a top-up, the <Term k="spousal">spousal benefit</Term>, of up to half the other&apos;s PIA.</>
             : "Waiting means living on more of your savings first, for a larger check for the rest of your life."}</p>
@@ -130,7 +130,7 @@ export function SocialCard() {
       </>}>
         <div className="gd-fields">
           <MoneyF k="ssOwn" label={m ? "Your benefit at 67, from your statement" : "Your monthly benefit at 67, from your statement"} per="/mo" full={!m} ph="optional"
-            hint="From ssa.gov/myaccount. It uses your real earnings record, so it beats our estimate." />
+            hint="From ssa.gov/myaccount. It uses your real earnings record, so it is more accurate than the guide's estimate." />
           {m ? <MoneyF k="ssOwn2" label="Your spouse's benefit at 67" per="/mo" ph="optional" hint="From their own statement." /> : null}
           <SelF k="ssClaim" label={m ? "When would you each claim it?" : "When would you claim it?"} num full
             opts={[["", "At 67, or when I retire if that's later"], ...[62, 63, 64, 65, 66, 67, 68, 69, 70].map((x) =>
@@ -161,7 +161,7 @@ function SocialMeans() {
         {pos(a.pension) ? <li>Your pension: <b>{money(a.pension * 12)}</b> per year from {ok(from) ? fmtNum(from) : "retirement"}{a.pensionCola === "yes" ? ", rising with inflation." : ", a fixed amount, so it buys a little less each year."}</li> : null}
         {ss.tactics ? <li>These are the Retirement Plan Optimizer&apos;s claiming ages, which your plan now uses.</li> : null}
         {!ss.own && ss.career < 35 ? <li>It averages your best 35 years, so retiring after {ss.career} years of work counts the rest as zeros.</li> : null}
-        {est ? <li>An estimate from your income. Your statement at ssa.gov/myaccount uses your real record; the trust fund is also projected to run short in the 2030s,
+        {est ? <li>An estimate from your income. Your statement at ssa.gov/myaccount uses your real record. The trust fund is also projected to run short in the 2030s,
           {" "}so a cautious plan can enter a lower figure.</li> : null}
       </ul>
     </Means>

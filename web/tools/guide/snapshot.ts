@@ -27,7 +27,7 @@ const FIELDS: { k: keyof Snapshot; label: string; kind: Moved["kind"] }[] = [
   { k: "success", label: "Lasted in", kind: "pct" },
   { k: "retire", label: "Retire at", kind: "age" },
   { k: "spend", label: "Spending in retirement", kind: "money" },
-  { k: "monthly", label: "Saving a month", kind: "money" },
+  { k: "monthly", label: "Saving per month", kind: "money" },
 ];
 /** The signed difference per field, and per area in points, where it isn't zero. */
 export function whatMoved(prev: Snapshot, next: Snapshot): Moved[] {

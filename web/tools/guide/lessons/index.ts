@@ -32,7 +32,7 @@ export const LESSONS: LessonInfo[] = [
   { id: "months", n: 4, title: "Months of spending", card: "cash", terms: [{ key: "emergency", label: "Emergency fund" }], tools: [T.budget] },
   { id: "eight-percent", n: 5, title: "The 8% line", card: "debt", terms: [{ key: "apr", label: "APR" }], tools: [T.debt] },
   { id: "order", n: 6, title: "The order of operations", card: "debt", terms: [{ key: "match", label: "Employer match" }], tools: [] },
-  { id: "housing", n: 7, title: "Housing at 28%; retirement before college", card: "goals", terms: [{ key: "piti", label: "PITI" }], tools: [T.mortgage, T.college] },
+  { id: "housing", n: 7, title: "Housing at 28%, retirement before college", card: "goals", terms: [{ key: "piti", label: "PITI" }], tools: [T.mortgage, T.college] },
   { id: "time", n: 8, title: "Time does most of the work", card: "savings", terms: [{ key: "compound", label: "Compound growth" }], tools: [T.basic, T.advanced] },
   { id: "real-returns", n: 9, title: "Real returns and the range", card: "invested", terms: [{ key: "realreturn", label: "Real return" }], tools: [T.backtest] },
   { id: "buckets", n: 10, title: "The three tax buckets", card: "accounts",

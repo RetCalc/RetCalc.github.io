@@ -39,7 +39,7 @@ export function AboutYou() {
           <NumF k="age" label="Your age" affix="yrs old" />
           {mar(v) ? <NumF k="spouseAge" label="Spouse's age" affix="yrs old" /> : null}
           <NumF k="retire" label="Age you'd like to retire" affix="yrs old" hint="A guess is fine. You can try other ages later."
-            err={ok(a.age) && ok(a.retire) && a.retire <= a.age ? <>Your retirement age needs to be later than your age today. This guide is built for the saving years; if you&apos;ve
+            err={ok(a.age) && ok(a.retire) && a.retire <= a.age ? <>Your retirement age needs to be later than your age today. This guide is built for the saving years. If you&apos;ve
               {" "}already retired, <Button variant="quiet" size="inline" data-gd="retired" onClick={() => { G.set("retired", true, true); G.go("retired"); }}>start from what you have</Button>
               {" "}and the guide opens the <b>Drawdown Simulator</b> with it.</> : null} />
         </div>
@@ -62,11 +62,11 @@ function TimelineReadout() {
     <ul className="gd-read">
       <li><b>{yrs(save)}</b> to save, then about <b>{yrs(fund)}</b> to fund{spouseYounger && retire + fund > 95 ? ", to your spouse's 95, since they're younger" : ", to 95"}.</li>
       {toMedicare > 0 ? <li>Medicare starts at 65: <b>{yrs(toMedicare)}</b> after you retire{spouseToMedicare != null && spouseToMedicare !== toMedicare
-        ? ", " + (spouseToMedicare > 0 ? fmtNum(spouseToMedicare) : "none") + " for your spouse" : ""}. Until then you&apos;d buy your own coverage; the plan prices it for you.</li>
-        : spouseToMedicare != null && spouseToMedicare > 0 ? <li>You&apos;d have Medicare from the day you retire; your spouse would wait <b>{yrs(spouseToMedicare)}</b>, buying their own coverage until then. The plan prices it for you.</li>
+        ? ", " + (spouseToMedicare > 0 ? fmtNum(spouseToMedicare) : "none") + " for your spouse" : ""}. Until then you&apos;d buy your own coverage, and the plan prices it for you.</li>
+        : spouseToMedicare != null && spouseToMedicare > 0 ? <li>You&apos;d have Medicare from the day you retire. Your spouse would wait <b>{yrs(spouseToMedicare)}</b>, buying their own coverage until then. The plan prices it for you.</li>
         : <li>You&apos;d retire at or after 65, so Medicare covers you from the start.</li>}
       {before59 > 0 ? <li>That&apos;s {yrs(before59)} before 59½, when retirement accounts open without a penalty. <b>Getting to 59½</b> joins your route to plan the years between.</li> : null}
-      <li>Social Security can start at 62{retire <= 62 ? "" : ", or whenever you choose after"}; the full benefit comes at 67, and waiting to 70 pays the most.</li>
+      <li>Social Security can start at 62{retire <= 62 ? "" : ", or whenever you choose after"}. The full benefit comes at 67, and waiting to 70 pays the most.</li>
     </ul>
   );
 }

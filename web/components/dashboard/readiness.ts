@@ -47,14 +47,14 @@ export function explain(id: FactorId, pr: Profile, entries: Entry[], R: Results)
         ...(F.fullMatch === false ? ["Raise the first 401(k) line to get the whole employer match"] : []),
         ...(F.left > 50 ? [`Put the ${money10(F.left)} per month not yet assigned to work`] : []),
       ],
-      href: "/dashboard/savings#rest", action: "Open Savings",
+      href: "/dashboard/savings#rest", action: "Open Taxes & Savings",
     };
     case "cushion": {
       const target$ = F.efTarget, cash = H.cash ?? 0;
       return {
-        why: part ? `${part.txt} set aside in cash; the score gives full marks at 6 months. Your own goal, set on Spending, is ${F.efMonths} months, ${money(target$)}.` : "Needs your checking and savings, on Net worth.",
-        how: part && cash < target$ ? [`Set aside ${money(target$ - cash)} more`, F.ef > 0 ? `At ${money10(F.ef)} per month to it, about ${Math.ceil((target$ - cash) / F.ef)} months` : "Add an emergency fund line on Savings"] : [],
-        href: part ? "/dashboard/savings#rest" : "/dashboard/accounts#assets", action: part ? "Open Savings" : "Open Net worth",
+        why: part ? `${part.txt} set aside in cash, and the score gives full marks at 6 months. Your own goal, set on Spending, is ${F.efMonths} months, ${money(target$)}.` : "Needs your checking and savings, on Net worth.",
+        how: part && cash < target$ ? [`Set aside ${money(target$ - cash)} more`, F.ef > 0 ? `At ${money10(F.ef)} per month to it, about ${Math.ceil((target$ - cash) / F.ef)} months` : "Add an emergency fund line on Taxes & Savings"] : [],
+        href: part ? "/dashboard/savings#rest" : "/dashboard/accounts#assets", action: part ? "Open Taxes & Savings" : "Open Net worth",
       };
     }
     case "debt": return {

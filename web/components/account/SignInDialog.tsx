@@ -41,7 +41,7 @@ function Start() {
   return (
     <div className="acct">
       <h2 id="acctTitle">Sign in to RetCalc</h2>
-      <p className="acct-lede">Save your household, scenarios and Guide to an account so they follow you to any device. Optional: everything works without one.</p>
+      <p className="acct-lede">Save your household, scenarios and Guide to an account so they follow you to any device. Optional: the tools, Calculator and Guide all work without one.</p>
       <GoogleButton fallbackIcon={GOOGLE} onError={setErr} />
       <div className="acct-or" aria-hidden="true"><span>or</span></div>
       <form className="acct-form" onSubmit={async (e) => {
@@ -58,7 +58,7 @@ function Start() {
         <Button type="submit" size="lg" className="w-full" disabled={busy || !email.trim()}>{busy ? "Sending…" : "Send me a code"}</Button>
       </form>
       {err ? <p className="acct-err" role="alert">{err}</p> : null}
-      <p className="acct-fine">We email a 6-digit code. No password to remember. Your data is never sold or shared.</p>
+      <p className="acct-fine">We email a 6-digit code, so there&apos;s no password to remember. Your data is never sold or shared with advertisers.</p>
     </div>
   );
 }
@@ -108,7 +108,7 @@ function Code({ email }: { email: string }) {
         }}>{wait > 0 ? `Send a new code in ${wait}s` : "Send a new code"}</Button>
         <Button variant="link" size="inline" onClick={() => setStep({ at: "start" })}>Use a different email</Button>
       </div>
-      <p className="acct-fine">Not there? Check spam, or wait a minute; it comes from signin@retcalc.app.</p>
+      <p className="acct-fine">Not there? Check spam, or wait a minute. It comes from signin@retcalc.app.</p>
     </div>
   );
 }

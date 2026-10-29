@@ -47,7 +47,7 @@ function StratPick({ a }: { a: Answers }) {
     (r.canFail ? " It lasted in " + pctStr(r.success, 0) + " of retirements, against " + pctStr(S.success, 0) + " spending a fixed amount." : " It can't run out, because spending follows the balance down.") +
     (fl ? (r.success < target(a) - 1e-9 ? " Your " + money(fl) + " minimum is what costs it here: holding spending up through a bad market drains the portfolio, so a lower minimum, or a bigger cushion, buys safety."
       : " Your " + money(fl) + " minimum held in " + pctStr(r.success, 0) + " of retirements, enough for your target.")
-      : " Ask yourself whether you could live on the lean year; if not, set a minimum above and see what it costs.");
+      : " Ask yourself whether you could live on the lean year. If not, set a minimum above and see what it costs.");
   return <Callout cls={r.success < 0.9 && r.canFail ? "warn" : "ok"}>{t}</Callout>;
 }
 
@@ -70,7 +70,7 @@ export function StrategyStep() {
         </Lesson>
       </Learn>
       <Lead>So far your plan spends the same amount every year, raised with inflation, whatever markets do. It&apos;s the simplest approach and the most cautious test.
-        {" "}Most retirees flex a little instead. Here&apos;s how six common approaches would have handled your plan ({money(S.fv)} at {fmtNum(S.retire)}, aiming to spend {money(S.spend)}
+        {" "}Retirees often flex a little instead. Here&apos;s how six common approaches would have handled your plan ({money(S.fv)} at {fmtNum(S.retire)}, aiming to spend {money(S.spend)}
         {" "}per year) in every retirement since {S.H.first}.</Lead>
       <BackNote step="strategy" />
       <H3>What&apos;s the least you could live on?</H3>

@@ -238,7 +238,7 @@ export function Optimizer() {
               </div>
 
               <div id="opSaveWrap" hidden={!v.now || !(v.retire > v.age)}>
-                <h4 className="mt-1 mb-2.5 text-note font-semibold">Saving until you retire, a month</h4>
+                <h4 className="mt-1 mb-2.5 text-note font-semibold">Saving per month until you retire</h4>
                 <div className="two bottomalign max-sm:grid-cols-2">
                   <MoneyField id="opSaveTrad" label={<Tipped text="Traditional" k="opsavetrad" />} unit="/mo" value={s.saveTrad} onValueChange={set("saveTrad")} />
                   <MoneyField id="opSaveRoth" label="Roth" unit="/mo" value={s.saveRoth} onValueChange={set("saveRoth")} />
@@ -260,7 +260,7 @@ export function Optimizer() {
               </div>
               <div className="-mt-1 mb-3.5 flex items-start gap-2 text-note text-destructive" hidden={spend}>
                 <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                <span id="opSpendWarn" role="alert">{spend ? "" : "Enter what you'll spend each year; the search needs it."}</span>
+                <span id="opSpendWarn" role="alert">{spend ? "" : "Enter what you'll spend each year. The search needs it."}</span>
               </div>
               <div className="two bottomalign max-sm:grid-cols-2">
                 <MoneyField id="opSS1" label={<Tipped text="Your benefit at 67" k="opss" />} unit="/mo" value={s.ss1} onValueChange={set("ss1")} />
@@ -325,7 +325,7 @@ export function Optimizer() {
                 <span>Enter your spending in retirement first, under In retirement.</span>
               </p>
             ) : null}
-            <p className="mt-4 mb-0 max-w-copy border-t border-border pt-4 text-note text-muted-foreground">Every age from {fmtNum(Math.max(62, Math.min(70, v.retire)))} {v.retire > 62 ? "(your retirement age) " : ""}to 70 for each of you to claim Social Security. Every order for drawing down your accounts. Every level of Roth conversion, for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with {NEWEST_YEAR} federal and state tax worked out year by year, and the best one wins.</p>
+            <p className="mt-4 mb-0 max-w-copy border-t border-border pt-4 text-note text-muted-foreground">The search tries every age from {fmtNum(Math.max(62, Math.min(70, v.retire)))} {v.retire > 62 ? "(your retirement age) " : ""}to 70 for each of you to claim Social Security, drawing down brokerage first or traditional first, and every level of Roth conversion for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with {NEWEST_YEAR} federal and state tax worked out year by year, and the best one wins.</p>
           </CardContent>
         </Card>
         <OptimizerStatus host="tool" />

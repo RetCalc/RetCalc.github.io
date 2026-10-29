@@ -211,7 +211,7 @@ function lumpShort(pr: Profile, entries: Entry[], s: Scenario, age: number): Sho
 const ACCT_WORDS: Record<LumpAccount, string> = { t: "traditional", r: "Roth", b: "brokerage", h: "HSA" };
 /** The shortfall in words. */
 function shortWords(sf: Short): string {
-  if (sf.kind === "save") return `More than you save from ${sf.from}: ${money(sf.most)} per month short. Saving stops at $0 there; lower it or start it later.`;
+  if (sf.kind === "save") return `More than you save from ${sf.from}: ${money(sf.most)} per month short. Saving stops at $0 there. Lower it or start it later.`;
   return `Not enough in ${ACCT_WORDS[sf.acct]} on the day you turn ${sf.from}: about ${money(sf.have)} there then, ${money(sf.need)} asked for. Lower it, or take it later.`;
 }
 
@@ -329,7 +329,7 @@ export function Calculator() {
           ))}
         </ol>
       ) : (
-        <p className="hint mt-0 mb-2.5">None yet. A bigger house at 40, a promotion, easing off before you retire, an inheritance, or a different view on returns: add one and see what it does.{kids ? "" : " Children are added in Profile; they show here once they are."}</p>
+        <p className="hint mt-0 mb-2.5">None yet. Add a bigger house at 40, a promotion, easing off before you retire, an inheritance or a different view on returns, and see what it does.{kids ? "" : " Children are added in Profile and show here once they are."}</p>
       )}
       <div className="dsh-sc-btns">
         {rows.length ? <Button variant="outline" className="flex-1" id="btnViewScenarios" onClick={() => setDlg({ at: "list" })}><PencilIcon aria-hidden="true" />View or edit</Button> : null}
@@ -356,10 +356,10 @@ export function Calculator() {
           figureOf={figureOf} sentenceOf={sentenceOf} warnOf={(r) => (shorts[r.id] ? shortWords(shorts[r.id]) : null)} edit={(r) => edit(r, true)} remove={remove} add={() => setDlg({ at: "pick", back: true })} close={() => setDlg(null)} />
       ) : null}
       {dlg?.at === "kids" ? <ChildCostsDialog close={done} /> : null}
-      {dlg?.at === "pick" ? <PickKind kinds={[SAVING_KIND, LUMP_KIND, RETURNS_KIND]} note="What do you see coming? Pick one, then put a name, ages and amounts to it. Children are added in Profile." close={done} pick={(k) => pick(k.kind, k.over, dlg.back)} /> : null}
+      {dlg?.at === "pick" ? <PickKind kinds={[SAVING_KIND, LUMP_KIND, RETURNS_KIND]} note="What do you see coming? Pick one, then give it a name, ages and amounts. Children are added in Profile." close={done} pick={(k) => pick(k.kind, k.over, dlg.back)} /> : null}
       {dlg?.at === "edit" ? (
         <ChangeDialog s={dlg.s} fresh={dlg.fresh} years={years} accounts label={tipLabel} sentence={(x) => scenarioSentence(x, retire, nominal)} effectOf={effectOf}
-          where={(k) => `The rest comes out of the others in the dashboard's order once ${acctWord(k)} runs out.`} close={done}
+          where={(k) => `The rest comes out of your other accounts once ${acctWord(k)} runs out, the 401(k) up to the match last.`} close={done}
           save={(x) => { setProfile((p) => withRow(p, x)); done(); }}
           remove={() => { remove(dlg.s.id); done(); }} />
       ) : null}

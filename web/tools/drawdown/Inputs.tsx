@@ -82,8 +82,8 @@ export function Inputs({ v, fromNote, periods, open }: {
   let vpwNote = "", yaleNote = "", guardExample = "";
   if (strat === "vpw") {
     const stk = o.stockPct + o.svPct, conv = (stk * 5.0 + (100 - stk) * 1.9) / 100;
-    vpwNote = "Year 1 takes <b>" + pctStr(r1, 2) + "</b>, rising each year as the horizon shortens. Bogleheads suggests " +
-      pctStr(conv / 100, 2) + " for a " + ddN(stk) + "/" + ddN(100 - stk) + " mix.";
+    vpwNote = "Year 1 takes <b>" + pctStr(r1, 2) + "</b>, rising each year as the horizon shortens. For a " + ddN(stk) + "/" + ddN(100 - stk) +
+      " mix, Bogleheads suggests an expected return of " + pctStr(conv / 100, 2) + " after inflation.";
   }
   if (strat === "yale")
     yaleNote = "Each year: <b>" + o.yaleWeight + "%</b> of last year's spending (adjusted for inflation) plus <b>" + (100 - o.yaleWeight) +
@@ -92,8 +92,8 @@ export function Inputs({ v, fromNote, periods, open }: {
     const t = o.initialPct, hiRate = t * (1 + Math.max(0, o.guardBand) / 100), loRate = t * (1 - Math.min(100, Math.max(0, o.guardBandLo)) / 100);
     guardExample = "With a " + pctStr(t / 100, 1) + " target: if your withdrawal ever climbs above <b>" + pctStr(hiRate / 100, 1) +
       "</b> of the portfolio, spending is cut " + fmtNum(Math.min(100, Math.max(0, o.adjustPct))) + "%" +
-      (o.gkFinalYears > 0 ? (o.gkFinalYears >= o.years ? ", except that with no cuts in the final " + fmtNum(o.gkFinalYears) +
-          " years, it never is in a " + fmtNum(o.years) + "-year plan"
+      (o.gkFinalYears > 0 ? (o.gkFinalYears >= o.years ? ", except that the final " + fmtNum(o.gkFinalYears) +
+          " years have no cuts, which covers the whole " + fmtNum(o.years) + "-year plan"
         : " (but not in the final " + fmtNum(o.gkFinalYears) + " years)") : "") +
       ". If it falls below <b>" + pctStr(loRate / 100, 1) + "</b>, you get a " + fmtNum(Math.max(0, o.raisePct)) + "% raise.";
   }
@@ -140,7 +140,7 @@ export function Inputs({ v, fromNote, periods, open }: {
     const m = P.path, last = m[m.length - 1];
     if (kind === "flat") pathNote = "Spending keeps its value, rising with inflation, as the strategy decides.";
     else if (kind === "ease")
-      pathNote = "Real spending falls " + ddN(o.pathEase) + "% a year: by year " + o.years + ", " + pctStr(last, 0) +
+      pathNote = "Real spending falls " + ddN(o.pathEase) + "% per year: by year " + o.years + ", " + pctStr(last, 0) +
         " of year one's" + (strat === "fixed" ? ", " + money(firstW * last) + " per year." : ".");
     else if (kind === "smile") {
       const age0 = o.retireAge != null ? o.retireAge : 65, at = (a: number) => { const i = Math.round(a - age0); return i >= 0 && i < m.length ? m[i] : null; };
@@ -150,7 +150,7 @@ export function Inputs({ v, fromNote, periods, open }: {
       pathNote = "David Blanchett's estimate of how retirees' real spending actually moves, for someone spending about " +
         money(firstW + P.G.income) + " per year: easing through the 70s" + (a85 != null ? ", about " + pctStr(1 - a85, 0) + " lower by 85" : "") +
         (lowI < m.length - 1 ? ", then rising again late in life" : "") + "." +
-        (o.retireAge == null ? " It depends on age, so it takes retirement at 65 until you set your age above." : "");
+        (o.retireAge == null ? " It depends on age, so it assumes retirement at 65 until you set your age above." : "");
     } else if (kind === "stages")
       pathNote = stages.length ? "Year one's level holds until the first stage below." : "Add a stage to change spending from a given " + (age != null ? "age." : "year.");
   }
@@ -168,7 +168,7 @@ export function Inputs({ v, fromNote, periods, open }: {
   const gOn = o.gShare > 0, G = P.G, tips = o.gType !== "annuity";
   const gNote = !gOn ? "" : money(o.initial * G.share) + " buys <b>" + money(G.income) + "</b> per year" +
     (tips ? " for " + o.years + " years, rising with inflation: a " + o.years + "-year TIPS ladder at " + pctStr((o.gYield || 0) / 100, 2) +
-        " real pays " + pctStr(G.rate, 2) + " of its cost a year, then nothing."
+        " real pays " + pctStr(G.rate, 2) + " of its cost per year, then nothing."
       : " for life, " + (o.gInflate ? "rising with inflation." : "level in dollars, so inflation wears it down.")) +
     " The other " + money(o.initial - o.initial * G.share) + " stays invested and runs the strategy, and this income comes on top of what it spends.";
 
@@ -257,7 +257,7 @@ export function Inputs({ v, fromNote, periods, open }: {
             </div>
             <div id="ddGDetail" hidden={!gOn}>
               <NumberField id="ddGYield" wrapId="ddGYieldWrap" hidden={!tips} label="Real yield" unit="% after inflation" step={0.1} negative value={str("gYield")} onValueChange={set("gYield")} />
-              <NumberField id="ddGPayout" wrapId="ddGPayoutWrap" hidden={tips} label="Payout rate" unit="% a year" step={0.25} value={str("gPayout")} onValueChange={set("gPayout")} />
+              <NumberField id="ddGPayout" wrapId="ddGPayoutWrap" hidden={tips} label="Payout rate" unit="%/yr" step={0.25} value={str("gPayout")} onValueChange={set("gPayout")} />
               <div className="ddgk-final" id="ddGInflateWrap" hidden={tips}>
                 <label className="ddgk-check"><Checkbox id="ddGInflate" checked={!!s.gInflate} onCheckedChange={set("gInflate")} /><span>Payments rise with inflation</span></label>
               </div>
@@ -440,7 +440,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               </NativeSelect>
               <div className="hint" id="ddPathNote">{pathNote}</div>
             </Field>
-            <NumberField id="ddPathEase" wrapId="ddPathEaseWrap" hidden={!takesPath || kind !== "ease"} label="Real spending falls by" unit="% a year" step={0.25} negative value={str("pathEase")} onValueChange={set("pathEase")} />
+            <NumberField id="ddPathEase" wrapId="ddPathEaseWrap" hidden={!takesPath || kind !== "ease"} label="Real spending falls by" unit="%/yr" step={0.25} negative value={str("pathEase")} onValueChange={set("pathEase")} />
             <div id="ddWdStagesWrap" hidden={!takesPath || kind !== "stages"}>
               <div id="ddWdStageList">
                 <WdStages stages={stages} v={v} edit={(f) => editList<PathStage>("pathStages", f)} toast={toast} />

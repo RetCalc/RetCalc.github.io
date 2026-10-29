@@ -141,16 +141,17 @@ export function About({ states }: { states: StateOption[] }) {
             budget, where each paycheck&apos;s saving goes, and what that adds up to by
             retirement.</p>
             <p>The core retirement planner, under the Calculator tab, has two modes for
-            different levels of detail, from a six-question starting point (Basic) to every
+            different levels of detail, from a five-question starting point (Basic) to every
             assumption and the changes you see coming (Advanced). The Tools tab
             extends that with calculators for taxes, mortgage, college savings, rent vs.
             buy, drawdown, FIRE planning, budget, and more. Each tool is described in
             its own section below.</p>
             <p><b>Your household</b>, set up from the top of every page (on a phone, from the account menu), holds the facts most
-            tools ask for: ages, when you plan to retire, state, savings, income and
-            retirement spending. Saving it fills those numbers into Basic, Advanced,
-            Drawdown, Roth Conversion, Healthcare, Income Tax, Budget and FIRE,
-            and it fills them in again each time you open the site or reset a tool. It&apos;s
+            tools ask for: household type, ages, retirement age, state, savings, monthly
+            saving, income and retirement spending. Saving it fills those numbers into
+            Basic, Advanced, FIRE, Drawdown, Roth Conversion, Early Retirement Bridge,
+            Retirement Plan Optimizer, Healthcare, Social Security, Income Tax and Budget,
+            each the next time you open it. It&apos;s
             a one-way fill: changing a number inside a tool never changes the household or
             any other tool. When a tool isn&apos;t using your household&apos;s numbers, it offers them.
             A shared link opens with its own numbers, not your household&apos;s.</p>
@@ -177,7 +178,7 @@ export function About({ states }: { states: StateOption[] }) {
               payroll-tax limits from the IRS and the Social Security Administration;
               state rules as of January 1, 2026; Medicare premiums and IRMAA brackets from
               CMS; ACA premiums and subsidies from KFF benchmark premiums and HHS poverty
-              guidelines; the mortgage tools start from a rounded recent Freddie Mac average, kept as a starting point rather than updated weekly.</li>
+              guidelines; the mortgage tools start from a rounded recent Freddie Mac average that isn&apos;t updated weekly.</li>
               <li><b>What children cost:</b> the USDA&apos;s last study of what families spend
               on a child (2015), brought to today&apos;s prices, and the Department of Labor&apos;s
               National Database of Childcare Prices, by county, for childcare. Both are
@@ -185,10 +186,10 @@ export function About({ states }: { states: StateOption[] }) {
             </ul>
             <h4>What every tool assumes</h4>
             <p>Figures are in today&apos;s dollars unless a tool says otherwise. The
-            historical tests use one country&apos;s record, annual rebalancing, and no
-            fees, trading costs or taxes unless a tool adds them. Stocks are the S&amp;P
-            500 with dividends reinvested and bonds are 10-year Treasuries, not a
-            particular fund. Tax law is taken as it stands in 2026.</p>
+            historical tests use one country&apos;s record and no fees, trading costs or
+            taxes unless a tool adds them. Stocks are the S&amp;P 500 with dividends
+            reinvested and bonds are 10-year Treasuries, not a particular fund. Tax law
+            is taken as it stands in 2026.</p>
             <h4>What they don&apos;t model</h4>
             <p>Tax credits, local taxes and many special cases; financial aid and
             scholarships; changes to tax law or benefits after 2026; and anything about
@@ -207,8 +208,8 @@ export function About({ states }: { states: StateOption[] }) {
           <Section id="projection">
             <ul>
               <li><b>Contributions land at the end of each period.</b> Money added in
-              March doesn&apos;t earn a full year of growth; it earns the remainder of the
-              year. This is the conservative convention.</li>
+              March doesn&apos;t earn a full year of growth, only the rest of the year.
+              This is the conservative convention.</li>
               <li><b>The annual return is converted to a periodic rate.</b> A 7% annual
               return becomes the bi-weekly rate that compounds to exactly 7% over a year,
               not 7% divided by 26. The difference compounds noticeably over decades.</li>
@@ -219,7 +220,7 @@ export function About({ states }: { states: StateOption[] }) {
               <li><b>Inflation adjustment</b> divides by (1 + inflation) raised to the
               number of years, converting future dollars into what they&apos;d buy today.</li>
               <li><b>The withdrawal figure is the first year of retirement.</b> The model
-              stops at your retirement date; it does not simulate spending the money down.</li>
+              stops at your retirement date and does not simulate spending the money down.</li>
             </ul>
           </Section>
           <Section id="basic">
@@ -231,9 +232,9 @@ export function About({ states }: { states: StateOption[] }) {
             already in today&apos;s dollars, with no separate inflation setting and no mental
             translation of what $2 million means in forty years.</p>
             <p>That simplicity costs you two things. It assumes you nudge your
-            contribution up a little each year to keep pace with inflation; if you set
-            $500 per month and never change it, real progress will be slower than shown. And
-            it ignores tax and fees entirely, so the income figure is before both.</p>
+            contribution up a little each year to keep pace with inflation. If you set
+            $500 per month and never change it, real progress will be slower than shown.
+            It also ignores tax and fees, so the income figure is before both.</p>
             <p>The investment choices map to these rates of growth after inflation:</p>
             <dl className="gloss">
               <dt>Very conservative &middot; 2.0%</dt>
@@ -246,7 +247,7 @@ export function About({ states }: { states: StateOption[] }) {
               <dd>Mostly stocks. Bigger swings, more expected over long periods.</dd>
               <dt>Aggressive &middot; 7.0%</dt>
               <dd>Nearly all stocks. Roughly what US stocks have returned after inflation
-              over the very long run: an optimistic ceiling, not a floor.</dd>
+              over the very long run, so treat it as an optimistic ceiling.</dd>
             </dl>
             <p>The shaded band on the chart shows the same plan running 1.5 points better
             or worse, because no one earns an identical return every year. When you want
@@ -277,10 +278,10 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>Contribution growth</dt>
               <dd>How much the contribution amount itself increases each year, as a
-              percentage. It is a rate in its own right, not something added on top of
-              the inflation figure. Match it to your inflation rate to keep contributions
-              flat in today&apos;s dollars; match it to your expected raises to keep them a
-              steady share of your income. Typical: 0&ndash;5%.</dd>
+              percentage. It is its own rate, separate from the inflation figure. Match it to
+              your inflation rate to keep contributions flat in today&apos;s dollars, or to
+              your expected raises to keep them a steady share of your income. Typical: 0
+              to 5%.</dd>
 
               <dt>Time period</dt>
               <dd>Years until you start drawing on the money.</dd>
@@ -292,9 +293,9 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>Rate of return</dt>
               <dd>Expected average annual return before inflation. For context, broad US
-              stock indices have averaged roughly 9&ndash;10% per year over the very long
+              stock indices have averaged roughly 9 to 10% per year over the very long
               run, bonds far less, and a mixed portfolio somewhere between. Many planners
-              use 6&ndash;8% for a stock-heavy portfolio to stay conservative. Lower it as
+              use 6 to 8% for a stock-heavy portfolio to stay conservative. Lower it as
               you shift toward bonds. The &plusmn; button lets you enter a negative return to
               stress-test a downturn.</dd>
 
@@ -305,18 +306,18 @@ export function About({ states }: { states: StateOption[] }) {
               the projection, the chart, and both routes to a target.</dd>
 
               <dt>Inflation</dt>
-              <dd>How fast prices rise. Long-run US inflation has averaged roughly 2&ndash;3%.
-              The US Federal Reserve targets 2%. Most people use 2.5&ndash;3%.</dd>
+              <dd>How fast prices rise. Long-run US inflation has averaged roughly 2 to 3%.
+              The US Federal Reserve targets 2%. Most people use 2.5 to 3%.</dd>
 
               <dt>Volatility <Badge variant="outline" className="ml-1.25">Monte Carlo only</Badge></dt>
               <dd>How much returns bounce around year to year. Broad stock funds have
-              historically run near 15&ndash;18%; a balanced stock-and-bond portfolio nearer
-              8&ndash;12%; bond-heavy lower still. Higher volatility widens the fan without
-              changing the average.</dd>
+              historically run near 15 to 18%, a balanced stock-and-bond portfolio nearer
+              8 to 12%, and a bond-heavy one lower still. Higher volatility widens the fan
+              without changing the average.</dd>
 
               <dt>Fees <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
               <dd>Expense ratios plus any advisory fee, subtracted from your return. Index
-              funds often charge under 0.10%; actively managed funds frequently 0.5&ndash;1%;
+              funds often charge under 0.10%, actively managed funds frequently 0.5 to 1%, and
               advisors commonly around 1%. Leave at 0 to ignore. The Milestones panel shows
               what fees cost you over the full period, which is usually larger than expected.</dd>
 
@@ -324,7 +325,7 @@ export function About({ states }: { states: StateOption[] }) {
               <dd>The share of the portfolio you take in the first year of retirement. The
               widely cited starting point is <b>4%</b>, from research suggesting that rate
               survived historical 30-year retirements. It is a rule of thumb, not a
-              guarantee; some argue for 3&ndash;3.5% given today&apos;s conditions, others for more
+              guarantee. Some argue for 3 to 3.5% given today&apos;s conditions, others for more
               flexibility year to year.</dd>
 
               <dt>Effective tax rate</dt>
@@ -332,15 +333,15 @@ export function About({ states }: { states: StateOption[] }) {
               top bracket. It depends heavily on account type: withdrawals from a
               traditional 401(k) or IRA are generally taxed as income, Roth withdrawals
               generally are not, and taxable brokerage accounts are usually taxed at
-              capital-gains rates. Many retirees land somewhere in the 10&ndash;15% range,
-              but this varies enormously. Use 0 for an all-Roth plan.</dd>
+              capital-gains rates. Many retirees land somewhere from 10 to 15%, but this
+              varies enormously. Use 0 for an all-Roth plan.</dd>
 
               <dt>Split by account type <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
               <dd>Swaps the single starting value, contribution and tax rate for a
               balance and contribution in each of traditional, Roth, taxable brokerage
               and HSA accounts, plus an employer match and your filing status and state. Every
-              account grows at the same return, so the projection is unchanged; what
-              changes is the tax. The first year&apos;s withdrawal is taken from each account in
+              account grows at the same return, so the projection is unchanged and only
+              the tax changes. The first year&apos;s withdrawal is taken from each account in
               proportion to its balance and taxed with the 2026 rules the Income Tax tool
               uses: traditional as ordinary income, only the growth in the brokerage account
               at capital-gain rates, and Roth not at all. The HSA grows with the rest and
@@ -348,12 +349,12 @@ export function About({ states }: { states: StateOption[] }) {
               out tax-free, so the first year&apos;s withdrawal comes from the other three and
               none from it. Contributions aren&apos;t capped at the
               annual limits, since backdoor and mega backdoor Roth strategies can go past
-              them; enter what you actually put in. Switching back to one total
+              them, so enter what you actually put in. Switching back to one total
               carries the totals and the calculated rate across, so the answer doesn&apos;t jump.</dd>
 
               <dt>Changes ahead <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
-              <dd>Everything above is where the plan starts; a change moves it from a given
-              year. There are four kinds: <b>Save more or less</b> (dollars a month in
+              <dd>Everything above is where the plan starts, and a change moves it from a given
+              year. There are four kinds: <b>Save more or less</b> (dollars per month in
               today&apos;s dollars, a share of what you save, or a share more or less each year;
               all at once or phased in; until an age or to retirement), <b>A lump sum</b>{" "}
               put in or taken out on one day, <b>Different returns</b> from an age on
@@ -361,24 +362,24 @@ export function About({ states }: { states: StateOption[] }) {
               plan and what they cost as they grow, out of what you save. With <b>Split by
               account type</b> on, a change also says which account it goes into or comes
               out of. Each change shows what it does to your savings at the end and can be
-              switched off without losing it; <b>View or edit</b> shows them all across
+              switched off without losing it. <b>View or edit</b> shows them all across
               the years, and a click on one opens it. A cut can&apos;t take saving below
               nothing, and a lump sum can&apos;t take out more than is there that day: the
               calculator says so instead.</dd>
 
               <dt>The stages behind this</dt>
               <dd>Once a change is added, the plan runs as stages, a new one wherever
-              what&apos;s going on changes. This lists them: when each runs, what it saves a
+              what&apos;s going on changes. This lists them: when each runs, what it saves per
               month in its first year and its last, how that rises, its return, any lump
-              sum and what&apos;s going on. With no change on, the plan is the one above
-              exactly; a change that changes nothing leaves every figure where it was.</dd>
+              sum and what&apos;s going on. With no change on, the plan is exactly the one
+              above, and a change that changes nothing leaves every figure where it was.</dd>
 
               <dt>Target</dt>
               <dd>What you&apos;re aiming for, in today&apos;s dollars, either an after-tax income
               or a portfolio balance, your choice. It drives the two solve routes, the
               two answers in Reach your target, and the Monte Carlo success rate.</dd>
             </dl>
-            <p>Once you&apos;ve got a projection, here&apos;s what the results panel is showing:</p>
+            <p>The results panel shows:</p>
             <dl className="gloss">
               <dt>Future value</dt>
               <dd>The balance at the end, in the dollars of that future year.</dd>
@@ -411,12 +412,14 @@ export function About({ states }: { states: StateOption[] }) {
           <Section id="guide">
             <p>The Guide tab walks through your finances one question at a time, in the
             order a planner would: income, take-home pay, spending, emergency fund, debt,
-            housing, college, then retirement. When you don&apos;t know an answer, the step
-            opens the tool on this site that finds it, filled in with what you&apos;ve told the
-            guide, and a panel docked over the tool lists what to do there and ticks items
-            off as you go. <b>Back to guide</b> brings the result with you. Your answers
-            are kept in this browser (and in your account, if you sign in), and the facts the household bar also holds
-            (ages, state, income, savings, spending) are written through to it.</p>
+            housing, college, then retirement. You can take a Quick check or the full
+            walkthrough, and switch between them without losing answers. When you don&apos;t
+            know an answer, the step opens the tool that finds it, filled in with what
+            you&apos;ve told the guide, and a panel docked over the tool lists what to do
+            there and ticks items off as you go. <b>Back to guide</b> brings the result
+            with you. Your answers are kept in this browser (and in your account, if you
+            sign in), and the facts the household bar also holds (ages, state, income,
+            savings, spending) are written through to it.</p>
             <p>As you answer, a readiness score out of 100 builds from five areas:
             the retirement outlook (40 points), savings rate (20), emergency fund (15),
             debt (15) and monthly cash flow (10). It appears once two areas are answered,
@@ -430,9 +433,8 @@ export function About({ states }: { states: StateOption[] }) {
               traditional, Roth and a taxable brokerage account, split the way you answer,
               with new saving going where you say and any employer match into traditional.
               The retirement is then run year by year through every historical market since
-              1926 by the plan engine the Retirement Plan Optimizer uses, living on a fixed amount after
-              tax that rises with inflation until you, or the younger of you and a spouse,
-              reach 95. The outlook is the share of those retirements where the money
+              1926, living on a fixed amount after tax that rises with inflation until you,
+              or the younger of you and a spouse, reach 95. The outlook is the share of those retirements where the money
               lasted, and the guide also solves for what you&apos;d need saved by retirement to
               last in 90% of them.</dd>
 
@@ -454,7 +456,7 @@ export function About({ states }: { states: StateOption[] }) {
               retirement, counted from 22, since Social Security averages your best 35
               years and missing years count as zeros. A lower-earning spouse gets at least
               half the higher earner&apos;s benefit. It starts at 67, or at retirement if that&apos;s
-              later, unless you choose a claiming age from 62 to 70; a figure from your
+              later, unless you choose a claiming age from 62 to 70. A figure from your
               Social Security statement replaces the estimate and is scaled for the age you
               claim. A pension or other steady income can be added with its own start age,
               fixed or rising with inflation.</dd>
@@ -474,15 +476,15 @@ export function About({ states }: { states: StateOption[] }) {
               makes it your plan, with Undo.</dd>
 
               <dt>Drawing it down</dt>
-              <dd>Runs all six of the Drawdown Simulator&apos;s withdrawal strategies on your
+              <dd>Runs six of the Drawdown Simulator&apos;s 15 withdrawal strategies on your
               plan and shows, for each, how often the money lasted, a typical year&apos;s
               spending and the leanest single year on record. A <b>minimum yearly
               spending</b> sets a floor the flexible strategies never go below while money
               remains, which shows what that floor costs in safety. The score itself
-              always tests the fixed approach, the cautious case. From here, a seven-part
+              always tests the fixed approach, the cautious case. From here, a short
               tour of the Drawdown Simulator covers your result, a bad starting year, each
               strategy, your stock mix, Social Security timing, one-time costs and extra
-              income, and stress tests; a strategy, mix, claiming age or minimum you
+              income, and stress tests. A strategy, mix, claiming age or minimum you
               change there comes back into your plan.</dd>
 
               <dt>Taxes and health insurance</dt>
@@ -521,9 +523,8 @@ export function About({ states }: { states: StateOption[] }) {
             whole financial picture, Paycheck to Retirement goes straight to the numbers:
             what you take home after taxes, what you spend, where the rest of each
             paycheck goes, and where that saving gets you by the age you want to retire.
-            Each step is one of the site&apos;s own calculators (Budget, its Paycheck tab and
-            Advanced), filled in from the step before it, so a change early on
-            carries through to the end.</p>
+            Each step is a calculator (Budget, its Paycheck tab and Advanced), filled in
+            from the step before it, so a change early on carries through to the end.</p>
             <p>What you type stays in the walkthrough. The calculators keep their own numbers
             until you choose <b>Copy into my tools</b> at the end. Your plan is saved in this
             browser, and in your account if you sign in.</p>
@@ -538,7 +539,7 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>Step 1: Budget</dt>
               <dd>What you spend, line by line, as on the Budget tool. Saving isn&apos;t entered
-              here; the next step plans it.</dd>
+              here. The next step plans it.</dd>
 
               <dt>Step 2: Paycheck</dt>
               <dd>The Budget tool&apos;s Paycheck tab, described under Budget below: taxes come
@@ -562,8 +563,8 @@ export function About({ states }: { states: StateOption[] }) {
               children you have, how many you&apos;re planning, when the first arrives and how
               far apart the rest are (to the half year), and whether you&apos;ll pay for
               childcare before school, then works out what they cost each year until you
-              retire. The costs are the ones described under the Guide&apos;s children, and any
-              of them can be changed. A raise, a move, part-time years, an inheritance or a
+              retire. The costs start from the amounts listed under Children and other changes
+              above, and any of them can be changed. A raise, a move, part-time years, an inheritance or a
               different return are changes too, as described under Advanced.</dd>
 
               <dt>How will you cover this?</dt>
@@ -582,11 +583,12 @@ export function About({ states }: { states: StateOption[] }) {
               the calculators themselves, and the Drawdown Simulator opens with your
               retirement balance filled in, to test whether it lasts.</dd>
             </dl>
-            <p><b>What it leaves out.</b> Tax credits, the child tax credit included;
+            <p><b>What it leaves out.</b> Tax credits, the child tax credit included, and
             itemized deductions, since the paycheck takes the standard deduction, as most
-            filers do; pre-tax benefits other than the 401(k), HSA, IRA and health premiums,
-            such as FSAs and commuter accounts; and college costs, which the College Savings
-            tool covers. The taxes are the newest tax year&apos;s.</p>
+            filers do. Pre-tax benefits other than the 401(k), HSA, IRA and health premiums,
+            such as FSAs and commuter accounts, are not counted either, and neither are
+            college costs, which the College Savings tool covers. The taxes are the newest
+            tax year&apos;s.</p>
           </Section>
         </Group>
         <Group id="retirement">
@@ -621,8 +623,7 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>How each plan is tested</dt>
               <dd>Year by year, account by account, through every historical starting year
-              since 1926 with the stock mix you choose, by the same engine the readiness
-              guide uses. Each year it finds the smallest withdrawal, down the plan&apos;s list
+              since 1926 with the stock mix you choose. Each year it finds the smallest withdrawal, down the plan&apos;s list
               of accounts, that pays for your spending plus the income tax, early-withdrawal
               penalty, Medicare surcharge and health premiums that withdrawal itself causes.
               The tax is the Income Tax tool&apos;s whole 2026 federal and state retirement
@@ -651,7 +652,7 @@ export function About({ states }: { states: StateOption[] }) {
               accounts are drawn and converted, each tested through all of history.</dd>
 
               <dt>What it assumes</dt>
-              <dd>A couple is one household with one pool of each account type; the 59½ line
+              <dd>A couple is one household with one pool of each account type. The 59½ line
               and required distributions follow your age, and both of you live to the end of
               the plan, which favors claiming later (a survivor keeping the larger benefit
               isn&apos;t modeled). Brackets and thresholds are held at 2026 levels in today&apos;s
@@ -664,43 +665,45 @@ export function About({ states }: { states: StateOption[] }) {
             </dl>
           </Section>
           <Section id="drawdown">
-            <p>Every other tool in this app answers &quot;how much will I have?&quot; This one
+            <p>The retirement projections answer &quot;how much will I have?&quot; This tool
             answers the harder question: once you stop contributing and start spending,{" "}
-            <b>will it last?</b> It takes a portfolio balance, a withdrawal strategy, and
-            tests it against real market history and randomized simulation to produce a
-            success rate: the share of tested retirements where the money didn&apos;t
+            <b>will it last?</b> It takes a portfolio balance and a withdrawal strategy and
+            tests them against real market history and randomized simulation. The result
+            is a success rate, the share of tested retirements where the money didn&apos;t
             run out.</p>
 
-            <p><b>Historical mode</b> runs your plan starting from every single year since
-            1926: retire in 1929 right before the Depression, retire in 1966 into a lost
-            decade, retire in 2000 before two crashes in one decade. Each is a genuine
-            sequence of stock returns, bond returns, and inflation that actually happened,
-            not a statistical approximation of one. This matters because <i>the order</i>{" "}
-            returns arrive in changes everything: a bad decade in your first few years
-            of retirement does far more damage than the same bad decade arriving later,
-            even though the average return over the full period is identical. This is
-            called sequence-of-returns risk, and it&apos;s the single biggest reason a plan
-            that looks safe on a spreadsheet can fail in reality.</p>
+            <p><b>Historical mode</b> runs your plan from every starting month since
+            1926, or from each January if you choose: retire in 1929 right before the
+            Depression, retire in 1966 into a lost decade, retire in 2000 before two
+            crashes in one decade. Each is a sequence of stock returns, bond returns, and
+            inflation that actually happened. <i>The order</i> returns arrive in matters:
+            a bad decade in your first few years of retirement does far more damage than
+            the same bad decade arriving later, even though the average return over the
+            full period is identical. This is called sequence-of-returns risk, and it is a
+            main reason a plan that looks safe on a spreadsheet can fail in reality.</p>
 
             <p><b>Monte Carlo mode</b> draws years at random from that same 100-year
             record, thousands of times, to show the range of outcomes a purely random
-            ordering could produce. It&apos;s a useful complement, but it misses the way real
-            bad years cluster together; the historical mode is the more honest test
-            of a specific plan.</p>
+            ordering could produce. It&apos;s a useful complement. By default each year is
+            drawn on its own, which misses the way real bad years cluster together (the{" "}
+            <b>Years drawn together</b> setting keeps runs of consecutive years intact).
+            The historical mode is the more honest test of a specific plan.</p>
 
-            <p>Click any row in <b>&quot;How each starting year fared&quot;</b> to drill into that
+            <p>Click any row in <b>&quot;How each starting month fared&quot;</b> to drill into that
             exact period: what was withdrawn each year, how the balance moved, and how
             much of that came from Social Security versus the portfolio itself.</p>
 
             <dl className="gloss">
               <dt>Withdrawal strategy</dt>
-              <dd>The rule for how much to take out each year. <b>Fixed amount</b> sets a
+              <dd>The rule for how much to take out each year. There are 15, in five
+              families: steady income, a share of the portfolio, guardrails, smoothed
+              spending and valuation-based. The best known are below. <b>Fixed amount</b> sets a
               dollar figure and raises it with inflation every year, no matter what
               markets do: the classic 4% rule. <b>Percentage of portfolio</b> takes
               the same share of whatever the account is worth, so it can never run dry but
               income swings with the market. <b>Guyton-Klinger Guardrails</b> follows
               inflation but cuts spending if the withdrawal rate climbs past an upper
-              guardrail and raises it if the rate falls past a lower one; each guardrail
+              guardrail and raises it if the rate falls past a lower one. Each guardrail
               has its own distance and step, and cuts can optionally stop in the final
               years of retirement (15 in Guyton and Klinger&apos;s paper). <b>Floor &amp; ceiling</b> aims at a percentage of the balance
               but limits how much spending can change from one year to the next.{" "}
@@ -710,7 +713,7 @@ export function About({ states }: { states: StateOption[] }) {
               takes the payment that would spend the current balance down to a future
               value (usually $0) over the years left at an expected real return, so the
               share rises as the horizon shortens. <b>How the strategies compare</b>,
-              under the picker, covers each in depth with its pros and cons.</dd>
+              under the picker, covers all 15 with their pros and cons.</dd>
 
               <dt>Other income &amp; future expenses</dt>
               <dd>Beyond Social Security, add any other income (a pension, rental
@@ -755,14 +758,15 @@ export function About({ states }: { states: StateOption[] }) {
               that could have funded a better retirement.</dd>
             </dl>
 
-            <p><b>What it leaves out:</b> the 1926&ndash;2025 record is US markets only, so
-            it says nothing about how other countries&apos; markets have behaved, and the
-            historical test has at most 100 starting years (71 for a 30-year retirement),
-            not an infinite set of possible futures. Required minimum distributions and taxes on withdrawals
-            aren&apos;t modeled. Above all: a strategy surviving every year since 1926 is
-            strong evidence, not a guarantee: markets have never been obligated to
-            repeat their history, and the next 30 years don&apos;t have to look like any of
-            the last 100.</p>
+            <p><b>What it leaves out:</b> the 1926 to 2025 record covers US markets only, so
+            it says nothing about how other countries&apos; markets have behaved. A 30-year
+            retirement has 835 starting months (70 starting Januaries), and they overlap
+            heavily, so they are far from that many independent futures. Taxes on
+            withdrawals aren&apos;t modeled, and neither are required minimum distributions
+            from particular accounts (the RMD method only borrows the IRS table as a
+            spending rule). A strategy that survived every start since 1926 is strong
+            evidence, not a guarantee. Markets have never been obligated to repeat their
+            history, and the next 30 years don&apos;t have to look like any of the last 100.</p>
           </Section>
           <Section id="bridge">
             <p>Retire before 59½ and most of your savings sits behind a 10% additional
@@ -817,17 +821,16 @@ export function About({ states }: { states: StateOption[] }) {
             terms.</p>
           </Section>
           <Section id="roth">
-            <p>A traditional 401(k) or IRA is a loan from the IRS, not a gift. The tax was
-            deferred, not forgiven, and <b>required minimum distributions</b> are the year
-            the bill comes due: from age 73, or 75 if you were born in 1960 or later,
-            a slice of the balance has to come out every year whether you need the
-            money or not. The slice is set by the IRS Uniform Lifetime Table and it widens
-            with age, from about 3.8% at 73 to over 15% in your nineties.</p>
+            <p>The tax on a traditional 401(k) or IRA was deferred, not forgiven, and{" "}
+            <b>required minimum distributions</b> are when the bill comes due: from age 73,
+            or 75 if you were born in 1960 or later, a slice of the balance has to come out
+            every year whether you need the money or not. The slice is set by the IRS
+            Uniform Lifetime Table and it widens with age, from about 3.8% at 73 to about
+            15% at 100.</p>
 
-            <p>That is the problem a <b>Roth conversion</b> is trying to get ahead of.
-            Moving money from traditional to Roth means paying tax on it now, voluntarily,
-            at a rate you choose, in order to avoid paying tax on a larger balance later at
-            a rate somebody else chooses. The tool runs your household twice, once
+            <p>A <b>Roth conversion</b> gets ahead of that. Moving money from traditional
+            to Roth means paying tax on it now, at a rate you choose, to avoid paying tax
+            on a larger balance later at a rate somebody else chooses. The tool runs your household twice, once
             converting on the schedule you set and once not touching anything, and puts
             the two side by side.</p>
 
@@ -844,6 +847,10 @@ export function About({ states }: { states: StateOption[] }) {
               surcharge is a cliff, not a phase-in: one dollar over and the whole
               tier applies, so for some households the binding constraint is the
               IRMAA bracket, not the tax bracket.</dd>
+
+              <dt>Other strategies</dt>
+              <dd>Convert a fixed amount each year, convert a share of the balance each
+              year, or make no conversions at all.</dd>
 
               <dt>Where the tax comes from</dt>
               <dd>The largest single lever here. Paying conversion tax out of a taxable
@@ -862,7 +869,7 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>Lifetime tax, present value</dt>
               <dd>Every dollar of federal, state and IRMAA discounted back to today. A
               conversion always costs money now to save money later, so comparing raw totals
-              across thirty years flatters it; discounting is the honest version.</dd>
+              across thirty years flatters it. Discounting is the fairer comparison.</dd>
 
               <dt>After-tax net worth</dt>
               <dd>Roth and brokerage at face value, traditional discounted by the rate you
@@ -877,12 +884,12 @@ export function About({ states }: { states: StateOption[] }) {
             </dl>
 
             <p><b>What it does not do.</b> Returns are a single real rate, not a sequence,
-            so a market crash in the middle of a conversion window changes the answer
-            and is not modeled here. Estate tax, state estate tax, QCDs, the ACA premium
+            so a market crash in the middle of a conversion window is not modeled.
+            Estate tax, state estate tax, QCDs, the ACA premium
             credit for anyone retiring before 65, and the inherited-IRA ten-year rule are
             all absent. Brackets and thresholds are held fixed in real terms, so a change in
             the law, the most likely reason any of this turns out differently,
-            is outside the model by construction.</p>
+            is outside the model.</p>
           </Section>
           <Section id="social">
             <p>The Social Security Calculator shows your monthly check at every age you
@@ -898,7 +905,7 @@ export function About({ states }: { states: StateOption[] }) {
               <dd>Full retirement age comes from the birth year: 66 for 1943 to 1954, two
               months more for each year to 67 from 1960 on. A benefit claimed early is cut
               5/9 of 1% for each of the first 36 months and 5/12 of 1% for each month
-              beyond; claimed late it grows 2/3 of 1% per month, 8% per year, until 70.
+              beyond. Claimed late it grows 2/3 of 1% per month, 8% per year, until 70.
               These are the Social Security Administration&apos;s own rules, applied to whole
               months. The staircase shows each age&apos;s check and its share of the full
               benefit, and &ldquo;How it&apos;s figured&rdquo; walks through the arithmetic for the age
@@ -946,7 +953,7 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>The earnings test</dt>
               <dd>Claiming before full retirement age while still working, $1 of benefit is
               withheld for every $2 earned over the year&apos;s limit ($24,480 in 2026). The year
-              full retirement age is reached runs on a higher limit and $1 in $3; the tool
+              full retirement age is reached runs on a higher limit and $1 in $3. The tool
               treats it like the earlier years, which overstates the withholding a little for
               that one year. At full retirement age the benefit is refigured as if claimed
               later by the months withheld (every month with any benefit held back counts, as
@@ -994,7 +1001,7 @@ export function About({ states }: { states: StateOption[] }) {
               2.10% to 9.96% in 2026, and end subsidies above 400% FPL (the &quot;subsidy cliff&quot;).
               Enhanced rules, in place from 2021 through 2025, removed the cliff and capped
               contributions at 8.5% at every income. They expired at the end of 2025, so 2026
-              coverage runs on the standard rules; the tool also shows what the enhanced rules
+              coverage runs on the standard rules. The tool also shows what the enhanced rules
               would give, in case Congress restores them.</dd>
 
               <dt>The 400% FPL cliff</dt>
@@ -1006,7 +1013,8 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>State and age adjustment</dt>
               <dd>The benchmark Silver premium is KFF&apos;s 2026 average for each state for a 40-year-old,
               scaled to your retirement age via the HHS multiplier table (except in New York and Vermont, where every adult pays the same rate). Enter your own
-              quote from healthcare.gov in the sidebar for a precise number.</dd>
+              quote from healthcare.gov in the ACA benchmark premium field for a closer
+              estimate.</dd>
             </dl>
 
             <p><b>Post-65: Medicare.</b> Medicare Part B (outpatient) and Part D
@@ -1026,7 +1034,7 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>Medigap</dt>
               <dd>Supplement plans like Plan G cover most of what Original Medicare leaves
-              unpaid. Premiums vary widely by state, insurer, and age at enrollment; the range
+              unpaid. Premiums vary widely by state, insurer, and age at enrollment. The range
               shown is a rough national estimate for a 65-year-old. Medicare Advantage
               (Part C) plans have lower premiums but narrower networks and different
               cost-sharing, and are not modeled here.</dd>
@@ -1037,44 +1045,41 @@ export function About({ states }: { states: StateOption[] }) {
           <Section id="fire">
             <p><b>FIRE</b> (Financial Independence, Retire Early) means accumulating a portfolio large
             enough that investment returns can fund your spending indefinitely. The classic benchmark is
-            25&times; your annual expenses, which corresponds to a 4% annual withdrawal rate &mdash; though
-            you can enter any target and withdrawal rate here.</p>
+            25&times; your annual expenses, which corresponds to a 4% annual withdrawal rate. You
+            can enter any target and withdrawal rate here.</p>
             <p><b>FIRE mode</b> finds the year your inflation-adjusted portfolio first reaches your target.
             The number shown is in today&apos;s dollars, so it stays meaningful even decades out.</p>
             <p><b>Coast FIRE mode</b> finds the year your portfolio is large enough that, with no further
             contributions, it will compound to your target by your planned retirement age. You still need
-            earned income to live on &mdash; but the saving race is over. The &quot;if you kept saving&quot;
-            stat shows how much larger your retirement portfolio would be had you never coasted, and the
-            gap is the optional extra you&apos;re leaving on the table in exchange for financial freedom
-            from saving.</p>
-            <p><b>Rate band</b> shades the range between a return &plusmn; your chosen band, giving a fast
-            read on how sensitive your FIRE date is to return assumptions. <b>Historical mode</b> runs the
+            earned income to live on, but you no longer need to save. The &quot;Portfolio if you kept
+            saving&quot; figure shows how much larger your retirement portfolio would be had you never
+            coasted. The gap is what you give up in exchange for stopping saving.</p>
+            <p><b>Rate band</b> shades the range between a return &plusmn; your chosen band, which shows
+            how sensitive your FIRE date is to return assumptions. <b>Historical mode</b> runs the
             plan against every starting year since 1926, showing the p10/p25/p50/p75/p90 spread of real
             outcomes.</p>
             <p><b>Success rate slider.</b> The slider picks a percentile of historical starting years.
-            At 50% you see the median outcome &mdash; half of historical periods hit your target sooner,
+            At 50% you see the median outcome: half of historical periods hit your target sooner,
             half later. At 75% you see the date by which 75% of periods succeeded, which requires a later
             (more conservative) target date. Move it toward 99% to stress-test against nearly every
-            historical period; toward 1% for the aggressive best-case. The success rate is purely
-            historical &mdash; it says nothing about future markets.</p>
+            historical period, or toward 1% for the aggressive best case. The success rate is purely
+            historical and says nothing about future markets.</p>
           </Section>
           <Section id="backtest">
-            <p>Every projection in this app starts with a rate of return you have to
-            supply, and most people pick one out of the air. This tool is where that
-            number comes from. Choose a stock and bond mix, choose a stretch of history,
-            and it reports what that mix did: compound return, the same return after
-            inflation, volatility, the best and worst years by name, and the deepest
-            fall from a previous high.</p>
-            <p>The rolling-returns table is the part worth sitting with. It shows every
-            overlapping 1, 5, 10, 20 and 30-year window in the range, annualized. The
-            median tells you what was typical; the worst column tells you what someone
-            who started at the wrong moment actually earned, which is the figure a plan
-            should survive.</p>
-            <p>Inflation gets its own panel rather than being buried in the real-return
-            figure, because the spread is the point: the record runs from about &minus;10% in
-            1932 to +18% in 1946 in single years, and the stretches that did the damage to retirements
-            were sustained ones, not spikes. The ten-year line is drawn over the annual one
-            for exactly that reason.</p>
+            <p>A projection needs a rate of return, and most people pick one out of the
+            air. This tool shows what real mixes earned. Choose a mix of S&amp;P 500,
+            small-cap value, bonds and cash, choose a stretch of history, and it reports
+            what that mix did: compound return, the same return after inflation,
+            volatility, the best and worst years by name, and the deepest fall from a
+            previous high.</p>
+            <p>The rolling-returns table shows every overlapping 1, 5, 10, 20 and 30-year
+            window in the range, annualized. The median shows what was typical. The
+            worst column shows what someone who started at the wrong moment actually
+            earned, which is the figure a plan should survive.</p>
+            <p>Inflation gets its own panel because the spread matters: single years run
+            from about &minus;10% in 1932 to +18% in 1946, and the stretches that did the
+            damage to retirements were sustained ones, not spikes. The ten-year line is
+            drawn over the annual one for that reason.</p>
             <p><b>Use these figures in Advanced</b> carries the return, the volatility and
             the average inflation over together. They belong together: a nominal return
             earned through a high-inflation stretch is only meaningful next to the inflation
@@ -1082,34 +1087,35 @@ export function About({ states }: { states: StateOption[] }) {
             quietly changes the answer.</p>
             <p><b>The data.</b> Monthly, January 1926 to December 2025. Stock prices,
             dividend yields and 10-year Treasury yields come from Robert Shiller&apos;s
-            dataset (Yale); CPI-U comes from the US Bureau of Labor Statistics. Monthly
+            dataset (Yale); CPI-U comes from the US Bureau of Labor Statistics.
+            Small-cap value and cash returns, from July 1926, come from the Kenneth R.
+            French Data Library (Dartmouth) and Treasury bill series. Monthly
             stock total return is the price change plus that month&apos;s share of the
-            trailing dividend; monthly bond return is one month of coupon plus the price
+            trailing dividend. Monthly bond return is one month of coupon plus the price
             move implied by the change in yield. The calendar-year figures the Drawdown
             Simulator and this tool use are compounded up from those same monthly
-            numbers, so there is one dataset aggregated two ways rather than two
-            datasets that can disagree.</p>
+            numbers, so the two are one dataset aggregated two ways and can&apos;t disagree.</p>
             <p>Shiller&apos;s prices are <b>monthly averages of daily closes</b>, not month-end
-            closes &mdash; his long-standing convention, and the one most long-run
+            closes. That is his long-standing convention, and the one most long-run
             retirement research is built on. It slightly damps single-year extremes
-            against a December-to-December series (2008 reads about &minus;39% here rather
-            than &minus;37%) while leaving long-run compounding alone: stocks still run
-            near 10% per year over the period.</p>
+            against a December-to-December series (2008 reads about &minus;39% here, against
+            &minus;37% December to December) while leaving long-run compounding alone: stocks
+            still run near 10% per year over the period.</p>
             <p><b>The assumptions.</b> Stock returns are S&amp;P 500 total return with
-            dividends reinvested, and bond returns include the coupon, not just the price
-            move &mdash; which is why stocks here compound near 10% per year rather than the
-            6&ndash;7% price-only figure people often have in mind. Annual rebalancing, no
-            fees, no taxes, no trading costs, so weigh in your own fund&apos;s expense ratio
-            separately. The growth chart runs from a fixed $10,000, since
-            that changes the dollar amounts but nothing else about the mix&apos;s behavior.
+            dividends reinvested, which is why stocks here compound near 10% per year and
+            not the 6 to 7% price-only figure people often have in mind. Bond returns
+            include the coupon, not just the price move. Rebalancing is every year by
+            default and you can change it. There are no fees, taxes or trading costs, so
+            weigh in your own fund&apos;s expense ratio separately. The growth chart starts
+            from a fixed $10,000, which changes only the dollar amounts.
             The bond series is 10-year Treasuries, not a broad bond fund. Past returns
-            describe what happened; they are not a forecast, and the further back the
+            describe what happened and are not a forecast, and the further back the
             data goes the less the world it describes resembles this one.</p>
           </Section>
           <Section id="college">
             <p>Works backward from a target: pick a school type or type in your own
-            annual cost, and it solves for the monthly savings needed to cover it,
-            accounting for tuition rising faster than general prices.</p>
+            annual cost for each child, and it solves for the monthly savings needed to
+            cover it, allowing for tuition rising faster than general prices.</p>
             <dl className="gloss">
               <dt>School type presets</dt>
               <dd>Rough all-in figures (tuition, room and board, and fees)
@@ -1117,17 +1123,16 @@ export function About({ states }: { states: StateOption[] }) {
               League school. Overwrite the cost field with your own number if you have a
               specific school in mind.</dd>
               <dt>Tuition inflation</dt>
-              <dd>College costs have historically risen faster than the inflation used
-              elsewhere in this app, often 3&ndash;5% per year versus the 2&ndash;3%
-              typical of general prices. The default reflects that gap.</dd>
+              <dd>College costs have historically risen faster than prices generally,
+              often 3 to 5% per year against 2 to 3%. The default of 4% reflects that gap.</dd>
             </dl>
             <p><b>What it leaves out:</b> financial aid, scholarships, 529 plan tax
-            advantages, and the possibility of a shorter or longer program than four
-            years unless you change that input yourself.</p>
+            advantages, and programs longer or shorter than four years unless you change
+            Years of college.</p>
           </Section>
           <Section id="rentbuy">
-            <p>The question isn&apos;t just &quot;which payment is bigger&quot;; it&apos;s which path
-            leaves you with more net worth after some number of years. This tool runs
+            <p>Which payment is bigger matters less than which path leaves you with more
+            net worth after some number of years. This tool runs
             both scenarios month by month: the buyer builds equity as the mortgage is
             paid down and the home appreciates; the renter invests whatever they didn&apos;t
             spend, starting with the down payment and closing costs they never paid, and
@@ -1141,8 +1146,7 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>Renter invests</dt>
               <dd>The amount the renter has invested from day one (the down
               payment and closing costs they didn&apos;t spend), which then compounds
-              for the entire comparison. This opportunity cost is often the most
-              underrated part of the rent-versus-buy decision.</dd>
+              for the entire comparison. This opportunity cost is easy to overlook.</dd>
               <dt>Home appreciation &amp; investment return</dt>
               <dd>Two separate assumptions that drive most of the result. Home
               appreciation has historically run below broad stock market returns over
@@ -1152,8 +1156,8 @@ export function About({ states }: { states: StateOption[] }) {
             <p><b>What it leaves out:</b> the mortgage interest deduction, moving costs
             beyond a percentage-based selling cost, rent control, and the non-financial
             value of owning (stability, the ability to renovate, not having a
-            landlord), which matters to a lot of people and isn&apos;t something a
-            spreadsheet can price in.</p>
+            landlord), which matters to many people and isn&apos;t something a
+            spreadsheet can price.</p>
           </Section>
         </Group>
         <Group id="everyday">
@@ -1174,7 +1178,7 @@ export function About({ states }: { states: StateOption[] }) {
             <dl className="gloss">
               <dt>Filing status and gross income</dt>
               <dd>Filing status comes first, since it decides how many incomes there are.
-              Gross income is salary before anything is taken out; married filing jointly
+              Gross income is salary before anything is taken out. Married filing jointly
               asks for each spouse&apos;s separately, because Social Security and Medicare
               are figured per person.</dd>
               <dt>Pre-tax deductions</dt>
@@ -1188,10 +1192,10 @@ export function About({ states }: { states: StateOption[] }) {
               you have a plan at work (a 401(k) line counts as one). Each line can be
               typed per paycheck, per month or per year, whichever you know it by, and
               anything over the year&apos;s contribution limits is flagged. A few states keep
-              some kinds in their own base; the state rules table says which.</dd>
+              some kinds in their own base. The state rules table says which.</dd>
               <dt>Standard vs itemized</dt>
-              <dd>You take whichever is larger. Most people take the standard deduction;
-              itemizing wins mainly with a big mortgage, large charitable giving, or high
+              <dd>You take whichever is larger. Most people take the standard deduction.
+              Itemizing wins mainly with a big mortgage, large charitable giving, or high
               state and local taxes.</dd>
               <dt>Local income tax (optional)</dt>
               <dd>Some cities, counties and school districts tax income too. The field
@@ -1228,7 +1232,7 @@ export function About({ states }: { states: StateOption[] }) {
             spending is usually four or five kinds of income taxed four or five different
             ways, and the total bill depends less on how much you withdraw than on which
             accounts you withdraw it from. Instead of one gross income figure, you enter
-            each source separately; the tool totals them for reference and then taxes
+            each source separately, and the tool totals them for reference and then taxes
             each one on its own terms. There is no FICA, because none of it is wages, and
             no net pay vs. take-home switch, because you are no longer contributing to
             anything. A local income tax on state taxable income (Maryland, New York City)
@@ -1236,7 +1240,7 @@ export function About({ states }: { states: StateOption[] }) {
             <dl className="gloss">
               <dt>Traditional 401(k) / IRA withdrawal</dt>
               <dd>You deducted it going in, so all of it comes out as ordinary income at
-              the same 10&ndash;37% brackets a salary would face. Required minimum
+              the same 10 to 37% brackets a salary would face. Required minimum
               distributions belong here too.</dd>
               <dt>Roth withdrawal</dt>
               <dd>Zero tax, federal and state. It also stays out of the provisional
@@ -1245,7 +1249,7 @@ export function About({ states }: { states: StateOption[] }) {
               deduction phase-out. That second effect is invisible on a tax return but
               worth real money.</dd>
               <dt>Taxable brokerage withdrawal, and the gain percentage</dt>
-              <dd>Only the growth is taxable; the rest is your own basis coming
+              <dd>Only the growth is taxable. The rest is your own basis coming
               back untouched, which is why the gain percentage matters as much as the
               withdrawal itself. Sell $40,000 from a position that is 30% gain and only
               $12,000 hits the return. Everything here is assumed to be long-term, held
@@ -1253,7 +1257,7 @@ export function About({ states }: { states: StateOption[] }) {
               ordinary ones.</dd>
               <dt>Social Security benefits</dt>
               <dd>Somewhere between none and 85% of the benefit becomes taxable, worked
-              out under the actual IRC &sect;86 formula rather than assumed. What drives
+              out under the IRC &sect;86 formula. What drives
               it is provisional income, everything else on the return plus half
               your benefits, against thresholds of $25,000 and $34,000 single, or
               $32,000 and $44,000 joint. Those four numbers were set in 1983 and 1993 and
@@ -1298,11 +1302,11 @@ export function About({ states }: { states: StateOption[] }) {
             either.</p>
             <p><b>Pension / annuity, and why it has its own field.</b> Pension income
             is split out from Other ordinary income because state law splits it out.
-            A dozen states exempt government pensions in full while taxing private
+            Several states exempt government pensions in full while taxing private
             ones at full rates, and most states that give a retirement exclusion give
             it to pensions and retirement-account withdrawals but not to interest or
-            rent. Federally the distinction does not exist; it is all ordinary
-            income, so it changes only the state figure, but it can change it
+            rent. Federally the distinction does not exist because it is all ordinary
+            income, so it changes only the state figure, though it can change that
             by thousands.</p>
             <p><b>States, in full.</b> Every state that taxes income is modeled on
             its own retirement rules, not just its brackets: whether Social Security
@@ -1320,7 +1324,7 @@ export function About({ states }: { states: StateOption[] }) {
             Minnesota and Vermont phase out over a band, New Mexico is a cliff, and
             Colorado exempts benefits outright at 65. Utah taxes benefits and then
             hands back a credit for the tax on them, withdrawn above $54,000 single or
-            $90,000 joint; that credit is computed here. Montana alone taxes the
+            $90,000 joint. That credit is computed here. Montana alone taxes the
             federal taxable amount flat, with no relief.</p>
             <p><b>Where retirement income is barely taxed at all.</b> Illinois,
             Mississippi and Pennsylvania take qualified retirement income out of the
@@ -1328,14 +1332,14 @@ export function About({ states }: { states: StateOption[] }) {
             alike), so in those three only the gain on a brokerage sale and
             genuinely other income are left. Iowa has done the same since 2023 for
             anyone 55 or older. Alabama and Hawaii exempt pension income in full but
-            still tax the retirement account. Michigan&apos;s deduction is fully restored
+            tax most 401(k) and IRA withdrawals. Michigan&apos;s deduction is fully restored
             for 2026, the last step of its 2023 phase-in, at roughly $68,000 single
             and $136,000 joint.</p>
             <p><b>Where the exclusion has a ceiling or an income test.</b> Kentucky
             gives $31,110 a person at any age; Georgia $65,000 a person at 65, against
             unearned income of any kind; New York $20,000 a person on top of a full
             exemption for government pensions; New Jersey up to $100,000 joint but on
-            a hard income test that steps to nothing by $200,000; Connecticut a full
+            a hard income test that steps to nothing by $150,000; Connecticut a full
             exemption below $75,000 single or $100,000 joint, phased out over the next
             $25,000. Maine and Maryland reduce their exclusions dollar for dollar by
             the Social Security you receive, which for a large benefit can consume
@@ -1345,8 +1349,8 @@ export function About({ states }: { states: StateOption[] }) {
             or $75,000 joint.</p>
             <p><b>State capital gain treatment.</b> Most states tax long-term gain at
             their ordinary rates, and that is the default here. The exceptions are
-            modeled: Arkansas excludes 50%, South Carolina 44%, New Mexico and North
-            Dakota 40%, Wisconsin 30%, Vermont a flat $5,000. Hawaii caps the rate on
+            modeled: Arkansas excludes 50%, South Carolina 44%, North Dakota 40%,
+            Wisconsin 30%, New Mexico a flat $2,500 and Vermont a flat $5,000. Hawaii caps the rate on
             gain at 7.25% and Montana taxes it at reduced rates of 3.0% and 4.1%, both
             as alternative computations that can never cost more than ordinary
             treatment.</p>
@@ -1357,9 +1361,10 @@ export function About({ states }: { states: StateOption[] }) {
             per qualifying person without checking which spouse the income belongs to.
             Occupational carve-outs (military, police, fire, railroad, federal
             Civil Service) and rules that turn on a birth year rather than an
-            age are not modeled, and they are generous where they apply. Neither are
-            local and city income taxes, which matter most in Maryland, New York City,
-            Ohio and the Portland area. Also absent everywhere: short-term gains and
+            age are not modeled, and they are generous where they apply. Local and city
+            income taxes count only as the one rate you give, without any place&apos;s own
+            rules, which matters most in Maryland, New York City, Ohio and the Portland
+            area. Also absent everywhere: short-term gains and
             non-qualified dividends, which would be taxed as ordinary income; qualified
             charitable distributions; IRMAA Medicare premium surcharges, which behave
             like a tax cliff just above these thresholds; the Alternative Minimum Tax;
@@ -1395,7 +1400,7 @@ export function About({ states }: { states: StateOption[] }) {
               <dd>Each group&apos;s share of the total, with yearly bills spread over the year.</dd>
               <dt>Emergency fund</dt>
               <dd>A target in months of your expenses, six unless you change it, and what
-              that comes to. Three to six months is a common starting goal.</dd>
+              that comes to. About six months suits most people, or up to 12 if your income varies.</dd>
             </dl>
 
             <h4>Paycheck</h4>
@@ -1422,7 +1427,7 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>The results</dt>
               <dd><b>Saved and invested</b> each check, as a share of gross pay, plus your
               employer&apos;s match. <b>Free before saving</b> is pay less taxes and your budget
-              with nothing saved. <b>Still unassigned</b> is what has no place yet; it turns
+              with nothing saved. <b>Still unassigned</b> is what has no place yet, and it turns
               into <b>Short</b> when more is assigned than the deposit covers. The chart
               splits the paycheck into saving, taxes, expenses and what&apos;s unassigned.</dd>
               <dt>Where the rest goes</dt>
@@ -1469,26 +1474,25 @@ export function About({ states }: { states: StateOption[] }) {
             <dl className="gloss">
               <dt>Avalanche</dt>
               <dd>Attack the highest interest rate first. This is arithmetically optimal:
-              no other ordering of the same dollars pays less interest. If the only thing
-              you care about is cost, the argument is over.</dd>
+              no other ordering of the same dollars pays less interest.</dd>
 
               <dt>Snowball</dt>
               <dd>Attack the smallest balance first, regardless of rate. It costs more,
               sometimes a lot more, but it clears an entire debt sooner, and there is
               decent evidence that people stick with it better. The tool prices that
               directly: it shows how much earlier the first debt disappears, and what those
-              months cost you in interest. That is the real decision, and it is a personal
-              one rather than a mathematical one.</dd>
+              months cost you in interest. Choosing between them is a personal decision more
+              than a mathematical one.</dd>
 
               <dt>The rollover</dt>
               <dd>The engine behind both. Your monthly payment is held fixed at the sum of
               the original minimums plus anything extra. When a debt is cleared, its minimum
-              does not go back into your pocket; it rolls onto the next debt in line.
+              does not go back into your pocket. It rolls onto the next debt in line.
               That is why the last debt gets paid off so much faster than the first, and why
-              both strategies crush paying minimums alone.</dd>
+              both strategies beat paying minimums alone.</dd>
 
               <dt>Minimums only</dt>
-              <dd>The third row of the comparison, and the one worth looking at. It pays each
+              <dd>The third row of the comparison. It pays each
               minimum with no extra and no rollover, which is what happens by default if you
               do nothing. On typical card balances it is usually decades and tens of
               thousands of dollars worse.</dd>
@@ -1500,7 +1504,7 @@ export function About({ states }: { states: StateOption[] }) {
             </dl>
 
             <p><b>What it does not do.</b> Real credit card minimums are a percentage of the
-            balance, so they shrink as you pay down; this uses the fixed figure you
+            balance, so they shrink as you pay down. This uses the fixed figure you
             enter, which makes the projection slightly optimistic unless you keep paying the
             original amount (which is what you should do anyway). Rates are fixed, so
             promotional 0% periods, variable-rate cards and balance transfers are not
@@ -1517,17 +1521,16 @@ export function About({ states }: { states: StateOption[] }) {
             crossover visible, and it&apos;s usually later than people expect.</p>
             <dl className="gloss">
               <dt>Down payment</dt>
-              <dd>Enter a percentage or a dollar amount; the other updates itself.</dd>
+              <dd>Enter a percentage or a dollar amount, and the other updates itself.</dd>
               <dt>Interest rate</dt>
               <dd>Pre-filled with a rounded recent national average for a 30-year fixed
-              loan, as a starting point rather than a live figure. Rates move weekly, and your own
-              depends on credit score, term, points and lender, so replace it with a
-              current quote.</dd>
+              loan. It isn&apos;t a live figure: rates move weekly, and yours depends on
+              credit score, term, points and lender, so replace it with a current quote.</dd>
               <dt>PMI</dt>
               <dd>Private mortgage insurance, charged when you put down less than 20%.
-              Typically 0.3&ndash;1.5% of the loan a year. Modeled here as ending once the
+              Typically 0.3 to 1.5% of the loan per year. Modeled here as ending once the
               balance falls to 80% of the purchase price, which is when you can request
-              cancellation; federal law only forces automatic removal later, at 78%, if
+              cancellation. Federal law only forces automatic removal later, at 78%, if
               you never ask.</dd>
               <dt>Property tax and insurance</dt>
               <dd>Pre-filled with rough national averages. Both vary enormously by
@@ -1535,22 +1538,22 @@ export function About({ states }: { states: StateOption[] }) {
               of value, so replace them with local figures if you have them.</dd>
             </dl>
             <p>The <b>Extra payments and refinancing</b> card under the payment opens extra
-            payments, a recast, and a refinance comparison &mdash; skip it entirely for a
-            quick estimate on a home you haven&apos;t bought yet.</p>
+            payments, a recast, and a refinance comparison. Skip it for a quick estimate
+            on a home you haven&apos;t bought yet.</p>
             <dl className="gloss">
               <dt>Extra payments</dt>
               <dd>A recurring amount, a one-time amount, or both, applied straight to
-              principal. By default the required payment stays what it was &mdash; you&apos;re
-              just finishing early and paying less interest along the way.</dd>
+              principal. By default the required payment stays what it was, so you finish
+              early and pay less interest along the way.</dd>
               <dt>Recast</dt>
               <dd>After a one-time payment, choose to lower the monthly payment instead of
               shortening the loan: the balance re-amortizes over whatever&apos;s left of the
               original term, at the same rate. The payoff date doesn&apos;t move, but every
-              payment after that point is smaller. Lenders often charge $150&ndash;500 for
+              payment after that point is smaller. Lenders often charge $150 to $500 for
               this, which isn&apos;t included.</dd>
               <dt>Refinance comparison</dt>
               <dd>Assumes you refinance today, on the loan as entered, into a new rate and
-              term with the same extra-payment plan carried over &mdash; so the comparison
+              term with the same extra-payment plan carried over, so the comparison
               isolates the refinance itself. Shows the new payment, how long closing costs
               take to earn back in lower payments, and which loan costs less in total once
               those costs are counted. Closing costs are assumed paid out of pocket rather
@@ -1559,7 +1562,7 @@ export function About({ states }: { states: StateOption[] }) {
             <p><b>What it leaves out:</b> closing costs rolled into the loan, adjustable
             rates, cash-out refinancing, the mortgage interest deduction, and maintenance
             beyond a flat percentage. A common rule of thumb is to budget roughly 1% of the
-            home&apos;s value a year for upkeep.</p>
+            home&apos;s value per year for upkeep.</p>
           </Section>
         </Group>
         <Group id="methods">
@@ -1569,7 +1572,7 @@ export function About({ states }: { states: StateOption[] }) {
             have done in the past that actually happened? It takes your contribution
             schedule and runs it through every overlapping window of the real record,
             January 1926 to December 2025, <b>compounding month by month</b>. A 30-year
-            plan gets 841 runs &mdash; one starting in each month from January 1926 to
+            plan gets 841 runs, one starting in each month from January 1926 to
             January 1996.</p>
             <p>The monthly step is the point. If the market falls 5% in March and you
             contribute that month, you buy at March&apos;s lower level and get the full
@@ -1577,12 +1580,11 @@ export function About({ states }: { states: StateOption[] }) {
             that away. It also means a quarterly contributor buys in March, June,
             September and December rather than in twelve equal slices, and that
             starting in July 1974 is a different plan from starting in January 1974.</p>
-            <p>Two inputs stop being used in this mode, and it is worth being clear
-            about which:</p>
+            <p>Two inputs stop being used in this mode:</p>
             <ul>
               <li>Your <b>rate of return</b> is ignored. Returns come from the{" "}
               <b>stock mix</b> instead: that share in the S&amp;P 500, the rest in
-              10-year Treasuries, rebalanced once a year. Fees still come off every
+              10-year Treasuries, kept at that mix. Fees still come off every
               year.</li>
               <li>Your <b>inflation</b> setting is ignored. Each window is converted to
               today&apos;s dollars using the inflation that window actually had, so a run
@@ -1593,13 +1595,13 @@ export function About({ states }: { states: StateOption[] }) {
             share over the final years of the plan.</p>
             <p>The bands read the same way the Monte Carlo fan does, except each one is a
             real stretch of history rather than a simulated draw. The line labeled worst
-            is not a bad scenario someone invented; it is a period people lived through
-            while saving. Worth knowing: the worst outcome for a saver is rarely the
+            is not a bad scenario someone invented. It is a period people lived through
+            while saving. The worst outcome for a saver is rarely the
             crash, because a crash early buys shares cheaply for decades afterwards.
             A long flat stretch just before retirement does more damage.</p>
             <p><b>What it can&apos;t do.</b> A century is a single overlapping sample, heavily
             US-biased, and the windows share almost all their months with each other,
-            so 841 runs are emphatically not 841 independent trials &mdash; consecutive
+            so 841 runs are not 841 independent trials. Consecutive
             windows differ by one month at each end. A plan longer than 100 years has no
             window to run in and the mode says so instead of guessing.</p>
           </Section>
@@ -1629,8 +1631,8 @@ export function About({ states }: { states: StateOption[] }) {
             <dl className="gloss">
               <dt>Save</dt>
               <dd>Names the current setup and adds it to the dropdown. Saving under
-              the name of the scenario you already have loaded updates it; saving
-              under a different existing name asks first before overwriting it.
+              the name of the scenario you already have loaded updates it, and saving
+              under a different existing name asks before overwriting it.
               Scenarios are stored in your browser, and in your account if you sign in, so
               they follow you between your phone and computer. Signed out, they stay on the
               device you&apos;re using, and clearing site data removes them.</dd>
@@ -1644,8 +1646,8 @@ export function About({ states }: { states: StateOption[] }) {
               anything saved.</dd>
 
               <dt>Compare</dt>
-              <dd>Opens a separate screen that puts two or three saved retirement
-              scenarios side by side: their balances on one chart, then every result and
+              <dd>On Basic and Advanced, in the Save/Delete menu, opens a separate screen
+              that puts two or three saved retirement scenarios side by side: their balances on one chart, then every result and
               every input in tables, with differing inputs highlighted. It reads saved
               scenarios only and changes nothing, so set your inputs and save them first.
               Each slot picks a mode (Basic or Advanced) and then a saved scenario from
@@ -1661,17 +1663,17 @@ export function About({ states }: { states: StateOption[] }) {
               so does each tool in the Tools tab. Saved scenarios are untouched.</dd>
 
               <dt>Share</dt>
-              <dd>One button, four options. <b>Copy link</b> encodes every input into the
-              address itself, so anyone opening it sees exactly your numbers;
-              nothing is uploaded, the whole scenario travels inside the URL, and it&apos;s
-              also the most reliable way to move a setup between your own devices.
+              <dd>One button, with up to four options. <b>Copy link</b> encodes every input
+              into the address itself, so anyone opening it sees exactly your numbers.
+              Nothing is uploaded, the whole scenario travels inside the URL, and it also
+              moves a setup between your own devices without an account.
               On a phone it&apos;s <b>Share link</b> and opens your share sheet, so a
               text shows the site&apos;s preview card rather than a long address.{" "}
               <b>Summary</b> builds a clean one-page version and opens your print dialog,
-              where you can choose Save as PDF; on iPhone use Share then Print. <b>Save
+              where you can choose Save as PDF (on iPhone, use Share then Print). <b>Save
               image card</b> and <b>Copy image card</b> generate a shareable square image
               with your headline numbers, ready to post or send, built entirely in
-              your browser, nothing leaves your device to create it.</dd>
+              your browser, so nothing leaves your device to create it.</dd>
             </dl>
           </Section>
           <Section id="limits">
@@ -1686,16 +1688,19 @@ export function About({ states }: { states: StateOption[] }) {
               without Social Security or other income.</li>
               <li>Contributions are assumed to continue uninterrupted. Job loss, career
               breaks and emergencies aren&apos;t modeled.</li>
-              <li>Contribution limits and employer matching are only modeled when you
-              split by account type, and on the Budget&apos;s Paycheck tab. Social Security is modeled in the Drawdown Simulator,
-              Income Tax and Roth Conversion tools, not in the retirement projections.</li>
-              <li>Monte Carlo draws each period independently. Real markets show
-              streaks and mean reversion that random draws don&apos;t capture; the
-              Drawdown Simulator&apos;s historical mode exists specifically to get around
-              this limitation for retirement spending.</li>
+              <li>Employer matching is only modeled when you split by account type, and
+              on the Budget&apos;s Paycheck tab. Annual contribution limits are checked on
+              the Paycheck tab and flagged in Income Tax, not in the retirement
+              projections. Social Security is modeled in the Social Security Calculator,
+              Retirement Plan Optimizer, Drawdown Simulator, Income Tax and Roth
+              Conversion tools, not in the retirement projections.</li>
+              <li>In the Calculator, Monte Carlo draws each period independently. Real
+              markets show streaks and mean reversion that random draws don&apos;t capture.
+              The Drawdown Simulator&apos;s historical mode avoids this limitation for
+              retirement spending.</li>
               <li>Every output is only as good as the assumptions typed in. Small changes
               to the return compound into very large differences over decades, which is
-              exactly why the comparison band and Monte Carlo modes exist.</li>
+              why the comparison band and Monte Carlo modes exist.</li>
             </ul>
           </Section>
         </Group>
@@ -1713,15 +1718,15 @@ export function About({ states }: { states: StateOption[] }) {
             <p>Found a bug, a number that looks off, or have an idea for a tool? Email{" "}
             <MailMe user="contact" domain="retcalc.app" />.
             Every message is read, and reports of anything that looks wrong are the most
-            useful of all.</p>
-            <p>One thing it can&apos;t do: give personal financial or tax advice. For decisions
+            useful.</p>
+            <p>RetCalc can&apos;t give personal financial or tax advice. For decisions
             about your own money, a fee-only financial planner or a tax professional can
             look at your whole situation.</p>
           </div>
           <div className="about" id="disclaimer">
             <h3>Disclaimer</h3>
-            <p><b>Tax figures are estimates.</b> The income tax tool uses published 2026
-            rates but omits credits, local taxes and many special cases, and tax law
+            <p><b>Tax figures are estimates.</b> The Income Tax tool uses published 2026
+            rates but omits credits, local tax rules and many special cases, and tax law
             changes. It is not tax advice and should not be used to file or to decide
             withholding. For anything that matters, talk to a tax professional.</p>
             <p><b>This is an educational tool, not financial advice.</b> It doesn&apos;t know
@@ -1731,9 +1736,9 @@ export function About({ states }: { states: StateOption[] }) {
             are context, not forecasts. Markets can and do deliver long stretches well
             below their historical average, and the figures suggested above may not hold
             in future. The Drawdown Simulator&apos;s historical backtest uses 100 years of US
-            market data, which is a real record, not a hypothesis, but it is one
-            record of one country, and surviving every year in it is evidence a plan is
-            reasonable, not proof it&apos;s safe.</p>
+            market data. That is a real record, but it is one record of one country, and
+            surviving every start in it is evidence a plan is reasonable, not proof it&apos;s
+            safe.</p>
             <p>Projections are arithmetic applied to assumptions you chose. They are not
             predictions, and the true range of outcomes is wider than any model shows.
             For decisions that matter, talk to a qualified financial professional or tax

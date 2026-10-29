@@ -15,7 +15,7 @@ export function ScheduleBars({ list, flat }: { list: Stage[]; flat: number }) {
   for (const s of list) for (let t = s.from; t < s.to; t++) years.push(s.monthly);
   return (
     <div className="gd-sched" role="img"
-      aria-label={"Saving a month by age: " + list.map((s) => s.from + " to " + s.to + ", " + money(s.monthly)).join("; ") + ". Today's saving every year would be " + money(flat) + "."}>
+      aria-label={"Saving per month by age: " + list.map((s) => s.from + " to " + s.to + ", " + money(s.monthly)).join("; ") + ". Today's saving every year would be " + money(flat) + "."}>
       <div className="gd-sched-bars" aria-hidden="true" style={{ "--n": n } as React.CSSProperties}>
         {years.map((v, i) => <span key={i} style={{ "--h": pct(v) } as React.CSSProperties}></span>)}
         <i className="flat" style={{ "--h": pct(flat) } as React.CSSProperties}></i>
@@ -24,7 +24,7 @@ export function ScheduleBars({ list, flat }: { list: Stage[]; flat: number }) {
         {list.map((s) => <span key={s.from} style={{ "--x": (((s.from - a0) / n) * 100).toFixed(2) } as React.CSSProperties}>{s.from}</span>)}
         <span className="end">{a1}</span>
       </div>
-      <div className="gd-sched-key" aria-hidden="true"><span><s className="bar"></s>Saving a month, by age</span><span><s className="flat"></s>Today&apos;s {money(flat)} every year</span></div>
+      <div className="gd-sched-key" aria-hidden="true"><span><s className="bar"></s>Saving per month, by age</span><span><s className="flat"></s>Today&apos;s {money(flat)} every year</span></div>
     </div>
   );
 }

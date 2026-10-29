@@ -70,7 +70,7 @@ export function Hero({ S, stages }: { S: PlanSummary; stages: boolean }) {
         hero={{ label: "At " + S.retire + ", in today's dollars", id: "ppTotal", value: money(A.total),
           note: (stages ? "With your changes ahead, " : "") + money(A.fv) + " in future dollars, after " + Math.round(S.years) + " years of saving" }}
         figures={[
-          { label: "A year to spend, after tax", id: "ppSpend", value: money(A.afterTax), note: "A " + pctStr(A.withdrawal, 1) + " withdrawal, taxed at " + pctStr(A.taxRate, 1) },
+          { label: "After-tax income, per year", id: "ppSpend", value: money(A.afterTax), note: "A " + pctStr(A.withdrawal, 1) + " withdrawal, taxed at " + pctStr(A.taxRate, 1) },
           ...(want != null ? [{ label: S.goal.fromBudget ? "Your budget, per year" : "Your spending goal", id: "ppWant", value: money(want), tone: meets ? "gain" as const : "loss" as const,
             note: meets ? "✓ Covered, with " + money(A.afterTax - want) + " to spare" : "✗ Short by " + money(want - A.afterTax) + " per year" }] : []),
           { label: "Saved each year", id: "ppSaved", value: money(savedYr), note: S.inflow.match > 0 ? money(S.inflow.match * perYr) + " of it your employer's match" : "Into your accounts, at today's pay" },
@@ -305,7 +305,7 @@ function MadeOf({ S, future }: { S: PlanSummary; future: boolean }) {
     <>
       <div className="text-label text-muted-foreground">Where it comes from</div>
       <div className="text-3xl font-medium tabular-nums">{pctStr(grow, 0)} growth</div>
-      <div className="mb-2 text-label text-muted-foreground">{grow >= 0.5 ? "Most of it is what your saving earns, not what you put in" : "What you put in, and what it earns"}</div>
+      <div className="mb-2 text-label text-muted-foreground">{grow >= 0.5 ? "Most of it is what your saving earns" : "What you put in, and what it earns"}</div>
       <CompositionBar parts={parts.map((x) => ({ tone: x.tone, share: x.v / all }))} />
       <dl className="m-0">
         {parts.map((x) => (
@@ -347,8 +347,8 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
   return (
     <Card className="col-span-full">
       <CardHeader><CardTitle>What the children cost</CardTitle>
-        <CardDescription>Each child from birth to 18, in today&apos;s dollars: childcare costs the most, then the school years, and each later child a little less.
-          {S.kids.some((k) => !k.planned) ? " Children you have now are already in your budget; only the change from today comes out of saving." : ""}</CardDescription></CardHeader>
+        <CardDescription>Each child from birth to 18, in today&apos;s dollars: paid childcare makes the first years cost the most, and each later child costs a little less.
+          {S.kids.some((k) => !k.planned) ? " Children you have now are already in your budget, so only the change from today comes out of saving." : ""}</CardDescription></CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-x-12 gap-y-4 border-b border-border pb-5 sm:grid-cols-3">
           <div><div className="text-label text-muted-foreground">Until you retire at {a1}</div>
@@ -359,7 +359,7 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
             <div className="text-label text-muted-foreground">{K.fromSpending > 0.5 ? "and " + money(K.fromSpending) + " cut from spending, when saving ran out" : "Saving covered all of it"}</div></div>
           <div><div className="text-label text-muted-foreground">{dash && gone < 0 ? "More" : "Less"} in your balance at {a1}</div>
             <div className="text-3xl font-medium tabular-nums">{money(dash ? Math.abs(gone) : Math.max(0, gone))}</div>
-            <div className="text-label text-muted-foreground">{money(S.atRetire.total)} with them, {money(K.without)} {withoutWords}{dash && gone < 0 ? ". Your budget pays for them today; once they're grown, the plan saves that money instead" : ""}</div></div>
+            <div className="text-label text-muted-foreground">{money(S.atRetire.total)} with them, {money(K.without)} {withoutWords}{dash && gone < 0 ? ". Your budget pays for them today. Once they're grown, the plan saves that money instead" : ""}</div></div>
         </div>
         {/* Along the years: each child, then all of them together. A phone
             keeps its room and scrolls it sideways. */}
@@ -374,7 +374,7 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
             </div>
           ))}
           <div className="flex items-center gap-3 border-t border-border pt-2">
-            <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">Together</b><span className="block text-label text-muted-foreground">{dash ? "Per month" : "A month"}</span></div>
+            <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">Together</b><span className="block text-label text-muted-foreground">Per month</span></div>
             <div className="relative h-9 min-w-0 flex-1">
               {K.together.map((t) => <Seg key={t.from} {...t} c={SERIES.sky} title={"Your ages " + ageSpan(t.from, t.to) + ": " + money(t.monthly) + " per month"} />)}
             </div>
@@ -459,7 +459,7 @@ function Actions({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => void })
         }}>Copy into my tools</Button>
         <Button variant="outline" size="lg" onClick={() => goTo(plan.stagesOn ? "stages" : "plan")}>Change something</Button>
         <span className="flex-1"></span>
-        <Button variant="quiet" size="inline" onClick={() => { if (confirm("Start over? Your answers here are cleared; your other tools aren't touched.")) loadPlan(PLAN_DEFAULTS); }}>Start over</Button>
+        <Button variant="quiet" size="inline" onClick={() => { if (confirm("Start over? Your answers here are cleared. Your other tools aren't touched.")) loadPlan(PLAN_DEFAULTS); }}>Start over</Button>
       </CardContent>
     </Card>
   );

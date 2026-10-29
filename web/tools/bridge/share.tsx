@@ -32,7 +32,7 @@ export function bridgeShare(R: BridgeRun | null, sel: RunPlan | null): ShareKit 
           big={[["Best way to 59½", b.name, b.desc], ["Holds up in", holdPct(b.test.hold, b.test.of), R.mc ? "random markets" : "retirements since " + HIST_START],
             ["Cost of the bridge", money(st.cost), "tax, penalties" + (ctx.aca ? ", premiums" : "") + " to 59½"]]}
           chart={copyChart("#chartBR")}
-          foot={"Estimates only, in today's dollars, with " + yearData().year + " tax rules and ACA tables held fixed in real terms. 72(t) and conversion rules are strict; confirm a plan with a tax professional. Not tax advice."}>
+          foot={"Estimates only, in today's dollars, with " + yearData().year + " tax rules and ACA tables held fixed in real terms. 72(t) and conversion rules are strict, so confirm a plan with a tax professional. Not tax advice."}>
           <div className="sh-cols">
             <SheetSection t="Your situation" rows={situation} />
             <SheetSection t="Ways to 59½" rows={R.live.map((p) => [p.name, holdPct(p.test.hold, p.test.of) + " hold · " + money(p.steady.cost) + " cost · " + money(p.steady.end.total) + " at 59½"])} />

@@ -33,7 +33,7 @@ export function opSources(profile: Household | null): Source[] {
       if (Math.abs(p.growth - p.inflation) > 0.0025) notes.push("Advanced raises your saving " + pctStr(p.growth, 1) + " per year; here it keeps pace with inflation");
       if (p.glide?.on) notes.push("the glide path isn't carried over");
       if (a.hsaBal > 0 || a.hsaC > 0) notes.push("the HSA isn't carried over (it's kept for health care)");
-      if (on) notes.push("your changes ahead are in the balances at retirement; Today mode starts from today's saving");
+      if (on) notes.push("your changes ahead are in the balances at retirement, and Today mode starts from today's saving");
       out.push({ label: "Advanced", B, a, years: p.years, defl: Math.pow(1 + p.inflation, p.years), notes,
         saving: { t: mo(a.tradC + matchPer(a, ppy)), r: mo(a.rothC), b: mo(a.brokC), real: (1 + p.nominal) / (1 + p.inflation) - 1 } });
     }

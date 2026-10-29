@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = metadataFor("privacy");
 
-const UPDATED = "October 21, 2026";
+const UPDATED = "October 29, 2026";
 
 export default function PrivacyPage() {
   return (
@@ -18,7 +18,7 @@ export default function PrivacyPage() {
       <Card>
         <CardHeader><CardTitle>Without an account</CardTitle></CardHeader>
         <CardContent>
-          <p>Everything you type stays in your browser. Your household, saved scenarios and Guide answers are kept in your browser&apos;s own storage on this device. RetCalc has no copy of them, so clearing your browser&apos;s data, or using another device, starts you fresh.</p>
+          <p>Everything you type stays in your browser. Your household, saved scenarios, Guide and Paycheck to Retirement answers, Dashboard and the lessons you&apos;ve read are kept in your browser&apos;s own storage on this device. RetCalc has no copy of them, so clearing your browser&apos;s data, or using another device, starts you fresh.</p>
           <p>Share links carry a tool&apos;s inputs in the part of the address after <code>#</code>, which your browser never sends to a server. Whoever you share the link with can see those numbers.</p>
         </CardContent>
       </Card>
@@ -29,13 +29,14 @@ export default function PrivacyPage() {
           <p>If you sign in, we keep:</p>
           <ul>
             <li>your email address, and your first name if you give one;</li>
-            <li>your household (ages, retirement age, state, savings, monthly saving, income, spending);</li>
+            <li>your household (single or married, ages, retirement age, state, savings, monthly saving, income, spending);</li>
             <li>your saved scenarios in each tool;</li>
-            <li>your Retirement Readiness Guide answers and plan;</li>
+            <li>your Retirement Readiness Guide answers and plan, and your Paycheck to Retirement plan;</li>
+            <li>your Dashboard, and which lessons you&apos;ve read;</li>
             <li>when each of those was last changed.</li>
           </ul>
-          <p>We don&apos;t keep numbers you type into a tool and don&apos;t save, your browsing, or anything else about you. Calculations still run in your browser either way.</p>
-          <p>Signing out removes your synced data from that browser; your account keeps it until you sign in again.</p>
+          <p>Numbers you type into a tool and don&apos;t save aren&apos;t kept. Your account holds nothing else about you. Calculations still run in your browser either way.</p>
+          <p>Signing out removes your synced data from that browser. Your account keeps it, and it comes back when you sign in.</p>
         </CardContent>
       </Card>
 
@@ -49,9 +50,9 @@ export default function PrivacyPage() {
             <li><b>Vercel</b> and <b>Cloudflare</b> host and deliver the site. Like any website, they handle basic request details such as your IP address to serve pages.</li>
             <li><b>Cloudflare Web Analytics</b> counts visits without cookies and without identifying you.</li>
             <li><b>Vercel Web Analytics</b> also counts visits and which pages are viewed, without cookies and without storing your IP address.</li>
-            <li><b>Sentry</b> receives a report when a page fails with an error: what broke, the page&apos;s address without the part after <code>#</code>, and your browser and device type. It never receives the numbers you enter, your account, or your IP address.</li>
+            <li><b>Sentry</b> receives a report when a page fails with an error: what broke, the page&apos;s address without anything after <code>?</code> or <code>#</code>, and your browser and device type. It never receives the numbers you enter, your account, or your IP address.</li>
           </ul>
-          <p>We never sell your data, share it with advertisers, or use it for ads. There are no ads on RetCalc.</p>
+          <p>We never sell your data or share it with advertisers. There are no ads on RetCalc.</p>
         </CardContent>
       </Card>
 

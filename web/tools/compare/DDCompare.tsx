@@ -78,7 +78,7 @@ export function DDCompare() {
   return (
     <div className="grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3" id="tab-dd-compare">
       <CompareHead backId="ddCmpBack" title="Compare drawdown scenarios">
-        <span id="ddCmpHelp" hidden={!enough}>Comparison reads saved scenarios only. Nothing here changes the numbers on the Drawdown Simulator tab.</span>
+        <span id="ddCmpHelp" hidden={!enough}>Comparison reads saved scenarios only. Nothing here changes the numbers in the Drawdown Simulator.</span>
       </CompareHead>
 
       <Card className="col-span-full" hidden={enough}>

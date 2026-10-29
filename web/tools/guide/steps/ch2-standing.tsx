@@ -64,7 +64,7 @@ function TakeHomeReadout() {
     <ul className="gd-read">
       <li>{mine ? "You take home " : "About "}<b>{money(a.takehome || 0)}</b> per month{mine ? "" : " reaches your account"} from <b>{money(gross(a))}</b> per year{mar(a) ? " between you" : ""}. <SourceBadge s={s} /></li>
       {!mine && P ? <li>Worked out for {P.stateName} on the {NEWEST_YEAR} rules, a month: <b>{money(P.federal)}</b> federal income tax, {P.stateNone ? <>no {P.stateName} income tax on wages</> : <><b>{money(P.state)}</b> {P.stateName} income tax</>}, and <b>{money(P.fica)}</b> Social Security and Medicare. It takes the standard deduction and nothing out of your pay before tax.</li> : null}
-      {mine && est > 0 && off >= 100 ? <li>The tax rules alone would leave about {money(est)}; the {money(off)} between is
+      {mine && est > 0 && off >= 100 ? <li>The tax rules alone would leave about {money(est)}. The {money(off)} between is
         {est > (a.takehome || 0) ? " likely what comes out before you're paid, such as 401(k) contributions and health insurance." : " likely deductions the estimate doesn't know about."}</li> : null}
       {!mine ? <li>That&apos;s before any 401(k) or health insurance taken from your pay. {full ? "Add them, and any itemized deductions, in the Income Tax tool above, or enter the figure from your pay stub under " : "If your pay stub shows less, enter it under "}<b>Know your real take-home?</b></li> : null}
     </ul>
@@ -162,12 +162,12 @@ export function DebtCard() {
       <Learn>
         <Lesson id="eight-percent">
           <p>Paying off a debt that charges 8% earns a sure 8%, with no risk and no tax. Investing rarely beats that reliably, so debt at 8% or more comes
-            {" "}before saving beyond your employer&apos;s match. Most credit cards are far above it; the <Term k="apr">APR</Term> is on each statement.
+            {" "}before saving beyond your employer&apos;s match. Most credit cards are far above it. The <Term k="apr">APR</Term> is on each statement.
             {" "}Debt under the line, like most mortgages and student loans, can be paid on schedule while you invest.</p>
         </Lesson>
         <Lesson id="order">
           <p>A common order: first, put in enough to collect any <Term k="match">employer match</Term>, an instant 50% or 100% return. Then pay off debt at 8%
-            {" "}or more. Then build three months of spending in cash. Then save more for retirement. Each step protects the one after it.</p>
+            {" "}or more. Then build three months of spending in cash. Then save more for retirement.</p>
         </Lesson>
       </Learn>
       <BackNote step="debt" />
@@ -193,7 +193,7 @@ export function DebtCard() {
                 <ul className="gd-read">
                   {hi > 0 ? <li><b>{money(hi)}</b> at 8% or more: that comes before extra investing, after any employer match.</li>
                     : <li>Nothing at 8% or more: pay it on schedule while you invest.</li>}
-                  <li>{money(a.debtTotal)} owed in all{pts ? "; debt scores " + pts : ""}. Nothing owed at 8% or more earns full marks.</li>
+                  <li>{money(a.debtTotal)} owed in all{pts ? "; debt scores " + pts : ""}. Debt at 8% or more costs the most points, lower-rate debt far fewer.</li>
                 </ul>
               );
             })()}
@@ -249,9 +249,9 @@ export function GoalsCard() {
       <Means>
         {!a.home && !a.college ? <p className="gd-means-empty">What these mean for your plan appears as you answer.</p> : (
           <ul className="gd-read">
-            {p != null ? <li>Housing: <b>{money(a.housePay!)}/mo</b>, <b>{pctStr(p, 0)}</b> of gross income{p <= 0.28 ? ", inside the 28% line." : p <= 0.36 ? ", above 28% but under 36%." : ", above 36%: the rest of the plan feels it."}</li> : null}
-            {a.home === "mortgage" && a.mortPaid === "yes" ? <li>Paid off by retirement, so retirement spending can drop by the loan payment; the spending card offers that figure.</li> : null}
-            {a.college === "yes" && pos(a.collegeMo) ? <li>College: <b>{money(a.collegeMo)}/mo</b>, on top of retirement saving, not instead of it.</li>
+            {p != null ? <li>Housing: <b>{money(a.housePay!)}/mo</b>, <b>{pctStr(p, 0)}</b> of gross income{p <= 0.28 ? ", inside the 28% line." : p <= 0.36 ? ", above 28% but under 36%." : ", above 36%, where the rest of the plan feels it."}</li> : null}
+            {a.home === "mortgage" && a.mortPaid === "yes" ? <li>Paid off by retirement, so retirement spending can drop by the loan payment. The spending card offers that figure.</li> : null}
+            {a.college === "yes" && pos(a.collegeMo) ? <li>College: <b>{money(a.collegeMo)}/mo</b>, on top of retirement saving.</li>
               : a.college === "yes" ? <li>College Savings finds the monthly figure from the child&apos;s age and the kind of school.</li> : null}
             {a.home === "rent" || a.home === "own" || a.home === "other" ? <li>No house payment to plan around here.</li> : null}
           </ul>

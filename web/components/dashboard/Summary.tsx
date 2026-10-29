@@ -55,7 +55,7 @@ function PlanHero() {
         <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? pctDown(R.success) + "%" : "—"}</div></div>
       </div>
       <p className="dsh-cap dsh-mt">
-        {R.success != null ? <>Your plan lasted to 95 in <b>{lastedWords(R.success, R.runs)}</b>, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of your spending and taxes once it starts; savings pay the rest. In today&apos;s dollars{tax}.</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}
+        {R.success != null ? <>Your plan lasted to 95 in <b>{lastedWords(R.success, R.runs)}</b>, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of your spending and taxes once it starts, and savings pay the rest. In today&apos;s dollars{tax}.</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}
       </p>
     </Tile>
   );
@@ -140,7 +140,7 @@ export function Summary() {
               : <p className="dsh-cap">Spending is one number for now. Add detail on Spending.</p>}
           </div>
           <div className="dsh-foot dsh-cap">
-            <span>Emergency fund goal: <b>{F.efMonths} months, {money(F.efTarget)}</b>{H.cash != null ? <>; you have {money(H.cash)}</> : null}.
+            <span>Emergency fund goal: <b>{F.efMonths} months, {money(F.efTarget)}</b>{H.cash != null ? <>. You have {money(H.cash)}</> : null}.
             {F.college > 0 ? <> Saving {money(F.college)} per month for college.</> : null}</span>
           </div>
         </Tile>
@@ -201,7 +201,7 @@ function readinessLine(R: Results): string {
   const pts = areaPoints(R.parts, R.score);
   if (!R.partial) return `${R.score} of 100`;
   const avail = FACTORS.reduce((s, f) => s + (R.parts[f.id] ? f.w : 0), 0), got = FACTORS.reduce((s, f) => s + (pts[f.id] ?? 0), 0);
-  return `${got} of ${avail} so far; ${100 - avail} points not scored yet`;
+  return `${got} of ${avail} so far, ${100 - avail} points not scored yet`;
 }
 
 /** The timeline in a line: when each of you retires. */

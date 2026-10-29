@@ -255,7 +255,7 @@ function Last({ M, p }: { M: ReportModel; p: PageInfo }) {
         <div><Sec>How to read this</Sec>
           <p className="rp-body">The lowest point is the one to watch: the balance in the worst year of that retirement, usually a few years after a crash.
             {lowest ? <> The lowest any lasting retirement fell was {money(lowest.low)}, starting in {lowest.y}, at {lowest.lowAge}: about {num(Math.floor(lowest.low / Math.max(1, M.S.spend)))} {Math.floor(lowest.low / Math.max(1, M.S.spend)) === 1 ? "year" : "years"} of spending.</> : null}</p>
-          <p className="rp-body gap">History is not a forecast. It&apos;s the widest test there is of how a plan holds up when markets don&apos;t cooperate.</p></div>
+          <p className="rp-body gap">History is not a forecast, and it covers US markets only. It does show how a plan holds up when markets don&apos;t cooperate.</p></div>
       </div>
     </Sheet>
   );
@@ -268,8 +268,8 @@ function Money({ M, p }: { M: ReportModel; p: PageInfo }) {
   return (
     <Sheet M={M} p={p}>
       <Lead h={<>Over {num(M.rows.length)} years, {rounded(tin)} comes in. Social Security is {pctStr(ss / Math.max(1, tin), 0)} of it.</>}>
-        Withdrawals from traditional accounts are taxed as income; Roth withdrawals aren&apos;t; brokerage withdrawals are taxed only on their gains.
-        {surplus > 1 ? <> Required withdrawals from {M.rmdAge} pull out more than you spend; after tax the rest is reinvested, which is why the balance can keep growing late in life.</> : null}
+        Withdrawals from traditional accounts are taxed as income, Roth withdrawals aren&apos;t, and brokerage withdrawals are taxed only on their gains.
+        {surplus > 1 ? <> Required withdrawals from {M.rmdAge} pull out more than you spend. After tax the rest is reinvested, which is why the balance can keep growing late in life.</> : null}
       </Lead>
       <Sec>Every dollar of retirement, in and out</Sec>
       <LifetimeBars M={M} />
@@ -314,7 +314,7 @@ function Health({ M, p }: { M: ReportModel; p: PageInfo }) {
       </div>
       <Sec>What you can do</Sec>
       <ol className="rp-poi plain">
-        <li><span><b>Get real quotes a year before you retire.</b> The figures here are estimates after the subsidy; real prices depend on your county and the plan you pick.</span></li>
+        <li><span><b>Get real quotes a year before you retire.</b> The figures here are estimates after the subsidy. Real prices depend on your county and the plan you pick.</span></li>
         <li><span><b>Watch your income in these years.</b> Taking more out of traditional accounts, or converting to Roth, raises income and shrinks the subsidy. The Healthcare Cost Planner shows the trade.</span></li>
         {M.who.married && Hh.med2 !== Hh.med1 ? <li><span><b>Plan for the years one of you is on Medicare and the other isn&apos;t.</b> The household subsidy changes when the first of you moves to Medicare.</span></li> : null}
       </ol>
@@ -329,7 +329,7 @@ function Score({ M, p }: { M: ReportModel; p: PageInfo }) {
   return (
     <Sheet M={M} p={p}>
       <Lead h={<>{M.R.score} out of 100: {M.rating.label.toLowerCase()}{weak.length ? <>, with {num(weak.length)} {weak.length === 1 ? "area" : "areas"} still to finish</> : null}.</>}>
-        The readiness score adds up five areas, weighted by how much each matters to a retirement. The outlook, whether the plan lasts, counts for the most. Emergency savings and debt are smaller, but they&apos;re the ones that can derail a plan before it reaches retirement.
+        The readiness score adds up five areas, weighted by how much each matters to a retirement. The outlook, whether the plan lasts, counts most at 40 points. Emergency savings and debt are worth 15 points each, but they can derail a plan before it reaches retirement.
       </Lead>
       <Sec>Your {M.R.score} points, area by area</Sec>
       <ScoreBar M={M} />
@@ -350,15 +350,15 @@ function Score({ M, p }: { M: ReportModel; p: PageInfo }) {
         {RATINGS.map(([lo, hi, n, d]) => { const on = M.R.score >= lo && M.R.score <= hi;
           return <tr key={n} className={on ? "hl" : undefined}><td>{hi >= 100 ? lo + " and up" : lo + " to " + hi}</td><td className="l"><b>{n}</b>{on ? <> &middot; your plan, {M.R.score}</> : null}</td><td className="l">{d}</td></tr>; })}
       </tbody></table>
-      <p className="rp-small">The score never rewards taking more risk: it moves only with what you save, spend, owe and keep in reserve.</p>
+      <p className="rp-small">The outlook uses the stock mix you chose. The other areas come from what you save, spend, owe and keep in reserve.</p>
     </Sheet>
   );
 }
 
 const RATINGS: [number, number, string, string][] = [
-  [85, 100, "On track", "The plan lasts in at least 90% of history and the basics are in place."],
+  [85, 100, "On track", "The plan holds up well against history and the basics are in place."],
   [70, 84, "Nearly there", "A strong plan with one or two areas to finish."],
-  [50, 69, "Getting there", "The foundations are there; the plan needs more saving or a later date."],
+  [50, 69, "Getting there", "The foundations are there. The plan needs more saving or a later date."],
   [30, 49, "Needs work", "Several areas need attention before the plan holds up."],
   [0, 29, "Needs attention", "Start with the first move on the list: it does the most."],
 ];
@@ -371,7 +371,7 @@ function Moves({ M, p }: { M: ReportModel; p: PageInfo }) {
   return (
     <Sheet M={M} p={p}>
       <Lead h={<>{cap(num(M.list.length))} {M.list.length === 1 ? "move" : "moves"}, in the order the Guide would take them.</>}>
-        The ones that fix an area of the score come first. The rest are decisions for the years before you retire, each with the RetCalc tool that works it out.
+        The ones that fix an area of the score come first. The rest are decisions for the years before you retire, each with the tool that works it out.
       </Lead>
       <div className="gap">{WHEN.map(([w, lbl]) => {
         const ms = M.list.filter((m) => m.when === w);
@@ -421,7 +421,7 @@ function Sources({ M, p }: { M: ReportModel; p: PageInfo }) {
           <p className="rp-body sm"><b>Tax and health.</b> Each year&apos;s federal{st ? " and " + st : ""} income tax, the Medicare surcharge and marketplace premiums before 65 are worked out from where that year&apos;s money comes from, and paid on top of spending.</p>
           <p className="rp-body sm"><b>Needs.</b> The smallest balance at {M.retire} that lasted in {pctStr(M.goal, 0)} of historical retirements.</p>
           <Sec>Fine print</Sec>
-          <p className="rp-small">RetCalc is an educational tool, not financial, tax or legal advice. Past returns don&apos;t predict future ones. Tax rules are those of {M.year0}, held in today&apos;s dollars. Everything was calculated in your browser; nothing you entered was sent anywhere to make this report.</p></div>
+          <p className="rp-small">RetCalc is an educational tool, not financial, tax or legal advice. Past returns don&apos;t predict future ones. Tax rules are those of {M.year0}, held in today&apos;s dollars. Everything was calculated in your browser, and nothing you entered was sent anywhere to make this report.</p></div>
       </div>
       <Sec>Words used in this report</Sec>
       <dl className="rp-gloss">
@@ -508,7 +508,7 @@ function Social({ M, p }: { M: ReportModel; p: PageInfo }) {
   return (
     <Sheet M={M} p={p}>
       <Lead h={<>{money(total / 12)} per month together, {Q.claim1 === Q.claim2 ? "each claiming at " + Q.claim1 : "claiming at " + Q.claim1 + " and " + Q.claim2}.</>}>
-        Each of you gets a benefit from your own work record, or up to half the other&apos;s full benefit if that&apos;s more{Q.spousal ? ", which your plan uses" : ""}. Claiming before 67 shrinks a benefit for life; each year of waiting past 67 raises it 8%, up to 70.
+        Each of you gets a benefit from your own work record, or up to half the other&apos;s full benefit if that&apos;s more{Q.spousal ? ", which your plan uses" : ""}. Claiming before 67 shrinks a benefit for life. Each year of waiting past 67 raises it 8%, up to 70.
       </Lead>
       <div className="rp-g2">{one(1)}{one(2)}</div>
       <div className="rp-wide">
@@ -542,12 +542,12 @@ function Pension({ M, p }: { M: ReportModel; p: PageInfo }) {
         <Side><div className="rp-fig">{pctStr(Pn.share, 0)}</div>of your spending, from the first year</Side>
       </div>
       <Sec>Every five years, in today&apos;s dollars</Sec>
-      <table className="rp-t"><thead><tr><th>{M.who.axis}</th><th>Pension a month</th><th>Social Security a month</th><th>Share of spending</th></tr></thead><tbody>
+      <table className="rp-t"><thead><tr><th>{M.who.axis}</th><th>Pension per month</th><th>Social Security per month</th><th>Share of spending</th></tr></thead><tbody>
         {M.rows.filter((r) => r.pension > 0 && (r.age - Pn.from) % 5 === 0).map((r) => <tr key={r.age}><td>{r.age}</td><td>{money(r.pension / 12)}</td><td>{r.ss >= 1 ? money(r.ss / 12) : "–"}</td><td>{pctStr((r.pension + r.ss) / Math.max(1, r.spend), 0)}</td></tr>)}
       </tbody></table>
       <Sec>Worth checking with the plan</Sec>
       <ol className="rp-poi plain">
-        <li><span><b>{Pn.cola ? "How the raise is set." : "Whether there's any raise at all."}</b> {Pn.cola ? "Some plans cap the yearly raise; a cap below inflation shrinks it slowly." : "Some plans add one now and then; the plan here assumes none."}</span></li>
+        <li><span><b>{Pn.cola ? "How the raise is set." : "Whether there's any raise at all."}</b> {Pn.cola ? "Some plans cap the yearly raise, and a cap below inflation shrinks it slowly." : "Some plans add one now and then; the plan here assumes none."}</span></li>
         {M.who.married ? <li><span><b>Whether it continues for {M.who.second}.</b> A joint-and-survivor option keeps paying after the first death, for a smaller check now. The plan assumes it pays as entered, for life.</span></li> : null}
         <li><span><b>Lump sum or monthly.</b> If you&apos;re offered a lump sum, compare it with what the monthly payments would cost to buy; the Drawdown Simulator can test both.</span></li>
       </ol>
@@ -595,7 +595,7 @@ function Debt({ M, p }: { M: ReportModel; p: PageInfo }) {
           From the Debt Payoff tool: the highest rate first, with {money(D.extra)} per month on top of the minimums. That&apos;s {money(P.saved)} less interest{P.minMonths > P.months ? " and " + yrsMo(P.minMonths - P.months) + " sooner" : ""} than paying the minimums alone.
         </Lead>
         : <Lead h={<>{money(D.total)} owed besides the mortgage{D.hi > 0 ? <>, {money(D.hi)} of it at 8% or more</> : null}.</>}>
-          Paying off high-rate debt is the surest return there is: every dollar there saves 8% or more a year, more than investing is likely to earn. The Debt Payoff tool puts your debts in order and dates each payoff; bring it back to the Guide and this page shows the plan.
+          Paying off high-rate debt is a sure return: every dollar of it saves 8% or more per year, more than investing is likely to earn. The Debt Payoff tool puts your debts in order and dates each payoff; bring it back to the Guide and this page shows the plan.
         </Lead>}
       {P ? <><Sec>When each debt is paid off</Sec><DebtLines order={P.order} months={P.months} />
         <div className="rp-key"><span><i style={{ "--sw": C.trail } as React.CSSProperties} />8% or more</span><span><i style={{ "--sw": C.clay } as React.CSSProperties} />Under 8%</span></div>

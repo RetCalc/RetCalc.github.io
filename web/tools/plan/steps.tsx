@@ -23,9 +23,9 @@ const HEADS: Record<StepId, { title: string; lede: string; todo?: string }> = {
   paycheck: { title: "Where each paycheck goes", lede: "Your paycheck from the top: taxes, your budget, and what's left for saving, account by account.",
     todo: "Start with what you put in today: your 401(k), HSA and IRA. Then pick a plan, or move each slider, until nothing's left unassigned. Every change reruns the taxes, and the itemized paycheck and the tax tables under it follow." },
   plan: { title: "Where that gets you", lede: "Your saving by account, carried over from your paycheck, grown to the age you'd like to retire.",
-    todo: "Add what you've saved so far in each account under Accounts, and check the return and inflation. The target is what you spend today; change it to what you'll want in retirement." },
+    todo: "Add what you've saved so far in each account under Your savings, and check the return and inflation. The target is what you spend today; change it to what you'll want in retirement." },
   stages: { title: "Changes ahead", lede: "Saving changes over a lifetime. Add what you see coming to the plan you just built, and it changes from there.",
-    todo: "Under Changes ahead, add a change: children you have or are planning, a raise, a move, part-time years, an inheritance. Each says what it does to your savings at retirement, and The stages behind this shows the plan year by year." },
+    todo: "Under Changes ahead, add a change: children you have or are planning, a raise, a bigger house, easing off for a while, a lump sum such as an inheritance. Each says what it does to your savings at retirement, and The stages behind this shows the plan year by year." },
   summary: { title: "Your plan", lede: "" },
 };
 
@@ -73,8 +73,8 @@ export function StartStep({ plan }: { plan: PlanState }) {
     ["Budget", "Enter what you spend in a typical month, line by line: housing, food, transportation, insurance and the rest. Use monthly or yearly amounts, add your own lines, and remove any that don't apply."],
     ["Paycheck", "See your pay after federal, state and payroll taxes, then subtract your budget to find what's left to save. Put it into your 401(k), HSA, IRA and brokerage account with a preset plan or the sliders, and watch the taxes update as you go."],
     ["Your plan", "Add what you've already saved in each account and set the return you expect. See what your saving grows to by the age you plan to retire, and what that can support in retirement."],
-    ["Changes ahead", "Optional. Your income, spending and saving won't stay the same for decades. Add the changes you see coming, like kids, a raise, a move or part-time work, to the plan from step 3."],
-    ["Summary", "Your pay, budget, saving and projected retirement on one page, with a full report to print or save, or to copy into the other tools."],
+    ["Changes ahead", "Optional. Your income, spending and saving won't stay the same for decades. Add the changes you see coming, like kids, a raise, a bigger house or a lump sum, to the plan from step 3."],
+    ["Summary", "Your pay, budget, saving and projected retirement on one page, with a report to print or save. You can also copy the plan into the other tools."],
   ];
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
@@ -135,7 +135,7 @@ export function StartStep({ plan }: { plan: PlanState }) {
               </li>
             ))}
           </ol>
-          <p className="hint mt-5 border-t border-border pt-3.5">Nothing you enter here changes your other tools; at the end you can copy it into them if you want. Your work is saved in this browser, and to your account if you sign in.</p>
+          <p className="hint mt-5 border-t border-border pt-3.5">Nothing you enter here changes your other tools. At the end you can copy it into them if you want. Your work is saved in this browser, and to your account if you sign in.</p>
         </CardContent>
       </Card>
     </div>

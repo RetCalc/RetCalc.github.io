@@ -72,7 +72,7 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
       d: "A starter emergency fund, in a savings account, before anything else, so a surprise bill doesn't land on a credit card." });
   if (a.match === "partial")
     out.push({ id: "match", area: "rate", when: "This month", t: "Get all of your employer's match",
-      d: "Raise your 401(k) contribution until every matched dollar comes in. A match is an instant 50% to 100% return you won't find anywhere else." });
+      d: "Raise your 401(k) contribution until every matched dollar comes in. A match is an instant 50% to 100% return." });
   if (a.debtHas === "yes" && (a.debtHi || 0) > 0)
     out.push({ id: "debt", area: "debt", when: "This year", t: "Pay off the " + money(Math.min(a.debtHi!, a.debtTotal || a.debtHi!)) + " at 8% or more",
       d: "It costs more than investing is likely to earn. Put every spare dollar at it, highest rate first." +
@@ -106,7 +106,7 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
     if (bits.length && F.need != null && F.need > 0 && S.fv >= F.need * 1.2)
       out.push({ id: "surplus", when: "When you're ready", t: "Decide what to do with " + money(S.fv - F.need) + " to spare",
         d: "You're on course for " + money(S.fv) + " against the " + money(F.need) + " your plan needs. You could " + or(bits) +
-          " and still last in " + (goal >= 1 ? "every" : pctStr(goal, 0) + " of") + " historical retirements. Or keep the margin: that's a fine choice too.",
+          " and still last in " + (goal >= 1 ? "every" : pctStr(goal, 0) + " of") + " historical retirements. Keeping the margin is a fine choice too.",
         go: "adjust", btn: "Compare and apply" });
   }
   if (ok(a.retire) && a.retire < 59.5 && !a.bridge)
@@ -147,7 +147,7 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
       d: "Your statement at ssa.gov/myaccount uses your real earnings record and takes five minutes to get.", go: "social", btn: "Add it to your answers" });
   if (S && S.success >= 0.85 && !a.ddTool)
     out.push({ id: "stress", when: "When you're ready", t: "Stress-test how you'll spend it",
-      d: "The Drawdown Simulator tour replays your plan through 1929, 1966 and 2000, and walks through each withdrawal strategy, your stock mix, when to claim Social Security, and big one-time costs.",
+      d: "The Drawdown Simulator tour replays your plan through hard starting years such as 1929 and 1966, and walks through each withdrawal strategy, your stock mix, when to claim Social Security, and big one-time costs.",
       trip: "drawdown", btn: "Start the tour" });
   for (const m of out) if (m.area) m.pts = pts(m.area);
   return out.map((m, i) => ({ m, i })).sort((x, y) => (y.m.pts ?? 0) - (x.m.pts ?? 0) || x.i - y.i).map((x) => x.m).slice(0, 6);

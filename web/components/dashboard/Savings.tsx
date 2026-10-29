@@ -53,7 +53,7 @@ function Growth() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent size="study" aria-labelledby="dshGrowTitle">
           <h2 id="dshGrowTitle" className="dsh-dlg-h">How each line grows</h2>
-          <p className="dsh-cap">Raises let you put in more each year. Limits rise with inflation, so a line already at its limit can&apos;t grow beyond it; one below grows until it gets there, then holds.</p>
+          <p className="dsh-cap">Raises let you put in more each year. Limits rise with inflation, so a line already at its limit can&apos;t grow beyond it. One below grows until it gets there, then holds.</p>
           <div className="dsh-growlist">
             {L.map((l) => (
               <div className="dsh-growrow" key={l.id}>
@@ -125,10 +125,10 @@ export function Savings() {
           {rate != null ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Savings rate, with the match" id="savingsRate" /></div><div className="dsh-fig dsh-md">{Math.round(rate * 1000) / 10}%</div></div> : null}
         </div>
         <div className="dsh-cap dsh-mt">
-          {F.fullMatch == null ? "No employer match set. Add it in Income if you have one." : F.fullMatch ? "You're getting the full employer match." : <b>You&apos;re not getting the full employer match: raise the first 401(k) line to reach it.</b>}
+          {F.fullMatch == null ? "No employer match set. Add it in Income if you have one." : F.fullMatch ? "You're getting the full employer match." : <b>You&apos;re not getting the full employer match: raise 401(k) up to the match to reach it.</b>}
           {F.left > 0.5 ? " What's not assigned stays in checking, not invested." : ""}
         </div>
-        {outsideUS(pr) ? <div className="dsh-mt"><Note>The 401(k), IRA and HSA lines follow US rules; outside the US, use them for the accounts closest to yours.</Note></div> : null}
+        {outsideUS(pr) ? <div className="dsh-mt"><Note>The 401(k), IRA and HSA lines follow US rules. Outside the US, use them for the accounts closest to yours.</Note></div> : null}
       </Tile>
       <div className="dsh-r4">
         <Hosted household={null} slots={{ afterSliders: <Growth />, payFacts: <PayFacts pr={pr} /> }}

@@ -38,7 +38,7 @@ export function RetiredCard() {
         <div className="gd-fields">
           <NumF k="age" label="Your age" affix="yrs old" />
           <MoneyF k="saved" label="Your savings, in all" hint="Every retirement account and investment you'll live on." />
-          <MoneyF k="retSpend" label="What you spend a year" per="/yr" full hint="Include income tax: the simulator doesn't work it out." />
+          <MoneyF k="retSpend" label="What you spend per year" per="/yr" full hint="Include income tax: the simulator doesn't work it out." />
         </div>
       </Numbers>
       <Means>

@@ -113,13 +113,13 @@ export function Backtest() {
   const badRange = s.to.trim() !== "" && toN >= BT_FIRST && Math.min(BT_LAST, toN) < from;
 
   const hero: ReadingFigure = { label: "Return, per year", id: "btCagr", value: pctStr(B.cagr, 2), noteId: "btCagrNote",
-    note: "Compound annual growth, " + B.first + "–" + B.last };
+    note: "Compound annual growth, " + B.first + " to " + B.last };
   const figures: ReadingFigure[] = [
     { label: <Tipped text="After inflation" k="btreal" />, id: "btReal", value: pctStr(B.realCagr, 2), noteId: "btRealNote",
       note: "Inflation averaged " + pctStr(B.inflCagr, 2) + " per year" },
     { label: <Tipped text="Volatility" k="btvol" />, id: "btVol", value: pctStr(B.vol, 2), note: "Standard deviation of annual returns" },
     { label: <Tipped text="Deepest fall" k="btdd" />, id: "btDD", value: B.maxDD < 0 ? pctStr(B.maxDD, 2) : "None",
-      note: B.maxDD < 0 ? B.ddFrom + "–" + B.ddTo : "" },
+      note: B.maxDD < 0 ? B.ddFrom + " to " + B.ddTo : "" },
   ];
 
   const btFull = useFullScreen("Growth of $10,000");
@@ -204,7 +204,7 @@ export function Backtest() {
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 border-t border-border px-5.5 py-4 max-sm:px-4">
             <Button variant="outline" id="btUseRate" onClick={useInAdvanced}>Use these figures in Advanced</Button>
             <p className="m-0 max-w-copy min-w-0 flex-1 basis-64 text-note text-muted-foreground" id="btUseNote">{"Sends " + pctStr(B.cagr, 2) + " return, " + pctStr(B.vol, 2) + " volatility and " +
-              pctStr(B.inflCagr, 2) + " inflation to the Advanced tab, so the nominal figure and the inflation it was earned alongside travel together."}</p>
+              pctStr(B.inflCagr, 2) + " inflation to Advanced, so the return stays paired with the inflation it was earned alongside."}</p>
           </div>
         </Card>
 
@@ -243,13 +243,13 @@ export function Backtest() {
               </tbody>
             </table>
           </div>
-          <CardContent><div className="hint m-0 max-w-copy">Annualized, every overlapping
-            window in the range. The worst column is the one that matters: it is the return
-            someone actually lived through.</div></CardContent>
+          <CardContent><div className="hint m-0 max-w-copy">Annualized, for every overlapping
+            window in the range. The Worst column is the return someone actually lived
+            through.</div></CardContent>
         </Card>
 
         <Card className="min-w-0">
-          <CardHeader><CardTitle>Inflation</CardTitle><CardDescription id="btInflSpan">{B.first + "–" + B.last}</CardDescription></CardHeader>
+          <CardHeader><CardTitle>Inflation</CardTitle><CardDescription id="btInflSpan">{B.first + " to " + B.last}</CardDescription></CardHeader>
           <CardContent>
             <div className="grid gap-x-6 sm:grid-cols-3">
               <div>
@@ -271,9 +271,8 @@ export function Backtest() {
             series={[{ name: "Annual", color: RED, pts: annual, width: 1.9 }, { name: "Ten-year average", color: BLUE, pts: decadeInflation(B), dash: "5 4", width: 2.2 }]} />
           <Legend id="legendBTI" items={[[RED, "Annual"], [BLUE, "Ten-year average"]]} />
           <CardContent><div className="hint m-0 max-w-copy">A high return in a high-inflation
-            year buys less than a modest one in a quiet year, which is why the headline above
-            shows both. The ten-year line is the one that matters for a plan: single years
-            swing hard, but it is the sustained stretches that reprice a retirement.</div></CardContent>
+            year buys less than a modest one in a quiet year, so the reading above shows both.
+            Single years swing hard, so the ten-year line is the better guide for a plan.</div></CardContent>
         </Card>
 
         <Card className="min-w-0">
@@ -323,7 +322,7 @@ function MixDialog({ s, close, save }: { s: BacktestInputs; close: () => void; s
   return (
     <Modal size="wide" onClose={close} focus="[data-mix]">
       <h3>Asset mix</h3>
-      <div className="formhint">How the portfolio is split at the start, and what each rebalance returns it to. Each holding earns its actual returns; small value and cash start in July 1926, so a mix with either starts in 1927.</div>
+      <div className="formhint">How the portfolio is split at the start, and what each rebalance returns it to. Each holding earns its actual returns. Small value and cash start in July 1926, so a mix with either starts in 1927.</div>
       <MixRows f={f} up={up} totId="btMixTot" />
       <div className="formactions"><Button variant="outline" className="flex-1" data-mixcancel onClick={close}>Cancel</Button>
         <Button className="flex-1" data-mixok disabled={!ok} onClick={() => {

@@ -37,7 +37,7 @@ export function Home({ data }: { data: HomeData }) {
         <h1 className="hm-display" id="hmTitle">The complete <em>retirement planning</em> toolkit.</h1>
         <div>
           <p className="hm-lede">
-            Calculators for saving, withdrawals, taxes, Roth conversions, healthcare and Social Security, each checked against <b>every market since 1926</b>. Free, and you don&apos;t need an account.
+            Calculators for saving, withdrawals, taxes, Roth conversions, healthcare and Social Security, with plans tested against <b>every market since 1926</b>. Free, and you don&apos;t need an account.
           </p>
           <div className="hm-btns">
             <DashboardButton />
@@ -131,7 +131,7 @@ export function Home({ data }: { data: HomeData }) {
 
           <Node row={10} label="73" />
           <Tile href="/roth" className="hm-right hm-r10" kick="Roth Conversion Calculator" kickClass="hm-c-teal" title="Plan for required distributions."
-            text="Your required withdrawals to age 100, and what a conversion schedule saves against doing nothing."><RothChart /></Tile>
+            text="Your required withdrawals through the age you plan to, and what a conversion schedule saves against doing nothing."><RothChart /></Tile>
         </div>
       </section>
 
@@ -165,15 +165,15 @@ export function Home({ data }: { data: HomeData }) {
       <section aria-labelledby="hmEveryday">
         <div className="hm-head hm-later">
           <h2 className="hm-h2" id="hmEveryday" data-rv="">Taxes, debt, housing and investing.</h2>
-          <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>Same household, same saved scenarios.</p>
+          <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>These use the same household and saved scenarios.</p>
         </div>
         <div className="hm-grid">
           <Tile href="/incometax" className="hm-s6" name="Income Tax"
             text="Take-home pay, or the tax on a year of retirement income. Uses the 2026 federal brackets and the income tax rules of all 50 states and DC.">
             <TaxChart tax={data.tax} />
           </Tile>
-          <Tile href="/rentbuy" className="hm-s6" name="Rent vs. Buy Analysis" d={1}
-            text="Your net worth if you buy, against renting and investing the difference, over any number of years.">
+          <Tile href="/rentbuy" className="hm-s6" name="Rent vs. Buy" d={1}
+            text="Your net worth if you buy, against renting and investing the difference, for up to 40 years.">
             <RentBuyBlueprint buy={data.rentbuy.buy} rent={data.rentbuy.rent} />
           </Tile>
           <Tile href="/mortgage" className="hm-s4" name="Mortgage Calculator"

@@ -530,8 +530,7 @@ export function Stages() {
             histMix={s.histMix} setHistMix={set("histMix")} histMixEnd={s.histMixEnd} setHistMixEnd={set("histMixEnd")}
             glides={mode === "hist" && R.rows.length > 0 && !!last?.glide?.on}
             mixButton={dash ? <HistMixButton s={s} setState={setState} /> : undefined}
-            mcHint={<>5,000 simulations per redraw. Volatility is
-              set per stage, in your plan.</>}
+            mcHint={<>5,000 simulations per redraw, at 15% volatility per year.</>}
             chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100, markWord)} legendExtra={markWord}
             tipHead={(b) => <><b>{age0 != null ? "Age " + fmtNum(age0 + b.year) : "Year " + fmtNum(b.year)}</b> <span className="text-dim">&middot; stage {String(b.stage)}</span></>}
             target={portToday} targetLabel={TARGET_LABEL} xOffset={age0 ?? 0} {...(dash ? { layout: "fixed" as const, aspect: 0.5, gutter: 64 } : {})} />
@@ -661,7 +660,7 @@ function StagesBehind({ s, nums, names, age }: { s: StagesInputs; nums: ReturnTy
   const rows = nums.map((st, i) => {
     const start = starts[i], from = starts[i + 1];
     const ppy = (PPY as Record<string, number>)[st.period] ?? 12, mo = (st.contrib * ppy) / 12, sp = stageSplit(st);
-    const ages = age != null ? fmtNum(age + start) + " to " + fmtNum(age + from) : "Year " + fmtNum(start) + " – " + fmtNum(from);
+    const ages = age != null ? fmtNum(age + start) + " to " + fmtNum(age + from) : "Year " + fmtNum(start) + " to " + fmtNum(from);
     // The rise after inflation: the stage's rate is kept before it.
     const rises = (1 + st.growth) / (1 + infl) - 1;
     // A lump sum on the stage's first day, and the account it moves.
@@ -671,11 +670,11 @@ function StagesBehind({ s, nums, names, age }: { s: StagesInputs; nums: ReturnTy
   const anyLump = rows.some((r) => r.lump);
   return (
     <>
-      <p className="hint mt-0 mb-3">Amounts are a month, in today&apos;s dollars, your own money before the match. Rises is how much a stage&apos;s saving grows each year, after inflation.{anyLump ? " On day one is a lump sum put in or taken out on the stage's first day." : ""}</p>
+      <p className="hint mt-0 mb-3">Amounts are per month, in today&apos;s dollars: your own money before the match. Rises is how much a stage&apos;s saving grows each year, after inflation.{anyLump ? " On day one is a lump sum put in or taken out on the stage's first day." : ""}</p>
       <div className="swipehint">Swipe the table sideways to see every column.</div>
       <div className="scroll" tabIndex={0} role="region" aria-label="The stages behind your plan">
         <table id="stagesBehind">
-          <thead><tr><th>Stage</th><th>{age != null ? "Ages" : "Years"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="stagerises" /></th>{anyLump ? <th><Tipped text="On day one" k="stagelump" /></th> : null}<th>Return</th><th className="text-center">What&apos;s going on</th></tr></thead>
+          <thead><tr><th>Stage</th><th>{age != null ? "Ages" : "When"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="stagerises" /></th>{anyLump ? <th><Tipped text="On day one" k="stagelump" /></th> : null}<th>Return</th><th className="text-center">What&apos;s going on</th></tr></thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.i}><td>{r.i + 1}</td><td>{r.ages}</td><td>{fmtNum(r.years)}</td><td><b>{money(r.mo)}</b></td>

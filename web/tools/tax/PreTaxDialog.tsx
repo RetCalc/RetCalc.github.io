@@ -127,7 +127,7 @@ export function PreTaxDialog({ s, setState, close }: {
     <Modal size="study" onClose={close} focus="[data-pre]">
       <h3>Pre-tax deductions</h3>
       <div className="formhint">
-        Every kind comes off federal income tax; some also come off Social Security and Medicare,
+        Every kind comes off federal income tax. Some also come off Social Security and Medicare,
         and some states tax a few of them anyway.
       </div>
       {/* Only once a line is per paycheck: how often that is. */}
@@ -180,7 +180,7 @@ export function PreTaxDialog({ s, setState, close }: {
       <div className="mt-3 mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-note tabular-nums" id="txPreTot">
         <span>Total: <b>{money(total)}</b> per year</span>
         <span className="text-muted-foreground">
-          {saved > 0.5 ? <>Lowers this year&apos;s taxes by <b className="text-foreground">{money(saved)}</b></> : "No tax saved yet"}
+          {saved > 0.5 ? <>Lowers your taxes by <b className="text-foreground">{money(saved)}</b></> : "No tax saved yet"}
         </span>
       </div>
       {/* Going back to one figure is a quiet link of its own, so the two

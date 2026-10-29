@@ -87,7 +87,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
               </SelectField>
               {pr.childcare ? (
                 <SelectField id="dshPArea" label="Where you'd use childcare" value={pr.careArea} onChange={(v) => set((p) => ({ ...p, careArea: v as P["careArea"] }))}>
-                  <option value="city">A big city</option><option value="suburb">A suburb</option><option value="rural">A small town</option>
+                  <option value="city">A big city</option><option value="suburb">A suburb or small city</option><option value="rural">A rural area or small town</option>
                 </SelectField>
               ) : <div />}
               <div />

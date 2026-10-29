@@ -140,7 +140,7 @@ function SafePanel({ v, S, running }: { v: DDView; S: Safe; running: boolean }) 
         critWords(T, age) + ", with the " + escapeHtml(nameOf) + " strategy and the rest of your plan. " +
         "The lowest, <b>" + pctStr(worst.rate!, 2) + "</b>, was retiring in " + startOf(worst, monthly) + "; the typical start allowed <b>" + pctStr(med.rate!, 2) + "</b>. " +
         "Your " + pctStr(mine, 2) + " " + (short ? "would have fallen short in <b>" + short + " of " + safe.length + "</b> starts." : "worked in every start.") +
-        (capped ? " " + capped + " start" + (capped === 1 ? "" : "s") + " reached the top of the range tested: this strategy can't run out there." : "");
+        (capped ? " " + capped + " start" + (capped === 1 ? "" : "s") + " met the target even at the top of the range tested." : "");
       chart = <MultiChart id="DDR" maxX={Math.max(1, safe.length - 1)} ariaLabel="The highest first-year withdrawal that met the target, for each start"
         series={[
           { name: "Highest that worked", color: SERIES.teal, width: 2, pts: safe.map((w, i) => ({ year: i, value: w.rate == null ? 0 : w.rate * 100 })) },
@@ -164,11 +164,11 @@ function SafePanel({ v, S, running }: { v: DDView; S: Safe; running: boolean }) 
     }
     // the solvers
     const DK = DD_STRAT[o.strategy].dial!.key, dl = res.dial, port = res.port, spend = firstSpend(o, S.P);
-    solve.dialK = DK === "initialPct" ? "Highest starting rate that meets the target" : DK === "rgTarget" ? "Lowest chance target that meets the target" : "Highest setting that meets the target";
+    solve.dialK = DK === "initialPct" ? "Highest starting rate that meets the target" : DK === "rgTarget" ? "Lowest chance setting that meets the target" : "Highest setting that meets the target";
     if (dl && dl.v != null) {
       const x = ddWithDial(ddForTarget(o, T), dl.v);
       solve.dialV = dialText(o.strategy, dl.v, o);
-      solve.dialN = (dl.met ? "Meets it: " + targetWords(T, age) + "." : "Nothing meets it; this comes closest, in " + pctStr(dl.share!, 0) + " of starts.") +
+      solve.dialN = (dl.met ? "Meets it: " + targetWords(T, age) + "." : "Nothing meets it. This comes closest, in " + pctStr(dl.share!, 0) + " of starts.") +
         " Year one: " + money(firstSpend(x)) + (dl.capped ? ". That's the top of the range tested." : ".") +
         (T.crit === "comfort" && DD_STRAT[o.strategy].limits !== false ? " Held at " + lineWords(Array.isArray(T.comfort) ? T.comfort : Math.max(o.spendFloor || 0, T.comfort), age) + " or more." : "");
       solve.dialUse = () => v.apply(dialFields(o, o.strategy, dl.v!, T), "Set to " + dialText(o.strategy, dl.v, o));
@@ -291,13 +291,17 @@ function ValPanel({ S }: { S: Safe }) {
     const medOf = (a: DdSafeStart[]) => { const x = a.map((w) => w.rate!).sort((p, q) => p - q); return x[Math.floor(x.length / 2)]; };
     const minOf = (a: DdSafeStart[]) => Math.min(...a.map((w) => w.rate!));
     const unit = monthly ? "starting months" : "starts";
+    const hiTxt = hi.length === 1 ? "The one start at a CAPE of 25 or more, " + startOf(hi[0], monthly) + ", allowed <b>" + pctStr(hi[0].rate!, 2) + "</b>"
+      : hi.length ? "The " + hi.length + " " + unit + " at a CAPE of 25 or more allowed a typical <b>" + pctStr(medOf(hi), 2) + "</b> (the lowest " + pctStr(minOf(hi), 2) + ")" : "";
+    const loTxt = !lo.length ? "" : hiTxt
+      ? "against <b>" + pctStr(medOf(lo), 2) + "</b> for the " + (lo.length === 1 ? "one" : lo.length) + " below 15"
+      : lo.length === 1 ? "The one start at a CAPE below 15 allowed <b>" + pctStr(medOf(lo), 2) + "</b>"
+        : "The " + lo.length + " " + unit + " at a CAPE below 15 allowed a typical <b>" + pctStr(medOf(lo), 2) + "</b>";
     intro = "Shiller's CAPE is the stock market's price over ten years of its earnings, after inflation: high means stocks were dear. " +
-      (hi.length === 1 ? "The one start at a CAPE of 25 or more, " + startOf(hi[0], monthly) + ", allowed <b>" + pctStr(hi[0].rate!, 2) + "</b>, "
-        : hi.length ? "The " + hi.length + " " + unit + " at a CAPE of 25 or more allowed a typical <b>" + pctStr(medOf(hi), 2) + "</b> (the lowest " + pctStr(minOf(hi), 2) + "), " : "") +
-      (lo.length ? "against <b>" + pctStr(medOf(lo), 2) + "</b> for the " + lo.length + " below 15. " : "") +
+      (hiTxt || loTxt ? [hiTxt, loTxt].filter(Boolean).join(", ") + ". " : "") +
       "Today's CAPE is <b>" + CAPE_NOW.toFixed(1) + "</b> (" + CAPE_NOW_ASOF + ")" +
       (CAPE_NOW > maxCape ? ", higher than at any start with a full " + fmtNum(o.years) + " years of history after it, so the record has no direct match." : ".");
-    note = "Expensive starts have tended to allow less, but the link is loose: this is what history did, not a forecast. The CAPE-based strategy uses this reading every year.";
+    note = "Expensive starts have tended to allow less, but the link is loose: this is what history did, not a forecast. The CAPE-based strategy sets each year's spending from the CAPE at the time.";
   }
   return (
     <Card id="ddValPanel" data-ddtabs="safe">
