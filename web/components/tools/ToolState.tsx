@@ -10,6 +10,7 @@
    Inputs are kept as the text in each field ("450,000", "6.71"), so what's
    saved, shared and restored is exactly what was on screen. */
 
+import type { Freed } from "@/tools/plan/kids";
 import type { Cover, Monthly } from "@/tools/plan/kids";
 import type { SavedHousehold } from "@/lib/household";
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
@@ -226,7 +227,11 @@ export interface ToolScope {
       starting over. */
   seedKey?: string;
   write: (id: string, data: ToolInputs) => void;
-  /** A tool moving to a page ("/stages"): true when the scope took it. */
+  /** What a cut in saving from each account frees in take-home pay, when
+      the scope has a paycheck to work it out on (the paycheck guide):
+      Advanced's changes ahead size cuts from pre-tax saving by it. */
+  freed?: Freed;
+  /** A tool moving to a page: true when the scope took it. */
   go: (path: string) => boolean;
   /** The household this scope's tools take in, in place of the saved one:
       null for none. Left out, they take the saved one, as on their pages.

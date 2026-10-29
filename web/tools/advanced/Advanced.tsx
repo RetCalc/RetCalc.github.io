@@ -111,7 +111,9 @@ export function Advanced() {
   // With a change ahead on, the plan runs as the stages the changes make;
   // with none, it's Advanced's own (the two agree to the cent).
   const on = changesOn(typed);
-  const CH = useMemo(() => (on ? changesCompute(typed, profile) : null), [on, typed, profile]);
+  // Inside the paycheck guide, cuts from pre-tax saving are sized by its paycheck.
+  const freed = scope?.freed;
+  const CH = useMemo(() => (on ? changesCompute(typed, profile, freed) : null), [on, typed, profile, freed]);
   const R: Series | typeof V.R = CH ? CH.V.R : V.R;
   const age = ageOf(typed);
   useShareKit(ADVANCED_DEF.id, projectionShare({ kind: "advanced", P, R, s: typed, household: profile, changes: CH ? liveChanges(typed).map(scenarioName) : [], need: CH ? CH.V.portToday : V.S.portToday, mode }));
@@ -352,7 +354,7 @@ export function Advanced() {
                 </details>
               </div>
 
-              <ChangesAhead s={s} setState={setState} household={profile} />
+              <ChangesAhead s={s} setState={setState} household={profile} freed={freed} />
 
               <GroupHead>Your goal</GroupHead>
               <div className="two bottomalign">
@@ -404,7 +406,7 @@ export function Advanced() {
           {B ? <AccountTable id="acResults" B={B} years={p.years} /> : null}
         </Card>
 
-        <ReachCard s={typed} setState={setState} household={profile} need={need} pays={pays} />
+        <ReachCard s={typed} setState={setState} household={profile} freed={freed} need={need} pays={pays} />
 
         <ProjectionChart sfx="" segId="segSingle" ariaLabel="Projected inflation-adjusted balance at three rates of return"
           mode={mode} setMode={setMode} band={band} setBand={setBand}

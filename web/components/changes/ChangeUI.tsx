@@ -155,7 +155,7 @@ export type ChangeTip = "from" | "amount" | "pct" | "acct" | "lump" | "return";
 
 /** One change's form, its sentence and what it does at retirement. The
     change's years here are as the calculator counts them (`years`). */
-export function ChangeDialog({ s: s0, fresh, years: Y, accounts, label, sentence, effectOf, where, close, save, remove }: {
+export function ChangeDialog({ s: s0, fresh, years: Y, accounts, label, sentence, effectOf, where, note, close, save, remove }: {
   s: Scenario; fresh: boolean; years: Years;
   /** Whether a change names an account (the account split is on). */
   accounts: boolean;
@@ -166,6 +166,8 @@ export function ChangeDialog({ s: s0, fresh, years: Y, accounts, label, sentence
   effectOf: (s: Scenario) => { fv: number | null; cant: string | null };
   /** What a cut out of one account does once that account runs out. */
   where?: (acct: CoverLine) => string;
+  /** A line under the sentence about how the calculator counts this change. */
+  note?: (s: Scenario) => string | null;
   close: () => void; save: (s: Scenario) => void; remove: () => void;
 }) {
   const [s, setS] = useState<Scenario>(s0);
@@ -255,6 +257,7 @@ export function ChangeDialog({ s: s0, fresh, years: Y, accounts, label, sentence
       </div>
       <div className="dsh-sc-preview" aria-live="polite">
         <b>{sentence(s)}</b>{after}
+        {note?.(s) ? <div className="dsh-sc-pe dsh-muted">{note(s)}</div> : null}
         <div className="dsh-sc-pe">At {Y.ages ? "retirement" : word(Y.end).toLowerCase()}: {effect == null ? <span className="dsh-muted">working it out…</span> : effect.fv == null ? <span className="dsh-muted">not known yet</span> : <b className={effect.fv < 0 ? "dsh-dn" : effect.fv > 0 ? "dsh-up" : ""}>{fx(effect.fv)}</b>} in today&apos;s dollars, with your other changes as they are.</div>
         {effect?.cant ? <div className="dsh-sc-pe dsh-sc-warn">You can&apos;t afford this as it stands. {effect.cant}</div> : null}
       </div>

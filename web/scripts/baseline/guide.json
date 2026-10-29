@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-13T20:12:25.940Z",
+  "recorded": "2026-10-29T00:01:41.745Z",
   "about": "The readiness guide's figures for the fixture households (scripts/baseline/guide-fixtures.mjs), from the harness in guide.mjs, which reproduces the live guide to the cent. Money in today's dollars, to the cent; shares to six places. Only the entries under deliberate may differ in the guide's code, each a decision in doc 3.",
   "households": {
     "maya-sam": {
@@ -478,7 +478,7 @@
         "success": 0.836066,
         "survived": 51,
         "total": 61,
-        "medianEnd": 1625516.93,
+        "medianEnd": 1625517.04,
         "coverage": 1.344544,
         "need": 1253000,
         "score": 92,

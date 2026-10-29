@@ -21,7 +21,7 @@ import { DASH, fmtNum, money, parseNum, pctStr } from "@/lib/format";
 import { PER_YEAR } from "@/lib/engine/typed";
 import type { Household } from "@/lib/household";
 import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
-import { kidStages, type Monthly } from "@/tools/plan/kids";
+import { kidStages, type Freed, type Monthly } from "@/tools/plan/kids";
 import { CoverStagesDialog, KidsDialog, kidsLine } from "@/tools/plan/KidsDialog";
 import { KID_BASE } from "@/tools/stages/kids";
 import { advancedCompute, advancedPlan, type AdvancedInputs } from "./model";
@@ -44,8 +44,8 @@ const shown = (c: Scenario, Y: Years): Scenario => ({ ...c, from: c.from + Y.bas
 const stored = (c: Scenario, Y: Years): Scenario => ({ ...c, from: Math.max(0, c.from - Y.base), until: c.until > 0 ? Math.max(0, c.until - Y.base) : 0 });
 
 /** Savings at the end in today's dollars: Advanced's own with no change on. */
-function fvOf(s: AdvancedInputs, household: Household | null): number {
-  return changesOn(s) ? changesCompute(s, household).V.R.fvReal : advancedCompute(s, household).R.fvReal;
+function fvOf(s: AdvancedInputs, household: Household | null, freed?: Freed): number {
+  return changesOn(s) ? changesCompute(s, household, freed).V.R.fvReal : advancedCompute(s, household).R.fvReal;
 }
 
 const newId = () => "c" + Math.random().toString(36).slice(2, 9);
@@ -77,7 +77,7 @@ function todayMonthly(s: AdvancedInputs, household: Household | null): Monthly {
 type Dlg = { at: "pick"; back?: boolean } | { at: "list" } | { at: "edit"; c: Scenario; fresh: boolean; back?: boolean } | { at: "kids"; back?: boolean } | { at: "cover"; k: PlanKids; back?: boolean } | { at: "stages" } | null;
 
 /** The Changes ahead group, under the inputs. */
-export function ChangesAhead({ s, setState, household }: { s: AdvancedInputs; setState: SetState; household: Household | null }) {
+export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInputs; setState: SetState; household: Household | null; freed?: Freed }) {
   const [dlg, setDlg] = useState<Dlg>(null);
   const done = () => setDlg((d) => (d && "back" in d && d.back ? { at: "list" } : null));
   const Y = yearsOf(s), rows = rowsOf(s), acOn = s.acOn;
@@ -90,15 +90,15 @@ export function ChangesAhead({ s, setState, household }: { s: AdvancedInputs; se
   const [fxs, setFxs] = useState<{ key: string; map: Record<string, number> }>({ key: "", map: {} });
   useEffect(() => {
     const t = setTimeout(() => {
-      const now = fvOf(s, household), out: Record<string, number> = {};
+      const now = fvOf(s, household, freed), out: Record<string, number> = {};
       for (const r of rowsOf(s)) {
-        const flipped = fvOf(withChange(s, { ...r, on: !r.on }), household);
+        const flipped = fvOf(withChange(s, { ...r, on: !r.on }), household, freed);
         out[r.id] = r.on ? now - flipped : flipped - now;
       }
       setFxs({ key, map: out });
     }, 0);
     return () => clearTimeout(t);
-  }, [key, s, household]);
+  }, [key, s, household, freed]);
   const stale = fxs.key !== key;
 
   // What can't be kept as it stands: a cut that takes more than is saved,
@@ -106,9 +106,9 @@ export function ChangesAhead({ s, setState, household }: { s: AdvancedInputs; se
   const warns = useMemo(() => {
     const out: Record<string, string> = {};
     if (!changesOn(s)) return out;
-    const { C, V } = changesCompute(s, household);
+    const { C, V } = changesCompute(s, household, freed);
     if (C.cutShort) for (const r of rows) if (r.on && r.kind === "saving" && r.amount < 0) {
-      const off = compileChanges(withChange(s, { ...r, on: false }), household).cutShort;
+      const off = compileChanges(withChange(s, { ...r, on: false }), household, freed).cutShort;
       if (!off || off.most < C.cutShort.most - 0.5) out[r.id] = `More than you save from ${Y.ages ? Y.base + C.cutShort.from : "year " + C.cutShort.from}: ${money(C.cutShort.most)} per month short. Saving stops at $0 there; lower it or start it later.`;
     }
     for (const L of lumpShorts(C, V)) for (const r of rows) if (r.on && r.kind === "lump" && r.amount < 0 && r.from === L.from) {
@@ -116,7 +116,7 @@ export function ChangesAhead({ s, setState, household }: { s: AdvancedInputs; se
       out[r.id] = `Not enough in ${where} ${Y.ages ? "at " + (Y.base + L.from) : L.from === 0 ? "today" : "in year " + L.from}: about ${money(L.have)} there then, ${money(L.need)} asked for. Lower it, or take it later.`;
     }
     return out;
-  }, [s, household, rows, Y.ages, Y.base]);
+  }, [s, household, freed, rows, Y.ages, Y.base]);
 
   const sentenceOf = (r: Scenario) => (r.kind === "children" ? (s.kids ? kidsLine(s.kids) : "") : scenarioSentence(shown(r, Y), Y.end, nominal, { years: !Y.ages, pot: !acOn }));
   const figureOf = (r: Scenario) => {
@@ -151,20 +151,20 @@ export function ChangesAhead({ s, setState, household }: { s: AdvancedInputs; se
   // A change's effect in its form: the plan with it against without it.
   const effectOf = useCallback((x: Scenario) => {
     const c = stored(x, Y), on = withChange(s, { ...c, on: true }), off = withoutChange(s, c.id);
-    const fv = fvOf(on, household) - fvOf(off, household);
+    const fv = fvOf(on, household, freed) - fvOf(off, household, freed);
     let cant: string | null = null;
     if (c.kind === "saving" && c.amount < 0) {
-      const a = compileChanges(on, household).cutShort, b = changesOn(off) ? compileChanges(off, household).cutShort : null;
+      const a = compileChanges(on, household, freed).cutShort, b = changesOn(off) ? compileChanges(off, household, freed).cutShort : null;
       if (a && (!b || b.most < a.most - 0.5)) cant = `More than you save from ${Y.ages ? Y.base + a.from : "year " + a.from}: ${money(a.most)} per month short. Saving stops at $0 there; lower it or start it later.`;
     }
     if (c.kind === "lump" && c.amount < 0) {
-      const R = changesCompute(on, household), L = lumpShorts(R.C, R.V).find((y) => y.from === c.from);
+      const R = changesCompute(on, household, freed), L = lumpShorts(R.C, R.V).find((y) => y.from === c.from);
       if (L) cant = `Not enough in ${L.acct ? ({ t: "traditional", r: "Roth", b: "brokerage", h: "HSA" } as const)[L.acct] : "your savings"} then: about ${money(L.have)} there, ${money(L.need)} asked for. Lower it, or take it later.`;
     }
     return { fv, cant };
-  }, [s, household, Y]);
+  }, [s, household, freed, Y]);
 
-  const C = useMemo(() => (rows.length ? compileChanges(s, household) : null), [rows.length, s, household]);
+  const C = useMemo(() => (rows.length ? compileChanges(s, household, freed) : null), [rows.length, s, household, freed]);
   const n = C?.shown.length ?? 0;
 
   return (
@@ -205,6 +205,8 @@ export function ChangesAhead({ s, setState, household }: { s: AdvancedInputs; se
         <ChangeDialog s={dlg.c} fresh={dlg.fresh} years={Y} accounts={acOn} label={tipLabel} effectOf={effectOf}
           sentence={(x) => scenarioSentence(x, Y.end, nominal, { years: !Y.ages, pot: !acOn })}
           where={(k) => `The rest comes out of the others once ${acctWord(k)} runs out: brokerage, Roth, traditional, then the HSA.`}
+          note={(x) => (!freed && acOn && x.kind === "saving" && x.amount < 0 && !(x.mode === "pct" && x.amount <= -100) && x.acct !== "brok" && x.acct !== "roth"
+            ? "A cut from traditional or HSA saving frees less than this after tax, since that money is taxed as pay again. Here a dollar cut is counted as a dollar; the Paycheck to Retirement guide and the Dashboard work it out from your paycheck." : null)}
           close={done} save={(x) => { setState((c) => withChange(c, stored(x, Y))); done(); }}
           remove={() => { remove(dlg.c.id); done(); }} />
       ) : null}
@@ -259,13 +261,13 @@ function StagesTable({ shown: list, Y, split }: { shown: ShownStage[]; Y: Years;
 /** When you could stop saving, and when you could retire: worked out after
     the page draws (each is several runs of the plan), with a button each
     that puts the answer in the plan. */
-export function ReachCard({ s, setState, household, need, pays }: { s: AdvancedInputs; setState: SetState; household: Household | null; need: number; pays: number | null }) {
+export function ReachCard({ s, setState, household, freed, need, pays }: { s: AdvancedInputs; setState: SetState; household: Household | null; freed?: Freed; need: number; pays: number | null }) {
   const Y = yearsOf(s), key = JSON.stringify(s);
   const [ans, setAns] = useState<{ key: string; coast: CoastAnswer | null; retire: RetireAnswer | null } | null>(null);
   useEffect(() => {
-    const t = setTimeout(() => setAns({ key, coast: coastAnswer(s, household), retire: retireAnswer(s, household) }), 0);
+    const t = setTimeout(() => setAns({ key, coast: coastAnswer(s, household, freed), retire: retireAnswer(s, household, freed) }), 0);
     return () => clearTimeout(t);
-  }, [key, s, household]);
+  }, [key, s, household, freed]);
   const busy = ans?.key !== key;
   // Retiring sooner or later is undone here (a toast has no button).
   const [undo, setUndo] = useState<{ was: string; now: string } | null>(null);

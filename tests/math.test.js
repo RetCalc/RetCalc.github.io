@@ -919,6 +919,19 @@ group("Articles: home and Advanced");
   says("advanced", "All stocks earned " + pct1(B100.cagr));
 })();
 
+group("Articles: Advanced, when you save matters");
+(function () {
+  var g = { initial: 10000, inflation: .03, withdrawal: .04, taxRate: .1, fees: 0 };
+  function st(c) { return { years: 10, contrib: c, period: "Monthly", growth: 0, nominal: .085, vol: .15 }; }
+  var up = projectSeries(g, [st(400), st(900), st(1500)]).fvReal;
+  var down = projectSeries(g, [st(1500), st(900), st(400)]).fvReal;
+  var flat = projectSeries(g, [{ years: 30, contrib: 336000 / 360, period: "Monthly", growth: 0, nominal: .085, vol: .15 }]).fvReal;
+  eq(400 * 120 + 900 * 120 + 1500 * 120, 336000, "the three patterns save the same total");
+  says("advanced", "ends with " + dollars(up) + " in today's dollars");
+  says("advanced", "$933 per month for 30 years ends with " + dollars(flat));
+  says("advanced", dollars(down) + ", " + Math.round((down / up - 1) * 100) + "% more");
+})();
+
 group("Articles: Drawdown");
 (function () {
   var o = { initial: 1e6, years: 30, stockPct: 60, initialPct: 4, strategy: "fixed", fee: 0, guardBand: 20, adjustPct: 10,

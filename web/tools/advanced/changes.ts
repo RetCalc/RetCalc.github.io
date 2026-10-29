@@ -14,7 +14,7 @@ import { glideAnnualRate } from "@/lib/engine/math";
 import type { Household } from "@/lib/household";
 import { parseNum } from "@/lib/format";
 import { COVER_ORDER, type CoverLine, type PlanKids } from "@/tools/plan/model";
-import { coverStage, kidStages, stageKey, type Monthly } from "@/tools/plan/kids";
+import { coverStage, kidStages, stageKey, type Freed, type Monthly } from "@/tools/plan/kids";
 import { KID_BASE } from "@/tools/stages/kids";
 import { STAGES_DEFAULTS, stagesCompute, type StageInputs, type StagesInputs } from "@/tools/stages/model";
 import { CHILDREN_ID, lumpAccount, nominalAt, scenarioName, yearChange, type Scenario } from "@/components/dashboard/scenarios";
@@ -77,7 +77,10 @@ function cutFrom(m: Monthly, cut: number, typed: Partial<Monthly>): number {
 interface Slice { a: number; b: number; monthly: Monthly; nominal: number; tags: string[]; kid: string; lump: ShownStage["lump"]; short: number; lumpIds: string[]; cutShort: number }
 
 /** The plan's stages under the changes, with the inputs in `s`. */
-export function compileChanges(s: AdvancedInputs, household: Household | null): Compiled {
+/** `freed`: what a cut from each account frees in take-home pay, when
+    there's a paycheck to work it out on (the paycheck guide); without it a
+    dollar cut frees a dollar. */
+export function compileChanges(s: AdvancedInputs, household: Household | null, freed?: Freed): Compiled {
   const P = advancedPlan(s, household), p = P.p, a = P.a;
   const { next } = stagesFromAdvanced(P, s, { ...STAGES_DEFAULTS, histMix: s.histMix, histMixEnd: s.histMixEnd }, null);
   const st0 = next.stages[0];
@@ -108,19 +111,36 @@ export function compileChanges(s: AdvancedInputs, household: Household | null): 
     const m: Monthly = ZERO();
     for (const k of COVER_ORDER) m[k] = (today[k] * Math.pow(1 + rateOf(k), yr)) / real;
     const own = sum(m);
-    // The children first: what they cost beyond today comes out as "How will you cover this?" says.
-    let short = 0, kid = "";
     const seg = kidSegs.find((x) => at >= x.from && at < x.to);
-    if (seg) {
-      kid = seg.change !== 0 ? seg.label : "";
-      const c = coverStage(seg.change, m, a ? (s.kidCover ?? {})[stageKey({ from: seg.from + KID_BASE, to: seg.to + KID_BASE })] : undefined);
-      for (const k of COVER_ORDER) m[k] = Math.max(0, m[k] - c.take[k]);
-      short = c.short;
-    }
-    // Then the saving changes, on your own saving before the children.
+    const kid = seg && seg.change !== 0 ? seg.label : "";
+    const kidTyped = seg && a ? (s.kidCover ?? {})[stageKey({ from: seg.from + KID_BASE, to: seg.to + KID_BASE })] : undefined;
+    // The saving changes work on your own saving, before the children.
     const Y = yearChange(changes, yr, Math.ceil(T), own);
-    // A cut can't take saving below nothing: what it can't take is said, not run.
-    const cutShort = Y.cut > 0 ? cutFrom(m, Y.cut, a ? Y.typed : {}) : 0;
+    let short = 0, cutShort = 0;
+    if (freed) {
+      // With a paycheck to work it out on (the paycheck guide): the
+      // children's cost and any cut in saving are one amount to free in
+      // take-home pay, the amounts named for an account first, and a cut
+      // from pre-tax saving made big enough to free its share after tax.
+      const kidNeed = seg?.change ?? 0, need = kidNeed + Y.cut;
+      const typed: Partial<Monthly> = { ...(kidTyped ?? {}) };
+      if (a) for (const k of COVER_ORDER) if (Y.typed[k] != null) typed[k] = (typed[k] ?? 0) + Y.typed[k]!;
+      if (Math.abs(need) >= 0.5) {
+        const c = coverStage(need, m, typed, freed);
+        for (const k of COVER_ORDER) m[k] = Math.max(0, m[k] - c.take[k]);
+        short = Math.min(c.short, Math.max(0, kidNeed));
+        cutShort = Y.cut > 0 ? c.short - short : 0;
+      }
+    } else {
+      // The children first: what they cost beyond today comes out as "How will you cover this?" says.
+      if (seg) {
+        const c = coverStage(seg.change, m, kidTyped);
+        for (const k of COVER_ORDER) m[k] = Math.max(0, m[k] - c.take[k]);
+        short = c.short;
+      }
+      // A cut can't take saving below nothing: what it can't take is said, not run.
+      cutShort = Y.cut > 0 ? cutFrom(m, Y.cut, a ? Y.typed : {}) : 0;
+    }
     for (const k of COVER_ORDER) m[k] += a ? Y.add[k] : (k === "brok" ? sum(Y.add) : 0);
     const N = nominalAt(changes, yr, p.gross);
     const L = Number.isInteger(at) ? changes.filter((c) => c.kind === "lump" && c.from === at && c.amount !== 0) : [];
@@ -208,8 +228,8 @@ export function compileChanges(s: AdvancedInputs, household: Household | null): 
 }
 
 /** The plan's results under the changes: the Stages engine's. */
-export function changesCompute(s: AdvancedInputs, household: Household | null) {
-  const C = compileChanges(s, household);
+export function changesCompute(s: AdvancedInputs, household: Household | null, freed?: Freed) {
+  const C = compileChanges(s, household, freed);
   return { C, V: stagesCompute(C.inputs, household) };
 }
 
@@ -240,8 +260,8 @@ export const coastChange = (from: number, base: Partial<Scenario> = {}): Scenari
 });
 
 /** Savings at the end in today's dollars, and the portfolio the goal needs. */
-function reach(s: AdvancedInputs, household: Household | null): { fv: number; need: number } {
-  const { V } = changesCompute(s, household);
+function reach(s: AdvancedInputs, household: Household | null, freed?: Freed): { fv: number; need: number } {
+  const { V } = changesCompute(s, household, freed);
   return { fv: V.R.fvReal, need: V.portToday };
 }
 
@@ -258,7 +278,7 @@ const withoutChange = (s: AdvancedInputs, id: string): AdvancedInputs => ({ ...s
     `stop` with saving stopped at `at`, `need` the portfolio the goal needs
     then. Today's dollars. */
 export interface CoastAnswer { at: number | null; need: number; keep: number; stop: number | null }
-export function coastAnswer(s: AdvancedInputs, household: Household | null, run: (s: AdvancedInputs) => { fv: number; need: number } = (x) => reach(x, household)): CoastAnswer | null {
+export function coastAnswer(s: AdvancedInputs, household: Household | null, freed?: Freed, run: (s: AdvancedInputs) => { fv: number; need: number } = (x) => reach(x, household, freed)): CoastAnswer | null {
   const base = withoutChange(s, COAST_ID), now = run(base);
   // A goal no portfolio pays (a 0% withdrawal rate) has no answer.
   if (!(now.need > 0) || !isFinite(now.need) || !isFinite(now.fv)) return null;
@@ -279,7 +299,7 @@ export function coastAnswer(s: AdvancedInputs, household: Household | null, run:
     is (a change running to the end runs to then), up to 100. `years` is
     null when 100 years don't. */
 export interface RetireAnswer { years: number | null; need: number; fv: number }
-export function retireAnswer(s: AdvancedInputs, household: Household | null, run: (s: AdvancedInputs) => { fv: number; need: number } = (x) => reach(x, household)): RetireAnswer | null {
+export function retireAnswer(s: AdvancedInputs, household: Household | null, freed?: Freed, run: (s: AdvancedInputs) => { fv: number; need: number } = (x) => reach(x, household, freed)): RetireAnswer | null {
   const at = (y: number) => run(yearsTo(s, y));
   const now = Math.max(1, Math.round(parseNum(s.years)));
   const cur = at(now);

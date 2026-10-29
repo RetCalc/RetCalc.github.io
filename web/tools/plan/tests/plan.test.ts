@@ -237,3 +237,21 @@ test("children spaced in half years: 2.5 years apart stays 2.5, and stages can s
   near(st.reduce((t, s) => t + (s.to - s.from), 0), 31);
   assert.ok(st.some((s) => !Number.isInteger(s.from)));
 });
+
+test("Changes ahead in the guide: a cut from pre-tax saving is sized by the paycheck, for children and for saving less", () => {
+  // No brokerage to take from, so the cuts land on the traditional 401(k).
+  let p = seedAdvanced(plan(), null);
+  p = seedChanges({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 1, firstIn: 2 } });
+  const kids = toolOf(p, "advanced"), F = freedOf(p);
+  const flat = changesCompute(kids, null).V.R.fv, sized = changesCompute(kids, null, F).V.R.fv;
+  // Here the children cost more than all of it, so saving stops either way.
+  assert.ok(sized <= flat, `a pre-tax cut frees less, so never less is cut: ${sized} against ${flat}`);
+  // Saving $300 a month less, in the usual order: with no brokerage or Roth
+  // saving it reaches the traditional 401(k), and more than $300 comes out.
+  // (Naming an account takes exactly that much from it, as on the Dashboard.)
+  const less = { ...kids, changes: [{ id: "l", kind: "saving" as const, name: "Less", on: true, from: 0, until: 0, mode: "amount" as const, amount: -300, ramp: 0, acct: "auto" as const, nominal: 0 }] };
+  const first = (f?: typeof F) => compileChanges(less, null, f).shown[0].monthly.trad;
+  const base = compileChanges({ ...less, changes: [] }, null).shown[0].monthly.trad;
+  near(base - first(), 300, 0.01);
+  assert.ok(base - first(F) > 300 + 50, `cut ${base - first(F)} to free $300 after tax`);
+});

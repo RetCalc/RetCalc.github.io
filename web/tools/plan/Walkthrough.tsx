@@ -20,7 +20,7 @@ import { DASH, money } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Advanced } from "@/tools/advanced/Advanced";
 import { Budget } from "@/tools/budget/Budget";
-import { fromOldTaxes, seedAdvanced, seedChanges, startDone, strip } from "./flow";
+import { freedOf, fromOldTaxes, seedAdvanced, seedChanges, startDone, strip } from "./flow";
 import { PLAN_DEFAULTS, PLAN_STORE, STEPS, loadPlan, planHasWork, readPlan, rereadPlan, setPlan, stepIndex, subscribePlan, type PlanState, type PlanTool, type StepId } from "./model";
 import { StartStep, StepHead } from "./steps";
 import { Summary } from "./Summary";
@@ -39,6 +39,8 @@ const PATH_STEP: Record<string, StepId> = {
 };
 
 const NONE = () => null;
+/** The paycheck's cut sizing, kept for the paycheck it came from. */
+let freedHold: { key: string; f: ReturnType<typeof freedOf> | undefined } = { key: "\u0000", f: undefined };
 const usePlan = () => useSyncExternalStore(subscribePlan, readPlan, NONE);
 
 export function Walkthrough() {
@@ -74,6 +76,12 @@ export function Walkthrough() {
     write: (id, data) => {
       if (!PLAN_TOOLS.includes(id)) { TAB_STORE.write(id, data); return; }
       setPlan((p) => (p.tools[id as PlanTool] === data ? p : { ...p, tools: { ...p.tools, [id]: data } }));
+    },
+    // Cuts in saving sized by this plan's paycheck (kept while it's the same paycheck).
+    get freed() {
+      const p = readPlan(), key = p ? JSON.stringify(p.tools.budget ?? null) : "";
+      if (freedHold.key !== key) freedHold = { key, f: p ? freedOf(p) : undefined };
+      return freedHold.f;
     },
     go: (path) => {
       const to = PATH_STEP[path];

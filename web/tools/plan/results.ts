@@ -17,8 +17,8 @@ import { stageSplit } from "@/tools/stages/model";
 import { KID_BASE } from "@/tools/stages/kids";
 import { changesCompute, changesOn, liveChanges, withChange } from "@/tools/advanced/changes";
 import { CHILDREN_ID } from "@/components/dashboard/scenarios";
-import { paycheckOf, planAges, toolOf } from "./flow";
-import { ONE_FOR_ONE, STEP, coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
+import { freedOf, paycheckOf, planAges, toolOf } from "./flow";
+import { STEP, coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
 import type { PlanState } from "./model";
 
 export type Acct = "trad" | "roth" | "brok" | "hsa";
@@ -118,7 +118,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
   let assumptions: PlanSummary["assumptions"];
   let stages: PlanSummary["stages"] = null;
   if (useStages) {
-    const { C, V } = changesCompute(adv, household), P = V.P, g = P.g;
+    const { C, V } = changesCompute(adv, household, freedOf(p)), P = V.P, g = P.g;
     infl = g.inflation; years = V.R.totalYears; fv = V.R.fv; total = V.R.fvReal; afterTax = V.R.afterTax; taxRate = g.taxRate; withdrawal = g.withdrawal;
     const mt = P.B?.matchTotal ?? 0;
     made = { start: g.initial, own: V.R.contribTotal - mt, match: mt, growth: V.R.fv - g.initial - V.R.contribTotal };
@@ -143,7 +143,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
     stages = C.shown.map((x) => {
       const from = ages.age + x.from, to = ages.age + x.to, seg = ks.find((k) => from >= k.from && from < k.to);
       const change = seg?.change ?? 0, key = seg ? stageKey({ from: seg.from - ages.age + KID_BASE, to: seg.to - ages.age + KID_BASE }) : "";
-      const c = seg && change !== 0 ? coverStage(change, today, adv.acOn ? (adv.kidCover ?? {})[key] : undefined, ONE_FOR_ONE) : null;
+      const c = seg && change !== 0 ? coverStage(change, today, adv.acOn ? (adv.kidCover ?? {})[key] : undefined, freedOf(p)) : null;
       return { name: x.names.join(", ") || "Saving", from, to, monthly: x.monthly.brok + x.monthly.roth + x.monthly.trad + x.monthly.hsa,
         kidCost: seg?.cost ?? 0, change, take: c ? c.take : null, short: c?.short ?? 0, taxUp: c?.taxUp ?? 0, matchLost: c?.matchLost ?? 0 };
     });
@@ -191,7 +191,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
       rows, together, total, peak,
       fromSaving: stages.reduce((t, s) => t + (s.take ? Math.max(0, s.change - s.short) * yrs(s) : 0), 0),
       fromSpending: stages.reduce((t, s) => t + s.short * yrs(s), 0),
-      without: ((x) => (changesOn(x) ? changesCompute(x, household).V.R.fvReal : advancedCompute(x, household).R.fvReal))(
+      without: ((x) => (changesOn(x) ? changesCompute(x, household, freedOf(p)).V.R.fvReal : advancedCompute(x, household).R.fvReal))(
         withChange(adv, { ...(adv.changes ?? []).find((c) => c.id === CHILDREN_ID)!, on: false })),
     };
   }
