@@ -23,7 +23,6 @@ import { FACTORS, areaPoints, ageOf, answers, couple, fraYears, history, holding
 import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { BAND_INNER, SERIES } from "@/lib/hues";
 import { nextSteps } from "./nextsteps";
-import { useCheckin } from "@/components/account/checkin";
 import { explain } from "./readiness";
 import { target, type FactorId } from "@/tools/guide/calc";
 import { flow, mixWords, retireMix } from "./flows";
@@ -161,8 +160,7 @@ export function Overview() {
   const marks = r1 && r1 === r2 ? [{ t: r1, label: "You both retire" }]
     : [r1 ? { t: r1, label: nameOf(pr, 0) + " retires" } : null, r2 ? { t: r2, label: nameOf(pr, 1) + " retires" } : null].filter((m): m is { t: number; label: string } => !!m);
   const until = range === "recent" ? nowYear() + 3 : range === "retire" && R.retireYear ? R.retireYear + 1 : undefined;
-  const { state: checkin } = useCheckin();
-  const steps = nextSteps(data, R, 4, checkin);
+  const steps = nextSteps(data, R);
   const full = useFullScreen("Net worth");
   const chart = (px?: Px) => <NetWorthChart hist={hist.length ? hist : [{ t: nowYear(), v: nw }]} proj={R.path} traces={R.traces} marks={marks} until={until} describe={describe} px={px} />;
   // The entries and the plan to retirement in the Dashboard's amber; from

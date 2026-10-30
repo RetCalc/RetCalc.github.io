@@ -291,8 +291,9 @@ export function About() {
                     <li>They sync, so you see the same numbers on your phone and your computer.</li>
                     <li>They&apos;re private: only you can see them, once you&apos;re signed in.</li>
                     <li>The rest of RetCalc keeps its own saved numbers, apart from these.</li>
-                    <li>In Profile you can turn on a monthly check-in email. It says when you
-                    last updated your balances and never includes your figures.</li>
+                    <li>Once a month, when your balances need updating, you get a check-in
+                    email. It says when you last updated them and never includes your
+                    figures. Turn it off in Profile or from any email.</li>
                   </ul>
                 </Section>
               </Group>

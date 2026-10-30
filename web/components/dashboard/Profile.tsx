@@ -311,17 +311,20 @@ export function Profile() {
     supabase/CHECKIN_EMAIL.md). */
 function CheckinEmail() {
   const { account } = useAccount();
+  const { data } = useDashboard();
   const { state, set } = useCheckin();
+  // Never chosen: on for everyone who has set up the Dashboard.
+  const on = state === "on" || (state === "none" && data.done);
   const [failed, setFailed] = useState(false);
   return (
     <Tile id="checkin" icon={MailIcon} title="Email" right={account?.email ? <span className="dsh-cap">Sent to {account.email}</span> : null}>
       <div className="dsh-fields dsh-fields-sm">
-        <Toggle variant="check" pressed={state === "on"} disabled={state === "loading" || state === "error"}
+        <Toggle variant="check" pressed={on} disabled={state === "loading" || state === "error"}
           onPressedChange={async (on) => { setFailed(false); if (!(await set(on))) setFailed(true); }}>
           <ToggleCheck />
           <span>Monthly check-in email</span>
         </Toggle>
-        <p className="dsh-cap dsh-flush">A reminder when your balances are a month old, with no figures in it. Turn it off here or from any email.</p>
+        <p className="dsh-cap dsh-flush">A reminder when your balances are a month old, with no figures in it. It&apos;s on for every Dashboard; turn it off here or from any email.</p>
         {state === "error" || failed ? <p className="dsh-cap dsh-flush" role="status">Couldn&apos;t reach your account to {failed ? "save that" : "read this setting"}. Check your connection, then try again.</p> : null}
       </div>
     </Tile>

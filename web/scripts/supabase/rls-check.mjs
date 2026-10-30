@@ -113,6 +113,16 @@ r = await as("service_role", null, `update public.email_prefs set checkin = fals
 check("the service role switches it off (the unsubscribe link)", r.n === 1, r);
 r = await as("service_role", null, `select * from public.checkin_candidates()`);
 check("switched off, nobody is listed", r.rows?.length === 0, r);
+// Never chosen: on once the Dashboard is set up, not before.
+await as("authenticated", B, `insert into public.user_data (key, version, value) values ('dashboard', 1, '{"profile":{"p1":{"name":"Jo"}},"entries":[],"done":false}')`);
+r = await as("service_role", null, `select * from public.checkin_candidates()`);
+check("never chosen and not set up, nobody is listed", r.rows?.length === 0, r);
+await as("authenticated", B, `update public.user_data set value = '{"profile":{"p1":{"name":"Jo"}},"entries":[],"done":true}' where key = 'dashboard'`);
+r = await as("service_role", null, `select * from public.checkin_candidates()`);
+check("set up but switched off, nobody is listed", r.rows?.length === 0, r);
+await db.query(`delete from public.email_prefs where user_id = '${B}'`);
+r = await as("service_role", null, `select * from public.checkin_candidates()`);
+check("never chosen with the Dashboard set up, it's on", r.rows?.length === 1 && r.rows[0].user_id === B && r.rows[0].first_name === "Jo" && r.rows[0].last_entry === null, r);
 
 await db.query(`delete from auth.users where id = '${B}'`);
 r = await db.query(`select count(*)::int as n from public.user_data where user_id = '${B}'`);

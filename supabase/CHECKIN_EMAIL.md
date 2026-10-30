@@ -1,7 +1,13 @@
 # Monthly check-in email
 
-An opt-in email that reminds Dashboard users to update their balances. Off
-unless switched on (Dashboard, Profile, "Monthly check-in email").
+An email that reminds Dashboard users to update their balances. On for
+everyone who has set up the Dashboard (`done` in their synced Dashboard),
+unless they turn it off (Dashboard, Profile, "Monthly check-in email", or
+any email's link). An `email_prefs` row records a choice either way; no row
+means on once the Dashboard is set up.
+
+Turning it on will email everyone who has already set up a Dashboard and
+hasn't updated their balances in 30 days, on the first daily run.
 
 - Sent by a daily run to people with it on whose latest balance entry is 30+
   days old (or who have none) and who weren't sent one in the last 28 days.
@@ -103,6 +109,7 @@ With steps 1 to 4 done, and before step 5:
 - A 401 or 403 from Resend (bad key, sender refused) stops the run.
 - The same person isn't sent twice on one day even if the run repeats
   (Resend idempotency key), and `email_log` keeps 28 days between sends.
-- The footer link turns the email off as soon as the page opens. A mail
-  scanner that runs pages' scripts could do that without the person
-  clicking; they can switch it back on in Profile.
+- The footer link opens retcalc.app/unsubscribe, which turns the email off
+  when its button is pressed (not on opening, so a mail scanner that opens
+  links can't). Mail apps' own unsubscribe button posts straight to the
+  function and needs no press.

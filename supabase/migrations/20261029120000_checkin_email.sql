@@ -1,13 +1,15 @@
--- The monthly check-in email (supabase/CHECKIN_EMAIL.md): an opt-in
--- reminder to update balances on the Dashboard. Off unless switched on.
+-- The monthly check-in email (supabase/CHECKIN_EMAIL.md): a reminder to
+-- update balances on the Dashboard. On for everyone who has set up the
+-- Dashboard, unless they turn it off (Profile, or any email's link).
 --
 -- email_prefs: the person's own choice, written from the browser (Profile
---   on the Dashboard) and by the unsubscribe link. A table of its own, not
+--   on the Dashboard) and by the unsubscribe link; no row means they haven't
+--   chosen, which is on once the Dashboard is set up. A table of its own, not
 --   a field in the synced Dashboard JSON, so turning it off from an email
 --   can't be undone by a browser's next sync.
 -- email_log: one row per email sent, so no one gets two in 28 days. The
 --   service role alone reads and writes it.
--- checkin_candidates(): everyone with the email on, with what the email
+-- checkin_candidates(): everyone the email is on for, with what the email
 --   and the "who is due" rule need, for the checkin-email function.
 
 create table public.email_prefs (
@@ -17,7 +19,7 @@ create table public.email_prefs (
 );
 
 comment on table public.email_prefs is
-  'Email choices per person: the monthly check-in email (off by default). Owner-only via RLS.';
+  'Email choices per person: the monthly check-in email (no row: on once the Dashboard is set up). Owner-only via RLS.';
 
 revoke all on table public.email_prefs from anon, authenticated;
 grant select, insert, update on table public.email_prefs to authenticated;
@@ -64,7 +66,8 @@ grant select, insert on table public.email_log to service_role;
 alter table public.email_log enable row level security;
 
 
--- Everyone with the check-in email on: their address, a first name (the
+-- Everyone the check-in email is on for (switched on, or never chosen with
+-- the Dashboard set up): their address, a first name (the
 -- Dashboard's, else the account's), the latest balance entry's date
 -- (YYYY-MM-DD, null with none) and when the last check-in went out.
 create function public.checkin_candidates()
@@ -75,7 +78,7 @@ security definer
 set search_path = ''
 as $$
   select
-    p.user_id,
+    u.id,
     u.email::text,
     coalesce(
       nullif(btrim(d.value -> 'profile' -> 'p1' ->> 'name'), ''),
@@ -84,11 +87,12 @@ as $$
     (select max(e ->> 'date')
        from jsonb_array_elements(case when jsonb_typeof(d.value -> 'entries') = 'array' then d.value -> 'entries' else '[]'::jsonb end) e
       where (e ->> 'date') ~ '^\d{4}-\d{2}-\d{2}$'),
-    (select max(l.sent_at) from public.email_log l where l.user_id = p.user_id and l.kind = 'checkin')
-  from public.email_prefs p
-  join auth.users u on u.id = p.user_id
-  left join public.user_data d on d.user_id = p.user_id and d.key = 'dashboard'
-  where p.checkin and u.email is not null and u.email <> '';
+    (select max(l.sent_at) from public.email_log l where l.user_id = u.id and l.kind = 'checkin')
+  from auth.users u
+  left join public.email_prefs p on p.user_id = u.id
+  left join public.user_data d on d.user_id = u.id and d.key = 'dashboard'
+  where u.email is not null and u.email <> ''
+    and (p.checkin is true or (p.user_id is null and d.value ->> 'done' = 'true'));
 $$;
 
 revoke execute on function public.checkin_candidates() from public, anon, authenticated;

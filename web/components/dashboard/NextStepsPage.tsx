@@ -11,14 +11,12 @@ import { Frame } from "./Frame";
 import { results } from "./model";
 import { allSteps } from "./nextsteps";
 import { useDashboard } from "./store";
-import { useCheckin } from "@/components/account/checkin";
 import { Tile } from "./ui";
 
 export function NextSteps() {
   const { data } = useDashboard();
   const R = useMemo(() => results(data.profile, data.entries), [data.profile, data.entries]);
-  const { state: checkin } = useCheckin();
-  const steps = allSteps(data, R, checkin), todo = steps.filter((s) => !s.done), done = steps.filter((s) => s.done);
+  const steps = allSteps(data, R), todo = steps.filter((s) => !s.done), done = steps.filter((s) => s.done);
   return (
     <Frame current="next" title="Next steps" sub={`${todo.length} to do, ${done.length} done`}>
       <Tile icon={ListChecksIcon} title="To do" right={<span className="dsh-cap">Ordered by how much each moves your plan</span>}>

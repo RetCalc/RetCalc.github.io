@@ -91,7 +91,7 @@ export function AccountPage({ states }: { states: StateOption[] }) {
   }
 
   const download = () => {
-    const blob = new Blob([JSON.stringify({ email: account.email, firstName: account.firstName, checkinEmail: checkin === "on" ? true : checkin === "off" || checkin === "none" ? false : null, exported: new Date().toISOString(), items }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ email: account.email, firstName: account.firstName, checkinEmail: checkin === "on" ? true : checkin === "off" ? false : checkin === "none" ? "not chosen: on once the Dashboard is set up" : null, exported: new Date().toISOString(), items }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "retcalc-account.json";

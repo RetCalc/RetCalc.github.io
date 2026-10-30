@@ -14,8 +14,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAccount } from "./AccountProvider";
 import { settle } from "@/lib/sync/account";
 
-/** loading: not read yet; none: never chosen (off); on; off: switched off,
-    here or from an email; error: the account couldn't be reached. */
+/** loading: not read yet; none: never chosen (on, once the Dashboard is set
+    up); on; off: switched off, here or from an email; error: the account
+    couldn't be reached. */
 export type Checkin = "loading" | "none" | "on" | "off" | "error";
 
 type State = { uid: string | null; v: Checkin };

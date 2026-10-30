@@ -177,7 +177,7 @@ export function checkinEmail(input: CheckinInput): CheckinEmail {
     "See how your plan moved since last time.",
   ];
   const subject = "Your monthly RetCalc check-in";
-  const why = "You're getting this because you turned on the monthly check-in email on your RetCalc Dashboard.";
+  const why = "You're getting this because you have a RetCalc Dashboard. It comes when your balances haven't been updated for 30 days.";
 
   const text = [
     hello,
