@@ -10,11 +10,14 @@ import { useMemo, useState } from "react";
 import { parseNum } from "@/lib/format";
 import { CHILD_COST, earlyCost } from "@/tools/guide/schedule";
 import { ChildCostsDialog, CoverDialog, coverSegs } from "./children";
-import { BabyIcon, Building2Icon, HouseIcon, RotateCcwIcon, SlidersHorizontalIcon, SunsetIcon, UserRoundIcon, UsersRoundIcon, BanknoteIcon, ReceiptIcon, WalletIcon } from "lucide-react";
+import { BabyIcon, Building2Icon, HouseIcon, MailIcon, RotateCcwIcon, SlidersHorizontalIcon, SunsetIcon, UserRoundIcon, UsersRoundIcon, BanknoteIcon, ReceiptIcon, WalletIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Toggle, ToggleCheck } from "@/components/ui/toggle";
+import { useAccount } from "@/components/account/AccountProvider";
+import { useCheckin } from "@/components/account/checkin";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { RISKS } from "@/lib/engine/typed";
 import { Frame } from "./Frame";
@@ -296,9 +299,32 @@ export function Profile() {
 
       <div className="dsh-r4"><Children pr={pr} set={set} /></div>
       <div className="dsh-r4"><Assumptions pr={pr} set={set} /></div>
+      <div className="dsh-r4"><CheckinEmail /></div>
       <div className="dsh-r4"><StartOver /></div>
       {pr.state === OUTSIDE_US ? <div className="dsh-r4"><Note>Outside the US we don&apos;t work out taxes or Social Security: your plan&apos;s figures for retirement are <b>before taxes</b>.</Note></div> : null}
     </Frame>
+  );
+}
+
+/** The monthly check-in email, off until switched on: a reminder once the
+    balances are a month old, with no figures in it (components/account/checkin.ts,
+    supabase/CHECKIN_EMAIL.md). */
+function CheckinEmail() {
+  const { account } = useAccount();
+  const { state, set } = useCheckin();
+  const [failed, setFailed] = useState(false);
+  return (
+    <Tile id="checkin" icon={MailIcon} title="Email" right={account?.email ? <span className="dsh-cap">Sent to {account.email}</span> : null}>
+      <div className="dsh-fields dsh-fields-sm">
+        <Toggle variant="check" pressed={state === "on"} disabled={state === "loading" || state === "error"}
+          onPressedChange={async (on) => { setFailed(false); if (!(await set(on))) setFailed(true); }}>
+          <ToggleCheck />
+          <span>Monthly check-in email</span>
+        </Toggle>
+        <p className="dsh-cap dsh-flush">A reminder when your balances are a month old, with no figures in it. Turn it off here or from any email.</p>
+        {state === "error" || failed ? <p className="dsh-cap dsh-flush" role="status">Couldn&apos;t reach your account to {failed ? "save that" : "read this setting"}. Check your connection, then try again.</p> : null}
+      </div>
+    </Tile>
   );
 }
 

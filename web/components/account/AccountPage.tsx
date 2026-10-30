@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { DownloadIcon, Trash2Icon } from "lucide-react";
 import { useAccount } from "./AccountProvider";
 import { pullAll, settle, type AccountItem } from "@/lib/sync/account";
+import { useCheckin } from "./checkin";
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ export function AccountPage({ states }: { states: StateOption[] }) {
   const [unread, setUnread] = useState(false);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const { state: checkin } = useCheckin();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- show the saved name once the session is read
@@ -89,7 +91,7 @@ export function AccountPage({ states }: { states: StateOption[] }) {
   }
 
   const download = () => {
-    const blob = new Blob([JSON.stringify({ email: account.email, firstName: account.firstName, exported: new Date().toISOString(), items }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ email: account.email, firstName: account.firstName, checkinEmail: checkin === "on" ? true : checkin === "off" || checkin === "none" ? false : null, exported: new Date().toISOString(), items }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "retcalc-account.json";

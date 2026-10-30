@@ -12,6 +12,7 @@ import { toolHref } from "./host";
 import { room } from "./readiness";
 import { earlyRetirees } from "./bridge";
 import { healthGap } from "./health";
+import type { Checkin } from "@/components/account/checkin";
 
 /** A stage's words without the yearly growth in them ("after the raise"
     once for each year saving has grown). */
@@ -22,7 +23,9 @@ const words = (label: string) => {
 
 export interface Step { id: string; title: string; why: string; action: string; href: string; done: boolean; gain: number }
 
-export function allSteps(d: DashData, R: Results): Step[] {
+/** `checkin`: the monthly check-in email's switch (components/account/checkin.ts),
+    left out while it isn't known. */
+export function allSteps(d: DashData, R: Results, checkin?: Checkin): Step[] {
   const pr = d.profile, accounts = hasAccounts(d.entries), H = holdings(d.entries, pr), last = d.entries[d.entries.length - 1];
   const M = mortgage(pr, d.entries), F = flow(pr);
   const out: Step[] = [];
@@ -74,9 +77,11 @@ export function allSteps(d: DashData, R: Results): Step[] {
   if (early && H.accounts && ((H.roth > 0 && H.rothBasis == null) || (H.brok > 0 && H.brokBasis == null)))
     add({ id: "basis", title: H.roth > 0 && H.rothBasis == null ? "Add your Roth contributions" : "Add your brokerage cost basis", why: "Your bridge to 59½ depends on what can come out early, and its tax", action: "Add", href: "/dashboard/accounts#assets", done: false, gain: 3 });
   if (couple(pr) && !pr.p2.by) add({ id: "partner", title: "Add your partner's birth date", why: "Ages drive Social Security and Medicare", action: "Add", href: "/dashboard/profile#household", done: false, gain: 6 });
+  // The monthly check-in email: done once it's been switched on, or off.
+  if (checkin === "none" || checkin === "on" || checkin === "off") add({ id: "checkin", title: "Get a monthly check-in email", why: checkin === "on" ? "On: a reminder when your balances are a month old" : checkin === "off" ? "Turned off. You can switch it on in Profile" : "A reminder when your balances are a month old, with no figures in it", action: checkin === "none" ? "Turn it on" : "Change", href: "/dashboard/profile#checkin", done: checkin !== "none", gain: 0.5 });
   if (last) add({ id: "update", title: "Update your balances", why: `Last entry was ${daysSince(last.date)} days ago`, action: "Update", href: "/dashboard/accounts#assets", done: daysSince(last.date) < 28, gain: daysSince(last.date) > 60 ? 20 : 4 });
 
   return out.sort((a, b) => b.gain - a.gain);
 }
 
-export const nextSteps = (d: DashData, R: Results, n = 4) => allSteps(d, R).filter((s) => !s.done).slice(0, n);
+export const nextSteps = (d: DashData, R: Results, n = 4, checkin?: Checkin) => allSteps(d, R, checkin).filter((s) => !s.done).slice(0, n);
