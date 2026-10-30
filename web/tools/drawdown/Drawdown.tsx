@@ -12,7 +12,7 @@ import { useHousehold, useHouseholdFill } from "@/components/household/Household
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
-import { toolInputs, useToolState } from "@/components/tools/ToolState";
+import { toolInputs, useToolScope, useToolState } from "@/components/tools/ToolState";
 import { HeroReading, PinnedReading, type HeroTone, type ReadingFigure } from "@/components/common/Reading";
 import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
@@ -79,7 +79,9 @@ export function Drawdown({ landing }: { landing?: string }) {
     setTab(k);
   });
   const [storedInputs, setStoredInputs] = useStoredText("retcalc-dd-inputs", "simple");
-  const inputs = storedInputs === "adv" ? "adv" : "simple";
+  // The Dashboard's Retirement tab always shows every input.
+  const dash = useToolScope()?.name === "dashboard";
+  const inputs = dash || storedInputs === "adv" ? "adv" : "simple";
   const [introSeen, setIntroSeen] = useStoredText("retcalc-dd-intro-seen", "0", "1");
   const [tracesOn, setTracesOn] = useState(true);
   const [pinned, setPinned] = useState<{ state: Record<string, unknown>; label: string } | null>(null);

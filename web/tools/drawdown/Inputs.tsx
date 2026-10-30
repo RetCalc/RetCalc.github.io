@@ -212,12 +212,12 @@ export function Inputs({ v, fromNote, periods, open }: {
   return (
     <aside id="asideDD" data-inputs={inputs} className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
       <Card>
-        <CardHeader><CardTitle>Your inputs</CardTitle><CardAction>
+        <CardHeader><CardTitle>Your inputs</CardTitle>{scope?.name === "dashboard" ? null : <CardAction>
           <SegmentedGroup id="segDDIn" aria-label="How many inputs">
             <SegmentedItem data-ddin="simple" pressed={inputs === "simple"} onClick={() => setInputs("simple")}>Simple</SegmentedItem>
             <SegmentedItem data-ddin="adv" pressed={inputs === "adv"} onClick={() => setInputs("adv")}>Advanced</SegmentedItem>
           </SegmentedGroup>
-        </CardAction></CardHeader>
+        </CardAction>}</CardHeader>
         <CardContent>
           {scope?.slots?.facts}
           <GroupHead first>Your portfolio at retirement</GroupHead>
