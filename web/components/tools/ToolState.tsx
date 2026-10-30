@@ -13,6 +13,7 @@
 import type { Freed } from "@/tools/plan/kids";
 import type { Cover, Monthly } from "@/tools/plan/kids";
 import type { SavedHousehold } from "@/lib/household";
+import type { BrBudget } from "@/lib/engine/types";
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { readSession, readStored, writeSession, writeStored } from "@/lib/storage";
@@ -273,6 +274,10 @@ export interface ToolScope {
       own order (the Dashboard's): today's saving by account, what a stage
       takes, and the order in words, for "How will you cover this?". */
   cover?: { today: Monthly; fn: (change: number, typed?: Partial<Monthly>) => Cover; order: string };
+  /** The Early Retirement Bridge's withdrawals, when the scope's plan has a
+      withdrawal strategy (the Dashboard's): each bridge year takes out what
+      the strategy does, in place of the spending field. */
+  bridgeBudget?: BrBudget | null;
 }
 const ScopeContext = createContext<ToolScope | null>(null);
 export const ToolScopeProvider = ScopeContext;

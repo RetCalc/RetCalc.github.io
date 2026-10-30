@@ -104,9 +104,10 @@ export function seedFor(pr: Profile, entries: Entry[]): (id: string) => ToolInpu
 /** Runs tools in the Dashboard's scope. `seed` gives each tool's first
     inputs; `keep`, when given, takes its edits into the profile; links
     between tools stay inside the Dashboard. */
-export function Hosted({ seed, keep, household, slots, cover, locked, seedKey, scenarios, children }: {
+export function Hosted({ seed, keep, household, slots, cover, locked, bridgeBudget, seedKey, scenarios, children }: {
   seed: (id: string) => ToolInputs | undefined; keep?: (id: string, data: ToolInputs) => void;
   household: SavedHousehold | null; slots?: ToolScope["slots"]; cover?: ToolScope["cover"]; locked?: ToolScope["locked"];
+  bridgeBudget?: ToolScope["bridgeBudget"];
   /** Changes when the page has new inputs for its tools: an open tool reads
       them again in place (its own state, such as a chart's mode, stays). */
   seedKey?: string;
@@ -115,8 +116,8 @@ export function Hosted({ seed, keep, household, slots, cover, locked, seedKey, s
   children: ReactNode;
 }) {
   const router = useRouter();
-  const latest = useRef({ seed, keep, slots, locked, household, cover });
-  useEffect(() => { latest.current = { seed, keep, slots, locked, household, cover }; });
+  const latest = useRef({ seed, keep, slots, locked, household, cover, bridgeBudget });
+  useEffect(() => { latest.current = { seed, keep, slots, locked, household, cover, bridgeBudget }; });
   // One scope for the host's life, made again only when the seed key
   // changes (the tools then read their inputs again): the tools read it as
   // they open. What the page says in them, and what it locks, follow the
@@ -132,6 +133,7 @@ export function Hosted({ seed, keep, household, slots, cover, locked, seedKey, s
       get cover() { return latest.current.cover; },
       get slots() { return latest.current.slots; },
       get locked() { return latest.current.locked; },
+      get bridgeBudget() { return latest.current.bridgeBudget; },
       seedKey, scenarios,
       read: (id) => mem.get(id) ?? seedNow(id),
       write: (id, data) => { mem.set(id, data); latest.current.keep?.(id, data); },

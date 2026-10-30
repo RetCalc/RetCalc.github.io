@@ -30,7 +30,8 @@ import { longDate, money, pctDown } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { couple, holdings, nameOf, people, results, spendMonth, type Results } from "./model";
 import { today, useDashboard, type Entry, type Profile } from "./store";
-import { bridgeChoices, bridgeFor, bridgeLocked, bridgeSummary, earlyRetirees, householdAt, partnerWork } from "./bridge";
+import { bridgeBudget, bridgeChoices, bridgeFor, bridgeLocked, bridgeSummary, earlyRetirees, householdAt, partnerWork } from "./bridge";
+import type { BrBudget } from "@/lib/engine/types";
 import { healthChoices, healthFor, healthGap, healthWords } from "./health";
 import { useLandedOn } from "./land";
 import { Note, PlanFacts, Tile, TipLabel, To } from "./ui";
@@ -200,6 +201,8 @@ function BridgeTile() {
   const R = useMemo(() => results(pr, entries), [pr, entries]);
   const early = earlyRetirees(pr)[0];
   const B = useMemo(() => (early && pr.bridge ? bridgeSummary(pr, entries, R) : null), [early, pr, entries, R]);
+  // What Retirement's strategy withdraws in the bridge years, market by market.
+  const budget = useMemo(() => (early ? bridgeBudget(pr, R) : null), [early, pr, R]);
   // The Bridge's choices as they stand, for "Use this bridge plan".
   const latest = useRef<BridgeInputs | null>(null);
   const BridgeView = TOOL_VIEWS.bridge;
@@ -221,8 +224,8 @@ function BridgeTile() {
           </div>
         )}
         <div className="dsh-mt">
-          <Hosted key={JSON.stringify(R.S?.P ? [R.S.P.trad, R.S.P.roth, R.S.P.brok, R.spend, early.retire, inputs.stock, inputs.sv, inputs.cash, inputs.household, inputs.work2] : null)} household={null}
-            locked={bridgeLocked(pr, entries)} slots={{ facts: <BridgeFacts pr={pr} entries={entries} inputs={inputs} /> }}
+          <Hosted key={JSON.stringify(R.S?.P ? [R.S.P.trad, R.S.P.roth, R.S.P.brok, R.spend, early.retire, inputs.stock, inputs.sv, inputs.cash, inputs.household, inputs.work2, budget?.steady] : null)} household={null}
+            locked={bridgeLocked(pr, entries)} bridgeBudget={budget} slots={{ facts: <BridgeFacts pr={pr} entries={entries} inputs={inputs} budget={budget} /> }}
             seed={(id) => (id === "bridge" ? (inputs as unknown as ToolInputs) : undefined)}
             keep={(id, d) => {
               if (id !== "bridge") return;
@@ -239,14 +242,15 @@ function BridgeTile() {
 }
 
 /** What the Bridge takes from the plan, in place of its fields. */
-function BridgeFacts({ pr, entries, inputs }: { pr: Profile; entries: Entry[]; inputs: BridgeInputs }) {
+function BridgeFacts({ pr, entries, inputs, budget }: { pr: Profile; entries: Entry[]; inputs: BridgeInputs; budget: BrBudget | null }) {
   const early = earlyRetirees(pr)[0], H = holdings(entries, pr), partner = early ? partnerWork(pr, early) : null;
   const m = (v: string) => money(Number(v.replace(/,/g, "")) || 0);
   const mix = retireMix(pr);
   const rows: [string, string][] = [
     ["Retiring", early ? `${early.name === "You" ? "" : early.name + " "}at ${early.retire}, in ${early.from}` : "—"],
     ["Filing", `${inputs.status === "m" ? "Married filing jointly" : "Single"}, ${inputs.state}`],
-    ["Spending, after tax", m(inputs.spend) + " per year"],
+    budget ? ["Withdrawals, before tax", `Your strategy's: ${money(budget.steady[0])} in ${early?.from ?? "year one"}, then as it decides in each market`]
+      : ["Spending, after tax", m(inputs.spend) + " per year"],
     ["Traditional 401(k) and IRA", m(inputs.trad) + (Number(inputs.k401.replace(/,/g, "")) > 0 ? `, ${m(inputs.k401)} of it in the plan ${early?.name === "You" ? "you're" : (early?.name ?? "") + " is"} leaving` : "")],
     ...(Number(inputs.g457.replace(/,/g, "")) > 0 ? [["457(b)", m(inputs.g457)] as [string, string]] : []),
     ...(Number(inputs.trad2.replace(/,/g, "")) > 0 && inputs.age2 ? [[`Of that, ${early && early.i ? nameOf(pr, 0) : nameOf(pr, 1)}'s`, `${m(inputs.trad2)}, open at their own 59½ in ${Math.ceil(early!.from + 59.5 - Number(inputs.age2))}`] as [string, string]] : []),
@@ -257,7 +261,7 @@ function BridgeFacts({ pr, entries, inputs }: { pr: Profile; entries: Entry[]; i
     ...(partner ? [[`${partner.name}'s pay`, `${money(partner.pay)} per year until ${Math.floor(early!.from + (partner.until - early!.retire))}, with their job's health plan`] as [string, string]] : []),
   ];
   return (
-    <PlanFacts id="brFacts" rows={rows} note={<>Balances are what each account holds when you retire, from the <To href="/dashboard/calculator">Calculator</To>. Cost basis and Roth contributions come from <To href="/dashboard/accounts#assets">Net worth</To>{H.rothBasis == null ? " (add your Roth contributions there, or type them below)" : ""}, the mix from Retirement&apos;s Drawdown, and the rest from <To href="/dashboard/profile">Profile</To> and <To href="/dashboard/income">Income</To>. The bridge runs to {early?.name === "You" ? "your" : (early?.name ?? "your") + "'s"} 59½. Each traditional account opens at its owner&apos;s 59½, as set on Net worth (half each if no owner is given).</>} />
+    <PlanFacts id="brFacts" rows={rows} note={<>Balances are what each account holds when you retire, from the <To href="/dashboard/calculator">Calculator</To>. Cost basis and Roth contributions come from <To href="/dashboard/accounts#assets">Net worth</To>{H.rothBasis == null ? " (add your Roth contributions there, or type them below)" : ""}, the mix{budget ? " and each year's withdrawal" : ""} from Retirement&apos;s Drawdown, and the rest from <To href="/dashboard/profile">Profile</To> and <To href="/dashboard/income">Income</To>. The bridge runs to {early?.name === "You" ? "your" : (early?.name ?? "your") + "'s"} 59½. Each traditional account opens at its owner&apos;s 59½, as set on Net worth (half each if no owner is given).</>} />
   );
 }
 

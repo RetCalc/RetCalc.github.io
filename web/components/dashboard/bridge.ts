@@ -10,9 +10,12 @@ import { withDefaults, type ToolInputs } from "@/components/tools/ToolState";
 import { groupDigits } from "@/lib/format";
 import { BRIDGE_DEF, bridgeInput, type BridgeInputs } from "@/tools/bridge/model";
 import { runBridge } from "@/tools/bridge/run";
+import { drawdownSetup } from "@/tools/drawdown/model";
+import { ddWindows, runDrawdown } from "@/lib/engine/typed-drawdown";
+import type { BrBudget } from "@/lib/engine/types";
 import { ageOf, couple, grossYear, holdings, nameOf, nowYear, people, results, type Results } from "./model";
 import { OUTSIDE_US, type Entry, type Profile } from "./store";
-import { flow, personSaving, retireMix, taxState } from "./flows";
+import { drawdownFor, flow, personSaving, retireMix, taxState } from "./flows";
 import { collegeChildren } from "./college";
 
 export const UNLOCK = 59.5;
@@ -101,6 +104,46 @@ export function bridgeFor(pr: Profile, entries: Entry[], R: Results = results(pr
   };
 }
 
+/** The Bridge's budget: what Retirement's withdrawal strategy takes out of
+    savings in each of the bridge years, in today's dollars, in every
+    historical start (by the year the bridge starts), and on the steady path
+    (each year's median). The Bridge then only decides where each year's
+    withdrawal comes from, and spends what's left after its costs, so both
+    tabs take the same money out and the bridge holds up in the same markets
+    the strategy is tested in. Every January start with the bridge's years of
+    history is run, not only those with a whole retirement's: a strategy
+    can't see the years ahead, so the years past the record (filled with the
+    last year's) don't change the bridge's. Years before the plan's own
+    retirement (the other of you still working) take nothing out. */
+const budgets = new Map<string, BrBudget | null>();
+export function bridgeBudget(pr: Profile, R: Results): BrBudget | null {
+  const early = earlyRetirees(pr)[0];
+  if (!early || !R.ddPlan || pr.p1.by == null || pr.p1.retire == null) return null;
+  const d = drawdownFor(pr, R.ddPlan), key = JSON.stringify([d, early.from, early.retire, pr.p1.by, pr.p1.retire]);
+  if (budgets.has(key)) return budgets.get(key)!;
+  const { o, P } = drawdownSetup(d);
+  const nB = Math.max(1, Math.ceil(UNLOCK - Math.round(early.retire)));
+  // Bridge year y is the strategy's year y + k; before its first, nothing.
+  const k = Math.round(early.from - (pr.p1.by + pr.p1.retire)), L = Math.min(o.years, Math.max(1, nB + k));
+  const byStart: Record<number, number[]> = {};
+  if (o.years > 0 && P.initial > 0) {
+    for (const w of ddWindows({ ...o, years: L })) {
+      if (w.month !== 1) continue;
+      const seq = w.seq.concat(Array(o.years - L).fill(w.seq[L - 1]));
+      const rows = runDrawdown(o, seq, null, P).rows;
+      byStart[w.year + Math.max(0, k)] = Array.from({ length: nB }, (_, y) => (y + k < 0 ? 0 : Math.max(0, rows[y + k]?.realWithdrawal ?? 0)));
+    }
+  }
+  const all = Object.values(byStart), mid = (y: number) => {
+    const v = all.map((a) => a[y]).sort((a, b) => a - b);
+    return v[Math.floor(v.length / 2)];
+  };
+  const out = all.length ? { steady: Array.from({ length: nB }, (_, y) => mid(y)), byStart } : null;
+  if (budgets.size > 10) budgets.clear();
+  budgets.set(key, out);
+  return out;
+}
+
 /** What the profile keeps from the Bridge: only the choices, since its
     figures always come from the plan (and the Roth's contributions, while
     Net worth doesn't give them). */
@@ -117,9 +160,10 @@ const memo = new Map<string, BridgeSummary | null>();
     history, its costs over the bridge years and what's left at 59½. */
 export function bridgeSummary(pr: Profile, entries: Entry[], R?: Results): BridgeSummary | null {
   if (!needsBridge(pr)) return null;
-  const inputs = bridgeFor(pr, entries, R), key = JSON.stringify(inputs);
+  const Rs = R ?? results(pr, entries), inputs = bridgeFor(pr, entries, Rs), budget = bridgeBudget(pr, Rs);
+  const key = JSON.stringify([inputs, budget]);
   if (memo.has(key)) return memo.get(key)!;
-  const { run } = runBridge(bridgeInput(inputs), "hist", 0);
+  const { run } = runBridge({ ...bridgeInput(inputs), ...(budget ? { budget } : {}) }, "hist", 0);
   const b = run?.best;
   const out = b ? { plan: b.name, phrase: b.phrase, hold: b.score.hold / 100, cost: b.steady.cost, tax: b.steady.tax, pen: b.steady.pen, health: b.steady.health, left: b.steady.end.total, spend: run!.ctx.spend } : null;
   if (memo.size > 30) memo.clear();

@@ -68,6 +68,8 @@ function HoldCell({ hold, of }: { hold: number; of: number }) {
 /* The markets the detail can follow; on a phone "average" drops from the
    outer two so the switch fits the width. */
 const PATHS = [["above", "Above"], ["avg", "Average"], ["below", "Below"]] as const;
+/* On a withdrawal budget: five markets, by what the strategy withdraws. */
+const PCTS = [["p90", "90th"], ["above", "75th"], ["avg", "Median"], ["below", "25th"], ["p10", "10th"]] as const;
 
 /** `variant="72t"`: the /72t page, the same tool led by its 72(t) terms (the
     method and rate right after the situation, the most a 72(t) could pay
@@ -79,9 +81,13 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
   // plan): said in its own words in place of their fields. There, the
   // hand-offs to other tools aren't offered and the market switch stays put.
   const scope = useToolScope(), locked = new Set(scope?.locked ?? []);
+  // The scope's withdrawal strategy, when it has one: each year takes out
+  // what the strategy does there, and history is the only test that pairs.
+  const budget = scope?.bridgeBudget ?? null;
   const router = useRouter();
   const toast = useToast();
-  const [mode, setMode] = useState<"hist" | "mc">("hist");
+  const [modePicked, setMode] = useState<"hist" | "mc">("hist");
+  const mode = budget ? "hist" : modePicked;
   const [selKey, setSelKey] = useState<string | null>(null);
   const [pathKey, setPath] = useState<PathKey>("avg");
   const [balView, setBalView] = useState<"acct" | "hist">("acct");
@@ -112,7 +118,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
   const typed = useDeferredValue(s);
   useBusy(typed !== s);
   const seed = useMcSeed();
-  const { ctx, run: R } = useMemo(() => runBridge(bridgeInput(typed), mode, seed), [typed, mode, seed]);
+  const { ctx, run: R } = useMemo(() => runBridge({ ...bridgeInput(typed), ...(budget ? { budget } : {}) }, mode, seed), [typed, mode, seed, budget]);
   const sel = R ? R.live.find((p) => p.key === selKey) ?? R.best : null;
   useShareKit(BRIDGE_DEF.id, bridgeShare(R, sel));
   const S = useMemo(() => (R && sel ? bridgeScenarios(R.ctx, sel) : null), [R, sel]);
@@ -249,7 +255,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
       </div>
 
       <div className="stack min-w-0 lg:col-span-2" id="tab-bridge">
-        <Reading R={R} F={F} ctx={ctx} seppMax={seppMax} mode={mode} setMode={setMode} t72={t72} />
+        <Reading R={R} F={F} ctx={ctx} seppMax={seppMax} mode={mode} setMode={budget ? null : setMode} t72={t72} />
 
         {/* Nothing to compare or follow until there's a plan. */}
         <div className="stack" hidden={!R}>
@@ -274,7 +280,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
             <div className="hint max-w-copy px-4.5 pt-0 pb-3.5" id="brCompareNote">
               {R ? "Success rates " + (R.mc ? "come from " + BR_TRIALS + " random sequences of historical years" : "come from every start year since " + HIST_START) +
                 ". Tax, penalties, premiums and the balance at 59½ are the steady path at the long-run average return of " +
-                pctStr(R.ctx.real, 1) + " real. “Holds” means reaching 59½ without running short or touching penalized money the plan didn't intend to." : ""}
+                pctStr(R.ctx.real, 1) + " real" + (budget ? ", taking out your strategy's median withdrawal each year" : "") + ". “Holds” means reaching 59½ without running short or touching penalized money the plan didn't intend to." : ""}
             </div>
           </Card>
 
@@ -285,8 +291,10 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               <span className="text-body text-muted-foreground">Following</span>
               <b className="text-body font-semibold text-foreground">{sel ? sel.name : ""}</b>
               <span className="ml-auto max-sm:ml-0 max-sm:w-full">
-                <SegmentedGroup size="chart" id="segBRPath" aria-label="Which market to follow">
-                  {PATHS.map(([k, word]) => (
+                <SegmentedGroup size="chart" id="segBRPath" aria-label={budget ? "Which market to follow, by what your strategy withdraws" : "Which market to follow"}>
+                  {budget ? PCTS.map(([k, word]) => (
+                    <SegmentedItem key={k} data-brpath={k} pressed={path === k} disabled={S ? !S[k] : undefined} onClick={() => setPath(k)}>{word}</SegmentedItem>
+                  )) : PATHS.map(([k, word]) => (
                     <SegmentedItem key={k} data-brpath={k} pressed={path === k} disabled={S ? !S[k] : undefined} onClick={() => setPath(k)}>
                       {word}{k !== "avg" ? <span className="max-sm:hidden">&nbsp;average</span> : null}
                     </SegmentedItem>
@@ -296,7 +304,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
             </div>
 
             <Card>
-              <CardHeader><CardTitle id="brAtTitle">What you&apos;ll have at 59½</CardTitle><CardDescription>Today&apos;s dollars, in three markets from history.</CardDescription></CardHeader>
+              <CardHeader><CardTitle id="brAtTitle">What you&apos;ll have at 59½</CardTitle><CardDescription>{budget ? "Today's dollars, in five markets from history, by what your strategy withdraws." : "Today's dollars, in three markets from history."}</CardDescription></CardHeader>
               <CardContent>
                 <div id="brAtOut">{R && S ? <AtTable ctx={R.ctx} S={S} path={path} /> : null}</div>
                 {scope ? null : (
@@ -348,8 +356,8 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
                 <div className="swipehint">Swipe the table sideways to see every column.</div>
                 <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
                   <table id="brTable" ref={tableRef}>
-                    <thead><tr><th>Age</th><th>Spending</th><th>Health</th><th>Tax</th><th>Penalty</th><th>Brokerage</th><th>Roth</th><th>72(t)</th><th>55 / 457(b)</th><th>Penalized</th><th>Work</th><th>Converted</th><th>MAGI</th><th>Balance</th></tr></thead>
-                    <tbody>{R ? <YearRows rows={rows} ctx={R.ctx} /> : null}</tbody>
+                    <thead><tr><th>Age</th>{budget ? <th>Withdrawn</th> : null}<th>Spending</th><th>Health</th><th>Tax</th><th>Penalty</th><th>Brokerage</th><th>Roth</th><th>72(t)</th><th>55 / 457(b)</th><th>Penalized</th><th>Work</th><th>Converted</th><th>MAGI</th><th>Balance</th></tr></thead>
+                    <tbody>{R ? <YearRows rows={rows} ctx={R.ctx} wd={!!budget} /> : null}</tbody>
                   </table>
                 </div>
               </CollapsibleContent>
@@ -390,7 +398,7 @@ function readingFigures(R: BridgeRun | null) {
 
 function Reading({ R, F, ctx, seppMax, mode, setMode, t72 }: {
   R: BridgeRun | null; F: ReturnType<typeof readingFigures>; ctx: BrCtx; seppMax: number;
-  mode: "hist" | "mc"; setMode: (m: "hist" | "mc") => void; t72: boolean;
+  mode: "hist" | "mc"; setMode: ((m: "hist" | "mc") => void) | null; t72: boolean;
 }) {
   const seppFact = <Fact k="Most 72(t) could pay" id="brSeppMax">{seppMax > 0 ? money(seppMax) + "/yr" : DASH}</Fact>;
   const b = R?.best, t = b?.test, st = b?.steady;
@@ -415,8 +423,8 @@ function Reading({ R, F, ctx, seppMax, mode, setMode, t72 }: {
     <Card size="flush" className="min-w-0">
       {/* How the plans are tested, in a quiet toolbar above the reading. */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-5.5 py-3 max-sm:px-4">
-        <Segmented id="segBR" attr="data-brmode" options={[["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />
-        <span className="text-label text-muted-foreground">{R ? (R.mc ? BR_TRIALS + " random markets" : "Every start since " + HIST_START) : ""}</span>
+        {setMode ? <Segmented id="segBR" attr="data-brmode" options={[["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} /> : null}
+        <span className="text-label text-muted-foreground">{R ? (R.mc ? BR_TRIALS + " random markets" : "Every start since " + HIST_START) + (ctx.budget ? ", each withdrawing what your strategy does in that market" : "") : ""}</span>
       </div>
       <HeroReading tone={F.tone} under
         hero={{ label: "Best way to 59½", id: "brBest", value: F.best, noteId: "brBestNote", note: b ? b.desc : "" }}
@@ -500,8 +508,11 @@ function CompareRows({ R, sel, onPick }: { R: BridgeRun; sel: RunPlan; onPick: (
 /* The payoff: each account at 59½ in an above-average, an average and a
    below-average market, side by side. The highlighted column is the one the
    charts, table and hand-offs below follow. */
+/** "a", "a and b", "a, b and c". */
+const listWords = (w: string[]) => (w.length > 1 ? w.slice(0, -1).join(", ") + " and " + w[w.length - 1] : w.join(""));
+
 function AtTable({ ctx, S, path }: { ctx: BrCtx; S: Scenarios; path: PathKey }) {
-  const keys = (["above", "avg", "below"] as const).filter((k) => S[k]);
+  const keys = (["p90", "above", "avg", "below", "p10"] as const).filter((k) => S[k]);
   const on = (k: PathKey) => (k === path ? "on" : undefined);
   const line = (label: string, f: (x: BrEnd) => number, cls?: string) => (
     <tr className={cls}><td>{label}</td>{keys.map((k) => <td key={k} className={on(k)}>{money(f(S[k]!.run.end))}</td>)}</tr>
@@ -518,7 +529,7 @@ function AtTable({ ctx, S, path }: { ctx: BrCtx; S: Scenarios; path: PathKey }) 
       <div className="scroll max-h-none" tabIndex={0} role="region" aria-label="What you’ll have at 59½">
         <table id="brAtTable">
           <thead><tr><th>Account</th>{keys.map((k) => (
-            <th key={k} className={on(k)}>{S[k]!.head}{S[k]!.year ? <span className="br-yr">{S[k]!.pct + ", " + S[k]!.year}</span> : null}</th>
+            <th key={k} className={on(k)}>{S[k]!.head}{S[k]!.year ? <span className="br-yr">{S[k]!.pct ? S[k]!.pct + ", " + S[k]!.year : "like " + S[k]!.year}</span> : null}</th>
           ))}</tr></thead>
           <tbody>
             {line("Traditional 401(k) / IRA", (x) => x.ira + x.sepp)}
@@ -533,7 +544,7 @@ function AtTable({ ctx, S, path }: { ctx: BrCtx; S: Scenarios; path: PathKey }) 
         <div className="hint mt-2.5">
           {notes}
           {short.length ? (
-            <>{notes ? " " : ""}<CircleXIcon className="mr-1 inline size-3.5 align-middle text-destructive" aria-hidden="true" /><b className="neg">In the {short.map((k) => S[k]!.head.toLowerCase()).join(" and ")} case{short.length > 1 ? "s" : ""}, this plan runs short or needs penalized money before 59{"½"}.</b></>
+            <>{notes ? " " : ""}<CircleXIcon className="mr-1 inline size-3.5 align-middle text-destructive" aria-hidden="true" /><b className="neg">{short.length === keys.length && keys.length > 2 ? "In every one of these markets" : "In the " + listWords(short.map((k) => S[k]!.head.toLowerCase())) + " case" + (short.length > 1 ? "s" : "")}, this plan runs short or needs penalized money before 59{"½"}.</b></>
           ) : null}
         </div>
       ) : null}
@@ -654,7 +665,9 @@ function Ladder({ rows, ctx, tableRef }: { rows: BrRow[]; ctx: BrCtx; tableRef: 
   );
 }
 
-function YearRows({ rows, ctx }: { rows: BrRow[]; ctx: BrCtx }) {
+/* Spending a set amount, each year spends it; on a withdrawal budget, the
+   year's withdrawal comes first and spending is what's left after costs. */
+function YearRows({ rows, ctx, wd }: { rows: BrRow[]; ctx: BrCtx; wd: boolean }) {
   const m = (v: number) => (v > 0.5 ? money(v) : DASH);
   return (
     <>
@@ -662,7 +675,7 @@ function YearRows({ rows, ctx }: { rows: BrRow[]; ctx: BrCtx }) {
         const d = r.d;
         return (
           <tr key={r.age} className={r.short > 1 ? "text-loss" : undefined}>
-            <td>{r.short > 1 ? <CircleXIcon className="mr-1 inline size-3.5 align-middle" aria-label="Runs short" /> : null}{r.age}</td><td>{money(ctx.spend)}</td><td>{ctx.aca ? money(r.health) : DASH}</td><td>{money(r.tax + r.fica)}</td>
+            <td>{r.short > 1 ? <CircleXIcon className="mr-1 inline size-3.5 align-middle" aria-label="Runs short" /> : null}{r.age}</td>{wd ? <td>{money(r.wd ?? 0)}</td> : null}<td>{money(wd ? r.spend : ctx.spend)}</td><td>{ctx.aca ? money(r.health) : DASH}</td><td>{money(r.tax + r.fica)}</td>
             <td>{m(r.pen)}</td><td>{m(d.brok)}</td><td>{m(d.rothBasis + d.rung)}</td><td>{m(r.sp)}</td><td>{m(d.r55)}</td>
             <td>{m(d.early)}</td><td>{m(r.W)}</td><td>{m(r.C)}</td>
             <td>{money(r.magi)}{r.fplPct != null ? <>{" "}<span className="br-fpl">{Math.round(r.fplPct * 100)}%</span></> : null}</td>
