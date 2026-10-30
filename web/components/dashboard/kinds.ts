@@ -40,15 +40,17 @@ export const BASIS_KINDS: Partial<Record<string, { name: string }>> = {
   roth: { name: "Your contributions" },
 };
 
-/** The kinds that belong to one of you, with rules by age: a couple says
-    whose each is. Brokerage, cash and the home are the household's. */
+/** The kinds with rules by age (each opens at its owner's 59½): a
+    couple's are guessed from the name when no owner is set. */
 export const OWNED_KINDS = ["workplace", "g457", "ira", "roth", "hsa"];
 
-/** Whose an account is: as set, else from its name ("Sam's 401(k)"), else
-    null (counted half each). Only for a couple's own-kind accounts. */
+/** Whose an asset or debt is, for a couple: as set, else (for the kinds
+    above) from its name ("Sam's 401(k)"), else null: shared, counted half
+    each. */
 export function ownerOf(i: { kind: string; name: string; owner?: 0 | 1 | null }, names: [string, string] | null): 0 | 1 | null {
-  if (!names || !OWNED_KINDS.includes(i.kind)) return null;
+  if (!names) return null;
   if (i.owner !== undefined) return i.owner;
+  if (!OWNED_KINDS.includes(i.kind)) return null;
   const has = (n: string) => !!n.trim() && new RegExp("\\b" + n.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i").test(i.name);
   const a = has(names[0]), b = has(names[1]);
   return a === b ? null : a ? 0 : 1;

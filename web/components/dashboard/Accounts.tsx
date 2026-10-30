@@ -6,10 +6,13 @@
    day: a second save the same day replaces it), and the plan reads the
    latest one. */
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { PencilIcon, PlusIcon, Trash2Icon, WalletIcon, LandmarkIcon, CalendarDaysIcon, ChartBarIcon, XIcon } from "lucide-react";
+import { DndContext, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type Modifier } from "@dnd-kit/core";
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVerticalIcon, PencilIcon, PlusIcon, Trash2Icon, WalletIcon, LandmarkIcon, CalendarDaysIcon, ChartBarIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -21,7 +24,7 @@ import { useNarrow } from "@/components/charts/useNarrow";
 import { useWidth } from "./charts";
 import { Frame } from "./Frame";
 import { longDate, money, shortMoney } from "./format";
-import { ASSET_GROUPS, ASSET_KINDS, BASIS_KINDS, DEBT_GROUPS, DEBT_KINDS, OWNED_KINDS, groupOf, kindName, ownerOf, type Group } from "./kinds";
+import { ASSET_GROUPS, ASSET_KINDS, BASIS_KINDS, DEBT_GROUPS, DEBT_KINDS, groupOf, kindName, ownerOf, type Group } from "./kinds";
 import { Tile, TipLabel } from "./ui";
 import { pctTxt, useTyped } from "./fields";
 import { entryFrom, netWorth, newId, sum, today, useDashboard, withEntry, type Entry, type Item } from "./store";
@@ -136,20 +139,20 @@ export function Legend() {
 
 /** A person's name for a "whose" choice. */
 const whoName = (names: [string, string], i: 0 | 1) => names[i].trim() || (i ? "Your partner" : "You");
+const whoText = (names: [string, string], w: 0 | 1 | null) => (w == null ? "Shared" : whoName(names, w));
 
 /** One side's list, read-only, under its column names. */
 function List({ items, side, names }: { items: Item[]; side: Item["side"]; names: [string, string] | null }) {
   const rows = items.filter((i) => i.side === side);
-  const kinds = side === "asset" ? ASSET_KINDS : DEBT_KINDS, debt = side === "debt";
-  const sorted = rows.slice().sort((a, b) => kinds.findIndex((k) => k.kind === a.kind) - kinds.findIndex((k) => k.kind === b.kind));
+  const debt = side === "debt";
   return (
     <table className="dsh-tbl dsh-ltbl">
       <thead><tr><th>Name</th><th>{debt ? "Type" : <TipLabel text="Type" id="assetType" />}</th><th>{debt ? "Amount owed" : "Amount"}</th>{debt ? <th><TipLabel text="Interest rate" id="debtRate" /></th> : null}</tr></thead>
       <tbody>
-        {sorted.length ? sorted.map((i) => (
+        {rows.length ? rows.map((i) => (
           <tr key={i.id}>
             <td><i className={"dsh-sw dsh-g-" + groupOf(i.kind)} aria-hidden="true" />{i.name || kindName(i.kind)}</td>
-            <td className="dsh-muted dsh-kind">{kindName(i.kind)}{ownerOf(i, names) != null ? " · " + whoName(names!, ownerOf(i, names)!) : ""}</td>
+            <td className="dsh-muted dsh-kind">{kindName(i.kind)}{names ? " · " + whoText(names, ownerOf(i, names)) : ""}</td>
             <td>{money(i.value)}{!debt && BASIS_KINDS[i.kind] && i.basis != null ? <Gain item={i} /> : null}</td>
             {debt ? <td>{i.rate != null ? (i.rate * 100).toFixed(2).replace(/\.?0+$/, "") + "%" : "—"}</td> : null}
           </tr>
@@ -173,7 +176,13 @@ function F({ l, children }: { l: string; children: React.ReactNode }) {
   return <div className="dsh-ef"><span className="dsh-efl" aria-hidden="true">{l}</span>{children}</div>;
 }
 
-/** One side's rows, editable. */
+/** Rows move up and down only. */
+const upDown: Modifier = ({ transform }) => ({ ...transform, x: 0 });
+
+/** One side's rows, editable, each dragged by its grip to reorder: a
+    mouse drags at once, a finger after a touch and hold (so the page still
+    scrolls), and a keyboard picks one up with Space and moves it with the
+    arrows. */
 function EditList({ items, side, names, onChange }: { items: Item[]; side: Item["side"]; names: [string, string] | null; onChange: (items: Item[]) => void }) {
   const kinds = side === "asset" ? ASSET_KINDS : DEBT_KINDS;
   const put = (id: string, v: Partial<Item>) => onChange(items.map((i) => (i.id === id ? { ...i, ...v } : i)));
@@ -182,46 +191,81 @@ function EditList({ items, side, names, onChange }: { items: Item[]; side: Item[
   const [gone, setGone] = useState<{ item: Item; at: number } | null>(null);
   const removeRow = (i: Item) => { setGone({ item: i, at: items.indexOf(i) }); onChange(items.filter((x) => x.id !== i.id)); };
   const undo = () => { if (!gone) return; const next = items.slice(); next.splice(Math.min(gone.at, next.length), 0, gone.item); onChange(next); setGone(null); };
-  const debt = side === "debt", whose = !debt && !!names;
-  const row = debt ? "dsh-erow dsh-erow-debt" : whose ? "dsh-erow dsh-erow-asset dsh-erow-whose" : "dsh-erow dsh-erow-asset";
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const move = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    onChange(arrayMove(items, items.findIndex((i) => i.id === active.id), items.findIndex((i) => i.id === over.id)));
+  };
+  const nameOf = (id: unknown) => { const i = items.find((x) => x.id === id); return i ? i.name || kindName(i.kind) : ""; };
+  const at = (id: unknown) => rows.findIndex((x) => x.id === id) + 1;
+  const debt = side === "debt", whose = !!names;
+  const row = "dsh-erow " + (debt ? "dsh-erow-debt" : "dsh-erow-asset") + (whose ? " dsh-erow-whose" : "");
   return (
     <div className="dsh-elist">
-      <div className={row + " dsh-ehead"} aria-hidden="true">
-        <span>Name</span><span>Type</span>{whose ? <span>Whose</span> : null}<span>{debt ? "Amount owed" : "Amount"}</span>{debt ? <span>Interest rate</span> : <span>What you put in</span>}<span />
+      {/* The column names are for the eye (each field has its own label),
+          except the tip on what you put in. */}
+      <div className={row + " dsh-ehead"}>
+        <span /><span aria-hidden="true">Name</span><span aria-hidden="true">Type</span>{whose ? <span aria-hidden="true">Whose</span> : null}<span aria-hidden="true">{debt ? "Amount owed" : "Amount"}</span>{debt ? <span aria-hidden="true">Interest rate</span> : <span><TipLabel text="What you put in" id="putIn" /></span>}<span />
       </div>
-      {rows.map((i) => (
-        <div key={i.id} className={row}>
-          <F l="Name"><Input aria-label="Name" value={i.name} placeholder={kindName(i.kind)} onChange={(e) => put(i.id, { name: e.target.value })} /></F>
-          <F l="Type"><NativeSelect aria-label="Kind" value={i.kind} onChange={(e) => put(i.id, { kind: e.target.value as Item["kind"], ...(BASIS_KINDS[e.target.value] ? {} : { basis: undefined }) })}>
-            {kinds.map((k) => <option key={k.kind} value={k.kind}>{k.name}</option>)}
-          </NativeSelect></F>
-          {whose ? (OWNED_KINDS.includes(i.kind) ? (
-            <F l="Whose"><NativeSelect aria-label="Whose account" value={String(ownerOf(i, names) ?? "")} onChange={(e) => put(i.id, { owner: e.target.value === "" ? null : (Number(e.target.value) as 0 | 1) })}>
-              <option value="0">{whoName(names!, 0)}</option>
-              <option value="1">{whoName(names!, 1)}</option>
-              <option value="">Not sure: half each</option>
-            </NativeSelect></F>
-          ) : <span className="dsh-muted dsh-ena" aria-hidden="true">Shared</span>) : null}
-          <F l={debt ? "Amount owed" : "Amount"}><Affixed prefix="$"><MoneyInput aria-label="Amount" nonNeg value={i.value ? groupDigits(i.value, true) : ""} onValueChange={(v) => put(i.id, { value: parseNum(v) })} /></Affixed></F>
-          {debt ? <F l="Interest rate"><RateInput rate={i.rate ?? null} onRate={(rate) => put(i.id, { rate })} /></F>
-            : BASIS_KINDS[i.kind] ? <F l={BASIS_KINDS[i.kind]!.name + " (optional)"}><Affixed prefix="$"><MoneyInput aria-label={BASIS_KINDS[i.kind]!.name + " (optional)"} nonNeg placeholder={BASIS_KINDS[i.kind]!.name}
-              value={i.basis != null ? groupDigits(i.basis, true) : ""} onValueChange={(v) => put(i.id, { basis: v.trim() === "" ? null : parseNum(v) })} /></Affixed></F>
-            : <span className="dsh-muted dsh-ena" aria-hidden="true">—</span>}
-          <Button variant="ghost" size="icon" aria-label={"Remove " + (i.name || kindName(i.kind))} onClick={() => removeRow(i)}><Trash2Icon aria-hidden="true" /></Button>
-        </div>
-      ))}
+      <DndContext id={useId()} sensors={sensors} collisionDetection={closestCenter} modifiers={[upDown]} onDragEnd={move}
+        accessibility={{ screenReaderInstructions: { draggable: "To move a row, press Space, use the up and down arrows, then press Space again to drop it, or Escape to cancel." },
+          announcements: {
+            onDragStart: ({ active }) => `Picked up ${nameOf(active.id)}.`,
+            onDragOver: ({ active, over }) => (over ? `${nameOf(active.id)} is now at position ${at(over.id)} of ${rows.length}.` : undefined),
+            onDragEnd: ({ active, over }) => (over ? `${nameOf(active.id)} dropped at position ${at(over.id)} of ${rows.length}.` : `${nameOf(active.id)} dropped.`),
+            onDragCancel: ({ active }) => `Move cancelled. ${nameOf(active.id)} is back where it was.`,
+          } }}>
+        <SortableContext items={rows.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+          {rows.map((i) => (
+            <EditRow key={i.id} item={i} className={row} kinds={kinds} names={names} onPut={(v) => put(i.id, v)} onRemove={() => removeRow(i)} />
+          ))}
+        </SortableContext>
+      </DndContext>
       {gone ? <p className="dsh-cap" role="status">Removed {gone.item.name || kindName(gone.item.kind)}. <Button variant="link" size="inline" onClick={undo}>Undo</Button></p> : null}
       <Button variant="outline" size="sm" onClick={() => { setGone(null); onChange([...items, { id: newId(), side, kind: kinds[0].kind, name: "", value: 0, ...(side === "debt" ? { rate: null } : {}) }]); }}>
         <PlusIcon aria-hidden="true" />{side === "asset" ? "Add an asset" : "Add a debt"}
       </Button>
-      {debt ? null : <p className="dsh-cap">What you put in is optional: for a brokerage account its <TipLabel text="cost basis" id="costBasis" />, for a Roth <TipLabel text="your own contributions" id="rothContrib" />. A 457(b) is its own type because it can be drawn from without the 10% penalty once you leave that job.{whose ? " Say whose each retirement account is, since each opens at its owner's 59½. If you're not sure, it counts half each." : ""}</p>}
+      {debt ? null : <p className="dsh-cap">What you put in is optional: for a brokerage account its <TipLabel text="cost basis" id="costBasis" />, for a Roth <TipLabel text="your own contributions" id="rothContrib" />. A 457(b) is its own type because it can be drawn from without the 10% penalty once you leave that job.{whose ? " Say whose each retirement account is, since each opens at its owner's 59½. Shared counts half each." : ""}</p>}
+    </div>
+  );
+}
+
+/** One editable row, with the grip that drags it. */
+function EditRow({ item: i, className, kinds, names, onPut, onRemove }: { item: Item; className: string; kinds: { kind: Item["kind"]; name: string }[]; names: [string, string] | null; onPut: (v: Partial<Item>) => void; onRemove: () => void }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: i.id });
+  const debt = i.side === "debt", label = i.name || kindName(i.kind);
+  return (
+    <div ref={setNodeRef} className={className + " dsh-sortrow" + (isDragging ? " dsh-dragging" : "")}
+      style={{ "--dsh-drag": CSS.Translate.toString(transform) ?? "none", "--dsh-drag-t": transition ?? "none" } as React.CSSProperties}>
+      <span className="dsh-grip"><Button ref={setActivatorNodeRef} variant="ghost" size="icon" {...attributes} {...listeners} aria-label={"Move " + label}><GripVerticalIcon aria-hidden="true" /></Button></span>
+      <F l="Name"><Input aria-label="Name" value={i.name} placeholder={kindName(i.kind)} onChange={(e) => onPut({ name: e.target.value })} /></F>
+      <F l="Type"><NativeSelect aria-label="Kind" value={i.kind} onChange={(e) => onPut({ kind: e.target.value as Item["kind"], ...(BASIS_KINDS[e.target.value] ? {} : { basis: undefined }) })}>
+        {kinds.map((k) => <option key={k.kind} value={k.kind}>{k.name}</option>)}
+      </NativeSelect></F>
+      {names ? (
+        <F l="Whose"><NativeSelect aria-label="Whose" value={String(ownerOf(i, names) ?? "")} onChange={(e) => onPut({ owner: e.target.value === "" ? null : (Number(e.target.value) as 0 | 1) })}>
+          <option value="0">{whoName(names, 0)}</option>
+          <option value="1">{whoName(names, 1)}</option>
+          <option value="">Shared</option>
+        </NativeSelect></F>
+      ) : null}
+      <F l={debt ? "Amount owed" : "Amount"}><Affixed prefix="$"><MoneyInput aria-label="Amount" nonNeg value={i.value ? groupDigits(i.value, true) : ""} onValueChange={(v) => onPut({ value: parseNum(v) })} /></Affixed></F>
+      {debt ? <F l="Interest rate"><RateInput rate={i.rate ?? null} onRate={(rate) => onPut({ rate })} /></F>
+        : BASIS_KINDS[i.kind] ? <F l={BASIS_KINDS[i.kind]!.name + " (optional)"}><Affixed prefix="$"><MoneyInput aria-label={BASIS_KINDS[i.kind]!.name + " (optional)"} nonNeg placeholder={BASIS_KINDS[i.kind]!.name}
+          value={i.basis != null ? groupDigits(i.basis, true) : ""} onValueChange={(v) => onPut({ basis: v.trim() === "" ? null : parseNum(v) })} /></Affixed></F>
+        : <span className="dsh-muted dsh-ena" aria-hidden="true">—</span>}
+      <span className="dsh-erm"><Button variant="ghost" size="icon" aria-label={"Remove " + label} onClick={onRemove}><Trash2Icon aria-hidden="true" /></Button></span>
     </div>
   );
 }
 
 export function Accounts() {
   const { data, update } = useDashboard();
-  // A couple says whose each retirement account is.
+  // A couple says whose each asset and debt is.
   const names: [string, string] | null = data.profile.who === "couple" ? [data.profile.p1.name, data.profile.p2.name] : null;
   const last = data.entries[data.entries.length - 1] ?? entryFrom(data.profile);
   const [view, setView] = useState<"today" | "time">("today");

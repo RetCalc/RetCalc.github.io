@@ -152,10 +152,13 @@ export function About() {
                     Roth before 59½. Left out, it estimates them.</li>
                     <li>A <b>457(b)</b> is its own type: it can be drawn from without the 10%
                     penalty once you leave that job, which matters for retiring early.</li>
-                    <li>For a couple, each retirement account says <b>whose</b> it is, since each
-                    opens without the penalty at its owner&apos;s 59½. The owner is guessed from the
-                    name (&ldquo;Sam&apos;s 401(k)&rdquo;), and one it can&apos;t place counts half
-                    each. Brokerage, cash and the home are shared.</li>
+                    <li>For a couple, each asset and debt says <b>whose</b> it is: yours, your
+                    partner&apos;s or <b>Shared</b>. It matters most for retirement accounts, since
+                    each opens without the penalty at its owner&apos;s 59½. A retirement account&apos;s
+                    owner is guessed from the name (&ldquo;Sam&apos;s 401(k)&rdquo;); one it can&apos;t
+                    place, and everything else, starts as Shared and counts half each.</li>
+                    <li>Drag a row by its grip to put the list in the order you like. The order
+                    is kept with each entry.</li>
                     <li><b>Save as new entry</b> records it with today&apos;s date. One entry per day:
                     saving again the same day replaces that day&apos;s entry.</li>
                     <li>Each entry is a point in your net worth history, so the chart grows as you

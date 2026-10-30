@@ -161,7 +161,7 @@ function Worth({ M, p }: { M: M_; p: PageInfo }) {
         <div><Sec>Assets</Sec>
           <table className="rp-t"><thead><tr><th>Account</th><th className="l">Kind</th>{two ? <th className="l">Whose</th> : null}<th>Balance</th><th>Notes</th></tr></thead><tbody>
             {assets.map((it, i) => it.more ? <tr key={i}><td>{it.more} more</td><td className="l" />{two ? <td className="l" /> : null}<td>{money(it.rest)}</td><td /></tr>
-              : <tr key={i}><td>{it.name}</td><td className="l">{it.kind}</td>{two ? <td className="l">{it.whose ?? (["ret"].includes(it.gid) ? "Both" : "Household")}</td> : null}<td>{money(it.value)}</td>
+              : <tr key={i}><td>{it.name}</td><td className="l">{it.kind}</td>{two ? <td className="l">{it.whose ?? "Shared"}</td> : null}<td>{money(it.value)}</td>
                 <td>{it.gain != null ? (it.gain >= 0 ? "+" : "−") + money(Math.abs(it.gain)) + " gain" : it.basis != null ? money(it.basis) + " contributed" : ""}</td></tr>)}
             <tr className="tot"><td>All assets</td><td className="l" />{two ? <td className="l" /> : null}<td>{money(W.assets)}</td><td /></tr></tbody></table></div>
         {H.length > 1 ? <div><Sec>Net worth at each update</Sec><WorthLine M={M} w={300} h={190} />
@@ -169,10 +169,10 @@ function Worth({ M, p }: { M: M_; p: PageInfo }) {
             {W.prev ? <Fig sm v={(W.net >= W.prev.nw ? "+" : "−") + money(Math.abs(W.net - W.prev.nw))}>since the update before, {longDate(W.prev.date)}</Fig> : null}</div></div> : null}
       </div>
       {debts.length ? <><Sec>Debts</Sec>
-        <table className="rp-t"><thead><tr><th>Debt</th><th className="l">Kind</th><th>Rate</th><th>Owed</th></tr></thead><tbody>
-          {debts.map((it, i) => it.more ? <tr key={i}><td>{it.more} more</td><td className="l" /><td /><td>{money(it.rest)}</td></tr>
-            : <tr key={i} className={(it.rate ?? 0) >= 0.08 ? "hl" : undefined}><td>{it.name}</td><td className="l">{it.kind}</td><td>{it.rate != null ? (it.rate * 100).toFixed(2).replace(/\.?0+$/, "") + "%" : "–"}</td><td>{money(it.value)}</td></tr>)}
-          <tr className="tot"><td>All debts</td><td className="l" /><td /><td>{money(W.debts)}</td></tr></tbody></table>
+        <table className="rp-t"><thead><tr><th>Debt</th><th className="l">Kind</th>{two ? <th className="l">Whose</th> : null}<th>Rate</th><th>Owed</th></tr></thead><tbody>
+          {debts.map((it, i) => it.more ? <tr key={i}><td>{it.more} more</td><td className="l" />{two ? <td className="l" /> : null}<td /><td>{money(it.rest)}</td></tr>
+            : <tr key={i} className={(it.rate ?? 0) >= 0.08 ? "hl" : undefined}><td>{it.name}</td><td className="l">{it.kind}</td>{two ? <td className="l">{it.whose ?? "Shared"}</td> : null}<td>{it.rate != null ? (it.rate * 100).toFixed(2).replace(/\.?0+$/, "") + "%" : "–"}</td><td>{money(it.value)}</td></tr>)}
+          <tr className="tot"><td>All debts</td><td className="l" />{two ? <td className="l" /> : null}<td /><td>{money(W.debts)}</td></tr></tbody></table>
         {W.debtsHigh > 0 ? <p className="rp-small">Shaded: {money(W.debtsHigh)} at 8% or more, which costs more than most saving earns. Paying it down first is a sure return.</p> : null}</> : null}
     </Sheet>
   );

@@ -25,7 +25,7 @@ const accounts: Tour<DashData> = { name: "Net worth", title: "Keep track of what
     { title: "Your accounts and debts", focus: "#assets", tasks: ({ s }) => [
       { h: "Press <b>Update balances</b> and list each account with today's balance: 401(k)s and IRAs, Roth accounts, brokerage, HSA, checking and savings, and your home if you own one.", ok: done(hasAccounts(s.entries)) },
       { h: "The <b>Type</b> matters: retirement accounts and brokerage pay for retirement, each taxed its own way. Checking and savings are your emergency fund. Your home counts toward net worth but isn't spent in retirement. A 457(b) is its own type, since it can be drawn from without the 10% penalty once you leave that job." },
-      { h: "A couple says <b>Whose</b> each retirement account is: each opens without the penalty at its owner's 59½. It's guessed from the name, and <b>Not sure</b> counts it half each." },
+      { h: "A couple says <b>Whose</b> each asset and debt is. A retirement account opens without the penalty at its owner's 59½, and one that's <b>Shared</b> counts half each. Drag a row by its grip to reorder the list." },
       { h: "<b>What you put in</b> is optional: a brokerage account's <b>cost basis</b> (only the gain above it is taxed when you sell) and a Roth's <b>own contributions</b> (they can come out any time). Your brokerage and Roth statements show them. Once saved, a brokerage row shows its gain or loss in green or red." },
       { h: "Under <b>Debts</b>, add each loan and card with its balance and <b>Interest rate</b>. Debt at 8% or more usually comes first in your next steps." },
       { h: "Rough figures are fine. Your bank's app or last statement has them. Round to the nearest hundred." },

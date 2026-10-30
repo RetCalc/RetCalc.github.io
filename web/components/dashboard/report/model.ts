@@ -147,7 +147,7 @@ export function dashReport(d: DashData, today = new Date()) {
   const items = last?.items ?? [];
   const names: [string, string] | null = two ? [pr.p1.name, pr.p2.name] : null;
   const itemRow = (i: Item) => {
-    const w = names && ["workplace", "g457", "ira", "roth", "hsa"].includes(i.kind) ? ownerOf(i, names) : null;
+    const w = ownerOf(i, names);
     return { name: i.name.trim() || kindName(i.kind), kind: SHORT_KIND[i.kind] ?? kindName(i.kind), value: i.value, rate: i.rate ?? null, basis: i.basis ?? null,
       whose: w == null ? null : nameOf(pr, w), gain: i.kind === "brokerage" && i.basis != null ? i.value - i.basis : null };
   };

@@ -341,7 +341,8 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-li.dsh-tot .dsh-amt { font-weight: 600; }
 .dsh-elist { display: grid; gap: 10px; margin-top: 10px; justify-items: start; }
 .dsh-erow { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.2fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; width: 100%; }
-.dsh-erow-debt { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) 92px auto; }
+.dsh-erow-debt { grid-template-columns: 32px minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) 92px auto; }
+.dsh-erow-debt.dsh-erow-whose { grid-template-columns: 32px minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 0.9fr) 92px auto; }
 @media (max-width: 1180px) { .dsh-erow, .dsh-erow-debt { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 .dsh-asof { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; padding: 12px 16px; border: 1px solid var(--ds-rule); border-radius: 14px; background: var(--ds-surface); }
 .dsh-asof [data-slot="input"] { width: 170px; }
@@ -599,7 +600,7 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 /* Net worth: what was put in (a brokerage account's cost basis, a Roth's
    contributions), a fifth column while editing; the gain or loss after
    the amount once saved. */
-.dsh-erow-asset { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.9fr) auto; }
+.dsh-erow-asset { grid-template-columns: 32px minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.9fr) auto; }
 @media (max-width: 1180px) { .dsh-erow-asset { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 .dsh-ena { padding-left: 10px; }
 @media (max-width: 1180px) { .dsh-ena { display: none; } }
@@ -627,8 +628,19 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 .dsh-changebar > span:first-child { flex: 1 1 320px; }
 .dsh-changebar-b { display: flex; gap: 8px; }
 /* A couple's assets: whose each retirement account is, too. */
-.dsh-erow-asset.dsh-erow-whose { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 0.9fr) auto; }
-@media (max-width: 1180px) { .dsh-erow-asset.dsh-erow-whose { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.dsh-erow-asset.dsh-erow-whose { grid-template-columns: 32px minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 0.9fr) auto; }
+@media (max-width: 1180px) { .dsh-erow-asset.dsh-erow-whose, .dsh-erow-debt.dsh-erow-whose { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+/* Net worth's rows drag by their grip. A finger holds it first, so the
+   grip keeps the press to itself (no text selection or callout). Two
+   columns across, the grip and Remove share the row's top line. */
+.dsh-sortrow { transform: var(--dsh-drag, none); transition: var(--dsh-drag-t, none); }
+.dsh-grip { display: inline-flex; cursor: grab; touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; color: var(--ds-muted); }
+.dsh-grip:active { cursor: grabbing; }
+.dsh-erow.dsh-dragging { position: relative; z-index: 2; border-radius: 10px; background: var(--ds-surface); box-shadow: 0 6px 20px rgb(0 0 0 / 0.14); }
+@media (max-width: 1180px) {
+  .dsh-elist > .dsh-erow > .dsh-grip { grid-row: 1; grid-column: 1; justify-self: start; margin: -4px 0 -6px -4px; }
+  .dsh-elist > .dsh-erow > .dsh-erm { grid-row: 1; grid-column: 2; justify-self: end; margin: -4px -4px -6px 0; }
+}
 
 /* Net worth on a phone: each asset or debt on two lines, its name and
    amount above, its type (and a debt's rate) below, so nothing runs off
