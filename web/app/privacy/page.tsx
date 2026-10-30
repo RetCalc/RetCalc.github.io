@@ -33,9 +33,11 @@ export default function PrivacyPage() {
             <li>your saved scenarios in each tool;</li>
             <li>your Retirement Readiness Guide answers and plan, and your Paycheck to Retirement plan;</li>
             <li>your Dashboard, and which lessons you&apos;ve read;</li>
+            <li>whether you&apos;ve turned on the monthly check-in email, and when each one was sent;</li>
             <li>when each of those was last changed.</li>
           </ul>
           <p>Numbers you type into a tool and don&apos;t save aren&apos;t kept. Your account holds nothing else about you. Calculations still run in your browser either way.</p>
+          <p>On your Dashboard you can choose to get a monthly check-in email. It&apos;s off unless you turn it on. It comes when your balances haven&apos;t been updated for a month, and says when you last updated them, with a link to your Dashboard. It never includes your figures or your plan&apos;s results, which are worked out in your browser. Every email has a link that turns it off, and so does your Dashboard&apos;s Profile.</p>
           <p>Signing out removes your synced data from that browser. Your account keeps it, and it comes back when you sign in.</p>
         </CardContent>
       </Card>
@@ -46,7 +48,7 @@ export default function PrivacyPage() {
           <ul>
             <li><b>Supabase</b> stores accounts and synced data, in the United States (US East). The database only lets you reach your own data.</li>
             <li><b>Google</b>, if you choose &ldquo;Continue with Google&rdquo;, confirms who you are and shares your email address and name with us. We don&apos;t get access to anything else in your Google account. Google&apos;s sign-in button loads only when you open Sign in, never on an ordinary page view.</li>
-            <li><b>Resend</b> sends the sign-in code to your email address.</li>
+            <li><b>Resend</b> sends the sign-in code to your email address, and the monthly check-in email if you turn it on.</li>
             <li><b>Vercel</b> and <b>Cloudflare</b> host and deliver the site. Like any website, they handle basic request details such as your IP address to serve pages.</li>
             <li><b>Cloudflare Web Analytics</b> counts visits without cookies and without identifying you.</li>
             <li><b>Vercel Web Analytics</b> also counts visits and which pages are viewed, without cookies and without storing your IP address.</li>
