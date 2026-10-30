@@ -586,10 +586,11 @@ export function Stages() {
             <div className="swipehint">Swipe the table sideways to see every column.</div>
             <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
               <table id="xYearTable" ref={yearTable}>
-                <thead><tr><th>Year</th><th>Stage</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
+                {/* On the Dashboard, your age at each year's end, as the chart has it. */}
+                <thead><tr><th>{age0 != null ? "Age" : "Year"}</th><th>Stage</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
                 <tbody>
                   {R.calRows.map((r) => (
-                    <tr key={r.year}><td>{r.year}</td><td>{r.stageFrom === r.stage ? r.stage : r.stageFrom + "–" + r.stage}</td><td>{money(r.start)}</td>
+                    <tr key={r.year}><td>{age0 != null ? fmtNum(age0 + r.year) : r.year}</td><td>{r.stageFrom === r.stage ? r.stage : r.stageFrom + "–" + r.stage}</td><td>{money(r.start)}</td>
                       <td>{money(r.contrib)}</td><td className="pos">{money(r.growth)}</td><td>{money(r.end)}</td><td>{money(r.end / Math.pow(1 + g.inflation, r.t))}</td></tr>
                   ))}
                 </tbody>
