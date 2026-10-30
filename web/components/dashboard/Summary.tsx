@@ -21,6 +21,7 @@ import { Accounts as PlanAccounts, ChildrenCost, Climb, PayCard, StageLine } fro
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { Legend, TodayBars } from "./Accounts";
 import { Frame } from "./Frame";
+import { ReportButton } from "./report/ReportButton";
 import { advancedFor, calcInputs, planKidsOf } from "./calc";
 import { bridgeSummary, earlyRetirees } from "./bridge";
 import { yearlySaving } from "./cover";
@@ -122,7 +123,7 @@ export function Summary() {
   const H = holdings(data.entries, pr);
 
   return (
-    <Frame current="summary" title="Plan summary" sub="Everything we know, on one page">
+    <Frame current="summary" title="Plan summary" sub="Everything we know, on one page" actions={<ReportButton />}>
       {S ? (
         <div className="dsh-psum">
           <PlanHero />

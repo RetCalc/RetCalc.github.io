@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { Frame } from "./Frame";
+import { ReportButton } from "./report/ReportButton";
 import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./charts";
 import { daysSince, lastedWords, longDate, money, pctDown, shortMoney } from "./format";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
@@ -211,7 +212,7 @@ export function Overview() {
       <div className="dsh-r"><span className="dsh-cap">Profile {filled} of {sections.length}</span><div className="dsh-segs" aria-hidden="true">{sections.map((s, i) => <i key={s[1]} className={i < filled ? "dsh-on" : undefined} />)}</div></div></>;
 
   return (
-    <Frame current="overview" title="Dashboard" sub={names + (last ? " · updated " + longDate(last.date) : "")}>
+    <Frame current="overview" title="Dashboard" sub={names + (last ? " · updated " + longDate(last.date) : "")} actions={R.S ? <ReportButton /> : undefined}>
       <Answer R={R} pr={pr} entries={data.entries} />
       <div className="dsh-hello">{hello}</div>
       <div className="dsh-grid dsh-r1">

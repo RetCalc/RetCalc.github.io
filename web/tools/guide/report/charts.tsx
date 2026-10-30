@@ -8,6 +8,8 @@ import { money } from "@/lib/format";
 import { rounded } from "../words";
 import type { PhaseId, ReportModel } from "./model";
 
+type Row = ReportModel["rows"][number];
+
 /** The report's palette: NPS map colors, fixed for print. */
 export const C = {
   ink: "var(--rp-ink)", ink2: "var(--rp-ink2)", land: "var(--rp-land)", grid: "var(--rp-grid)", rule: "var(--rp-rule)", white: "var(--rp-white)", band: "var(--rp-band)",
@@ -16,7 +18,7 @@ export const C = {
 };
 
 export const PHASE_COLOR: Record<PhaseId, string> = { save: C.forest, early: C.rose, medicare: C.clay, ssEarly: C.sky, ss: C.water, rmd: C.slate };
-export const SOURCE_COLOR: Record<string, string> = { ss: C.water, pension: C.dusk, trad: C.forest, roth: C.woods, brok: C.sand };
+export const SOURCE_COLOR: Record<string, string> = { work: C.rose, ss: C.water, pension: C.dusk, trad: C.forest, roth: C.woods, brok: C.sand };
 export const OUT_COLOR: Record<string, string> = { spent: C.ink, tax: C.trail, health: C.clay, pen: C.ember, surplus: C.sand };
 
 /** $1.5M, $400K, $0: axis labels. */
@@ -36,15 +38,15 @@ export function ticks(max: number, n = 4) {
 }
 
 /** Text in a chart: weight and size go to the stylesheet as custom properties. */
-const T = ({ x, y, children, a = "start", w = 600, s = 11, c = C.ink }: { x: number; y: number; children: React.ReactNode; a?: "start" | "middle" | "end"; w?: number; s?: number; c?: string }) =>
+export const T = ({ x, y, children, a = "start", w = 600, s = 11, c = C.ink }: { x: number; y: number; children: React.ReactNode; a?: "start" | "middle" | "end"; w?: number; s?: number; c?: string }) =>
   <text x={x} y={y} textAnchor={a} className="rp-tx" style={{ "--fw": w, "--fs": s + "px" } as React.CSSProperties} fill={c}>{children}</text>;
-const Grid = ({ list, Y, x1, x2 }: { list: number[]; Y: (v: number) => number; x1: number; x2: number }) => (
+export const Grid = ({ list, Y, x1, x2 }: { list: number[]; Y: (v: number) => number; x1: number; x2: number }) => (
   <>{list.map((v) => <g key={v}><line x1={x1} x2={x2} y1={Y(v)} y2={Y(v)} stroke={C.grid} strokeWidth={v ? 0.6 : 1} />
     <text x={x1 - 6} y={Y(v) + 3.5} textAnchor="end" className="rp-ax">{axis(v)}</text></g>)}</>
 );
 /** Stop markers that would land on each other step up out of the way, each
     keeping a leader line to its true point. */
-function dodge(pts: { x: number; y: number }[], r = 10, step = 24) {
+export function dodge(pts: { x: number; y: number }[], r = 10, step = 24) {
   const placed: { x: number; y: number }[] = [];
   return pts.map((p) => {
     let y = p.y;
@@ -53,9 +55,9 @@ function dodge(pts: { x: number; y: number }[], r = 10, step = 24) {
     return { x: p.x, y, y0: p.y };
   });
 }
-const Leader = ({ x, y, y0 }: { x: number; y: number; y0: number }) => (y === y0 ? null
+export const Leader = ({ x, y, y0 }: { x: number; y: number; y0: number }) => (y === y0 ? null
   : <g><line x1={x} x2={x} y1={y0} y2={y + 10} stroke={C.band} strokeWidth={1.2} /><circle cx={x} cy={y0} r={2.6} fill={C.band} stroke={C.white} strokeWidth={1} /></g>);
-const StopMark = ({ x, y, n }: { x: number; y: number; n: number }) => (
+export const StopMark = ({ x, y, n }: { x: number; y: number; n: number }) => (
   <g><circle cx={x} cy={y} r={10} fill={C.band} stroke={C.white} strokeWidth={2} />
     <text x={x} y={y + 3.6} textAnchor="middle" className="rp-stopn" fill={C.white}>{n}</text></g>
 );
@@ -90,7 +92,7 @@ export function LifeMap({ M, w = 732, h = 470 }: { M: ReportModel; w?: number; h
 
 /** The trail by age: each phase of the plan as a colored stretch, with the
     numbered stops. */
-export function Trail({ M, w = 708 }: { M: ReportModel; w?: number }) {
+export function Trail({ M, w = 708 }: { M: Pick<ReportModel, "phases" | "end" | "stops">; w?: number }) {
   const x0 = M.phases[0].from, x1 = M.end + 1, X = (v: number) => 8 + ((v - x0) / Math.max(1, x1 - x0)) * (w - 16);
   // As much room above the trail as the stepped-up markers need.
   const tall = dodge(M.stops.map((s) => ({ x: X(s.age), y: 0 }))), y = 14 - Math.min(0, ...tall.map((d) => d.y));
@@ -111,9 +113,10 @@ export function Trail({ M, w = 708 }: { M: ReportModel; w?: number }) {
 
 /** Each year of retirement's money, stacked by where it comes from, with
     what's spent as a dashed line. */
-export function IncomeBars({ M, w = 440, h = 300 }: { M: ReportModel; w?: number; h?: number }) {
-  const pl = 46, pr = 10, pt = 10, pb = 24, keys = ["ss", "pension", "trad", "roth", "brok"] as const;
-  const tot = (r: ReportModel["rows"][number]) => keys.reduce((t, k) => t + Math.max(0, r[k]), 0);
+export function IncomeBars({ M, w = 440, h = 300 }: { M: Pick<ReportModel, "rows" | "S">; w?: number; h?: number }) {
+  // A partner still working (the Dashboard's plans only) is paid first.
+  const pl = 46, pr = 10, pt = 10, pb = 24, keys = ["work", "ss", "pension", "trad", "roth", "brok"] as const;
+  const tot = (r: Row) => keys.reduce((t, k) => t + Math.max(0, r[k] ?? 0), 0);
   const { top, list } = ticks(Math.max(...M.rows.map(tot), M.S.spend));
   const n = M.rows.length, bw = (w - pl - pr) / n, X = (i: number) => pl + i * bw, Y = (v: number) => pt + (1 - v / top) * (h - pt - pb);
   return (
@@ -122,7 +125,7 @@ export function IncomeBars({ M, w = 440, h = 300 }: { M: ReportModel; w?: number
       {M.rows.map((r, i) => {
         let acc = 0;
         return <g key={i}>{keys.map((k) => {
-          const v = Math.max(0, r[k]);
+          const v = Math.max(0, r[k] ?? 0);
           if (v <= 0) return null;
           const el = <rect key={k} x={X(i) + bw * 0.12} width={bw * 0.76} y={Y(acc + v)} height={Y(acc) - Y(acc + v)} fill={SOURCE_COLOR[k]} />;
           acc += v;
@@ -133,9 +136,9 @@ export function IncomeBars({ M, w = 440, h = 300 }: { M: ReportModel; w?: number
     </svg>
   );
 }
-export function IncomeKey({ M }: { M: ReportModel }) {
-  const has = (k: "ss" | "pension" | "trad" | "roth" | "brok") => M.rows.some((r) => r[k] >= 100);
-  const names: [("ss" | "pension" | "trad" | "roth" | "brok"), string][] = [["ss", "Social Security"], ["pension", "Pension"], ["trad", "Traditional accounts"], ["roth", "Roth"], ["brok", "Brokerage"]];
+export function IncomeKey({ M }: { M: Pick<ReportModel, "rows" | "S"> }) {
+  const has = (k: "work" | "ss" | "pension" | "trad" | "roth" | "brok") => M.rows.some((r) => (r[k] ?? 0) >= 100);
+  const names: [("work" | "ss" | "pension" | "trad" | "roth" | "brok"), string][] = [["work", "Partner's pay"], ["ss", "Social Security"], ["pension", "Pension"], ["trad", "Traditional accounts"], ["roth", "Roth"], ["brok", "Brokerage"]];
   return (
     <div className="rp-key">{names.filter(([k]) => has(k)).map(([k, t]) => <span key={k}><i style={{ "--sw": SOURCE_COLOR[k] } as React.CSSProperties} />{t}</span>)}
       <span><i className="dash" style={{ "--sw": C.trail } as React.CSSProperties} />{money(M.S.spend)} you spend</span></div>
@@ -144,7 +147,7 @@ export function IncomeKey({ M }: { M: ReportModel }) {
 
 /** Every historical start: what was left at the end (or nothing), with the
     lowest point along the way. */
-export function HistoryBars({ M, w = 732, h = 330 }: { M: ReportModel; w?: number; h?: number }) {
+export function HistoryBars({ M, w = 732, h = 330 }: { M: Pick<ReportModel, "runs" | "worst">; w?: number; h?: number }) {
   const pl = 50, pb = 22, pt = 10, n = M.runs.length;
   const { top, list } = ticks(Math.max(...M.runs.map((r) => r.end), 1));
   const bw = (w - pl) / n, Y = (v: number) => pt + (1 - Math.min(Math.max(v, 0), top) / top) * (h - pt - pb);
@@ -166,8 +169,8 @@ export function HistoryBars({ M, w = 732, h = 330 }: { M: ReportModel; w?: numbe
 
 /** One year's figure per bar, by age: income tax, health insurance. */
 export function YearBars({ M, f, color, w = 430, h = 190, stack, ages }: {
-  M: ReportModel; f: (r: ReportModel["rows"][number]) => number; color: string; w?: number; h?: number;
-  stack?: { f: (r: ReportModel["rows"][number]) => number; color: string }; ages?: (age: number) => boolean;
+  M: Pick<ReportModel, "rows">; f: (r: Row) => number; color: string; w?: number; h?: number;
+  stack?: { f: (r: Row) => number; color: string }; ages?: (age: number) => boolean;
 }) {
   const rows = ages ? M.rows.filter((r) => ages(r.age)) : M.rows, pl = 46, pb = 22, pt = 8;
   const { top, list } = ticks(Math.max(...rows.map(f), 1));
@@ -204,7 +207,7 @@ export function NeedBars({ M, w = 330, h = 150 }: { M: ReportModel; w?: number; 
 }
 
 /** Lifetime money in and out of retirement, as two stacked bars. */
-export function LifetimeBars({ M, w = 708, h = 120 }: { M: ReportModel; w?: number; h?: number }) {
+export function LifetimeBars({ M, w = 708, h = 120 }: { M: Pick<ReportModel, "money" | "rows">; w?: number; h?: number }) {
   const tin = M.money.in.reduce((t, x) => t + x[1], 0), X = (v: number) => (v / Math.max(1, tin)) * w;
   const row = (y: number, list: [string, number, string][], col: Record<string, string>) => {
     let x = 0;
@@ -228,7 +231,7 @@ export function LifetimeBars({ M, w = 708, h = 120 }: { M: ReportModel; w?: numb
 const SHORT: Record<string, string> = { outlook: "Retirement outlook", rate: "Savings rate", cushion: "Emergency fund", debt: "Debt", flow: "Cash flow" };
 /** The score as its hundred points: a stretch for each area as wide as
     the points it's worth, filled as far as this plan earns them. */
-export function ScoreBar({ M, w = 732, h = 74 }: { M: ReportModel; w?: number; h?: number }) {
+export function ScoreBar({ M, w = 732, h = 74 }: { M: Pick<ReportModel, "factors"> & { R: Pick<ReportModel["R"], "P" | "score"> }; w?: number; h?: number }) {
   const starts = M.factors.map((_, i) => M.factors.slice(0, i).reduce((t, f) => t + (f.w / 100) * w, 0));
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label={"Readiness score " + M.R.score + " of 100, by area"}>
@@ -365,7 +368,6 @@ export function ReportMark() {
 }
 
 /* ---------- the conditional pages ---------- */
-type Row = ReportModel["rows"][number];
 /** Each year's figures stacked by part, with an optional line across them. */
 export function StackBars({ rows, parts, line, w = 430, h = 220, max: maxIn }: {
   rows: Row[]; parts: { f: (r: Row) => number; color: string }[]; line?: { f: (r: Row) => number; color: string }; w?: number; h?: number; max?: number;

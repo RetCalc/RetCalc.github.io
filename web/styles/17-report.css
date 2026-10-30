@@ -111,6 +111,7 @@
 .rp-legend{position:absolute;left:1.02in;top:.3in;background:#fff;border:1.5px solid var(--rp-band);padding:9px 11px;font-size:10.5px;line-height:1.35;width:2.25in}
 /* Lower, under the stage markers along the top of the chart. */
 .rp-legend.low{top:.66in}
+.rp-legend.right{left:auto;right:.6in}
 .rp-legend h5{font-size:11px;font-weight:800;margin-bottom:5px}
 .rp-legend div{display:flex;align-items:center;gap:7px;margin:3px 0}
 .rp-legend i{display:inline-block;width:20px;height:10px;flex:none;background:var(--sw)}
@@ -156,6 +157,7 @@
 .rp-page tbody tr:hover{background:transparent}
 .rp-t tr.tot td{font-weight:800}
 .rp-t.yy td,.rp-t.yy th{font-size:10.5px;padding-top:3.6px;padding-bottom:3.6px}
+.rp-t.yy.dash td,.rp-t.yy.dash th{padding-top:3.3px;padding-bottom:3.3px}
 
 /* Score */
 .rp-scoregrid{display:grid;grid-template-columns:1fr 2.2in;gap:.3in;margin-top:.16in;align-items:start}
@@ -179,6 +181,23 @@
 .rp-kit > div{border-top:2px solid var(--rp-band);padding:9px 0 0;font-size:10.5px;line-height:1.4}
 .rp-kit h6{font-size:12px;font-weight:800;margin-bottom:3px}
 .rp-kit .y{color:var(--rp-ink2);margin-bottom:5px}
+
+/* The Dashboard's report (components/dashboard/report): four figures in a
+   row, the score's areas with their reasons, and the steps already done. */
+.rp-part{width:var(--w)}
+.rp-cols2{display:grid;grid-template-columns:1fr 1fr;gap:10px .3in;align-items:start}
+.rp-num.inl{display:inline-grid;margin-right:6px;vertical-align:1px}
+.rp-side .rp-tool{margin-top:6px}
+.rp-g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.22in}
+.rp-g4 > .rp-side{background:none;border-top:2px solid var(--rp-band);padding:9px 0 0}
+.rp-g4 .rp-fig{font-size:26px}
+.rp-area.wide{grid-template-columns:1.5in 1fr .8in;align-items:start}
+.rp-area.wide .txt{margin-top:0}
+.rp-area .txt ul{margin:5px 0 0;padding-left:15px}
+.rp-area .txt li{margin:2px 0}
+.rp-done{list-style:none;padding:0;margin:0;columns:2;column-gap:.3in;font-size:11px}
+.rp-done li{padding:3px 0 3px 18px;position:relative;break-inside:avoid;border-bottom:1px solid var(--rp-rule)}
+.rp-done li::before{content:"";position:absolute;left:2px;top:6px;width:8px;height:4px;border-left:2px solid var(--rp-forest);border-bottom:2px solid var(--rp-forest);transform:rotate(-45deg)}
 
 /* On paper: only the sheets, edge to edge, on their own named page so the
    one-page summary keeps its margins. */
