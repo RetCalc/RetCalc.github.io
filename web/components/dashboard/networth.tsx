@@ -354,21 +354,32 @@ export function TaxMix({ items }: { items: Item[] }) {
   const total = parts.reduce((t, c) => t + c.v, 0);
   if (total <= 0) return <p className="dsh-cap">Nothing in savings here yet. Add accounts below with Update balances.</p>;
   const pct = (v: number) => Math.round((v / total) * 100);
-  const pre = parts.find((c) => c.id === "pre")?.v ?? 0, free = parts.filter((c) => c.id === "roth" || c.id === "hsa").reduce((t, c) => t + c.v, 0);
+  // What will be taxed when spent: pre-tax money, and the brokerage's
+  // gain (a cost basis not given is taken as 60% of the balance, as the
+  // plan does; a loss isn't taxed). The rest comes out tax-free: Roth, HSA,
+  // cash, and the brokerage money that was put in.
+  const pre = parts.find((c) => c.id === "pre")?.v ?? 0;
   const brok = items.filter((i) => i.side === "asset" && i.kind === "brokerage" && i.value > 0);
-  const gain = brok.length && brok.every((i) => i.basis != null) ? brok.reduce((t, i) => t + i.value - (i.basis ?? 0), 0) : null;
+  const guessed = brok.some((i) => i.basis == null);
+  const gainUp = brok.reduce((t, i) => t + Math.max(0, i.value - (i.basis ?? i.value * 0.6)), 0);
+  const gain = brok.length && !guessed ? brok.reduce((t, i) => t + i.value - (i.basis ?? 0), 0) : null;
+  const taxed = pre + gainUp, free = total - taxed, mostlyGain = gainUp > pre;
   const bh = 34, H = bh;
   const widths = parts.map((c) => (c.v / total) * W), starts = widths.map((_, k) => widths.slice(0, k).reduce((s, w) => s + w, 0));
-  const takeaway = pre / total >= 0.6
-    ? "Most of it is taxed as income when you spend it. Roth savings, or Roth conversions in low-income years, spread that tax out."
-    : free / total >= 0.5
-      ? "Most of it comes out tax-free, which keeps your taxable income low in retirement."
-      : "A mix like this lets you choose each year which account to draw from, to keep your tax bracket low.";
+  // What the split means, and which kind of tax the taxed part is.
+  const which = taxed <= 0 ? ""
+    : mostlyGain ? " Most of what's taxed is brokerage gain, at capital-gains rates, which are lower than income tax rates."
+      : " Most of what's taxed is pre-tax money, taxed as income.";
+  const takeaway = taxed / total >= 0.6
+    ? "Most of your savings will be taxed when you spend it." + which + (mostlyGain ? "" : " Roth savings, or Roth conversions in low-income years, spread that tax out.")
+    : taxed / total <= 0.4
+      ? "Most of your savings comes out tax-free, which keeps your taxable income low in retirement." + which
+      : "Your savings is close to half taxed and half tax-free, so each year you can choose which to draw from to keep your tax bracket low." + which;
   return (
     <>
       <div className="dsh-stats">
-        <div className="dsh-stat"><div className="dsh-label">Taxed as income when taken out</div><div className="dsh-fig dsh-md">{pct(pre)}%</div></div>
-        <div className="dsh-stat"><div className="dsh-label">Tax-free (Roth and HSA)</div><div className="dsh-fig dsh-md">{pct(free)}%</div></div>
+        <div className="dsh-stat"><div className="dsh-label">Taxed when spent · {money(taxed)}</div><div className="dsh-fig dsh-md">{pct(taxed)}%</div></div>
+        <div className="dsh-stat"><div className="dsh-label">Comes out tax-free · {money(free)}</div><div className="dsh-fig dsh-md">{pct(free)}%</div></div>
       </div>
       <div ref={ref} className="dsh-mt">
         <svg className="dsh-bars" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={parts.map((c) => `${c.name} ${money(c.v)}, ${pct(c.v)}%`).join("; ")} {...touchRead(setHover)}>
@@ -386,7 +397,11 @@ export function TaxMix({ items }: { items: Item[] }) {
           ))}
         </tbody>
       </table>
-      {gain != null ? <p className="dsh-cap dsh-mt6">Of the brokerage&apos;s {money(brok.reduce((t, i) => t + i.value, 0))}, {gain >= 0 ? <>{money(gain)} is gain: the only part taxed when you sell.</> : <>{money(-gain)} is a loss, which can offset gains or some income when you sell.</>}</p> : null}
+      <p className="dsh-cap dsh-mt6">
+        Taxed when spent is your pre-tax money plus the brokerage&apos;s gain. Tax-free is the Roth, the HSA, cash and the money you put into the brokerage.
+        {gain != null ? <> Of the brokerage&apos;s {money(brok.reduce((t, i) => t + i.value, 0))}, {gain >= 0 ? <>{money(gain)} is gain: the only part taxed when you sell.</> : <>{money(-gain)} is a loss, which can offset gains or some income when you sell.</>}</> : null}
+        {guessed ? " A brokerage account's cost basis not given is taken as 60% of its balance; add it with Update balances." : ""}
+      </p>
     </>
   );
 }
