@@ -71,7 +71,8 @@ const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "S
     home and debts aside), with the round numbers passed along the way. */
 export function WorthOverTime({ entries, view }: { entries: Entry[]; view: (items: Item[]) => Item[] }) {
   const pts = entries.map((e) => { const it = view(e.items); return { date: e.date, t: yearOf(e.date), nw: sum(it, "asset") - sum(it, "debt"), sav: sum(it, "asset", SAVINGS) }; });
-  if (pts.length < 2) return <p className="dsh-cap">Each time you save a new entry, a point joins this chart. You have {pts.length || "no"} so far.</p>;
+  const nwNow = pts.length ? <div className="dsh-stat"><div className="dsh-label">Net worth</div><div className="dsh-fig dsh-key">{money(pts[pts.length - 1].nw)}</div></div> : null;
+  if (pts.length < 2) return <><div className="dsh-stats">{nwNow}</div><p className="dsh-cap dsh-mt">Each time you save a new entry, a point joins this chart. You have {pts.length || "no"} so far.</p></>;
   const first = pts[0], last = pts[pts.length - 1], span = last.t - first.t;
   // A year back: the latest entry at least 330 days before the last.
   const ago = pts.slice(0, -1).reverse().find((p) => last.t - p.t >= 330 / 365) ?? null;
@@ -80,6 +81,7 @@ export function WorthOverTime({ entries, view }: { entries: Entry[]; view: (item
   return (
     <>
       <div className="dsh-stats">
+        {nwNow}
         {ago ? <div className="dsh-stat"><div className="dsh-label">In the last 12 months</div><div className="dsh-fig dsh-md">{chg(last.nw - ago.nw)}</div></div> : null}
         <div className="dsh-stat"><div className="dsh-label">Since {longDate(first.date)}</div><div className="dsh-fig dsh-md">{chg(last.nw - first.nw)}</div></div>
         {perYear != null ? <div className="dsh-stat"><div className="dsh-label">Growth per year, on average</div><div className="dsh-fig dsh-md">{(perYear * 100).toFixed(1)}%</div></div> : null}
@@ -236,6 +238,8 @@ export function readyToSpend(items: Item[], pr: Profile, names: [string, string]
 
 export function ReadyToSpend({ items, pr, names }: { items: Item[]; pr: Profile; names: [string, string] | null }) {
   const R = readyToSpend(items, pr, names);
+  // The opening pointed at, on the chart or in the table.
+  const [active, setActive] = useState<number | null>(null);
   if (R.total <= 0) return <p className="dsh-cap">Nothing in savings{names ? " here" : ""} yet. Add accounts below with Update balances.</p>;
   const now = R.steps.find((s) => s.key === "now")?.amount ?? 0;
   const hsa = R.steps.some((s) => s.what.has("HSA")), work = R.steps.some((s) => s.what.has("401(k) or 403(b)"));
@@ -245,12 +249,15 @@ export function ReadyToSpend({ items, pr, names }: { items: Item[]; pr: Profile;
         <div className="dsh-stat"><div className="dsh-label">Can be spent today · {Math.round((now / R.total) * 100)}%</div><div className="dsh-fig dsh-md">{money(now)}</div></div>
         <div className="dsh-stat"><div className="dsh-label">Opens later</div><div className="dsh-fig dsh-md">{money(R.total - now)}</div></div>
       </div>
-      {R.undated ? null : <Steps steps={R.steps} total={R.total} />}
+      {R.undated ? null : <Layers steps={R.steps} total={R.total} active={active} onActive={setActive} />}
       <table className="dsh-tbl dsh-stbl dsh-mt">
         <thead><tr><th>When, and what opens</th><th>Amount</th></tr></thead>
         <tbody>
-          {R.steps.map((s) => (
-            <tr key={s.key}><td>{s.when}{s.year != null ? <span className="dsh-muted"> · {s.year}</span> : null}<div className="dsh-tnote dsh-tnote0">{[...s.what].join(", ")}</div></td><td>{money(s.amount)}</td></tr>
+          {R.steps.map((s, k) => (
+            <tr key={s.key} className={active === k ? "dsh-hot" : active != null && k > active ? "dsh-dimrow" : undefined} onMouseEnter={() => setActive(k)} onMouseLeave={() => setActive(null)}>
+              <td><i className={"dsh-sw dsh-k" + (k % 6)} aria-hidden="true" />{s.when}{s.year != null ? <span className="dsh-muted"> · {s.year}</span> : null}<div className="dsh-tnote">{[...s.what].join(", ")}</div></td>
+              <td>{money(s.amount)}</td>
+            </tr>
           ))}
         </tbody>
       </table>
@@ -265,43 +272,67 @@ export function ReadyToSpend({ items, pr, names }: { items: Item[]; pr: Profile;
   );
 }
 
-/** The savings within reach over the years: a step up at each opening. */
-function Steps({ steps, total }: { steps: Step[]; total: number }) {
+/** The savings within reach over the years: each opening a layer of its
+    own colour, stacked on those before it from its date on. Pointing
+    anywhere along it (or dragging a finger) picks the opening in effect
+    there: the later ones dim, and a box says what's in reach by then. */
+function Layers({ steps, total, active, onActive }: { steps: Step[]; total: number; active: number | null; onActive: (k: number | null) => void }) {
   const [ref, W] = useWidth(600);
-  const [hover, setHover] = useState<string | null>(null);
-  const H = 190, L = 54, R = 64, T = 22, B = 26;
-  const now = nowYear(), dated = steps.map((s) => (s.t || now));
-  const x0 = now, x1 = Math.max(...dated, now + 1) + Math.max(1, (Math.max(...dated) - now) * 0.06);
+  const [px, setPx] = useState<number | null>(null);
+  const H = 210, L = 54, R = 70, T = 14, B = 26;
+  const now = nowYear(), dated = steps.map((s) => s.t || now);
+  const x0 = now, x1 = Math.max(...dated, now + 1) + Math.max(1, (Math.max(...dated) - now) * 0.08);
   const step = niceStep(total), top = Math.ceil(total / step) * step;
   const X = (t: number) => L + ((t - x0) / (x1 - x0)) * (W - L - R), Y = (v: number) => T + (1 - v / top) * (H - T - B);
   const grid: number[] = [];
   for (let v = 0; v <= top + 1; v += step) grid.push(v);
-  // Running totals, and the path that climbs at each opening.
   const runs = steps.map((_, k) => steps.slice(0, k + 1).reduce((t, s) => t + s.amount, 0));
-  const at = steps.map((s, k) => ({ s, x: X(dated[k]), y: Y(runs[k]), run: runs[k] }));
-  const d = `M${X(x0).toFixed(1)} ${Y(0).toFixed(1)}` + at.map((p, k) => ` L${p.x.toFixed(1)} ${(k ? at[k - 1].y : Y(0)).toFixed(1)} L${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join("");
-  const edge = `${d} L${X(x1).toFixed(1)} ${at[at.length - 1].y.toFixed(1)}`;
-  const area = `${edge} L${X(x1).toFixed(1)} ${Y(0).toFixed(1)} Z`;
-  // A year under each opening, skipping one too close to the last shown.
-  const years = at.filter((p) => p.s.year != null).filter((p, i, arr) => arr.slice(0, i).every((o) => Math.abs(o.x - p.x) > 40));
-  const read = (p: (typeof at)[number]) => `${p.s.when}${p.s.year != null ? " (" + p.s.year + ")" : ""}: ${money(p.s.amount)} opens, ${money(p.run)} in reach`;
+  const xs = dated.map(X), end = X(x1);
+  // A year under each opening, skipping one too close to the one before.
+  const years = steps.map((s, k) => ({ s, x: xs[k] })).filter((p) => p.s.year != null && p.x - X(x0) > 44)
+    .filter((p, i, arr) => arr.slice(0, i).every((o) => Math.abs(o.x - p.x) > 40));
+  const probe = (clientX: number) => {
+    const r = ref.current?.querySelector("svg")?.getBoundingClientRect();
+    if (!r) return;
+    const x = ((clientX - r.left) / r.width) * W;
+    if (x < L - 8 || x > end + 8) { setPx(null); onActive(null); return; }
+    const c = Math.max(L, Math.min(end, x));
+    setPx(c);
+    onActive(xs.reduce((k, sx, i) => (sx <= c + 0.5 ? i : k), 0));
+  };
+  const clear = () => { setPx(null); onActive(null); };
+  const move = (e: React.PointerEvent<SVGSVGElement>) => { if (e.pointerType !== "touch") probe(e.clientX); };
+  const scrub = useScrub(ref, (x) => probe(x), clear);
+  const k = active, cx = k == null ? null : px ?? xs[k] + 1;
+  const left = cx != null && cx > W * 0.5;
+  const read = (i: number) => `${steps[i].when}${steps[i].year != null ? " (" + steps[i].year + ")" : ""}: ${money(steps[i].amount)} opens, ${money(runs[i])} in reach`;
   return (
-    <div ref={ref} className="dsh-mt">
-      <svg className="dsh-chart" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={at.map(read).join(". ")} {...touchRead(setHover)}>
-        {grid.map((v) => <g key={v}><line className="dsh-gl" x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} /><text x={L - 8} y={Y(v) + 4} textAnchor="end">{shortMoney(v)}</text></g>)}
+    <div ref={ref} className="dsh-chartwrap dsh-mt" {...scrub}>
+      <svg className="dsh-chart dsh-layers" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={steps.map((_, i) => read(i)).join(". ")}
+        onPointerMove={move} onPointerDown={move} onPointerLeave={(e) => { if (e.pointerType !== "touch") clear(); }}>
+        {grid.map((v) => <g key={v}><line className="dsh-gl" x1={L} x2={end} y1={Y(v)} y2={Y(v)} /><text x={L - 8} y={Y(v) + 4} textAnchor="end">{shortMoney(v)}</text></g>)}
         <text x={X(x0)} y={H - 6} textAnchor="start">Today</text>
-        {years.filter((p) => p.x - X(x0) > 44).map((p) => <text key={p.s.key} x={p.x} y={H - 6} textAnchor="middle">{p.s.year}</text>)}
-        <path className="dsh-step" d={area} />
-        <path className="dsh-stepl" d={edge} />
-        {at.map((p) => (
-          <g key={p.s.key} onMouseEnter={() => setHover(read(p))} onMouseLeave={() => setHover(null)}>
-            <circle className="dsh-hit" cx={p.x} cy={p.y} r={14} data-read={read(p)} />
-            <circle className="dsh-stepdot" cx={p.x} cy={p.y} r={4.5} />
-          </g>
-        ))}
-        <text className="dsh-stepv" x={W - R + 8} y={at[at.length - 1].y + 4}>{shortMoney(total)}</text>
+        {years.map((p) => <text key={p.s.key} x={p.x} y={H - 6} textAnchor="middle">{p.s.year}</text>)}
+        {steps.map((s, i) => {
+          const y = Y(runs[i]), h = Y(i ? runs[i - 1] : 0) - y;
+          return (
+            <g key={s.key}>
+              <rect className={"dsh-layer dsh-k" + (i % 6) + (k != null && i > k ? " dsh-dim" : "")} x={xs[i]} y={y + 1} width={Math.max(0, end - xs[i])} height={Math.max(1, h - 2)} rx={3} />
+              {h >= 15 ? <text className={"dsh-lv" + (k != null && i > k ? " dsh-dim" : "")} x={end + 8} y={y + h / 2 + 4}>+{shortMoney(s.amount)}</text> : null}
+            </g>
+          );
+        })}
+        {cx != null ? <line className="dsh-cursor" x1={cx} x2={cx} y1={T} y2={H - B} /> : null}
       </svg>
-      <div className="dsh-cap dsh-hoverline" aria-live="polite">{hover ?? <><span className="dsh-mouse">Point at a step for what opens then.</span><span className="dsh-touch">Tap a step for what opens then.</span></>}</div>
+      {k != null && cx != null ? (
+        <div className={left ? "dsh-tipbox dsh-tip-l" : "dsh-tipbox dsh-tip-r"}>
+          <b>{steps[k].year != null ? steps[k].year + ": " : ""}{steps[k].when}</b>
+          <div className="dsh-tiprow"><span>Opens then</span><span>{money(steps[k].amount)}</span></div>
+          <div className="dsh-tiprow"><span>Ready to spend by then</span><span>{money(runs[k])}</span></div>
+          {total - runs[k] > 0 ? <div className="dsh-tiprow"><span>Still to open</span><span>{money(total - runs[k])}</span></div> : null}
+        </div>
+      ) : null}
+      <div className="dsh-cap dsh-mt6"><span className="dsh-mouse">Point anywhere along it to see what you can spend by then.</span><span className="dsh-touch">Drag along it to see what you can spend by then.</span></div>
     </div>
   );
 }

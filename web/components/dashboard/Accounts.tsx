@@ -12,10 +12,11 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DndContext, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type Modifier } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVerticalIcon, PencilIcon, PlusIcon, Trash2Icon, WalletIcon, LandmarkIcon, CalendarDaysIcon, ChartBarIcon, XIcon, TrendingUpIcon, HourglassIcon, ReceiptIcon } from "lucide-react";
+import { GripVerticalIcon, PencilIcon, PlusIcon, Trash2Icon, WalletIcon, LandmarkIcon, CalendarDaysIcon, ChartBarIcon, XIcon, HourglassIcon, ReceiptIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { groupDigits, parseNum } from "@/lib/format";
@@ -209,6 +210,7 @@ export function Accounts() {
   // A couple says whose each asset and debt is.
   const names: [string, string] | null = data.profile.who === "couple" ? [data.profile.p1.name, data.profile.p2.name] : null;
   const last = data.entries[data.entries.length - 1] ?? entryFrom(data.profile);
+  const [mode, setMode] = useState<"today" | "time">("today");
   // Whose things the pictures show, for a couple; the lists show everything.
   const [who, setWho] = useState<Who>("all");
   const view = (it: Item[]) => only(it, names, who);
@@ -257,33 +259,25 @@ export function Accounts() {
   return (
     <Frame current="accounts" title="Net worth" sub={last ? (draft ? "Editing. Saving adds a new entry." : "As of " + longDate(last.date)) : "Nothing entered yet"}>
       {names && !draft ? <WhoseFilter names={names} who={who} onWho={setWho} /> : null}
-      <Tile id="picture" icon={ChartBarIcon} title="Assets and debts">
-        <div className="dsh-stats">
-          <div className="dsh-stat"><div className="dsh-label">Net worth</div><div className="dsh-fig dsh-key">{money(have - owe)}</div>
-            {prev && last && !draft ? <div className="dsh-cap dsh-mt6"><span className={nwOf(last) >= nwOf(prev) ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{nwOf(last) >= nwOf(prev) ? "↑" : "↓"} {money(Math.abs(nwOf(last) - nwOf(prev)))}</span> since {longDate(prev.date)}</div> : null}</div>
-          <div className="dsh-stat"><div className="dsh-label">Assets</div><div className="dsh-fig dsh-md">{money(have)}</div></div>
-          <div className="dsh-stat"><div className="dsh-label">Debts</div><div className="dsh-fig dsh-md">{money(owe)}</div></div>
-        </div>
-        <div className="dsh-mt">
-          <TodayBars items={shown} />
-        </div>
-        <Legend />
+      <Tile id="picture" icon={ChartBarIcon} title={mode === "time" && !draft ? "Net worth over time" : "Assets and debts"} right={draft ? null :
+        <Segmented aria-label="Today or over time">
+          <SegmentedItem pressed={mode === "today"} onPressedChange={() => setMode("today")}>Today</SegmentedItem>
+          <SegmentedItem pressed={mode === "time"} onPressedChange={() => setMode("time")}>Over time</SegmentedItem>
+        </Segmented>
+      }>
+        {mode === "time" && !draft ? <WorthOverTime entries={data.entries} view={view} /> : <>
+          <div className="dsh-stats">
+            <div className="dsh-stat"><div className="dsh-label">Net worth</div><div className="dsh-fig dsh-key">{money(have - owe)}</div>
+              {prev && last && !draft ? <div className="dsh-cap dsh-mt6"><span className={nwOf(last) >= nwOf(prev) ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{nwOf(last) >= nwOf(prev) ? "↑" : "↓"} {money(Math.abs(nwOf(last) - nwOf(prev)))}</span> since {longDate(prev.date)}</div> : null}</div>
+            <div className="dsh-stat"><div className="dsh-label">Assets</div><div className="dsh-fig dsh-md">{money(have)}</div></div>
+            <div className="dsh-stat"><div className="dsh-label">Debts</div><div className="dsh-fig dsh-md">{money(owe)}</div></div>
+          </div>
+          <div className="dsh-mt">
+            <TodayBars items={shown} />
+          </div>
+          <Legend />
+        </>}
       </Tile>
-
-      {/* While editing, the page is the editor: these come back on saving. */}
-      {draft ? null : <>
-        <Tile id="overtime" icon={TrendingUpIcon} title="Net worth over time" className="dsh-r4">
-          <WorthOverTime entries={data.entries} view={view} />
-        </Tile>
-        <div className="dsh-grid dsh-two">
-          <Tile id="spend" icon={HourglassIcon} title="When you can spend it" tip="readySpend">
-            <ReadyToSpend items={view(items)} pr={data.profile} names={names} />
-          </Tile>
-          <Tile id="taxed" icon={ReceiptIcon} title="How it's taxed" tip="taxMix">
-            <TaxMix items={view(items)} />
-          </Tile>
-        </div>
-      </>}
 
       {draft ? (
         <div className="dsh-asof">
@@ -295,13 +289,25 @@ export function Accounts() {
 
       {/* Editing, each side takes the full width, so every field has room. */}
       <div className={draft ? "dsh-grid dsh-r4" : "dsh-grid dsh-two"}>
-        <Tile id="assets" icon={WalletIcon} title="Assets" right={<span className="dsh-cap">{money(have)}</span>}>
+        <Tile id="assets" icon={WalletIcon} title="Assets" right={<span className="dsh-cap">{money(sum(items, "asset"))}</span>}>
           {draft ? <EditList items={draft.items} side="asset" names={names} onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="asset" names={names} />}
         </Tile>
-        <Tile id="debts" icon={LandmarkIcon} title="Debts" right={<span className="dsh-cap">{money(owe)}</span>}>
+        <Tile id="debts" icon={LandmarkIcon} title="Debts" right={<span className="dsh-cap">{money(sum(items, "debt"))}</span>}>
           {draft ? <EditList items={draft.items} side="debt" names={names} onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="debt" names={names} />}
         </Tile>
       </div>
+
+      {/* While editing, the page is the editor: these come back on saving. */}
+      {draft ? null : (
+        <div className="dsh-grid dsh-two">
+          <Tile id="spend" icon={HourglassIcon} title="When you can spend it" tip="readySpend">
+            <ReadyToSpend items={view(items)} pr={data.profile} names={names} />
+          </Tile>
+          <Tile id="taxed" icon={ReceiptIcon} title="How it's taxed" tip="taxMix">
+            <TaxMix items={view(items)} />
+          </Tile>
+        </div>
+      )}
       <div className="dsh-editbar">{actions}</div>
       <Dialog open={!!leaving} onOpenChange={(o) => { if (!o) setLeaving(null); }}>
         <DialogContent aria-labelledby="dshLeaveTitle">
