@@ -47,3 +47,6 @@ next-env.d.ts
 
 # built from lib/engine by scripts/build-worker.mjs
 /public/engine-worker.js
+
+# the check-in email's previews (npm run email:preview)
+/scripts/email/preview/
