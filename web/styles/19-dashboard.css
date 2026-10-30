@@ -498,12 +498,15 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 
 /* Very wide screens with a mouse: the rail keeps its labels showing, in
    room that's spare there, and the page stays the width it has at 1440px
-   (1440 less the 68px rail), so nothing on it resizes. */
+   (1440 less the 68px rail), so nothing on it resizes. The page sits in
+   the middle of the room right of the rail, and the title bar's contents
+   line up with it (its rule still runs the full width). */
 @media (min-width: 1700px) and (hover: hover) {
   .dsh-app { grid-template-columns: 236px minmax(0, 1fr); }
   .dsh-rail-in, .dsh-rail:hover .dsh-rail-in, .dsh-rail:focus-within .dsh-rail-in { width: 236px; box-shadow: none; }
   .dsh-rail .dsh-brand span, .dsh-ri span { opacity: 1; }
-  .dsh-page { max-width: 1372px; }
+  .dsh-page { max-width: 1372px; margin-inline: auto; }
+  .dsh-top { padding-inline: max(28px, calc((100% - 1372px) / 2 + 28px)); }
 }
 
 /* Phones and upright tablets (see the frame's note near the top): the
