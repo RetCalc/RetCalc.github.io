@@ -1,7 +1,7 @@
 /* The Calculator's scenarios: the things you see coming, each a sentence
-   on the Calculator and a change to the plan's saving year by year
-   underneath (cover.ts yearlySaving), or to the return the Calculator's
-   stages earn (calc.ts stagesFor). Children are a scenario too, but their
+   on the Calculator and a change to the plan's year by year underneath
+   (cover.ts: one of you's pay, what's spent, what's saved), or to the
+   return the Calculator's stages earn (calc.ts stagesFor). Children are a scenario too, but their
    facts stay in Profile: here they're only switched off, which runs the
    plan without them. Everything is in today's dollars. No React. */
 
@@ -9,7 +9,7 @@ import { parseNum } from "@/lib/format";
 import { COVER_ORDER, type CoverLine } from "@/tools/plan/model";
 import type { Monthly } from "@/tools/plan/kids";
 
-export type ScenarioKind = "children" | "saving" | "returns" | "lump";
+export type ScenarioKind = "children" | "saving" | "returns" | "lump" | "income" | "spending";
 /** Which account a change goes into or comes out of: one, or the
     dashboard's order (brokerage first). */
 export type ScenarioAcct = "auto" | CoverLine;
@@ -35,9 +35,11 @@ export interface Scenario {
   acct: ScenarioAcct;
   /** A return before inflation (0.09 is 9%), for a returns scenario. */
   nominal: number;
+  /** Whose pay an income change is (0 you, 1 your partner; yours when left out). */
+  who?: 0 | 1;
 }
 
-export const SCENARIO_KINDS: Record<ScenarioKind, string> = { children: "Children", saving: "Saving", returns: "Returns", lump: "Lump sum" };
+export const SCENARIO_KINDS: Record<ScenarioKind, string> = { children: "Children", saving: "Saving", returns: "Returns", lump: "Lump sum", income: "Pay", spending: "Spending" };
 export const ACCT_NAMES: Record<CoverLine, string> = { trad: "Traditional", roth: "Roth", brok: "Brokerage", hsa: "HSA" };
 /** The account in a sentence: "brokerage", but "Roth" and "HSA". */
 export const acctWord = (k: CoverLine) => (k === "roth" || k === "hsa" ? ACCT_NAMES[k] : ACCT_NAMES[k].toLowerCase());
@@ -45,7 +47,7 @@ export const acctWord = (k: CoverLine) => (k === "roth" || k === "hsa" ? ACCT_NA
 /** The children's own row: one per profile, always first. */
 export const CHILDREN_ID = "children";
 
-const blank = (id: string, kind: ScenarioKind): Scenario => ({ id, kind, name: "", on: true, from: 0, until: 0, mode: "amount", amount: 0, ramp: 0, acct: "auto", nominal: 0 });
+const blank = (id: string, kind: ScenarioKind): Scenario => ({ id, kind, name: "", on: true, from: 0, until: 0, mode: "amount", amount: 0, ramp: 0, acct: "auto", nominal: 0, who: 0 });
 
 /** A new scenario of a kind, with the kind's usual figures; `from` is your age now. */
 export function newScenario(id: string, kind: ScenarioKind, age: number, nominal: number): Scenario {
@@ -55,6 +57,8 @@ export function newScenario(id: string, kind: ScenarioKind, age: number, nominal
   if (kind === "lump") Object.assign(s, { name: "An inheritance", amount: 50000, acct: "brok" });
   if (kind === "returns") Object.assign(s, { name: "Different returns", nominal: Math.round((nominal + 0.015) * 1000) / 1000, ramp: 0 });
   if (kind === "children") Object.assign(s, { id: CHILDREN_ID, name: "Children" });
+  if (kind === "income") Object.assign(s, { name: "", mode: "pct", amount: 10 });
+  if (kind === "spending") Object.assign(s, { name: "", amount: 500 });
   return s;
 }
 
@@ -66,14 +70,18 @@ export function readScenarios(v: unknown): Scenario[] {
     if (!x || typeof x !== "object") continue;
     const o = x as Record<string, unknown>;
     const kind = o.kind;
-    if (kind !== "children" && kind !== "saving" && kind !== "returns" && kind !== "lump") continue;
+    if (typeof kind !== "string" || !(kind in SCENARIO_KINDS)) continue;
     const num = (k: string, d: number) => (typeof o[k] === "number" && isFinite(o[k] as number) ? (o[k] as number) : d);
-    const s = blank(typeof o.id === "string" && o.id ? o.id : "s" + out.length, kind);
+    const s = blank(typeof o.id === "string" && o.id ? o.id : "s" + out.length, kind as ScenarioKind);
     s.name = typeof o.name === "string" ? o.name : "";
     s.on = o.on !== false;
     s.from = num("from", 0); s.until = num("until", 0); s.amount = num("amount", 0); s.ramp = Math.max(0, num("ramp", 0)); s.nominal = num("nominal", 0);
     s.mode = o.mode === "pct" || o.mode === "pctYearly" ? o.mode : "amount";
     s.acct = (COVER_ORDER as readonly string[]).includes(String(o.acct)) ? (o.acct as CoverLine) : "auto";
+    s.who = o.who === 1 ? 1 : 0;
+    // A pay change is a new figure or a share; a spending change, dollars.
+    if (kind === "income" && s.mode === "pctYearly") s.mode = "pct";
+    if (kind === "spending") s.mode = "amount";
     if (kind === "children") s.id = CHILDREN_ID;
     if (out.some((y) => y.id === s.id)) continue;
     out.push(s);
@@ -131,11 +139,13 @@ export function yearChange(list: Scenario[], t: number, end: number, own: number
   const out: YearChange = { cut: 0, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [] };
   let running = own, stopped: string | null = null;
   for (const s of liveScenarios(list)) {
-    if (s.kind !== "saving" || !runs(s, t, end)) continue;
+    if ((s.kind !== "saving" && s.kind !== "spending") || !runs(s, t, end)) continue;
     const k = t - s.from;
-    if (stops(s, k)) { stopped = s.id; continue; }
+    if (s.kind === "saving" && stops(s, k)) { stopped = s.id; continue; }
     let d = 0;
-    if (s.mode === "amount") d = s.amount * phased(s.ramp, k);
+    // Spending more is saving less, dollar for dollar.
+    if (s.kind === "spending") d = -s.amount * phased(s.ramp, k);
+    else if (s.mode === "amount") d = s.amount * phased(s.ramp, k);
     else if (s.mode === "pct") d = (running * s.amount / 100) * phased(s.ramp, k);
     else d = running * (Math.pow(1 + s.amount / 100, k + 1) - 1);
     d = Math.round(d);
@@ -149,6 +159,21 @@ export function yearChange(list: Scenario[], t: number, end: number, own: number
   // Saving stopped: nothing goes in, whatever the other changes add.
   if (stopped) return { cut: own, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [...out.tags, stopped] };
   return out;
+}
+
+/** One of you's pay a year in the year you're `t`, from what it would be
+    (`path`, with raises) and the pay changes at work then: a new figure
+    (which raises carry on from), or a share more or less. `raise` is that
+    person's raise beyond inflation. */
+export function payAt(list: Scenario[], who: 0 | 1, t: number, end: number, path: number, raise: number): { pay: number; tags: string[] } {
+  let pay = path;
+  const tags: string[] = [];
+  for (const s of liveScenarios(list)) {
+    if (s.kind !== "income" || (s.who ?? 0) !== who || !runs(s, t, end)) continue;
+    pay = s.mode === "amount" ? Math.max(0, s.amount) * Math.pow(1 + raise, t - s.from) : pay * Math.max(0, 1 + (s.amount / 100) * phased(s.ramp, t - s.from));
+    tags.push(s.id);
+  }
+  return { pay, tags };
 }
 
 /** The return before inflation in the year you're `t`: the plan's, or what
@@ -173,7 +198,7 @@ export const pctOf = (r: number) => (r * 100).toFixed(2).replace(/\.?0+$/, "") +
 /** A scenario as one sentence, in today's dollars. `years`: the plan
     counts years from now, not ages ("from year 5", "at the start of year
     5"), and `pot`: there's one pot, no accounts to name. */
-export function scenarioSentence(s: Scenario, end: number, baseNominal: number, opts: { years?: boolean; pot?: boolean } = {}): string {
+export function scenarioSentence(s: Scenario, end: number, baseNominal: number, opts: { years?: boolean; pot?: boolean; names?: [string, string] } = {}): string {
   if (s.kind === "children") return "";
   const Y = !!opts.years, at = (n: number) => (Y ? (n === 0 ? "now" : `year ${n}`) : String(n));
   if (s.kind === "returns") {
@@ -188,6 +213,21 @@ export function scenarioSentence(s: Scenario, end: number, baseNominal: number, 
   const [, to] = spanOf(s, end);
   const until = to >= end ? "to retirement" : `until ${at(to)}`;
   const less = s.amount < 0;
+  if (s.kind === "income") {
+    const whose = opts.names ? (s.who ? opts.names[1] : opts.names[0]) + "'s" : "Your";
+    // Ages are yours: for your partner's pay, said so.
+    const at = (n: number) => (Y ? (n === 0 ? "now" : `year ${n}`) : opts.names && s.who ? `when you're ${n}` : String(n));
+    const until = to >= end ? "to retirement" : `until ${at(to)}`;
+    const how = s.ramp > 0 && s.mode === "pct" ? `, phased in over ${s.ramp} ${s.ramp === 1 ? "year" : "years"}` : "";
+    return s.mode === "amount"
+      ? `${whose} pay becomes ${moneyText(s.amount)} per year from ${at(s.from)} ${until}, with raises from there.`
+      : s.amount <= -100 ? `${whose} pay stops from ${at(s.from)} ${until}.` : `${whose} pay is ${pctText(s.amount)} ${less ? "lower" : "higher"} from ${at(s.from)} ${until}${how}.`;
+  }
+  if (s.kind === "spending") {
+    const where = opts.pot ? "" : less ? (s.acct === "auto" ? ", into brokerage" : `, into ${acctWord(s.acct)}`) : (s.acct === "auto" ? ", out of brokerage first" : `, out of ${acctWord(s.acct)} first`);
+    const how = s.ramp > 0 ? `, phased in over ${s.ramp} ${s.ramp === 1 ? "year" : "years"}` : "";
+    return `Spend ${moneyText(s.amount)} per month ${less ? "less" : "more"} from ${at(s.from)} ${until}${how}: saving goes ${less ? "up" : "down"} by as much${where}.`;
+  }
   const where = opts.pot ? "" : ", " + (less ? (s.acct === "auto" ? "out of brokerage first" : `out of ${acctWord(s.acct)} first`) : (s.acct === "auto" ? "into brokerage" : `into ${acctWord(s.acct)}`));
   if (s.mode === "pct" && s.amount <= -100) return `Stop saving from ${at(s.from)} ${until}: nothing more goes in${opts.pot ? "" : ", the employer match included"}.`;
   if (s.mode === "pctYearly") return `Save ${pctText(s.amount)} ${less ? "less" : "more"} each year from ${at(s.from)} ${until}, compounding (${pctText(s.amount)} ${less ? "less" : "more"} than the year before, every year)${where}.`;
@@ -197,7 +237,9 @@ export function scenarioSentence(s: Scenario, end: number, baseNominal: number, 
 }
 
 /** The kind's usual name when the typed one is blank. */
-export const scenarioName = (s: Scenario) => s.name.trim() || (s.kind === "children" ? "Children" : s.kind === "returns" ? "Different returns" : s.kind === "lump" ? (s.amount < 0 ? "A big expense" : "A windfall") : s.amount < 0 ? "Saving less" : "Saving more");
+export const scenarioName = (s: Scenario) => s.name.trim() || (s.kind === "children" ? "Children" : s.kind === "returns" ? "Different returns" : s.kind === "lump" ? (s.amount < 0 ? "A big expense" : "A windfall")
+  : s.kind === "income" ? (s.mode === "amount" ? "New pay" : s.amount <= -100 ? "Time off work" : s.amount < 0 ? "Lower pay" : "Higher pay")
+  : s.kind === "spending" ? (s.amount < 0 ? "Spending less" : "Spending more") : s.amount < 0 ? "Saving less" : "Saving more");
 
 /** A field's text as a number, or null when blank or not one. */
 export const numOrNull = (v: string) => (v.trim() === "" || !isFinite(parseNum(v)) ? null : parseNum(v));

@@ -9,7 +9,7 @@
    "Year 5"). Every figure is in today's dollars. */
 
 import { useEffect, useState, type ReactNode } from "react";
-import { GiftIcon, LineChartIcon, PlusIcon, TrendingUpIcon, UsersIcon, XIcon } from "lucide-react";
+import { BanknoteIcon, GiftIcon, LineChartIcon, PlusIcon, ShoppingBagIcon, TrendingUpIcon, UsersIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Modal, ModalTop } from "@/components/shell/Modal";
@@ -24,6 +24,9 @@ export function kindClass(s: Scenario): string {
   if (s.kind === "children") return "dsh-sc-children";
   if (s.kind === "returns") return "dsh-sc-returns";
   if (s.kind === "lump") return s.amount < 0 ? "dsh-sc-down" : "dsh-sc-lump";
+  if (s.kind === "income") return "dsh-sc-pay";
+  // Spending more is saving less.
+  if (s.kind === "spending") return s.amount > 0 ? "dsh-sc-down" : "dsh-sc-up";
   return s.amount < 0 ? "dsh-sc-down" : "dsh-sc-up";
 }
 
@@ -39,6 +42,7 @@ export function laneFigure(s: Scenario, kids: { peak: number } | null): string {
   if (s.kind === "children") return kids && kids.peak ? "up to " + (kids.peak < 0 ? "−" : "+") + "$" + Math.round(Math.abs(kids.peak)).toLocaleString("en-US") + "/mo" : "";
   if (s.kind === "returns") return pctOf(s.nominal);
   if (s.kind === "lump") return (s.amount < 0 ? "−" : "+") + "$" + Math.round(Math.abs(s.amount)).toLocaleString("en-US");
+  if (s.kind === "income" && s.mode === "amount") return "$" + Math.round(Math.abs(s.amount)).toLocaleString("en-US") + "/yr";
   const sign = s.amount < 0 ? "−" : "+";
   if (s.mode === "amount") return sign + "$" + Math.round(Math.abs(s.amount)).toLocaleString("en-US") + "/mo";
   return sign + Math.abs(s.amount) + "%" + (s.mode === "pctYearly" ? "/yr" : "");
@@ -134,6 +138,8 @@ export interface Kind { kind: ScenarioKind; icon: ReactNode; title: string; sub:
 export const SAVING_KIND: Kind = { kind: "saving", icon: <TrendingUpIcon aria-hidden="true" />, title: "Save more or less", sub: "A raise, a bigger house, easing off: more or less saving from an age on, by dollars per month or a share, all at once or phased in.", over: { name: "", amount: 500, acct: "auto" } };
 export const LUMP_KIND: Kind = { kind: "lump", icon: <GiftIcon aria-hidden="true" />, title: "A lump sum", sub: "An inheritance or a home sale put in, or a big expense taken out, at an age.", over: {} };
 export const RETURNS_KIND: Kind = { kind: "returns", icon: <LineChartIcon aria-hidden="true" />, title: "Different returns", sub: "A higher or lower return from an age on, stepped or climbing.", over: {} };
+export const INCOME_KIND: Kind = { kind: "income", icon: <BanknoteIcon aria-hidden="true" />, title: "Pay changes", sub: "A promotion, a new job, part-time years or time off: one of your pay set to a figure, or a share higher or lower, from an age on.", over: {} };
+export const SPENDING_KIND: Kind = { kind: "spending", icon: <ShoppingBagIcon aria-hidden="true" />, title: "Spend more or less", sub: "A bigger house, a new car payment, a paid-off loan: dollars per month more or less spent from an age on, which saving makes up.", over: {} };
 export const CHILDREN_KIND: Kind = { kind: "children", icon: <UsersIcon aria-hidden="true" />, title: "Children", sub: "Children you have or plan to have: what they cost as they grow, out of what you save.", over: {} };
 
 export function PickKind({ kinds, note, close, pick }: { kinds: Kind[]; note: string; close: () => void; pick: (k: Kind) => void }) {
@@ -155,8 +161,10 @@ export type ChangeTip = "from" | "amount" | "pct" | "acct" | "lump" | "return";
 
 /** One change's form, its sentence and what it does at retirement. The
     change's years here are as the calculator counts them (`years`). */
-export function ChangeDialog({ s: s0, fresh, years: Y, accounts, label, sentence, effectOf, where, note, close, save, remove }: {
+export function ChangeDialog({ s: s0, fresh, years: Y, accounts, label, sentence, effectOf, where, note, names, close, save, remove }: {
   s: Scenario; fresh: boolean; years: Years;
+  /** A couple's names, for whose pay a pay change is (null for one person). */
+  names?: [string, string] | null;
   /** Whether a change names an account (the account split is on). */
   accounts: boolean;
   label: (text: string, tip: ChangeTip) => ReactNode;
@@ -209,6 +217,51 @@ export function ChangeDialog({ s: s0, fresh, years: Y, accounts, label, sentence
       </Field>
       {s.ramp > 0 ? <NumberField id="scRamp" label="Years to climb" unit="years" value={txt.ramp} onValueChange={typed("ramp")} /> : null}
     </>;
+  } else if (s.kind === "income") {
+    const until = <SelectField id="scUntil" label="Until" value={String(s.until)} onChange={(v) => up({ until: parseNum(v) })}>
+      <option value="0">{Y.ages ? "Retirement" : "The end"}</option>
+      {span(s.from + 1, Y.end - 1).map((a) => <option key={a} value={a}>{Y.ages ? "Age " + a : "Year " + (a - Y.base)}</option>)}
+    </SelectField>;
+    form = <>
+      {names ? <Field id="scWho" label="Whose pay" className="dsh-sc-full">
+        <Segmented id="scWho" size="fill" attr="data-who" options={[["0", names[0]], ["1", names[1]]] as const} value={String(s.who ?? 0)} onChange={(v) => up({ who: v === "1" ? 1 : 0 })} />
+      </Field> : null}
+      {from}
+      {until}
+      <Field id="scMode" label="As" className="dsh-sc-full">
+        <Segmented id="scMode" size="fill" attr="data-mode" options={[["amount", "New pay per year"], ["pct", "% higher or lower"]] as const} value={s.mode === "amount" ? "amount" : "pct"}
+          onChange={(v) => { const m = v as Scenario["mode"]; const a = m === "amount" ? 100000 : 10; up({ mode: m, amount: a }); setTxt((c) => ({ ...c, amount: String(a) })); }} />
+      </Field>
+      {s.mode === "amount"
+        ? <MoneyField id="scAmount" label={label("Pay before taxes", "amount")} unit="/yr" value={txt.amount.replace(/^-/, "")} onValueChange={(v) => typed("amount")(v)} />
+        : <div className="dsh-sc-amt">
+          <NumberField id="scAmount" label={label("Change pay by", "pct")} unit="%" max={100} value={txt.amount.replace(/^-/, "")} onValueChange={(v) => typed("amount")((less ? "-" : "") + v)} />
+          <Field id="scSign" label="Which way">
+            <Segmented id="scSign" size="fill" attr="data-sign" options={[["more", "Higher"], ["less", "Lower"]] as const} value={less ? "less" : "more"} onChange={(v) => typed("amount")((v === "less" ? "-" : "") + txt.amount.replace(/^-/, ""))} />
+          </Field>
+        </div>}
+    </>;
+  } else if (s.kind === "spending") {
+    form = <>
+      {from}
+      <SelectField id="scUntil" label="Until" value={String(s.until)} onChange={(v) => up({ until: parseNum(v) })}>
+        <option value="0">{Y.ages ? "Retirement" : "The end"}</option>
+        {span(s.from + 1, Y.end - 1).map((a) => <option key={a} value={a}>{Y.ages ? "Age " + a : "Year " + (a - Y.base)}</option>)}
+      </SelectField>
+      <div className="dsh-sc-amt dsh-sc-full">
+        <MoneyField id="scAmount" label={label("Change spending by", "amount")} unit="/mo" value={txt.amount.replace(/^-/, "")} onValueChange={(v) => typed("amount")((less ? "-" : "") + v)} />
+        <Field id="scSign" label="Which way">
+          <Segmented id="scSign" size="fill" attr="data-sign" options={[["more", "More"], ["less", "Less"]] as const} value={less ? "less" : "more"} onChange={(v) => typed("amount")((v === "less" ? "-" : "") + txt.amount.replace(/^-/, ""))} />
+        </Field>
+      </div>
+      <Field id="scHow" label="How">
+        <Segmented id="scHow" size="fill" attr="data-how" options={[["0", "All at once"], ["1", "Phased in"]] as const} value={s.ramp > 0 ? "1" : "0"} onChange={(v) => { const r = v === "1" ? Math.max(1, s.ramp || 3) : 0; up({ ramp: r }); setTxt((c) => ({ ...c, ramp: String(r) })); }} />
+      </Field>
+      {s.ramp > 0 ? <NumberField id="scRamp" label="Over" unit="years" value={txt.ramp} onValueChange={typed("ramp")} /> : null}
+      {accounts ? <SelectField id="scAcct" label={label(less ? "Saving goes into" : "Saving comes out of", "acct")} value={s.acct} onChange={(v) => up({ acct: v as Scenario["acct"] })} className="dsh-sc-full">
+        {acctOpts(less ? "Brokerage" : "Brokerage first, then the others")}
+      </SelectField> : null}
+    </>;
   } else if (s.kind === "lump") {
     form = <>
       {from}
@@ -246,8 +299,8 @@ export function ChangeDialog({ s: s0, fresh, years: Y, accounts, label, sentence
       </SelectField> : null}
     </>;
   }
-  const after = accounts && where && s.kind === "saving" && s.acct !== "auto" && less ? " " + where(s.acct) : "";
-  const title = fresh ? ({ saving: SAVING_KIND, lump: LUMP_KIND, returns: RETURNS_KIND, children: CHILDREN_KIND } as const)[s.kind].title : scenarioName(s);
+  const after = accounts && where && ((s.kind === "saving" && less) || (s.kind === "spending" && !less)) && s.acct !== "auto" ? " " + where(s.acct) : "";
+  const title = fresh ? ({ saving: SAVING_KIND, lump: LUMP_KIND, returns: RETURNS_KIND, children: CHILDREN_KIND, income: INCOME_KIND, spending: SPENDING_KIND } as const)[s.kind].title : scenarioName(s);
   return (
     <Modal size="wide" onClose={close} focus="#scName">
       <ModalTop title={title} onClose={close} />

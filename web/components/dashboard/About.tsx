@@ -19,7 +19,7 @@ import { Frame } from "./Frame";
 /* The sections, in reading order. Each section's id is "about-" + its key,
    so /dashboard/about#about-networth opens that one. */
 const GROUPS = [
-  { key: "works", label: "How the Dashboard works", sections: [["profile", "One profile behind every tab"], ["networth", "Net worth and its history"], ["home", "Your home"], ["paycheck", "Income, Spending, and Taxes & Savings"], ["retire", "Retirement, the bridge and health cover"], ["assume", "What the plan assumes"], ["tools", "Tools opened here"], ["saved", "What's saved to your account"]] },
+  { key: "works", label: "How the Dashboard works", sections: [["profile", "One profile behind every tab"], ["networth", "Net worth and its history"], ["home", "Your home"], ["paycheck", "Income, Spending, and Taxes & Savings"], ["years", "Year by year"], ["retire", "Retirement, the bridge and health cover"], ["assume", "What the plan assumes"], ["tools", "Tools opened here"], ["saved", "What's saved to your account"]] },
   { key: "calc", label: "Calculator", sections: [["calculator", "Calculator"], ["projection", "How the projection works"]] },
   { key: "retirement", label: "Retirement income", sections: [["optimizer", "Retirement Plan Optimizer"], ["drawdown", "Drawdown Simulator"], ["social", "Social Security Calculator"], ["bridge", "Early Retirement Bridge"], ["roth", "Roth Conversion Calculator"], ["healthcare", "Healthcare Cost Planner"]] },
   { key: "saving", label: "Saving and investing", sections: [["fire", "FIRE Calculator"], ["backtest", "Portfolio Backtest"], ["college", "College Savings"], ["rentbuy", "Rent vs. Buy"]] },
@@ -220,6 +220,27 @@ export function About() {
                   claims, and the share of the benefit you expect (100% unless you plan for
                   cuts, and every benefit in the plan is scaled by it).</p>
                 </Section>
+                <Section id="years">
+                  <p><b>Year by year</b> lays out every year from now to retirement, as the plan
+                  counts it: each of your pay, the taxes on it, what&apos;s spent and what&apos;s
+                  saved, account by account.</p>
+                  <ul>
+                    <li><b>Pay leads.</b> Each of your pay rises by your raise beyond inflation, and
+                    changes as your pay changes say (a new job, part-time years, time off). A partner
+                    who stops work before you retire stops earning then.</li>
+                    <li><b>Taxes</b> come from the paycheck&apos;s own calculator, each year on that
+                    year&apos;s pay and pre-tax saving, with each of you a year older.</li>
+                    <li><b>Saving follows take-home pay.</b> Of each raise, after tax, the share you
+                    choose is saved: the same share of take-home pay as now unless you change it.
+                    Each account takes its share up to its legal limit, and the rest goes to the next
+                    one you already use, the brokerage last.</li>
+                    <li><b>Children, college and spending changes</b> come out of that saving, in the
+                    order and from the accounts you set, as before.</li>
+                    <li><b>Spending</b> is what&apos;s left: pay, less taxes and saving.</li>
+                    <li>Figures are in today&apos;s dollars, or each year&apos;s own with <b>Future
+                    dollars</b>. Your savings at retirement, on every tab, are built from these years.</li>
+                  </ul>
+                </Section>
                 <Section id="retire">
                   <p><b>Retirement</b> starts with what you&apos;ll have when you retire, then
                   switches between up to three views.</p>
@@ -312,7 +333,10 @@ export function About() {
                 <Section id="calculator">
                   <p>Your Calculator is filled in from your plan and driven by the{" "}
                   <b>changes ahead</b>: the things you see coming.
-                  <b>Save more or less</b> changes what you save from an age on, by dollars per
+                  <b>Pay changes</b> set one of your pay to a figure, or a share higher or lower,
+                  from an age on: taxes and saving follow it, as on Year by year. <b>Spend more or
+                  less</b> changes what&apos;s spent each month from an age on, and saving makes it
+                  up. <b>Save more or less</b> changes what you save from an age on, by dollars per
                   month or a share of what you&apos;d save then, all at once or phased in, into or
                   out of the account you name (a cut comes out of the accounts in the order
                   below once that one runs out). <b>A lump sum</b> is one amount put into or

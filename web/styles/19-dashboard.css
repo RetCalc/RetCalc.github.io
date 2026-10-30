@@ -785,6 +785,7 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-sc-down { background: var(--ds-series-rose); }
 .dsh-sc-returns { background: var(--ds-series-sky); }
 .dsh-sc-lump { background: var(--ds-series-teal); }
+.dsh-sc-pay { background: var(--ds-brand-gold); }
 
 /* Lanes under the chart, on the same ages the chart runs over. */
 .dsh-sc-lanes { position: relative; display: grid; gap: 5px; padding: 12px 18px 14px; }
@@ -896,3 +897,39 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-stbl td:first-child .dsh-tnote { margin-left: 16px; }
 .dsh-xtbl td:first-child { text-align: left; white-space: normal; }
 .dsh-xtbl .dsh-sw { margin-right: 8px; }
+
+/* Year by year: what shapes the years (raises, how much of each is saved,
+   the changes ahead), the table of every year, and its two pictures. */
+.dsh-yby-drivers { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 260px)); gap: 12px 16px; align-items: end; }
+.dsh-yby-drivers .field { margin: 0; }
+.dsh-yby-changes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.dsh-yby-changes > .dsh-label { flex-basis: 100%; }
+.dsh-yby-chips { display: contents; list-style: none; }
+.dsh-yby-chip { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px; border: 1px solid var(--ds-rule); border-radius: 999px; background: var(--ds-raised); color: var(--ds-text); font: inherit; font-size: 13px; cursor: pointer; }
+.dsh-yby-chip:hover { border-color: var(--ds-rule-strong); }
+.dsh-yby-chip svg { width: 13px; height: 13px; color: var(--ds-muted); }
+.dsh-yby-chip .dsh-sc-mark { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+.dsh-yby-chip.dsh-yby-off { opacity: .55; }
+.dsh-yby-wrap { margin-top: 4px; }
+.dsh-yby { font-size: 13px; font-variant-numeric: tabular-nums; }
+.dsh-yby th, .dsh-yby td { padding: 7px 10px; }
+.dsh-yby thead th { white-space: normal; min-width: 76px; vertical-align: bottom; }
+.dsh-yby .dsh-yby-groups th { border-bottom: 0; padding-bottom: 0; text-align: center; font-size: 11px; letter-spacing: .02em; text-transform: uppercase; color: var(--ds-muted); }
+.dsh-yby .dsh-yby-groups th:not(:empty) { box-shadow: inset 0 -1px 0 var(--ds-rule); }
+.dsh-yby th:first-child, .dsh-yby td:first-child { position: sticky; left: 0; z-index: 1; background: var(--ds-surface); min-width: 56px; }
+.dsh-yby .dsh-yby-notes { text-align: left; white-space: normal; min-width: 210px; }
+.dsh-yby-note { display: block; color: var(--ds-muted); font-size: 12.5px; line-height: 1.35; }
+.dsh-yby-strong { font-weight: 600; }
+.dsh-yby tr.dsh-yby-now td { background: var(--ds-raised); }
+.dsh-yby tr.dsh-yby-mark td:first-child { box-shadow: inset 3px 0 0 var(--ds-amber); }
+.dsh-yby tfoot td { font-weight: 600; border-top: 1px solid var(--ds-rule-strong); border-bottom: 0; }
+.dsh-yby-cell { border: 0; padding: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-decoration: underline dotted var(--ds-rule-strong); text-underline-offset: 3px; }
+.dsh-yby-cell:hover { color: var(--ds-amber); text-decoration-color: currentColor; }
+.dsh-chart .dsh-yby-hot { fill: var(--ds-raised); }
+.dsh-chart .dsh-yby-line { fill: none; stroke: var(--g); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.dsh-yby-legend .dsh-sw { margin-right: 6px; }
+.dsh-legend i.dsh-yby-lsw { width: 16px; height: 0; border: 0; border-top: 2.5px solid var(--g); background: none; vertical-align: 3px; }
+.dsh-tipbox .dsh-sw { margin-right: 6px; }
+.dsh-yc-p1 { --g: var(--ds-series-sky); } .dsh-yc-p2 { --g: var(--ds-series-lavender); } .dsh-yc-oth { --g: var(--ds-series-gray); }
+.dsh-yc-spend { --g: var(--ds-brand-gold); } .dsh-yc-tax { --g: var(--ds-series-rose); } .dsh-yc-save { --g: var(--ds-brand-jade); } .dsh-yc-match { --g: var(--ds-series-teal); }
+.dsh-chart .dsh-seg { fill: var(--g); }

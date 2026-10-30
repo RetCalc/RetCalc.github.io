@@ -10,7 +10,7 @@
 import { withDefaults, type ToolInputs } from "@/components/tools/ToolState";
 import { dollarsField, groupDigits, parseNum } from "@/lib/format";
 import { BUDGET_DEF, budgetCompute, budgetTotals, openBudget, type BudgetInputs, type BudgetRow } from "@/tools/budget/model";
-import { PC_ZERO, paycheckInput, paycheckRun, pcCap, pcCapAhead, pcSplit, type PcInput, type PcRun } from "@/tools/budget/paycheck-math";
+import { PC_ZERO, paycheckInput, paycheckRun, pcCap, pcSplit, type PcInput, type PcRun } from "@/tools/budget/paycheck-math";
 import { agesOf } from "./ages";
 import { taxFromPaycheck } from "@/tools/budget/to-calculator";
 import { TAX_DEF, type TaxInputs } from "@/tools/tax/model";
@@ -375,30 +375,15 @@ export const GROW_NAMES: Record<GrowLine, string> = {
 };
 
 /** Each saving line: what goes in a month, its limit a month (limits keep
-    pace with inflation, so in today's dollars they hold still), its growth
-    beyond inflation, and the years until it reaches the limit. */
+    pace with inflation, so in today's dollars they hold still), and
+    whether it's at the limit. How saving grows follows pay (cover.ts). */
 export function growthLines(pr: Profile, F: Flow = flow(pr)) {
   const { pi } = F, m = pi.p / 12, a = pi.amounts;
   return GROW_LINES.map((id) => {
-    const amount = a[id] * m, cap = pcCap(pi, id, a) * m, g = pr.growth[id] ?? 0;
+    const amount = a[id] * m, cap = pcCap(pi, id, a) * m;
     const capped = isFinite(cap) && amount > 0 && amount >= cap - 0.5;
-    const years = !capped && g > 0 && amount > 0 && isFinite(cap) ? Math.ceil(Math.log(cap / amount) / Math.log(1 + g)) : null;
-    // The limit k years on: the catch-ups open as each of you reaches 50 (60
-    // to 63 for the larger 401(k) one) and 55 for the HSA. Limits otherwise
-    // keep pace with inflation, so in today's dollars they hold still.
-    const capAt = (k: number) => (k <= 0 ? cap : pcCapAhead(pi, id, a, k) * m);
-    return { id, name: GROW_NAMES[id], amount, cap, capAt, growth: capped ? 0 : g, capped, years };
+    return { id, name: GROW_NAMES[id], amount, cap, capped };
   });
-}
-
-/** Saving a month k years from now (yours and the match), each line grown
-    and held at its limit. */
-export function savingAt(pr: Profile, k: number, F: Flow = flow(pr)): number {
-  const L = growthLines(pr, F);
-  const own = L.reduce((s, l) => { const c = l.capAt(k); return s + Math.min(l.amount * Math.pow(1 + l.growth, k), isFinite(c) ? Math.max(c, l.amount) : Infinity); }, 0);
-  const m0 = L.find((l) => l.id === "match")!;
-  const matchNow = m0.amount > 0 ? Math.min(m0.amount * Math.pow(1 + m0.growth, k), Math.max(m0.capAt(k), m0.amount)) / m0.amount : 1;
-  return own + F.match * matchNow;
 }
 
 /* ---------- College ---------- */

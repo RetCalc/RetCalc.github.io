@@ -120,9 +120,14 @@ export interface Profile {
   /** How much saving rose each year (one rate for everything); replaced by
       `growth`, read only to carry an older profile over. */
   raise: number;
-  /** How each saving line grows each year beyond inflation (0.02 is 2%),
-      by the Paycheck tab's lines; each stops at its limit. */
+  /** How each saving line grew each year beyond inflation, by the Paycheck
+      tab's lines; replaced by `yearly`, read only to carry an older
+      profile over. */
   growth: Partial<Record<"match" | "hsa" | "rothIra" | "k401max" | "brok", number>>;
+  /** Year by year: each of you's raise a year beyond inflation (0.01 is
+      1%), and how much of each raise, after tax, is saved (0.5 is half);
+      null saves the same share of take-home pay as now. */
+  yearly: { raise: [number, number]; keep: number | null };
   /** Children planned: how many, years until the first, and years apart. */
   /** Children planned: how many, years until the first and between them.
       `bornAge` is your age at the first one's birth, kept so "the first in"
@@ -182,7 +187,7 @@ export const EMPTY_PROFILE: Profile = {
   home: null, value: null, owed: null, rent: null, mortRate: null, mortPay: null,
   assume: DEFAULT_ASSUMPTIONS,
   ss: { checked: false, own1: null, own2: null, claim: null, claim2: null }, strategy: null,
-  tools: {}, raise: 0, growth: {},
+  tools: {}, raise: 0, growth: {}, yearly: { raise: [0, 0], keep: null },
   planned: { count: 0, firstIn: 2, spacing: 3 }, childcare: true, careArea: "suburb",
   college: { help: "none", cost: 26000 },
   childCosts: { early: "", school: "", teen: "", later: "80" }, kidCover: {},
@@ -226,8 +231,15 @@ function load(): DashData {
   // Years until the first planned child, from the age you'll be then.
   const age = ageNow(p.p1);
   if (p.planned.bornAge != null && age != null) p.planned = { ...p.planned, firstIn: Math.max(0, Math.round((p.planned.bornAge - age) * 2) / 2) };
-  // One rate for all saving, from before each line had its own.
-  if (!v.profile?.growth && v.profile?.raise) p.growth = { match: p.raise, hsa: p.raise, rothIra: p.raise, k401max: p.raise, brok: p.raise };
+  // Raises, from before pay was planned year by year: saving's own growth
+  // (one rate, or each line's), the average of the rates set.
+  const y = v.profile?.yearly;
+  if (y && Array.isArray(y.raise)) p.yearly = { raise: [Number(y.raise[0]) || 0, Number(y.raise[1]) || 0], keep: typeof y.keep === "number" ? y.keep : null };
+  else {
+    const set = Object.values(v.profile?.growth ?? {}).filter((g): g is number => typeof g === "number" && g > 0);
+    const r = set.length ? set.reduce((a, g) => a + g, 0) / set.length : v.profile?.raise || 0;
+    p.yearly = { raise: [r, r], keep: null };
+  }
   return { ...EMPTY, ...v, profile: p, entries: (v.entries ?? []).map(upgrade) };
 }
 function get(): DashData {

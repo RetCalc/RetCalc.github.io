@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   BanknoteIcon, CalculatorIcon, MenuIcon, MonitorIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
-   SunsetIcon, UserRoundIcon, WalletIcon, type LucideIcon,
+   SunsetIcon, CalendarRangeIcon, UserRoundIcon, WalletIcon, type LucideIcon,
 } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ export const SECTIONS: { id: Section; name: string; icon: LucideIcon }[] = [
   { id: "savings", name: SECTION_NAMES.savings, icon: PiggyBankIcon },
   { id: "calculator", name: SECTION_NAMES.calculator, icon: CalculatorIcon },
   { id: "retirement", name: SECTION_NAMES.retirement, icon: SunsetIcon },
+  { id: "years", name: SECTION_NAMES.years, icon: CalendarRangeIcon },
   { id: "tools", name: SECTION_NAMES.tools, icon: WrenchIcon },
   { id: "next", name: SECTION_NAMES.next, icon: ListChecksIcon },
   { id: "learn", name: SECTION_NAMES.learn, icon: GraduationCapIcon },

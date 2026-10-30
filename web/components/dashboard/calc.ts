@@ -8,11 +8,11 @@ import { groupDigits, parseNum } from "@/lib/format";
 import { ADVANCED_DEF, type AdvancedInputs } from "@/tools/advanced/model";
 import { STAGES_DEF, readStage, stageFields, stagesCompute, type LumpAccount, type StageInputs, type StagesInputs } from "@/tools/stages/model";
 import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
-import { flow, growthLines, taxState } from "./flows";
-import { shiftCover } from "./cover";
-import { lumpAccount, lumpsOn, nominalAt, ownOn, scenarioName, withoutOwn, yearChange, type Scenario } from "./scenarios";
+import { flow, taxState } from "./flows";
+import { shiftCover, yearlySaving } from "./cover";
+import { lumpAccount, lumpsOn, nominalAt, ownOn, payAt, scenarioName, withoutOwn, yearChange, type Scenario } from "./scenarios";
 import { KID_BASE } from "@/tools/stages/kids";
-import { ageOf, couple, holdings, realGrowth, results, spendMonth, type Results } from "./model";
+import { ageOf, answers, couple, holdings, realGrowth, results, spendMonth, type Results } from "./model";
 import { OUTSIDE_US, sum, type Entry, type Profile } from "./store";
 
 const g = (n: number) => groupDigits(Math.round(n), true);
@@ -24,19 +24,16 @@ function shared(pr: Profile, entries: Entry[]) {
   const F = flow(pr), H = holdings(entries, pr), last = entries[entries.length - 1];
   const hsaBal = last ? sum(last.items, "asset", ["hsa"]) : 0;
   const hsaC = F.pi.amounts.hsa * (F.pi.p / 12);
-  const L = growthLines(pr, F), infl = pr.assume.inflation;
-  // Each account's contribution growth: its lines' rates, weighted by what goes in.
-  const rate = (ids: string[]) => {
-    const ls = L.filter((l) => ids.includes(l.id) && l.amount > 0), tot = ls.reduce((s, l) => s + l.amount, 0);
-    const real = tot > 0 ? ls.reduce((s, l) => s + l.growth * l.amount, 0) / tot : 0;
-    return (1 + real) * (1 + infl) - 1;
-  };
-  const trad = (k: "match" | "k401max" | "rothIra") => !F.pi.roth[k];
-  const tIds = (["match", "k401max", "rothIra"] as const).filter(trad), rIds = (["match", "k401max", "rothIra"] as const).filter((k) => !trad(k));
+  const infl = pr.assume.inflation;
+  // Contribution growth: saving follows pay (cover.ts), so one rate, the
+  // one that takes today's saving to the plan's last year before retirement.
+  const A = answers(pr, entries), B = A.age != null && A.retire != null ? yearlySaving(pr, F, A).base : [];
+  const real = B.length > 1 && B[0] > 0 ? Math.pow(B[B.length - 1] / B[0], 1 / (B.length - 1)) - 1 : 0;
+  const nom = (1 + real) * (1 + infl) - 1;
   return {
     F, tradBal: H.trad, rothBal: Math.max(0, H.roth - hsaBal), hsaBal, brokBal: H.brok, brokBasis: H.brokBasis,
     tradC: F.trad, rothC: Math.max(0, F.roth - hsaC), hsaC, brokC: F.brok,
-    rates: { t: rate(tIds), r: rate(rIds), b: rate(["brok"]), h: rate(["hsa"]) },
+    rates: { t: nom, r: nom, b: nom, h: nom },
     salary: F.pi.gross, matchPct: F.b.pcMatchRate, matchCap: F.b.pcMatchUpTo,
     status: couple(pr) ? "m" : "s", state: taxState(pr),
     years: pr.p1.retire && ageOf(pr.p1) != null ? Math.max(1, pr.p1.retire - ageOf(pr.p1)!) : 30,
@@ -104,12 +101,14 @@ function planYears(R: Results, scen: Scenario[], nominal: number): PlanYear[] {
     // Which scenarios touch the year: the saving ones by what they do to
     // today's saving (a share of nothing is nothing), the returns ones by age.
     const Y = yearChange(scen, t, end, S.monthly), N = nominalAt(scen, t, nominal);
+    // Pay changes at work this year (their effect is in the saving already).
+    const P = [...payAt(scen, 0, t, end, 1, 0).tags, ...payAt(scen, 1, t, end, 1, 0).tags];
     // Lump sums land on the year's first day; two the same year into one
     // account add up (the first one's account when they differ).
     const L = lumpsOn(scen).filter((x) => x.from === t && x.amount !== 0);
     const lump = L.length ? { amount: L.reduce((a, x) => a + x.amount, 0), to: lumpAccount(L[0]) } : undefined;
     // A hidden scenario (its id starts with "__") does its work without a name.
-    out.push({ monthly: s.monthly, label: plainLabel(s.label), ...(s.split ? { split: s.split } : {}), tags: [...Y.tags, ...N.tags, ...L.map((x) => x.id)].filter((id) => !id.startsWith("__")).map(nameOf), nominal: N.nominal, ...(lump ? { lump } : {}) });
+    out.push({ monthly: s.monthly, label: plainLabel(s.label), ...(s.split ? { split: s.split } : {}), tags: [...P, ...Y.tags, ...N.tags, ...L.map((x) => x.id)].filter((id) => !id.startsWith("__")).map(nameOf), nominal: N.nominal, ...(lump ? { lump } : {}) });
   }
   return out;
 }

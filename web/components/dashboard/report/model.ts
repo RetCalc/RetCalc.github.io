@@ -17,6 +17,7 @@ import type { BandYear, Phase, PhaseId, RunSummary, Stop } from "@/tools/guide/r
 import { bridgeSummary, earlyRetirees } from "../bridge";
 import { collegeChildren, collegeKid, collegeNeedOf, collegeYears } from "../college";
 import { ALL_TOGETHER, COLLEGE_LINE, detailed, drawdownFor, flow, growthLines, mixWords, personSaving, retireMix, stocksOf } from "../flows";
+import { raiseWords } from "../yearly";
 import { healthGap } from "../health";
 import { payoffDrop } from "../housing";
 import { ASSET_GROUPS, DEBT_GROUPS, groupOf, kindName, ownerOf } from "../kinds";
@@ -169,7 +170,7 @@ export function dashReport(d: DashData, today = new Date()) {
   /* ---------- income, taxes and spending ---------- */
   // Abroad, pay is entered after taxes and stays so; at home it's shown before them.
   const pay = people(pr).map((p, i) => ({ name: nameOf(pr, i ? 1 : 0), year: (abroad ? payYear(p) : grossYear(p)) ?? 0, entered: p.pay, per: PER_LABEL[p.per], after: p.taxed === "after", retire: p.retire }));
-  const save = { F, lines: growthLines(pr, F).filter((l) => l.amount > 0.5 || l.capped), per: [0, ...(two ? [1] : [])].map((i) => ({ name: nameOf(pr, i as 0 | 1), ...personSaving(F, i as 0 | 1) })),
+  const save = { F, lines: growthLines(pr, F).filter((l) => l.amount > 0.5 || l.capped), raises: raiseWords(pr, two ? [nameOf(pr, 0), nameOf(pr, 1)] : null), per: [0, ...(two ? [1] : [])].map((i) => ({ name: nameOf(pr, i as 0 | 1), ...personSaving(F, i as 0 | 1) })),
     rate: F.gross > 0 ? (F.invested + F.match) / F.gross : null,
     /** The plan's own saving each year to retirement, a month, by account (children's costs taken out). */
     years: (a.yearly ?? []).slice(0, Math.max(0, retire - age0)).map((y, k) => ({ age: age0 + k, t: y.t, r: y.r, b: y.b, short: y.short })),

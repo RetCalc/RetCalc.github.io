@@ -272,13 +272,13 @@ function Saving({ M, p }: { M: M_; p: PageInfo }) {
     <Sheet M={M} p={p}>
       <Lead h={<>{money(F.invested + F.match)} per month into savings{Sv.rate != null ? <>, {pctStr(Sv.rate, 0)} of pay</> : null}.</>}>
         {F.match > 0 ? <>That&apos;s {money(F.invested)} of your own and {money(F.match)} from {two ? "employers" : "your employer"}{F.fullMatch === false ? <>, short of the full match</> : F.fullMatch ? ", the whole match" : ""}. </> : null}
-        Each line grows as you set it on Taxes &amp; Savings and stops at its legal limit. At {M.retire} the plan has <b>{rounded(M.S.fv)}</b>, growing {pctStr((1 + M.pr.assume.growth) / (1 + M.pr.assume.inflation) - 1, 1)} per year after inflation.
+        Saving follows pay: {M.save.raises} Each line stops at its legal limit. At {M.retire} the plan has <b>{rounded(M.S.fv)}</b>, growing {pctStr((1 + M.pr.assume.growth) / (1 + M.pr.assume.inflation) - 1, 1)} per year after inflation.
       </Lead>
       <div className="rp-wide gap">
         <div><Sec>Each line, per month today</Sec>
-          <table className="rp-t"><thead><tr><th>Line</th><th>Per month</th><th>Limit per month</th><th className="l">Grows</th></tr></thead><tbody>
+          <table className="rp-t"><thead><tr><th>Line</th><th>Per month</th><th>Limit per month</th><th className="l">Limit</th></tr></thead><tbody>
             {Sv.lines.map((l) => <tr key={l.id}><td>{l.name}</td><td>{money(l.amount)}</td><td>{isFinite(l.cap) ? money(l.cap) : "None"}</td>
-              <td className="l">{l.capped ? "At the limit" : l.growth > 0 ? pctStr(l.growth, 0) + " per year" + (l.years != null ? ", at the limit in " + yrs(l.years) : "") : "Stays the same"}</td></tr>)}
+              <td className="l">{l.capped ? "At the limit" : isFinite(l.cap) ? "Room to grow" : "No limit"}</td></tr>)}
             {F.match > 0 ? <tr><td>Employer match</td><td>{money(F.match)}</td><td /><td className="l">Follows the first line</td></tr> : null}
             <tr className="tot"><td>All saving</td><td>{money(F.invested + F.match)}</td><td /><td className="l" /></tr></tbody></table>
           {two ? <><Sec>Each of you, per month</Sec>

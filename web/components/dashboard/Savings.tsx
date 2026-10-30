@@ -10,7 +10,6 @@
 
 import Link from "next/link";
 import { LandmarkIcon, PiggyBankIcon } from "lucide-react";
-import { useState } from "react";
 import { Affixed, Field, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { Badge } from "@/components/ui/badge";
@@ -20,15 +19,14 @@ import { TAX_DEF, type TaxInputs } from "@/tools/tax/model";
 import { withDefaults } from "@/components/tools/ToolState";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import type { BudgetInputs } from "@/tools/budget/model";
 import { parseNum } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { Frame } from "./Frame";
-import { num } from "./fields";
 import { agesOf } from "./ages";
-import { budgetFor, flow, fromBudget, fromTax, growthLines, taxFor, taxState } from "./flows";
+import { budgetFor, flow, fromBudget, fromTax, taxFor, taxState } from "./flows";
+import { raiseWords } from "./yearly";
 import { money } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { couple, nameOf, outsideUS } from "./model";
@@ -37,37 +35,18 @@ import { Note, Tile, Tip, TipLabel, To } from "./ui";
 
 const pct = (v: number) => String(Math.round(v * 1000) / 10);
 
-/** How each line grows: a line at its limit can't, one below it grows to
-    it and stops, brokerage has none. Shown under where the rest goes. */
+/** How saving grows: it follows pay, as set on Year by year. Shown under
+    where the rest goes. */
 function Growth() {
-  const { data, setProfile } = useDashboard();
-  const pr = data.profile, L = growthLines(pr), year = new Date().getFullYear();
-  const [open, setOpen] = useState(false);
-  const summary = L.filter((l) => l.amount > 0).map((l) => `${l.name} ${l.capped ? "at its limit" : pct(l.growth) + "%"}`).join(" · ");
+  const { data } = useDashboard();
+  const pr = data.profile, names: [string, string] | null = pr.who === "couple" ? [pr.p1.name || "You", pr.p2.name || "Your partner"] : null;
   return (
     <Card id="growth" className="min-w-0">
       <CardHeader>
         <CardTitle>How your saving grows <Tip id="growLines" title="How your saving grows" /></CardTitle>
-        <CardDescription>Each year, beyond inflation. {summary || "Nothing saved yet."}</CardDescription>
-        <CardAction><Button variant="outline" size="sm" onClick={() => setOpen(true)}>Set by account</Button></CardAction>
+        <CardDescription>It follows your pay. {raiseWords(pr, names)}</CardDescription>
+        <CardAction><Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/years" />}>Set on Year by year</Button></CardAction>
       </CardHeader>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent size="study" aria-labelledby="dshGrowTitle">
-          <h2 id="dshGrowTitle" className="dsh-dlg-h">How each line grows</h2>
-          <p className="dsh-cap">Raises let you put in more each year. Limits rise with inflation, so a line already at its limit can&apos;t grow beyond it. One below grows until it gets there, then holds.</p>
-          <div className="dsh-growlist">
-            {L.map((l) => (
-              <div className="dsh-growrow" key={l.id}>
-                <div><b>{l.name}</b><span>{money(l.amount)} per month{isFinite(l.cap) ? `, limit ${money(l.cap)}` : ", no limit"}</span></div>
-                <NumberField id={"dshGrow" + l.id} label="Grows each year" unit="%" step={0.5} max={30} disabled={l.capped}
-                  value={l.capped ? "0" : pct(pr.growth[l.id] ?? 0)} onValueChange={(v) => setProfile((p) => ({ ...p, growth: { ...p.growth, [l.id]: (num(v) ?? 0) / 100 } }))} />
-                <span className={l.capped ? "dsh-badge" : "dsh-cap"}>{l.capped ? "At the limit" : !(l.amount > 0) ? "Nothing goes here yet: set it above" : l.years != null ? `Reaches the limit in ${year + l.years}` : l.growth > 0 ? "No limit" : ""}</span>
-              </div>
-            ))}
-          </div>
-          <div className="dsh-navbtns"><DialogClose render={<Button />}>Done</DialogClose></div>
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }

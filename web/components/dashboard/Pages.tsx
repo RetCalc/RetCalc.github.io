@@ -16,10 +16,11 @@ import { Savings } from "./Savings";
 import { About } from "./About";
 import { Summary } from "./Summary";
 import { Calculator } from "./Calculator";
+import { YearByYear } from "./YearByYear";
 
 const PAGES: Record<Exclude<Section, "overview" | "tools" | "learn">, () => React.JSX.Element> = {
   profile: Profile, accounts: Accounts, home: Home, income: Income, spending: Spending, savings: Savings,
-  retirement: Retirement, next: NextSteps,
+  retirement: Retirement, years: YearByYear, next: NextSteps,
   calculator: Calculator, summary: Summary, about: About,
 };
 

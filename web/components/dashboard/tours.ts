@@ -111,7 +111,7 @@ const savings: Tour<DashData> = { name: "Taxes & Savings", title: "Your taxes, a
       ];
     } },
     { title: "How your saving grows", focus: "#growth", tasks: () => [
-      { h: "Many people save more as their pay grows. <b>Set by account</b> lets each line rise by a share each year, beyond inflation, until it reaches its limit." },
+      { h: "Saving grows with your pay. Your raises, and how much of each raise is saved, are set on <b>Year by year</b>. Each line stops at its legal limit." },
       { h: "Your plan counts that rise when it projects your savings, on the Calculator and at retirement." },
     ] },
   ],
@@ -215,6 +215,25 @@ const home: Tour<DashData> = { name: "Your home", title: "What your home costs",
   ],
   chip: () => "" };
 
-registerTours({ "dsh-retirement-early": retirementEarly, "dsh-retirement-health": health, "dsh-home": home, "dsh-accounts": accounts, "dsh-income": income, "dsh-spending": spending, "dsh-savings": savings, "dsh-calculator": calculator, "dsh-retirement": retirement } as Record<string, Tour<DashData>>);
-export const TAB_TOURS = { accounts: "dsh-accounts", home: "dsh-home", income: "dsh-income", spending: "dsh-spending", savings: "dsh-savings", calculator: "dsh-calculator", retirement: "dsh-retirement" } as Record<string, string>;
+const years: Tour<DashData> = { name: "Year by year", title: "Every year from now to retirement", read: plan,
+  pages: [
+    { title: "What shapes the years", focus: "#drivers", tasks: ({ s }) => [
+      { h: "Each year starts from your pay. Set each of your <b>raises</b>: how much pay rises each year beyond inflation. 1% to 2% is common over a career.", ok: done(s.profile.yearly.raise.some((r) => r !== 0)) },
+      { h: "<b>Of each raise, saved</b> says how much of a raise, after tax, goes to saving. Left as it is, you keep saving the same share of take-home pay as now. The rest of each raise is spent." },
+      { h: "<b>Changes ahead</b>: a new job, part-time years, a bigger house. Add one, or click a pay or spending figure in the table to change it from that year on.", ok: done((s.profile.scenarios ?? []).some((x) => x.kind === "income" || x.kind === "spending")) },
+    ] },
+    { title: "Every year to retirement", focus: "#table", tasks: () => [
+      { h: "Each row is a year: each of your pay, the <b>taxes</b> on it from your paycheck's own figures, what's <b>spent</b>, and what's <b>saved</b> by account, with the employer match." },
+      { h: "Spending is what's left after taxes and saving. Children's costs and college come out of saving in the years they run, and <b>What's going on</b> says when things change." },
+      { h: "Switch to <b>Future dollars</b> to see each year at that year's prices. Today's dollars show what the money buys now." },
+    ] },
+    { title: "The pictures", focus: "#income-chart", tasks: () => [
+      { h: "<b>Income and spending</b> stacks each of your pay with spending over it. <b>Where each year's income goes</b> splits it into taxes, spending and saving." },
+      { h: "Point at a year, or drag a finger along, to read its figures. Your savings at retirement, built from these years, are at the top." },
+    ] },
+  ],
+  chip: () => "" };
+
+registerTours({ "dsh-years": years, "dsh-retirement-early": retirementEarly, "dsh-retirement-health": health, "dsh-home": home, "dsh-accounts": accounts, "dsh-income": income, "dsh-spending": spending, "dsh-savings": savings, "dsh-calculator": calculator, "dsh-retirement": retirement } as Record<string, Tour<DashData>>);
+export const TAB_TOURS = { accounts: "dsh-accounts", home: "dsh-home", income: "dsh-income", spending: "dsh-spending", savings: "dsh-savings", calculator: "dsh-calculator", retirement: "dsh-retirement", years: "dsh-years" } as Record<string, string>;
 

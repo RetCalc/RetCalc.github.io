@@ -32,7 +32,7 @@ import { CALC_LOCKED, CALC_LOCKED_KEYS, calcInputs, calcOwnOf, lumpShortfalls, p
 import { ChildCostsDialog, childrenSentence } from "./children";
 import { coverScope, shiftCover } from "./cover";
 import { budgetFor, flow, taxFor } from "./flows";
-import { ageOf, answers, holdings, realGrowth } from "./model";
+import { ageOf, answers, holdings, nameOf, realGrowth } from "./model";
 import { money } from "./format";
 import { PlanFacts, TipLabel, To } from "./ui";
 import { STATE_OPTIONS } from "@/lib/states";
@@ -41,7 +41,7 @@ import { KID_BASE } from "@/tools/stages/kids";
 import { Hosted } from "./host";
 import { newId, useDashboard, type Entry, type Profile } from "./store";
 import { CHILDREN_ID, acctWord, newScenario, scenarioName, scenarioSentence, type Scenario, type ScenarioKind } from "./scenarios";
-import { ChangeDialog, ChangesDialog, LUMP_KIND, PickKind, RETURNS_KIND, SAVING_KIND, fx, kindClass, type ChangeTip, type Years } from "@/components/changes/ChangeUI";
+import { ChangeDialog, ChangesDialog, INCOME_KIND, LUMP_KIND, SPENDING_KIND, PickKind, RETURNS_KIND, SAVING_KIND, fx, kindClass, type ChangeTip, type Years } from "@/components/changes/ChangeUI";
 
 const Stages = dynamic(() => import("@/tools/stages/Stages").then((m) => m.Stages), { ssr: false });
 
@@ -79,17 +79,17 @@ function rowsOf(pr: Profile): Scenario[] {
   return [row, ...rest];
 }
 /** The profile with one scenario added or replaced. */
-function withRow(pr: Profile, s: Scenario): Profile {
+export function withRow(pr: Profile, s: Scenario): Profile {
   const list = pr.scenarios ?? [], i = list.findIndex((x) => x.id === s.id);
   return { ...pr, scenarios: i >= 0 ? list.map((x, j) => (j === i ? s : x)) : [...list, s] };
 }
-const withoutRow = (pr: Profile, id: string): Profile => ({ ...pr, scenarios: (pr.scenarios ?? []).filter((x) => x.id !== id) });
+export const withoutRow = (pr: Profile, id: string): Profile => ({ ...pr, scenarios: (pr.scenarios ?? []).filter((x) => x.id !== id) });
 
 /** The plan under a profile: savings at retirement in today's dollars (the
     plan's, or the Calculator's own when a returns scenario or its own
     changes set it), and what each year falls short by, a month, where the
     costs come to more than the saving. */
-function planOf(pr: Profile, entries: Entry[]): { fv: number | null; short: number[] } {
+export function planOf(pr: Profile, entries: Entry[]): { fv: number | null; short: number[] } {
   const a = answers(pr, entries);
   return { fv: a.fvTo ?? sim(a)?.fv ?? null, short: (a.yearly ?? []).map((y) => y.short) };
 }
@@ -187,7 +187,7 @@ function CoastCard({ coast, busy, row, age, retire, onUse, onRemove }: { coast: 
 
 /** A change form's label with the Dashboard's own tip. */
 const TIP_IDS = { from: "scFrom", amount: "scAmount", pct: "scPct", acct: "scAcct", lump: "scLump", return: "scReturn" } as const;
-const tipLabel = (text: string, tip: ChangeTip) => <TipLabel text={text} id={TIP_IDS[tip]} />;
+export const tipLabel = (text: string, tip: ChangeTip) => <TipLabel text={text} id={TIP_IDS[tip]} />;
 
 /** Why a scenario can't be kept: a saving cut that takes more than is
     saved from some age (by so much a month), or a lump sum taken out of
@@ -314,7 +314,8 @@ export function Calculator() {
     const sf = x.kind === "lump" ? lumpShort(pr, entries, x, age) : x.kind === "saving" ? shortfall(on.short, off.short, age) : null;
     return { fv: on.fv != null && off.fv != null ? on.fv - off.fv : null, cant: sf ? shortWords(sf) : null };
   }, [pr, entries, age]);
-  const sentenceOf = (r: Scenario) => (r.kind === "children" ? childrenSentence(pr) + (kidSpan ? " Their costs come out of saving as they change." : "") : scenarioSentence(r, retire, nominal));
+  const names: [string, string] | null = pr.who === "couple" && pr.p2.pay ? [nameOf(pr, 0), nameOf(pr, 1)] : null;
+  const sentenceOf = (r: Scenario) => (r.kind === "children" ? childrenSentence(pr) + (kidSpan ? " Their costs come out of saving as they change." : "") : scenarioSentence(r, retire, nominal, { names: names ?? undefined }));
 
   const panel = (
     <div className="dsh-sc">
@@ -356,9 +357,9 @@ export function Calculator() {
           figureOf={figureOf} sentenceOf={sentenceOf} warnOf={(r) => (shorts[r.id] ? shortWords(shorts[r.id]) : null)} edit={(r) => edit(r, true)} remove={remove} add={() => setDlg({ at: "pick", back: true })} close={() => setDlg(null)} />
       ) : null}
       {dlg?.at === "kids" ? <ChildCostsDialog close={done} /> : null}
-      {dlg?.at === "pick" ? <PickKind kinds={[SAVING_KIND, LUMP_KIND, RETURNS_KIND]} note="What do you see coming? Pick one, then give it a name, ages and amounts. Children are added in Profile." close={done} pick={(k) => pick(k.kind, k.over, dlg.back)} /> : null}
+      {dlg?.at === "pick" ? <PickKind kinds={[INCOME_KIND, SPENDING_KIND, SAVING_KIND, LUMP_KIND, RETURNS_KIND]} note="What do you see coming? Pick one, then give it a name, ages and amounts. Children are added in Profile." close={done} pick={(k) => pick(k.kind, k.over, dlg.back)} /> : null}
       {dlg?.at === "edit" ? (
-        <ChangeDialog s={dlg.s} fresh={dlg.fresh} years={years} accounts label={tipLabel} sentence={(x) => scenarioSentence(x, retire, nominal)} effectOf={effectOf}
+        <ChangeDialog s={dlg.s} fresh={dlg.fresh} years={years} accounts label={tipLabel} names={names} sentence={(x) => scenarioSentence(x, retire, nominal, { names: names ?? undefined })} effectOf={effectOf}
           where={(k) => `The rest comes out of your other accounts once ${acctWord(k)} runs out, the 401(k) up to the match last.`} close={done}
           save={(x) => { setProfile((p) => withRow(p, x)); done(); }}
           remove={() => { remove(dlg.s.id); done(); }} />

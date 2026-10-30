@@ -9,10 +9,10 @@ import { FACTORS, STRATS, retPath, score, sim, strats, type FactorId, type Part,
 import type { Answers } from "@/tools/guide/store";
 import { ssFRA } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
-import { budgetFor, drawdownFor, drawdownPath, flow, personSaving, retireMix, savingAt, stocksOf, taxState } from "./flows";
+import { budgetFor, drawdownFor, drawdownPath, flow, personSaving, retireMix, stocksOf, taxState } from "./flows";
 import { paycheckInput } from "@/tools/budget/paycheck-math";
 import { collegeKid, collegeNeedOf, collegeYears } from "./college";
-import { yearlySaving } from "./cover";
+import { yearlySaving, type CashYear } from "./cover";
 import { calcFvOf } from "./calc";
 import { kidsOff, type Scenario } from "./scenarios";
 import { childCost, children } from "@/tools/guide/schedule";
@@ -135,6 +135,15 @@ function answersWithoutKids(pr: Profile, entries: Entry[]): Answers {
   return a;
 }
 
+/** Each plan's years in full, as answers() works them out (cover.ts). */
+const YEARS = new WeakMap<Answers, CashYear[]>();
+/** The plan's years from now to retirement in full: pay, taxes, spending
+    and saving, as the plan itself counts them. Empty without pay or ages. */
+export function planYearsOf(pr: Profile, entries: Entry[] = []): { years: CashYear[]; a: Answers } {
+  const a = answers(pr, entries);
+  return { years: YEARS.get(a) ?? [], a };
+}
+
 /** The profile and latest entry as the Guide's answers. */
 export function answers(pr: Profile, entries: Entry[] = []): Answers {
   if (kidsOff(pr.scenarios)) return answersWithoutKids(pr, entries);
@@ -176,18 +185,10 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   if (pr.ss.pct != null && pr.ss.pct < 100) a.ssScale = pr.ss.pct / 100;
   // Where each month's saving goes, by how it's taxed.
   if (F?.hasPay && F.invested > 0) Object.assign(a, { splitTrad: (F.trad / F.invested) * 100, splitRoth: (F.roth / F.invested) * 100, splitBrok: (F.brok / F.invested) * 100 });
-  // Changes ahead: saving that grows (each line to its limit), children
-  // (the Guide's own costs by age, above what's spent on them today) and
-  // college, each taking from what's saved in the years it runs.
+  // Changes ahead: children (the Guide's own costs by age, above what's
+  // spent on them today) and college, each taking from what's saved in the
+  // years it runs; saving that grows with pay is marked below.
   const events: NonNullable<Answers["events"]> = [];
-  if (F?.hasPay && a.age != null && a.retire != null) {
-    let before = savingAt(pr, 0, F);
-    for (let k = 1; k < Math.min(45, a.retire - a.age); k++) {
-      const now = savingAt(pr, k, F);
-      if (now - before > 0.5) events.push({ id: "grow" + k, kind: "raise", at: a.age + k, extra: now - before });
-      before = now;
-    }
-  }
   const kids = pr.kidList.slice(0, pr.kids).filter((k) => k.by).map((k) => ageOf(k)!).filter((x) => x >= 0 && x < 30);
   if (kids.length) a.kidsNow = kids;
   if (pr.planned.count > 0) Object.assign(a, { kidsPlanned: pr.planned.count, firstIn: pr.planned.firstIn, spacing: pr.planned.spacing });
@@ -233,15 +234,16 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   // in the dashboard's order, so the plan's account mix, match and taxes
   // follow those choices.
   if (F.hasPay && a.age != null && a.retire != null && a.retire > a.age) {
-    const rows = yearlySaving(pr, F, a, { college: Array.from({ length: a.retire - a.age }, (_, k) => college[k] ?? 0) }).rows.map((y) => ({ ...y }));
+    // A partner who stops work before you retire stops earning and saving
+    // through work then (cover.ts).
+    const Y = yearlySaving(pr, F, a, { college: Array.from({ length: a.retire - a.age }, (_, k) => college[k] ?? 0) }), rows = Y.rows.map((y) => ({ ...y }));
     // Outside the US every account is counted as tax-free, as below.
-    // A partner who stops work before you retire stops saving through work then.
-    const stop2 = partnerStop(pr);
-    if (stop2 != null && stop2.before) {
-      const ps = personSaving(F, 1), from = Math.max(0, Math.round(stop2.year - Math.floor(nowYear())));
-      rows.forEach((y, k) => { if (k >= from) { y.t = Math.max(0, y.t - ps.t); y.r = Math.max(0, y.r - ps.r); } });
-    }
     Object.assign(a, { yearly: abroad ? rows.map((y) => ({ t: 0, r: y.t + y.r + y.b, b: 0, short: y.short })) : rows, yearlyBase: F.invested + F.match });
+    YEARS.set(a, Y.years);
+    // Saving that grows with pay, each year it rises: "after the raise".
+    const age0 = a.age;
+    const raises = Y.base.flatMap((v, k) => (k > 0 && k < 45 && v - Y.base[k - 1] > 0.5 ? [{ id: "grow" + k, kind: "raise" as const, at: age0 + k, extra: v - Y.base[k - 1] }] : []));
+    if (raises.length) a.events = [...(a.events ?? []), ...raises];
   }
   // A partner who keeps working after you retire: their pay, and their own
   // saving through work, count in the plan until they stop.

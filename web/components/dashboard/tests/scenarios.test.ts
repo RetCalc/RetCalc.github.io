@@ -2,7 +2,7 @@
    year's saving and return, the words for it, and reading saved ones. */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { lumpAccount, newScenario, nominalAt, ownOn, readScenarios, scenarioSentence, spanOf, withoutOwn, yearChange, type Scenario } from "../scenarios";
+import { lumpAccount, newScenario, nominalAt, ownOn, payAt, readScenarios, scenarioSentence, spanOf, withoutOwn, yearChange, type Scenario } from "../scenarios";
 
 const sc = (over: Partial<Scenario>): Scenario => ({ ...newScenario("x", "saving", 34, 0.075), from: 40, until: 0, mode: "amount", amount: 0, ramp: 0, acct: "auto", ...over });
 
@@ -109,4 +109,32 @@ test("stopping saving takes all of it, whatever other changes add, before or aft
     assert.ok(y.tags.includes("c"));
   }
   assert.equal(scenarioSentence(stop, 65, 0.07), "Stop saving from 45 to retirement: nothing more goes in, the employer match included.");
+});
+
+test("spending more is saving less, dollar for dollar; spending less adds to saving", () => {
+  const more = sc({ kind: "spending", amount: 800 });
+  assert.equal(yearChange([more], 45, 65, 4000).cut, 800);
+  const less = sc({ kind: "spending", amount: -300, acct: "roth" });
+  const y = yearChange([less], 45, 65, 4000);
+  assert.equal(y.cut, 0);
+  assert.equal(y.add.roth, 300);
+  assert.match(scenarioSentence(more, 65, 0.075), /^Spend \$800 per month more from 40 to retirement/);
+});
+
+test("a pay change sets one person's pay, or moves it by a share, while it runs", () => {
+  const set = sc({ kind: "income", who: 1, mode: "amount", amount: 90000, until: 50 });
+  assert.equal(payAt([set], 1, 39, 65, 80000, 0.02).pay, 80000);
+  assert.equal(payAt([set], 0, 45, 65, 120000, 0.02).pay, 120000);
+  // Raises carry on from the new figure.
+  assert.equal(Math.round(payAt([set], 1, 42, 65, 85000, 0.02).pay), Math.round(90000 * 1.02 * 1.02));
+  assert.equal(payAt([set], 1, 50, 65, 85000, 0.02).pay, 85000);
+  const half = sc({ kind: "income", mode: "pct", amount: -50 });
+  assert.equal(payAt([half], 0, 41, 65, 100000, 0).pay, 50000);
+  assert.deepEqual(payAt([half], 0, 41, 65, 100000, 0).tags, ["x"]);
+  assert.match(scenarioSentence(set, 65, 0.075, { names: ["Sam", "Jordan"] }), /^Jordan's pay becomes \$90,000 per year from when you're 40 until when you're 50/);
+});
+
+test("new kinds read back, with whose pay a change is", () => {
+  const back = readScenarios([{ id: "a", kind: "income", who: 1, mode: "pctYearly", amount: 5 }, { id: "b", kind: "spending", mode: "pct", amount: 200 }, { id: "c", kind: "nope" }]);
+  assert.deepEqual(back.map((s) => [s.kind, s.who, s.mode]), [["income", 1, "pct"], ["spending", 0, "amount"]]);
 });
