@@ -249,12 +249,13 @@ export function ReadyToSpend({ items, pr, names }: { items: Item[]; pr: Profile;
         <div className="dsh-stat"><div className="dsh-label">Can be spent today · {Math.round((now / R.total) * 100)}%</div><div className="dsh-fig dsh-md">{money(now)}</div></div>
         <div className="dsh-stat"><div className="dsh-label">Opens later</div><div className="dsh-fig dsh-md">{money(R.total - now)}</div></div>
       </div>
-      {R.undated ? null : <Layers steps={R.steps} total={R.total} active={active} onActive={setActive} />}
+      {R.undated ? null : <Openings steps={R.steps} active={active} onActive={setActive} />}
       <table className="dsh-tbl dsh-stbl dsh-mt">
         <thead><tr><th>When, and what opens</th><th>Amount</th></tr></thead>
         <tbody>
           {R.steps.map((s, k) => (
-            <tr key={s.key} className={active === k ? "dsh-hot" : active != null && k > active ? "dsh-dimrow" : undefined} onMouseEnter={() => setActive(k)} onMouseLeave={() => setActive(null)}>
+            <tr key={s.key} className={active === k ? "dsh-hot" : active != null ? "dsh-dimrow" : undefined}
+              onMouseEnter={() => setActive(k)} onMouseLeave={() => setActive(null)} onClick={() => setActive(active === k ? null : k)}>
               <td><i className={"dsh-sw dsh-k" + (k % 6)} aria-hidden="true" />{s.when}{s.year != null ? <span className="dsh-muted"> · {s.year}</span> : null}<div className="dsh-tnote">{[...s.what].join(", ")}</div></td>
               <td>{money(s.amount)}</td>
             </tr>
@@ -272,67 +273,52 @@ export function ReadyToSpend({ items, pr, names }: { items: Item[]; pr: Profile;
   );
 }
 
-/** The savings within reach over the years: each opening a layer of its
-    own colour, stacked on those before it from its date on. Pointing
-    anywhere along it (or dragging a finger) picks the opening in effect
-    there: the later ones dim, and a box says what's in reach by then. */
-function Layers({ steps, total, active, onActive }: { steps: Step[]; total: number; active: number | null; onActive: (k: number | null) => void }) {
+/** The openings on a line of years from today: one dot each, the same
+    size whatever it holds, in the colour of its row in the table. Pointing
+    at a dot (or tapping it) picks out its row, and a row its dot. */
+function Openings({ steps, active, onActive }: { steps: Step[]; active: number | null; onActive: (k: number | null) => void }) {
   const [ref, W] = useWidth(600);
-  const [px, setPx] = useState<number | null>(null);
-  const H = 210, L = 54, R = 70, T = 14, B = 26;
+  const L = 14, R = 14, line = 62, H = 92;
   const now = nowYear(), dated = steps.map((s) => s.t || now);
-  const x0 = now, x1 = Math.max(...dated, now + 1) + Math.max(1, (Math.max(...dated) - now) * 0.08);
-  const step = niceStep(total), top = Math.ceil(total / step) * step;
-  const X = (t: number) => L + ((t - x0) / (x1 - x0)) * (W - L - R), Y = (v: number) => T + (1 - v / top) * (H - T - B);
-  const grid: number[] = [];
-  for (let v = 0; v <= top + 1; v += step) grid.push(v);
-  const runs = steps.map((_, k) => steps.slice(0, k + 1).reduce((t, s) => t + s.amount, 0));
-  const xs = dated.map(X), end = X(x1);
-  // A year under each opening, skipping one too close to the one before.
-  const years = steps.map((s, k) => ({ s, x: xs[k] })).filter((p) => p.s.year != null && p.x - X(x0) > 44)
-    .filter((p, i, arr) => arr.slice(0, i).every((o) => Math.abs(o.x - p.x) > 40));
-  const probe = (clientX: number) => {
-    const r = ref.current?.querySelector("svg")?.getBoundingClientRect();
-    if (!r) return;
-    const x = ((clientX - r.left) / r.width) * W;
-    if (x < L - 8 || x > end + 8) { setPx(null); onActive(null); return; }
-    const c = Math.max(L, Math.min(end, x));
-    setPx(c);
-    onActive(xs.reduce((k, sx, i) => (sx <= c + 0.5 ? i : k), 0));
-  };
-  const clear = () => { setPx(null); onActive(null); };
-  const move = (e: React.PointerEvent<SVGSVGElement>) => { if (e.pointerType !== "touch") probe(e.clientX); };
-  const scrub = useScrub(ref, (x) => probe(x), clear);
-  const k = active, cx = k == null ? null : px ?? xs[k] + 1;
-  const left = cx != null && cx > W * 0.5;
-  const read = (i: number) => `${steps[i].when}${steps[i].year != null ? " (" + steps[i].year + ")" : ""}: ${money(steps[i].amount)} opens, ${money(runs[i])} in reach`;
+  const x0 = now, x1 = Math.max(...dated, now + 1);
+  const X = (t: number) => L + ((t - x0) / (x1 - x0)) * (W - L - R);
+  const xs = dated.map(X);
+  // Amounts above the dots, on a higher row where they'd run into the one before.
+  const lab = steps.map((s) => "+" + shortMoney(s.amount));
+  const rows: number[] = [];
+  const ends: number[] = [];
+  xs.forEach((x, k) => {
+    const w = lab[k].length * 8.5, from = Math.max(0, Math.min(W - w, x - w / 2));
+    let r = 0;
+    while (ends[r] != null && from < ends[r] + 12) r++;
+    rows.push(r); ends[r] = from + w;
+  });
+  // A year under each dot, skipping one too close to the one before.
+  const years = steps.map((s, k) => ({ k, s, x: xs[k] })).filter((p) => p.s.year != null)
+    .filter((p, i, arr) => arr.slice(0, i).every((o) => Math.abs(o.x - p.x) > 36));
+  const top = Math.max(0, ...rows);
+  const dy = top * 16;
+  const anchor = (x: number) => (x < 24 ? "start" : x > W - 24 ? "end" : "middle");
   return (
-    <div ref={ref} className="dsh-chartwrap dsh-mt" {...scrub}>
-      <svg className="dsh-chart dsh-layers" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={steps.map((_, i) => read(i)).join(". ")}
-        onPointerMove={move} onPointerDown={move} onPointerLeave={(e) => { if (e.pointerType !== "touch") clear(); }}>
-        {grid.map((v) => <g key={v}><line className="dsh-gl" x1={L} x2={end} y1={Y(v)} y2={Y(v)} /><text x={L - 8} y={Y(v) + 4} textAnchor="end">{shortMoney(v)}</text></g>)}
-        <text x={X(x0)} y={H - 6} textAnchor="start">Today</text>
-        {years.map((p) => <text key={p.s.key} x={p.x} y={H - 6} textAnchor="middle">{p.s.year}</text>)}
-        {steps.map((s, i) => {
-          const y = Y(runs[i]), h = Y(i ? runs[i - 1] : 0) - y;
+    <div ref={ref} className="dsh-mt">
+      <svg className="dsh-chart dsh-open" viewBox={`0 ${-dy} ${W} ${H + dy}`} width={W} height={H + dy} role="img"
+        aria-label={steps.map((s) => `${s.when}${s.year != null ? " (" + s.year + ")" : ""}: ${money(s.amount)}`).join(". ")}>
+        <line className="dsh-oline" x1={L} x2={W - R} y1={line} y2={line} />
+        {years.map((p) => <text key={p.s.key} x={p.x} y={line + 26} textAnchor={anchor(p.x)}>{p.s.year}</text>)}
+        {xs[0] > L + 30 || steps[0].key !== "now" ? <text x={L} y={line + 26} textAnchor="start">Today</text> : <text x={xs[0]} y={line + 26} textAnchor="start">Today</text>}
+        {steps.map((s, k) => {
+          const off = active != null && active !== k;
           return (
-            <g key={s.key}>
-              <rect className={"dsh-layer dsh-k" + (i % 6) + (k != null && i > k ? " dsh-dim" : "")} x={xs[i]} y={y + 1} width={Math.max(0, end - xs[i])} height={Math.max(1, h - 2)} rx={3} />
-              {h >= 15 ? <text className={"dsh-lv" + (k != null && i > k ? " dsh-dim" : "")} x={end + 8} y={y + h / 2 + 4}>+{shortMoney(s.amount)}</text> : null}
+            <g key={s.key} className={off ? "dsh-odim" : active === k ? "dsh-ohot" : undefined}
+              onMouseEnter={() => onActive(k)} onMouseLeave={() => onActive(null)} onPointerDown={(e) => { if (e.pointerType !== "mouse") onActive(active === k ? null : k); }}>
+              <text className="dsh-oamt" x={xs[k]} y={line - 18 - rows[k] * 16} textAnchor={anchor(xs[k])}>{lab[k]}</text>
+              <circle className="dsh-hit" cx={xs[k]} cy={line} r={16} />
+              <circle className={"dsh-odot dsh-k" + (k % 6)} cx={xs[k]} cy={line} r={active === k ? 10 : 8} />
             </g>
           );
         })}
-        {cx != null ? <line className="dsh-cursor" x1={cx} x2={cx} y1={T} y2={H - B} /> : null}
       </svg>
-      {k != null && cx != null ? (
-        <div className={left ? "dsh-tipbox dsh-tip-l" : "dsh-tipbox dsh-tip-r"}>
-          <b>{steps[k].year != null ? steps[k].year + ": " : ""}{steps[k].when}</b>
-          <div className="dsh-tiprow"><span>Opens then</span><span>{money(steps[k].amount)}</span></div>
-          <div className="dsh-tiprow"><span>Ready to spend by then</span><span>{money(runs[k])}</span></div>
-          {total - runs[k] > 0 ? <div className="dsh-tiprow"><span>Still to open</span><span>{money(total - runs[k])}</span></div> : null}
-        </div>
-      ) : null}
-      <div className="dsh-cap dsh-mt6"><span className="dsh-mouse">Point anywhere along it to see what you can spend by then.</span><span className="dsh-touch">Drag along it to see what you can spend by then.</span></div>
+      <div className="dsh-cap dsh-mt6"><span className="dsh-mouse">Point at a dot or a row to match them up.</span><span className="dsh-touch">Tap a dot or a row to match them up.</span></div>
     </div>
   );
 }

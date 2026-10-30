@@ -292,10 +292,15 @@ export function Accounts() {
         <Tile id="assets" icon={WalletIcon} title="Assets" right={<span className="dsh-cap">{money(sum(items, "asset"))}</span>}>
           {draft ? <EditList items={draft.items} side="asset" names={names} onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="asset" names={names} />}
         </Tile>
-        <Tile id="debts" icon={LandmarkIcon} title="Debts" right={<span className="dsh-cap">{money(sum(items, "debt"))}</span>}>
-          {draft ? <EditList items={draft.items} side="debt" names={names} onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="debt" names={names} />}
-        </Tile>
+        {/* Update balances sits under Debts, the shorter list as a rule. */}
+        <div>
+          <Tile id="debts" icon={LandmarkIcon} title="Debts" right={<span className="dsh-cap">{money(sum(items, "debt"))}</span>}>
+            {draft ? <EditList items={draft.items} side="debt" names={names} onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="debt" names={names} />}
+          </Tile>
+          {draft ? null : <div className="dsh-editbar">{actions}</div>}
+        </div>
       </div>
+      {draft ? <div className="dsh-editbar">{actions}</div> : null}
 
       {/* While editing, the page is the editor: these come back on saving. */}
       {draft ? null : (
@@ -308,7 +313,6 @@ export function Accounts() {
           </Tile>
         </div>
       )}
-      <div className="dsh-editbar">{actions}</div>
       <Dialog open={!!leaving} onOpenChange={(o) => { if (!o) setLeaving(null); }}>
         <DialogContent aria-labelledby="dshLeaveTitle">
           <h2 id="dshLeaveTitle" className="dsh-dlg-h">You have unsaved changes to your balances</h2>

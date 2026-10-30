@@ -880,10 +880,13 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 /* When you can spend it: one colour per opening, in order. */
 .dsh-k0 { --g: var(--ds-brand-jade); } .dsh-k1 { --g: var(--ds-series-sky); } .dsh-k2 { --g: var(--ds-series-lavender); }
 .dsh-k3 { --g: var(--ds-series-rose); } .dsh-k4 { --g: var(--ds-brand-gold); } .dsh-k5 { --g: var(--ds-series-teal); }
-.dsh-layers { cursor: crosshair; touch-action: pan-y; }
-.dsh-chart .dsh-layer { fill: var(--g); transition: opacity .15s; }
-.dsh-chart .dsh-lv { fill: var(--ds-text); font-size: 12px; font-weight: 500; transition: opacity .15s; }
-.dsh-chart .dsh-dim { opacity: .2; }
+.dsh-chart .dsh-oline { stroke: var(--ds-rule-strong); stroke-width: 2; }
+.dsh-chart .dsh-odot { fill: var(--g); stroke: var(--ds-surface); stroke-width: 2.5; transition: r .15s; }
+.dsh-chart .dsh-oamt { fill: var(--ds-text); font-size: 12.5px; font-weight: 500; }
+.dsh-chart .dsh-odim { opacity: .25; }
+.dsh-chart .dsh-ohot .dsh-oamt { font-weight: 600; }
+.dsh-open g { cursor: pointer; transition: opacity .15s; }
+.dsh-stbl tbody tr { cursor: pointer; }
 .dsh-stbl tbody tr { transition: opacity .15s, background-color .15s; }
 .dsh-stbl tr.dsh-hot td { background: var(--ds-raised); }
 .dsh-stbl tr.dsh-dimrow { opacity: .45; }
