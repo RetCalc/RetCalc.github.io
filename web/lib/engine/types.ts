@@ -137,20 +137,28 @@ export interface BrInput {
   /** A partner's own traditional accounts (part of `trad`) and their age at
       the start: those open penalty-free at the partner's own 59½. */
   trad2?: number; age2?: number;
+  /** A withdrawal budget in place of `spend`: what comes out of savings each
+      bridge year, before tax, in today's dollars, as a withdrawal strategy
+      takes it in each historical start (by its year) and on the steady path.
+      Each year spends what's left after that year's tax, penalty and premium. */
+  budget?: BrBudget;
 }
+export interface BrBudget { steady: number[]; byStart: Record<number, number[]> }
 export interface BrMix { r: ArrayLike<number>; pi: ArrayLike<number>; n: number; real: number; infl: number; first?: number; rEnd?: ArrayLike<number>; realEnd?: number }
 export interface BrCtx extends BrInput {
   mix: BrMix; real: number; infl: number; adults: number; fpl: number; mfpl: number; nB: number;
   r55Age: number; r55: boolean; stateCA: boolean;
 }
 /** A market to run through: returns and inflation from `off`, for `len` years. */
-export interface BrSeq { r: ArrayLike<number>; pi: ArrayLike<number>; off: number; len: number }
+export interface BrSeq { r: ArrayLike<number>; pi: ArrayLike<number>; off: number; len: number; wd?: ArrayLike<number> }
 export interface BrEnd { trad: number; ira: number; sepp: number; g457: number; roth: number; rothIn: number; brok: number; bBasis: number; total: number }
 export interface BrDraws { brok: number; rothBasis: number; rung: number; r55: number; early: number }
 export interface BrRow {
   age: number; W: number; sp: number; F: number; C: number; d: BrDraws;
   tax: number; pen: number; health: number; hk: string; fplPct: number | null; fica: number;
   magi: number; ord: number; gain: number; short: number; surplus: number; end: BrEnd;
+  /** What the year spends after its costs, and on a budget, the withdrawal it set. */
+  spend: number; wd: number | null;
 }
 export interface BrRun {
   ok: boolean; cost: number; tax: number; pen: number; health: number; conv: number;

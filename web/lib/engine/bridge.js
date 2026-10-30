@@ -43,6 +43,20 @@ export function brFlatSeq(len, r, pi){
   a.fill(r); b.fill(pi);
   return {r:a, pi:b, off:0, len:len};
 }
+/* On a withdrawal budget (ctx.budget), what comes out each year: the
+   strategy's withdrawals in the historical start `year`, or the steady
+   path's when that start has none (and with no year). Undefined without a
+   budget, when each year pays for ctx.spend instead. */
+export function brWd(ctx, year){
+  var B = ctx.budget;
+  if (!B) return undefined;
+  return (year != null && B.byStart[year]) || B.steady;
+}
+/* A historical market from start index s, carrying that start's budget. */
+export function brHistSeq(ctx, s){
+  var mix = ctx.mix;
+  return {r:mix.r, pi:mix.pi, off:s, len:ctx.nB, wd:brWd(ctx, HIST_START + s)};
+}
 
 /* ---- tax, cached ----
    computeRetireTax is the whole federal and state return, and a plan asks
@@ -146,6 +160,8 @@ export function brRungFor(ctx, age, convNext){
 }
 /* The 72(t) payment that covers the first year on its own. */
 export function brSeppNeed(ctx){
+  // On a budget the first year's withdrawal is the payment, costs and all.
+  if (ctx.budget) return ctx.budget.steady[0] || 0;
   var W = brWage(ctx, ctx.age), base = Math.max(0, ctx.spend - W * (1 - BR_FICA)), P = base;
   for (var i = 0; i < 8; i++) P = base + brTax(ctx, P, 0, W, ctx.age) + brHealth(ctx, ctx.age, P + W).cost;
   return P;
@@ -188,8 +204,10 @@ export function brSnap(s){
 /* One year: given what's already fixed (wages, the 72(t) payment, fills and
    conversions), find the smallest draw down the plan's list of sources that
    pays for spending plus the tax, penalty and premium that draw itself
-   causes. Doesn't touch the balances. */
-export function brYear(ctx, p, s, y, age, W, sp, F, C){
+   causes. Doesn't touch the balances. On a budget (B, the year's
+   withdrawal) the draw is what's left of B after the 72(t) payment and the
+   fills, and the year spends what's left after its costs. */
+export function brYear(ctx, p, s, y, age, W, sp, F, C, B){
   var fG = Math.min(F, s.g457), fK = F - fG, cI = Math.min(C, s.ira + (s.iraB || 0)), cK = C - cI;
   var ira = s.ira + (s.iraB || 0) - cI, k401 = s.k401 - fK - cK, g457 = s.g457 - fG, roth = s.roth + C;
   var mat = 0, unmat = C, all = C, i;
@@ -233,7 +251,19 @@ export function brYear(ctx, p, s, y, age, W, sp, F, C){
     return {x:x, net:fixedCash + x - ctx.spend - tax - pen - fica - hl.cost,
       tax:tax, pen:pen, hl:hl, magi:magi, ord:O, gain:gain, pb:pb};
   }
-  var r = ev(0);
+  var r;
+  if (B != null){
+    var want = Math.max(0, B - sp - F);
+    r = ev(Math.min(total, want));
+    var drawn = sp + F + r.x, spend = W + Math.min(drawn, B) - r.tax - r.pen - fica - r.hl.cost;
+    var takes0 = new Array(n), rem0 = r.x;
+    for (i = 0; i < n; i++){ takes0[i] = Math.min(av[i], rem0); rem0 -= takes0[i]; }
+    return {list:list, takes:takes0, tax:r.tax, pen:r.pen, health:r.hl.cost, hk:r.hl.kind,
+      fplPct:r.hl.pct, fica:fica, magi:r.magi, ord:r.ord, gain:r.gain, pb:r.pb, gs:gs, F:F, C:C,
+      short:Math.max(0, B - drawn) + Math.max(0, -spend), surplus:Math.max(0, drawn - B),
+      spend:Math.max(0, spend), wd:B};
+  }
+  r = ev(0);
   if (r.net < 0 && total > 0){
     var lo = 0, nlo = r.net, hi = -1, nhi = 0, x = Math.min(total, -r.net * 1.2);
     for (var it = 0; it < 40; it++){
@@ -255,7 +285,7 @@ export function brYear(ctx, p, s, y, age, W, sp, F, C){
   for (i = 0; i < n; i++){ takes[i] = Math.min(av[i], rem); rem -= takes[i]; }
   return {list:list, takes:takes, tax:r.tax, pen:r.pen, health:r.hl.cost, hk:r.hl.kind,
     fplPct:r.hl.pct, fica:fica, magi:r.magi, ord:r.ord, gain:r.gain, pb:r.pb, gs:gs, F:F, C:C,
-    short:r.net < 0 ? -r.net : 0, surplus:r.net > 0 ? r.net : 0};
+    short:r.net < 0 ? -r.net : 0, surplus:r.net > 0 ? r.net : 0, spend:ctx.spend, wd:null};
 }
 /* Applies a solved year to the balances; returns where the cash came from. */
 export function brCommit(s, Y, y){
@@ -295,7 +325,7 @@ export function brCommit(s, Y, y){
 
 /* One plan along one market path, from retirement to 59½. */
 export function brSim(ctx, p, seq, wantRows){
-  var A = ctx.age, len = seq.len, R = seq.r, PI = seq.pi, off = seq.off;
+  var A = ctx.age, len = seq.len, R = seq.r, PI = seq.pi, off = seq.off, WD = seq.wd;
   var s = {ira:ctx.trad - ctx.k401, k401:ctx.k401, sepp:0, g457:ctx.g457,
     roth:ctx.roth, rBasis:ctx.rothBasis, rungs:[], brok:ctx.brok, bBasis:ctx.brok * ctx.basisPct, iraB:0};
   // A partner's own traditional accounts (trad2, age2 their age now): under
@@ -331,19 +361,21 @@ export function brSim(ctx, p, seq, wantRows){
     }
     // Conversions, and in the blended plan the penalty-free ordinary income
     // (rule of 55, 457(b)) that fills the same bracket room first.
+    // On a budget, a rung is the withdrawal five years on (its costs come out of it).
+    var B = WD ? Math.max(0, WD[y] || 0) : null;
     var F = 0, C = 0, convCap = s.ira + s.iraB + (ctx.r55 ? 0 : s.k401);
     if (p.conv === "ladder" && y + 5 < ctx.nB){
-      C = Math.min(convCap, brRungFor(ctx, age + 5, y + 10 < ctx.nB));
+      C = Math.min(convCap, WD ? Math.max(0, WD[y + 5] || 0) : brRungFor(ctx, age + 5, y + 10 < ctx.nB));
     } else if (p.conv === "fill"){
       var room = Math.max(0, p.fillTarget - W - sp - (p.fillMode === "aca" ? lastGain : 0));
-      F = Math.min(room, ctx.spend, s.g457 + (ctx.r55 ? s.k401 : 0));
+      F = Math.min(room, B != null ? B : ctx.spend, s.g457 + (ctx.r55 ? s.k401 : 0));
       C = Math.min(convCap, Math.max(0, room - F));
     }
-    var Y = brYear(ctx, p, s, y, age, W, sp, F, C);
+    var Y = brYear(ctx, p, s, y, age, W, sp, F, C, B);
     if (p.conv === "fill" && p.fillMode === "aca"){
       for (var k = 0; k < 3 && C > 0 && Y.magi > p.fillTarget + 1; k++){
         C = Math.max(0, C - (Y.magi - p.fillTarget) - 250);
-        Y = brYear(ctx, p, s, y, age, W, sp, F, C);
+        Y = brYear(ctx, p, s, y, age, W, sp, F, C, B);
       }
     }
     var d = brCommit(s, Y, y);
@@ -361,7 +393,8 @@ export function brSim(ctx, p, seq, wantRows){
     out.path[y + 1] = s.ira + s.iraB + s.k401 + s.sepp + s.g457 + s.roth + s.brok;
     if (out.rows) out.rows.push({age:age, W:W, sp:sp, F:F, C:C, d:d,
       tax:Y.tax, pen:Y.pen, health:Y.health, hk:Y.hk, fplPct:Y.fplPct, fica:Y.fica,
-      magi:Y.magi, ord:Y.ord, gain:Y.gain, short:Y.short, surplus:Y.surplus, end:brSnap(s)});
+      magi:Y.magi, ord:Y.ord, gain:Y.gain, short:Y.short, surplus:Y.surplus, end:brSnap(s),
+      spend:Y.spend, wd:Y.wd});
   }
   out.ok = len >= ctx.nB && out.short === null && (p.penaltyPlanned || out.firstPen === null);
   out.cost = out.tax + out.pen + out.health;
@@ -387,7 +420,7 @@ export function brHoldRate(ctx, plan){
   var mix = ctx.mix, ok = 0, of = 0;
   for (var s = mix.first || 0; s + ctx.nB <= mix.n; s++){
     of++;
-    if (brSim(ctx, plan, {r:mix.r, pi:mix.pi, off:s, len:ctx.nB}, false).ok) ok++;
+    if (brSim(ctx, plan, brHistSeq(ctx, s), false).ok) ok++;
   }
   return of ? ok / of : 0;
 }
@@ -429,6 +462,7 @@ export function brChooseBlend(ctx, steady, cons){
 }
 export function brPlans(ctx, steady){
   var cons = brFlatSeq(ctx.nB, ctx.real - BR_CUSHION, ctx.infl);
+  cons.wd = brWd(ctx);
   var blend = brChooseBlend(ctx, steady, cons);
   // described from what it actually does on the steady path
   var bs = brSim(ctx, blend, steady, true), bits = [];
@@ -479,12 +513,12 @@ export function brTest(ctx, p, mc){
   if (mc){
     for (var t = 0; t < mc.N; t++){
       out.of++;
-      if (brSim(ctx, p, {r:mc.r, pi:mc.pi, off:t * ctx.nB, len:ctx.nB}, false).ok) out.hold++;
+      if (brSim(ctx, p, {r:mc.r, pi:mc.pi, off:t * ctx.nB, len:ctx.nB, wd:brWd(ctx)}, false).ok) out.hold++;
     }
     return out;
   }
   for (var s = mix.first || 0; s + ctx.nB <= mix.n; s++){
-    var r = brSim(ctx, p, {r:mix.r, pi:mix.pi, off:s, len:ctx.nB}, false);
+    var r = brSim(ctx, p, brHistSeq(ctx, s), false);
     r.start = HIST_START + s;
     out.runs.push(r);
     out.of++;

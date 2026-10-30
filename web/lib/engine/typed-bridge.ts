@@ -9,6 +9,7 @@ const typed = <F>(f: unknown) => f as F;
 
 export const brCtx = typed<(inp: BrInput) => BrCtx>(E.brCtx);
 export const brFlatSeq = typed<(len: number, real: number, infl: number) => BrSeq>(E.brFlatSeq);
+export const brWd = typed<(ctx: BrCtx, year?: number) => number[] | undefined>(E.brWd);
 export const brPlans = typed<(ctx: BrCtx, steady: BrSeq) => BrPlan[]>(E.brPlans);
 export const brMCSeqs = typed<(ctx: BrCtx, seed: number) => BrMC>(E.brMCSeqs);
 export const brSim = typed<(ctx: BrCtx, p: BrPlan, seq: BrSeq, wantRows: boolean) => BrRun>(E.brSim);

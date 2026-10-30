@@ -20,15 +20,15 @@ export interface BridgeRun {
   mc: boolean;
 }
 
-export type PathKey = "above" | "avg" | "below";
+export type PathKey = "p90" | "above" | "avg" | "below" | "p10";
 export interface Scenario { run: BrRun; label: string; head: string; year?: number; pct?: string }
 export type Scenarios = Partial<Record<PathKey, Scenario>>;
 
 /** Every plan, tested; null until there's spending and a balance to plan with. */
 export function runBridge(inp: BrInput, mode: "hist" | "mc", seed: number): { ctx: BrCtx; run: BridgeRun | null } {
   const ctx = brCtx(inp);
-  if (ctx.trad + ctx.roth + ctx.brok + ctx.g457 <= 0 || !(ctx.spend > 0)) return { ctx, run: null };
-  const steady = brFlatSeq(ctx.nB, ctx.real, ctx.infl);
+  if (ctx.trad + ctx.roth + ctx.brok + ctx.g457 <= 0 || !(ctx.spend > 0 || ctx.budget)) return { ctx, run: null };
+  const steady = { ...brFlatSeq(ctx.nB, ctx.real, ctx.infl), wd: ctx.budget?.steady };
   const mc = mode === "mc" ? brMCSeqs(ctx, seed) : null;
   const plans: AnyPlan[] = brPlans(ctx, steady).map((p) => {
     if (p.off) return p;
@@ -42,18 +42,28 @@ export function runBridge(inp: BrInput, mode: "hist" | "mc", seed: number): { ct
   return { ctx, run: { ctx, plans, live, best, mc: !!mc } };
 }
 
-/** The three markets the detail views can follow, all real historical
-    starts ranked by what's left at 59½: the 75th percentile, the median and
-    the 25th. */
+/** The markets the detail views can follow, all real historical starts.
+    Spending a set amount, three, ranked by what's left at 59½: the 75th
+    percentile, the median and the 25th. On a withdrawal budget, five, ranked
+    by what the strategy withdraws over the bridge years (then by what's
+    left): the 90th, 75th, median, 25th and 10th. */
 export function bridgeScenarios(ctx: BrCtx, sel: RunPlan): Scenarios {
-  const runs = sel.hist.runs.slice().sort((a, b) => a.end.total - b.end.total);
+  const B = ctx.budget, sum = (y: number) => (B?.byStart[y] ?? B?.steady ?? []).reduce((a, v) => a + v, 0);
+  const runs = sel.hist.runs.slice().sort((a, b) => (B ? sum(a.start!) - sum(b.start!) : 0) || a.end.total - b.end.total);
   if (!runs.length) return { avg: { run: sel.steady, label: "average returns", head: "Average" } };
   const pick = (q: number, head: string, label: string, pct: string): Scenario => {
     const r = runs[Math.min(runs.length - 1, Math.floor(runs.length * q))];
     return {
-      run: brSim(ctx, sel, { r: ctx.mix.r, pi: ctx.mix.pi, off: r.start! - (HIST_START as number), len: ctx.nB }, true),
+      run: brSim(ctx, sel, { r: ctx.mix.r, pi: ctx.mix.pi, off: r.start! - (HIST_START as number), len: ctx.nB, wd: B ? (B.byStart[r.start!] ?? B.steady) : undefined }, true),
       year: r.start, head, pct, label: label + ", like retiring in " + r.start,
     };
+  };
+  if (B) return {
+    p90: pick(0.9, "90th", "a 90th-percentile market", ""),
+    above: pick(0.75, "75th", "a 75th-percentile market", ""),
+    avg: pick(0.5, "Median", "a median market", ""),
+    below: pick(0.25, "25th", "a 25th-percentile market", ""),
+    p10: pick(0.1, "10th", "a 10th-percentile market", ""),
   };
   return {
     above: pick(0.75, "Above average", "an above-average market", "75th percentile"),
