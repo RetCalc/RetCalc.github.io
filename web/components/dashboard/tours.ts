@@ -20,7 +20,8 @@ const accounts: Tour<DashData> = { name: "Net worth", title: "Keep track of what
   pages: [
     { title: "What it shows", focus: "#picture", tasks: () => [
       { h: "<b>Net worth</b> is everything you own less everything you owe. It's the one number that tells you whether you're moving forward over the years." },
-      { h: "<b>Today</b> shows what makes it up, assets on top and debts below. <b>Over time</b> shows one column for each entry you've saved." },
+      { h: "The bars show what makes it up, assets on top and debts below. <b>Net worth over time</b> draws a point for each entry you've saved." },
+      { h: "<b>When you can spend it</b> sorts your savings by when each can be spent without a penalty, and <b>How it's taxed</b> by how the money is taxed when it comes out. A couple can show one person's, or only what's shared, with the switch at the top." },
     ] },
     { title: "Your accounts and debts", focus: "#assets", tasks: ({ s }) => [
       { h: "Press <b>Update balances</b> and list each account with today's balance: 401(k)s and IRAs, Roth accounts, brokerage, HSA, checking and savings, and your home if you own one.", ok: done(hasAccounts(s.entries)) },

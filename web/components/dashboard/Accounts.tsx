@@ -12,11 +12,10 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DndContext, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type Modifier } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVerticalIcon, PencilIcon, PlusIcon, Trash2Icon, WalletIcon, LandmarkIcon, CalendarDaysIcon, ChartBarIcon, XIcon } from "lucide-react";
+import { GripVerticalIcon, PencilIcon, PlusIcon, Trash2Icon, WalletIcon, LandmarkIcon, CalendarDaysIcon, ChartBarIcon, XIcon, TrendingUpIcon, HourglassIcon, ReceiptIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { groupDigits, parseNum } from "@/lib/format";
@@ -26,6 +25,7 @@ import { Frame } from "./Frame";
 import { longDate, money, shortMoney } from "./format";
 import { ASSET_GROUPS, ASSET_KINDS, BASIS_KINDS, DEBT_GROUPS, DEBT_KINDS, groupOf, kindName, ownerOf, type Group } from "./kinds";
 import { Tile, TipLabel } from "./ui";
+import { ReadyToSpend, TaxMix, WhoseFilter, WorthOverTime, only, touchRead, whoName, type Who } from "./networth";
 import { pctTxt, useTyped } from "./fields";
 import { entryFrom, netWorth, newId, sum, today, useDashboard, withEntry, type Entry, type Item } from "./store";
 
@@ -34,18 +34,6 @@ const byGroup = (items: Item[], side: Item["side"]) => {
   items.filter((i) => i.side === side).forEach((i) => { const g = groupOf(i.kind); out[g] = (out[g] ?? 0) + (i.value || 0); });
   return out;
 };
-
-/** A finger on the bars: what's under it is read out (each part names
-    itself in data-read) as it's tapped or dragged sideways, and stays
-    until the next touch. A mouse uses the parts' own hover. */
-function touchRead(set: (r: string | null) => void) {
-  const at = (e: React.PointerEvent) => {
-    if (e.pointerType === "mouse") return;
-    const el = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-read]");
-    if (el) set(el.getAttribute("data-read"));
-  };
-  return { onPointerDown: at, onPointerMove: at };
-}
 
 /** Today: what you have and what you owe as two bars on one scale. */
 export function TodayBars({ items }: { items: Item[] }) {
@@ -84,51 +72,6 @@ export function TodayBars({ items }: { items: Item[] }) {
   );
 }
 
-/** Over time: one column per entry, what you have above the line and what
-    you owe below, with net worth marked. */
-function OverTime({ entries }: { entries: Entry[] }) {
-  const [ref, W] = useWidth(800);
-  const [hover, setHover] = useState<number | null>(null);
-  const H = 240, L = 56, B = 22, T = 10;
-  const tops = entries.map((e) => sum(e.items, "asset")), bottoms = entries.map((e) => sum(e.items, "debt"));
-  const up = Math.max(...tops, 1), down = Math.max(...bottoms, 0);
-  const span = up + down, zero = T + (up / span) * (H - T - B);
-  const Y = (v: number) => zero - (v / span) * (H - T - B);
-  const n = entries.length, slot = (W - L) / Math.max(n, 1), bw = Math.min(56, slot * 0.6);
-  const e = hover != null ? entries[hover] : null;
-  return (
-    <div ref={ref}>
-      <svg className="dsh-bars" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Assets and debts at each entry" {...touchRead((r) => setHover(r == null ? null : +r))}>
-        <line className="dsh-gl" x1={L} x2={W} y1={zero} y2={zero} />
-        <text className="dsh-axis" x={L - 8} y={Y(up) + 4} textAnchor="end">{shortMoney(up)}</text>
-        <text className="dsh-axis" x={L - 8} y={zero + 4} textAnchor="end">$0</text>
-        {down > 0 ? <text className="dsh-axis" x={L - 8} y={Y(-down) + 4} textAnchor="end">-{shortMoney(down)}</text> : null}
-        {entries.map((en, i) => {
-          const x = L + i * slot + (slot - bw) / 2;
-          const a = byGroup(en.items, "asset"), d = byGroup(en.items, "debt"), px = (H - T - B) / span;
-          // Each group's height, and where it starts: assets stack up from
-          // the line, debts down from it.
-          const ah = ASSET_GROUPS.map((g) => (a[g.id] ?? 0) * px), dh = DEBT_GROUPS.map((g) => (d[g.id] ?? 0) * px);
-          const atop = ah.map((h, k) => zero - ah.slice(0, k + 1).reduce((s2, v) => s2 + v, 0));
-          const dtop = dh.map((_, k) => zero + dh.slice(0, k).reduce((s2, v) => s2 + v, 0));
-          return (
-            <g key={en.date} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
-              <rect className="dsh-hit" x={L + i * slot} y={0} width={slot} height={H - B} data-read={String(i)} />
-              {ASSET_GROUPS.map((g, k) => (ah[k] > 0 ? <rect key={g.id} className={"dsh-seg dsh-g-" + g.id} x={x} y={atop[k]} width={bw} height={Math.max(0, ah[k] - 1)} /> : null))}
-              {DEBT_GROUPS.map((g, k) => (dh[k] > 0 ? <rect key={g.id} className={"dsh-seg dsh-g-" + g.id} x={x} y={dtop[k] + 1} width={bw} height={Math.max(0, dh[k] - 1)} /> : null))}
-              <line className="dsh-nwmark" x1={x - 4} x2={x + bw + 4} y1={Y(netWorth(en))} y2={Y(netWorth(en))} />
-              <text className="dsh-axis" x={x + bw / 2} y={H - 6} textAnchor="middle">{en.date.slice(5, 7) + "/" + en.date.slice(2, 4)}</text>
-            </g>
-          );
-        })}
-      </svg>
-      <div className="dsh-cap dsh-hoverline" aria-live="polite">
-        {e ? <>{longDate(e.date)}: assets <b>{money(sum(e.items, "asset"))}</b>, debts <b>{money(sum(e.items, "debt"))}</b>, net worth <b>{money(netWorth(e))}</b></> : <>The amber mark is net worth. <span className="dsh-mouse">Point at an entry for its figures.</span><span className="dsh-touch">Tap an entry, or drag across them, for its figures.</span></>}
-      </div>
-    </div>
-  );
-}
-
 export function Legend() {
   return (
     <div className="dsh-legend dsh-mt">
@@ -137,8 +80,6 @@ export function Legend() {
   );
 }
 
-/** A person's name for a "whose" choice. */
-const whoName = (names: [string, string], i: 0 | 1) => names[i].trim() || (i ? "Your partner" : "You");
 const whoText = (names: [string, string], w: 0 | 1 | null) => (w == null ? "Shared" : whoName(names, w));
 
 /** One side's list, read-only, under its column names. */
@@ -268,7 +209,9 @@ export function Accounts() {
   // A couple says whose each asset and debt is.
   const names: [string, string] | null = data.profile.who === "couple" ? [data.profile.p1.name, data.profile.p2.name] : null;
   const last = data.entries[data.entries.length - 1] ?? entryFrom(data.profile);
-  const [view, setView] = useState<"today" | "time">("today");
+  // Whose things the pictures show, for a couple; the lists show everything.
+  const [who, setWho] = useState<Who>("all");
+  const view = (it: Item[]) => only(it, names, who);
   const [draft, setDraft] = useState<{ date: string; items: Item[] } | null>(null);
   // The entry asked about before it's deleted, by its date.
   const [removing, setRemoving] = useState<string | null>(null);
@@ -281,8 +224,10 @@ export function Accounts() {
     update((d) => ({ ...d, entries: withEntry(d.entries, { date: draft.date || today(), items: kept, from: "accounts" }) }));
     setDraft(null);
   };
-  const have = sum(items, "asset"), owe = sum(items, "debt");
+  const shown = draft ? items : view(items);
+  const have = sum(shown, "asset"), owe = sum(shown, "debt");
   const prev = data.entries[data.entries.length - 2];
+  const nwOf = (e: Entry) => sum(view(e.items), "asset") - sum(view(e.items), "debt");
   const actions = draft
     ? <><Button variant="outline" onClick={() => setDraft(null)}>Cancel</Button><Button onClick={saveEntry}>Save as new entry</Button></>
     : <Button onClick={startEdit}><PencilIcon aria-hidden="true" />Update balances</Button>;
@@ -311,23 +256,34 @@ export function Accounts() {
 
   return (
     <Frame current="accounts" title="Net worth" sub={last ? (draft ? "Editing. Saving adds a new entry." : "As of " + longDate(last.date)) : "Nothing entered yet"}>
-      <Tile id="picture" icon={ChartBarIcon} title="Assets and debts" right={
-        <Segmented aria-label="Today or over time">
-          <SegmentedItem pressed={view === "today"} onPressedChange={() => setView("today")}>Today</SegmentedItem>
-          <SegmentedItem pressed={view === "time"} onPressedChange={() => setView("time")}>Over time</SegmentedItem>
-        </Segmented>
-      }>
+      {names && !draft ? <WhoseFilter names={names} who={who} onWho={setWho} /> : null}
+      <Tile id="picture" icon={ChartBarIcon} title="Assets and debts">
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Net worth</div><div className="dsh-fig dsh-key">{money(have - owe)}</div>
-            {prev && last && !draft ? <div className="dsh-cap dsh-mt6"><span className={netWorth(last) >= netWorth(prev) ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{netWorth(last) >= netWorth(prev) ? "↑" : "↓"} {money(Math.abs(netWorth(last) - netWorth(prev)))}</span> since {longDate(prev.date)}</div> : null}</div>
+            {prev && last && !draft ? <div className="dsh-cap dsh-mt6"><span className={nwOf(last) >= nwOf(prev) ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{nwOf(last) >= nwOf(prev) ? "↑" : "↓"} {money(Math.abs(nwOf(last) - nwOf(prev)))}</span> since {longDate(prev.date)}</div> : null}</div>
           <div className="dsh-stat"><div className="dsh-label">Assets</div><div className="dsh-fig dsh-md">{money(have)}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Debts</div><div className="dsh-fig dsh-md">{money(owe)}</div></div>
         </div>
         <div className="dsh-mt">
-          {view === "today" ? <TodayBars items={items} /> : data.entries.length > 1 ? <OverTime entries={data.entries} /> : <p className="dsh-cap">Each time you save a new entry, a column joins this view. You have {data.entries.length || "no"} so far.</p>}
+          <TodayBars items={shown} />
         </div>
         <Legend />
       </Tile>
+
+      {/* While editing, the page is the editor: these come back on saving. */}
+      {draft ? null : <>
+        <Tile id="overtime" icon={TrendingUpIcon} title="Net worth over time" className="dsh-r4">
+          <WorthOverTime entries={data.entries} view={view} />
+        </Tile>
+        <div className="dsh-grid dsh-two">
+          <Tile id="spend" icon={HourglassIcon} title="When you can spend it" tip="readySpend">
+            <ReadyToSpend items={view(items)} pr={data.profile} names={names} />
+          </Tile>
+          <Tile id="taxed" icon={ReceiptIcon} title="How it's taxed" tip="taxMix">
+            <TaxMix items={view(items)} />
+          </Tile>
+        </div>
+      </>}
 
       {draft ? (
         <div className="dsh-asof">

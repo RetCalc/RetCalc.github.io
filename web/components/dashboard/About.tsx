@@ -161,8 +161,15 @@ export function About() {
                     is kept with each entry.</li>
                     <li><b>Save as new entry</b> records it with today&apos;s date. One entry per day:
                     saving again the same day replaces that day&apos;s entry.</li>
-                    <li>Each entry is a point in your net worth history, so the chart grows as you
-                    update it.</li>
+                    <li>Each entry is a point on <b>Net worth over time</b>, which also draws your
+                    savings and investments without the home or debts, and marks each round number
+                    passed.</li>
+                    <li><b>When you can spend it</b> sorts today&apos;s savings by when each can be
+                    spent without the 10% early-withdrawal penalty, and <b>How it&apos;s taxed</b> by
+                    how the money is taxed when it comes out.</li>
+                    <li>A couple can show everyone&apos;s, one person&apos;s, or only what&apos;s
+                    shared in every picture with the switch at the top. The lists always show
+                    everything.</li>
                     <li>The plan always starts from your latest entry.</li>
                   </ul>
                 </Section>
