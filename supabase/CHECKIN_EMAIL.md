@@ -36,12 +36,16 @@ Mail apps' own unsubscribe button posts to the function directly.
 
 ## Going live
 
-Nothing here has been run against the live project. In order, from the repo
+Steps 1 to 3 and the Vault secret were done on 2026-10-29 (a dry run and one
+test send to the owner worked). Steps 4 and 5 wait for main. In order, from the repo
 root (the CLI is `npx supabase`, linked to project `dlnwkvamjdcefoukpaqw`):
 
 1. **Tables.** `npx supabase db push` applies the new migration. Check it
    lists only `20261029120000_checkin_email.sql`.
-2. **Secrets.** Three values: the Resend key and two long random strings
+2. **Secrets.** `sh supabase/checkin_secrets.sh` does this step without
+   showing any value: it asks for the Resend key, makes the two random
+   secrets, sets all three, and copies the Vault line for step 5 to the
+   clipboard. By hand instead: three values: the Resend key and two long random strings
    (`openssl rand -base64 48`). Keep the cron one for step 4.
 
    ```sh
