@@ -30,6 +30,12 @@
 .rp-bar-r{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
 .rp-name{display:grid;gap:5px;width:170px}
 .rp-stage{max-width:880px;margin:0 auto}
+/* The whole width of the site's main area: it's laid out as a sidebar and
+   a column (01-masthead-layout.css), and the report has no sidebar. */
+.rp{grid-column:1 / -1;min-width:0}
+/* The Dashboard's report fills a wide window: the sheets grow past their
+   printed size (they're drawn as type and vectors, so they stay sharp). */
+.rp.big .rp-bar,.rp.big .rp-stage{max-width:1180px}
 .rp-wait{padding:60px 16px;text-align:center;color:var(--ds-muted);display:grid;gap:14px;justify-items:center}
 .rp-fit{width:calc(816px * var(--rp-zoom,1));height:calc(var(--rp-h,0) * 1px * var(--rp-zoom,1));margin:0 auto;overflow:hidden}
 .rp-pages{width:816px;transform:scale(var(--rp-zoom,1));transform-origin:0 0}

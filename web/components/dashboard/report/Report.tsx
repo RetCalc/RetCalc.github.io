@@ -16,6 +16,8 @@ import { dashReport, type DashReport } from "./model";
 import { DashPages } from "./pages";
 
 const PAGE_W = 816;
+/* How far past their printed size the sheets grow on a wide window. */
+const MAX_ZOOM = 1.4;
 
 export function DashboardReport({ fontClass }: { fontClass: string }) {
   const { ready, account } = useAccount();
@@ -61,12 +63,12 @@ export function DashboardReport({ fontClass }: { fontClass: string }) {
     };
   }, []);
 
-  // Pages are 8.5in wide; on a narrow window they're scaled down whole, like
-  // a PDF viewer fitting the width.
+  // Pages are 8.5in wide; they're scaled to the window's width, like a PDF
+  // viewer fitting the width: down on a narrow one, up a little on a wide one.
   useLayoutEffect(() => {
     const el = wrap.current;
     if (!el) return;
-    const fit = () => setScale(Math.min(1, (el.clientWidth - 8) / PAGE_W));
+    const fit = () => setScale(Math.min(MAX_ZOOM, (el.clientWidth - 8) / PAGE_W));
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(el);
@@ -76,7 +78,7 @@ export function DashboardReport({ fontClass }: { fontClass: string }) {
   const report = M && !M.missing ? (M as DashReport) : null;
   const wait = !ready || (account && !fresh && M === undefined);
   return (
-    <div className={"rp " + fontClass}>
+    <div className={"rp big " + fontClass}>
       <div className="rp-bar">
         <div className="rp-bar-l">
           <Link href="/dashboard/summary" className="rp-back">← Back to the Dashboard</Link>
