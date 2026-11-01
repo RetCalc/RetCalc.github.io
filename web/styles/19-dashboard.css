@@ -916,10 +916,20 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-yby-chip:hover { border-color: var(--ds-rule-strong); }
 .dsh-yby-chip svg { width: 13px; height: 13px; color: var(--ds-muted); }
 .dsh-yby-chip .dsh-sc-mark { width: 9px; height: 9px; border-radius: 3px; flex: none; }
-.dsh-yby-chip.dsh-yby-off { opacity: .55; }
-/* The table scrolls in its own box, its column names and its years held
-   in view (a spreadsheet's frozen panes). */
-.dsh-yby-wrap { margin-top: 4px; max-height: min(72vh, 760px); overflow: auto; overscroll-behavior: contain; border-radius: 10px; }
+.dsh-yby-chip.dsh-yby-off { opacity: .5; }
+.dsh-yby-chip.dsh-yby-off .dsh-yby-cname { text-decoration: line-through; text-decoration-color: var(--ds-muted); }
+.dsh-yby-chip { padding: 0 4px 0 12px; cursor: default; }
+.dsh-yby-tog { display: inline-flex; align-items: center; gap: 7px; height: 100%; border: 0; padding: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.dsh-yby-tog:focus-visible, .dsh-yby-pen:focus-visible { outline: 2px solid var(--ds-focus); outline-offset: 2px; border-radius: 6px; }
+.dsh-yby-pen { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 0; border-radius: 999px; background: none; color: var(--ds-muted); cursor: pointer; }
+.dsh-yby-pen:hover { background: var(--ds-surface); color: var(--ds-text); }
+/* The table at full length on the page, its column names held at the top
+   of the screen once scrolled past (a spreadsheet's frozen row). Where it's
+   wider than the screen and scrolls sideways, it scrolls in its own box
+   instead, column names and years held in view. */
+.dsh-yby-wrap { margin-top: 4px; }
+@media (min-width: 1180px) { .dsh-yby-wrap { overflow: visible; } }
+@media (max-width: 1179.98px) { .dsh-yby-wrap { max-height: min(72vh, 760px); overflow: auto; overscroll-behavior: contain; border-radius: 10px; } }
 .dsh-yby { border-collapse: separate; border-spacing: 0; }
 .dsh-yby thead th { position: sticky; z-index: 2; background: var(--ds-surface); }
 .dsh-yby thead tr.dsh-yby-groups th { top: 0; height: 24px; }

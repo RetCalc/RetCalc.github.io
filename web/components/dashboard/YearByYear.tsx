@@ -29,7 +29,7 @@ import { ageOf, couple, nameOf, planYearsOf, realGrowth } from "./model";
 import { acctWord, liveScenarios, newScenario, scenarioName, scenarioSentence, type Scenario, type ScenarioKind } from "./scenarios";
 import { newId, useDashboard, type Profile, type YearEdit } from "./store";
 import { KEEP_CHOICES, pctWord } from "./yearly";
-import { Tile, To } from "./ui";
+import { Tile, TipLabel, To } from "./ui";
 
 /** The kinds this page adds: pay, spending, and saving outright. */
 const KINDS: Kind[] = [INCOME_KIND, SPENDING_KIND, SAVE_LESS_KIND];
@@ -109,7 +109,7 @@ export function YearByYear() {
             <NumberField key={i} id={"dshRaise" + i} label={names ? `${n}'s raise per year` : "Your raise per year"} unit="%" step={0.5} max={15} negative
               value={pctText(pr.yearly.raise[i])} onValueChange={(v) => { const r = (parseFloat(v) || 0) / 100; setYearly({ raise: (i ? [pr.yearly.raise[0], r] : [r, names ? pr.yearly.raise[1] : r]) as [number, number] }); }} />
           ))}
-          <SelectField id="dshKeep" label="Of each raise, saved" value={pr.yearly.keep == null ? "same" : String(pr.yearly.keep)} onChange={(v) => setYearly({ keep: v === "same" ? null : Number(v) })}>
+          <SelectField id="dshKeep" label={<TipLabel text="How much of each raise you save" id="raiseSaved" />} value={pr.yearly.keep == null ? "same" : String(pr.yearly.keep)} onChange={(v) => setYearly({ keep: v === "same" ? null : Number(v) })}>
             {KEEP_CHOICES.map((c) => <option key={String(c.v)} value={c.v == null ? "same" : String(c.v)}>{c.label}</option>)}
           </SelectField>
         </div>
@@ -119,10 +119,14 @@ export function YearByYear() {
           {changes.length ? (
             <ul className="dsh-yby-chips">
               {changes.map((s) => (
-                <li key={s.id}>
-                  <button type="button" className={"dsh-yby-chip" + (s.on ? "" : " dsh-yby-off")} onClick={() => setDlg({ at: "edit", s, fresh: false })} title={sentence(s) + (s.on ? "" : " Switched off on the Calculator.")}>
-                    <i className={"dsh-sc-mark " + kindClass(s)} aria-hidden="true" />{scenarioName(s)}<span className="dsh-muted">{y0.year + s.from - age}{s.until ? "–" + (y0.year + s.until - age - 1) : " on"} · {laneFigure(s, null)}</span><PencilIcon aria-hidden="true" />
+                <li key={s.id} className={"dsh-yby-chip" + (s.on ? "" : " dsh-yby-off")}>
+                  {/* Clicking it switches it on or off; the pencil edits it. */}
+                  <button type="button" className="dsh-yby-tog" aria-pressed={s.on} onClick={() => setProfile((p) => withRow(p, { ...s, on: !s.on }))}
+                    title={sentence(s) + (s.on ? " On: click to switch it off." : " Off: click to switch it on.")}>
+                    <i className={"dsh-sc-mark " + kindClass(s)} aria-hidden="true" /><span className="dsh-yby-cname">{scenarioName(s)}</span>
+                    <span className="dsh-muted">{y0.year + s.from - age}{s.until ? "–" + (y0.year + s.until - age - 1) : " on"} · {laneFigure(s, null)}</span>
                   </button>
+                  <button type="button" className="dsh-yby-pen" aria-label={"Edit " + scenarioName(s)} onClick={() => setDlg({ at: "edit", s, fresh: false })}><PencilIcon aria-hidden="true" /></button>
                 </li>
               ))}
             </ul>

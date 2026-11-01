@@ -219,7 +219,7 @@ const years: Tour<DashData> = { name: "Year by year", title: "Every year from no
   pages: [
     { title: "What shapes the years", focus: "#drivers", tasks: ({ s }) => [
       { h: "Each year starts from your pay. Set each of your <b>raises</b>: how much pay rises each year beyond inflation. 1% to 2% is common over a career.", ok: done(s.profile.yearly.raise.some((r) => r !== 0)) },
-      { h: "<b>Of each raise, saved</b> says how much of a raise, after tax, goes to saving. Left as it is, you keep saving the same share of take-home pay as now. The rest of each raise is spent." },
+      { h: "<b>How much of each raise you save</b>: when pay goes up, how much of the extra (after taxes) goes to savings, with the rest spent. Left as it is, you keep saving the same share of your pay as now." },
       { h: "<b>Changes ahead</b> are what-ifs you can switch on and off: a new job, part-time years, a bigger house, or saving less. They show on the Calculator too.", ok: done((s.profile.scenarios ?? []).some((x) => x.kind === "income" || x.kind === "spending" || x.kind === "saving")) },
     ] },
     { title: "Every year to retirement", focus: "#table", tasks: ({ s }) => [
