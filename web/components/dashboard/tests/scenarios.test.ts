@@ -2,7 +2,7 @@
    year's saving and return, the words for it, and reading saved ones. */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { lumpAccount, newScenario, nominalAt, ownOn, payAt, readScenarios, scenarioSentence, spanOf, withoutOwn, yearChange, type Scenario } from "../scenarios";
+import { lumpAccount, newScenario, nominalAt, ownOn, payAt, readScenarios, saveLessAt, scenarioSentence, spanOf, withoutOwn, yearChange, type Scenario } from "../scenarios";
 
 const sc = (over: Partial<Scenario>): Scenario => ({ ...newScenario("x", "saving", 34, 0.075), from: 40, until: 0, mode: "amount", amount: 0, ramp: 0, acct: "auto", ...over });
 
@@ -137,4 +137,27 @@ test("a pay change sets one person's pay, or moves it by a share, while it runs"
 test("new kinds read back, with whose pay a change is", () => {
   const back = readScenarios([{ id: "a", kind: "income", who: 1, mode: "pctYearly", amount: 5 }, { id: "b", kind: "spending", mode: "pct", amount: 200 }, { id: "c", kind: "nope" }]);
   assert.deepEqual(back.map((s) => [s.kind, s.who, s.mode]), [["income", 1, "pct"], ["spending", 0, "amount"]]);
+});
+
+test("Save less holds saving to a ceiling, a share less, or stops it, keeping the match when asked", () => {
+  const stop = sc({ mode: "stop", keepMatch: true });
+  assert.equal(saveLessAt([stop], 39, 65, 3000, 500).target, null);
+  assert.equal(saveLessAt([stop], 45, 65, 3000, 500).target, 500);
+  assert.equal(saveLessAt([{ ...stop, keepMatch: false }], 45, 65, 3000, 500).target, 0);
+  assert.equal(saveLessAt([{ ...stop, keepMatch: false }], 45, 65, 3000, 500).stop, true);
+  const cap = sc({ mode: "cap", amount: 1200, keepMatch: true });
+  assert.equal(saveLessAt([cap], 45, 65, 3000, 500).target, 1200);
+  assert.equal(saveLessAt([cap], 45, 65, 900, 500).target, 900);
+  const less = sc({ mode: "pct", amount: -25, ramp: 2 });
+  assert.equal(saveLessAt([less], 40, 65, 4000, 500).target, 3500);
+  assert.equal(saveLessAt([less], 41, 65, 4000, 500).target, 3000);
+  // Named on the year, not cut again, when the plan cuts the accounts itself.
+  assert.equal(yearChange([cap], 45, 65, 3000, { lines: true }).cut, 0);
+  assert.deepEqual(yearChange([cap], 45, 65, 3000, { lines: true }).tags, ["x"]);
+});
+
+test("on the Dashboard, saving changed by dollars reads as spending; stopping as Save less", () => {
+  const raw = [{ id: "a", kind: "saving", mode: "amount", amount: -400 }, { id: "b", kind: "saving", mode: "pct", amount: -100 }, { id: "c", kind: "saving", mode: "pct", amount: -20 }];
+  assert.deepEqual(readScenarios(raw, { dashboard: true }).map((s) => [s.kind, s.mode, s.amount]), [["spending", "amount", 400], ["saving", "stop", -100], ["saving", "pct", -20]]);
+  assert.deepEqual(readScenarios(raw).map((s) => s.kind), ["saving", "saving", "saving"]);
 });

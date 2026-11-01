@@ -8,26 +8,31 @@
    opens a change for that year. Two pictures under it: income against
    spending, and where each year's income goes. */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CalendarRangeIcon, ChartColumnIcon, PencilIcon, PlusIcon, SlidersHorizontalIcon, TableIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
-import { NumberField, SelectField } from "@/components/fields/Field";
+import { Affixed, NumberField, SelectField } from "@/components/fields/Field";
+import { MoneyInput } from "@/components/fields/NumberInput";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { groupDigits, parseNum } from "@/lib/format";
+import { children as kidsOf, labelAt } from "@/tools/guide/schedule";
 import { useScrub } from "@/components/charts/ChartFrame";
-import { ChangeDialog, INCOME_KIND, PickKind, SAVING_KIND, SPENDING_KIND, kindClass, laneFigure, type Kind } from "@/components/changes/ChangeUI";
+import { ChangeDialog, INCOME_KIND, PickKind, SAVE_LESS_KIND, SPENDING_KIND, fx, kindClass, laneFigure, type Kind } from "@/components/changes/ChangeUI";
 import { Frame } from "./Frame";
 import { planOf, tipLabel, withRow, withoutRow } from "./Calculator";
 import { useWidth } from "./charts";
 import type { CashYear } from "./cover";
+import type { Answers } from "@/tools/guide/store";
 import { money, shortMoney } from "./format";
 import { ageOf, couple, nameOf, planYearsOf, realGrowth } from "./model";
 import { acctWord, liveScenarios, newScenario, scenarioName, scenarioSentence, type Scenario, type ScenarioKind } from "./scenarios";
-import { newId, useDashboard, type Profile } from "./store";
+import { newId, useDashboard, type Profile, type YearEdit } from "./store";
 import { KEEP_CHOICES, pctWord } from "./yearly";
 import { Tile, To } from "./ui";
 
 /** The kinds this page adds: pay, spending, and saving outright. */
-const KINDS: Kind[] = [INCOME_KIND, SPENDING_KIND, SAVING_KIND];
+const KINDS: Kind[] = [INCOME_KIND, SPENDING_KIND, SAVE_LESS_KIND];
 const OWN_KINDS: ScenarioKind[] = ["income", "spending", "saving"];
 
 const yr = (m: number) => m * 12;
@@ -41,6 +46,14 @@ export function YearByYear() {
   const fv = useMemo(() => planOf(pr, entries).fv, [pr, entries]);
   const [future, setFuture] = useState(false);
   const [dlg, setDlg] = useState<{ at: "pick" } | { at: "edit"; s: Scenario; fresh: boolean } | null>(null);
+  // A figure being typed into the table, and what the last one did.
+  const [cell, setCell] = useState<Cell | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
+  useEffect(() => {
+    if (!flash) return;
+    const t = setTimeout(() => setFlash(null), 9000);
+    return () => clearTimeout(t);
+  }, [flash]);
   const age = a.age != null ? Math.round(a.age) : null, retire = a.retire != null ? Math.round(a.retire) : null;
   const age2now = names ? ageOf(pr.p2) : null;
 
@@ -51,6 +64,19 @@ export function YearByYear() {
     const on = planOf(withRow(pr, { ...x, on: true }), entries), off = planOf(withoutRow(pr, x.id), entries);
     return { fv: on.fv != null && off.fv != null ? on.fv - off.fv : null, cant: null };
   }, [pr, entries]);
+  /* A figure typed into the table: kept as the plan's own (not a change),
+     and what it does at retirement said for a moment under the table. */
+  const putEdit = (e: YearEdit | null, c: Cell) => {
+    const next = (p: Profile): Profile => {
+      const kept = (p.yearly.edits ?? []).filter((x) => !(x.what === c.what && x.year === c.year));
+      return { ...p, yearly: { ...p.yearly, edits: e ? [...kept, e] : kept } };
+    };
+    const after = planOf(next(pr), entries).fv;
+    setProfile(next);
+    setCell(null);
+    const what = c.what === "spend" ? "Spending" : c.label;
+    setFlash(`${what} ${e ? (e.once ? "in " + c.year : "from " + c.year) : "in " + c.year + " back to the plan's"}: ${after != null && fv != null ? fx(after - fv) : "…"} at retirement.`);
+  };
   const open = (kind: ScenarioKind, over: Partial<Scenario>) => setDlg({ at: "edit", s: { ...newScenario(newId(), kind, age ?? 30, pr.assume.growth), ...over }, fresh: true });
 
   if (!years.length || age == null || retire == null) {
@@ -111,10 +137,11 @@ export function YearByYear() {
           <SegmentedItem pressed={future} onPressedChange={() => setFuture(true)}>Future dollars</SegmentedItem>
         </Segmented>
       }>
-        <YearTable years={years} names={names} other={other} f={f} age2now={age2now} pr={pr}
-          onPay={(y, who) => open("income", { who, from: y.age, until: 0, mode: "amount", amount: Math.round(yr(y.pay[who]) / 1000) * 1000, name: "" })}
-          onSpend={(y) => open("spending", { from: y.age, until: 0, amount: 500, name: "" })} />
-        <p className="dsh-cap dsh-mt6">Per year. Click a pay or spending figure to change it from that year on. {future ? `Each year's dollars: prices rise ${pctWord(infl)} per year.` : "Today's dollars: what each year's money buys at today's prices."} Savings grow at {pctWord(realGrowth(pr))} per year beyond inflation on <To href="/dashboard/retirement">Retirement</To>.</p>
+        <YearTable years={years} names={names} other={other} f={f} age2now={age2now} pr={pr} a={a}
+          onPay={(y, who) => setCell({ what: who ? "pay1" : "pay0", year: y.year, k: y.k, value: yr(y.pay[who]), label: names ? names[who] + "'s pay" : "Your pay", edit: y.edits.find((e) => e.what === (who ? "pay1" : "pay0")) ?? null })}
+          onSpend={(y) => setCell({ what: "spend", year: y.year, k: y.k, value: yr(y.spending), label: "Spending", edit: y.edits.find((e) => e.what === "spend") ?? null })} />
+        {flash ? <p className="dsh-cap dsh-mt6 dsh-yby-flash" role="status">{flash}</p> : null}
+        <p className="dsh-cap dsh-mt6">Per year. Click a pay or spending figure to type your own; a dot marks one you&apos;ve typed. {future ? `Each year's dollars: prices rise ${pctWord(infl)} per year.` : "Today's dollars: what each year's money buys at today's prices."} Savings grow at {pctWord(realGrowth(pr))} per year beyond inflation on <To href="/dashboard/retirement">Retirement</To>.</p>
       </Tile>
 
       <div className="dsh-grid dsh-two">
@@ -126,9 +153,10 @@ export function YearByYear() {
         </Tile>
       </div>
 
-      {dlg?.at === "pick" ? <PickKind kinds={KINDS} note="What do you see coming? Pick one, then give it ages and amounts." close={() => setDlg(null)} pick={(k) => open(k.kind, k.over)} /> : null}
+      {cell ? <QuickEdit cell={cell} future={future} f={f} onSave={(e) => putEdit(e, cell)} onReset={() => putEdit(null, cell)} onClose={() => setCell(null)} /> : null}
+      {dlg?.at === "pick" ? <PickKind kinds={KINDS} note="What do you see coming? Pick one, then give it ages and amounts." foot="To set a single year's pay or spending, click it in the table." close={() => setDlg(null)} pick={(k) => open(k.kind, k.over)} /> : null}
       {dlg?.at === "edit" ? (
-        <ChangeDialog s={dlg.s} fresh={dlg.fresh} years={{ base: age, end: retire, ages: true }} accounts label={tipLabel} names={names} sentence={sentence} effectOf={effectOf}
+        <ChangeDialog s={dlg.s} fresh={dlg.fresh} years={{ base: age, end: retire, ages: true }} accounts saveLess label={tipLabel} names={names} sentence={sentence} effectOf={effectOf}
           where={(k) => `The rest comes out of your other accounts once ${acctWord(k)} runs out, the 401(k) up to the match last.`}
           close={() => setDlg(null)} save={(x) => { setProfile((p) => withRow(p, x)); setDlg(null); }} remove={() => { setProfile((p) => withoutRow(p, dlg.s.id)); setDlg(null); }} />
       ) : null}
@@ -138,12 +166,15 @@ export function YearByYear() {
 
 /* ---------- the table ---------- */
 
-function YearTable({ years, names, other, f, age2now, pr, onPay, onSpend }: {
-  years: CashYear[]; names: [string, string] | null; other: boolean; f: (k: number) => number; age2now: number | null; pr: Profile;
+function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend }: {
+  years: CashYear[]; names: [string, string] | null; other: boolean; f: (k: number) => number; age2now: number | null; pr: Profile; a: Answers;
   onPay: (y: CashYear, who: 0 | 1) => void; onSpend: (y: CashYear) => void;
 }) {
   const m = (v: number, k: number) => money(Math.round(yr(v) * f(k)));
-  const live = liveScenarios(pr.scenarios);
+  const live = liveScenarios(pr.scenarios), kids = kidsOf(a);
+  // The children's stage each year ("A child in childcare", "School years"),
+  // said only when it changes.
+  const stage = (y: CashYear) => (kids.length ? labelAt(a, kids, y.age, []) : "");
   const notesOf = (y: CashYear, i: number): { text: string; warn?: boolean }[] => {
     const out: { text: string; warn?: boolean }[] = [];
     const prev = years[i - 1];
@@ -153,10 +184,15 @@ function YearTable({ years, names, other, f, age2now, pr, onPay, onSpend }: {
       if (s && !id.startsWith("__") && (i === 0 || !prev.tags.includes(id))) out.push({ text: scenarioName(s) + " starts" });
     }
     if (prev) for (const id of prev.tags) if (!y.tags.includes(id)) { const s = live.find((x) => x.id === id); if (s && !id.startsWith("__")) out.push({ text: scenarioName(s) + " ends" }); }
-    if (y.kids > 0.5 && (!prev || Math.round(prev.kids) !== Math.round(y.kids))) out.push({ text: `Children ${money(Math.round(yr(y.kids) * f(y.k)))} more than today` });
+    if (kids.length && prev && stage(y) !== stage(prev)) out.push({ text: stage(y) + (y.kids > 0.5 ? `: children ${money(Math.round(yr(y.kids) * f(y.k)))} more than today` : "") });
     if (y.college > 0.5 && (!prev || prev.college < 0.5)) out.push({ text: "College starts" });
     if (y.short > 0.5) out.push({ text: `${m(y.short, y.k)} more than saving covers`, warn: true });
     return out;
+  };
+  // A figure typed here: marked, and said how long it holds.
+  const dot = (y: CashYear, w: YearEdit["what"]) => {
+    const e = y.edits.find((x) => x.what === w);
+    return e ? <span className="dsh-yby-dot" role="img" aria-label={e.once ? ", typed for this year" : ", typed from this year on"} title={e.once ? "Typed for this year only" : "Typed, from this year to retirement"} /> : null;
   };
   const sum = (g: (y: CashYear) => number) => years.reduce((t, y) => t + yr(g(y)) * f(y.k), 0);
   const savedOf = (y: CashYear) => y.saved.trad + y.saved.roth + y.saved.hsa + y.saved.brok + y.ef;
@@ -186,16 +222,16 @@ function YearTable({ years, names, other, f, age2now, pr, onPay, onSpend }: {
           {years.map((y, i) => {
             const notes = notesOf(y, i);
             return (
-              <tr key={y.year} className={i === 0 ? "dsh-yby-now" : notes.length ? "dsh-yby-mark" : undefined}>
+              <tr key={y.year} className={i === 0 ? "dsh-yby-now" : undefined}>
                 <td>{y.year}</td>
                 <td>{y.age}{names && age2now != null ? " · " + (age2now + y.k) : ""}</td>
                 {([0, 1] as const).slice(0, names ? 2 : 1).map((who) => (
-                  <td key={who}><button type="button" className="dsh-yby-cell" onClick={() => onPay(y, who)} title={`Change ${names ? names[who] + "'s" : "your"} pay from ${y.year}`}>{y.works[who] || y.pay[who] > 0 ? m(y.pay[who], y.k) : <span className="dsh-muted">Stopped</span>}</button></td>
+                  <td key={who}>{y.works[who] ? <button type="button" className="dsh-yby-cell" onClick={() => onPay(y, who)} title={`Type ${names ? names[who] + "'s" : "your"} pay in ${y.year}`}>{m(y.pay[who], y.k)}{dot(y, who ? "pay1" : "pay0")}</button> : <span className="dsh-muted">Stopped</span>}</td>
                 ))}
                 {other ? <td>{m(y.other, y.k)}</td> : null}
                 <td className="dsh-yby-strong">{m(y.income, y.k)}</td>
                 <td>{m(y.taxes, y.k)}</td>
-                <td><button type="button" className="dsh-yby-cell" onClick={() => onSpend(y)} title={`Change spending from ${y.year}`}>{m(y.spending, y.k)}</button></td>
+                <td><button type="button" className="dsh-yby-cell" onClick={() => onSpend(y)} title={`Type spending in ${y.year}`}>{m(y.spending, y.k)}{dot(y, "spend")}</button></td>
                 <td>{m(y.saved.trad, y.k)}</td>
                 <td>{m(y.saved.roth + y.saved.hsa, y.k)}</td>
                 <td>{m(y.saved.brok, y.k)}</td>
@@ -222,6 +258,52 @@ function YearTable({ years, names, other, f, age2now, pr, onPay, onSpend }: {
         </tfoot>
       </table>
     </div>
+  );
+}
+
+/* ---------- typing a figure ---------- */
+
+/** The figure being typed: whose, which year, and what it is now (per year, today's dollars). */
+type Cell = { what: YearEdit["what"]; year: number; k: number; value: number; label: string; edit: YearEdit | null };
+
+/** A small window over the table: the figure selected to type over, for
+    that year only or from it to retirement. Return saves it. */
+function QuickEdit({ cell, future, f, onSave, onReset, onClose }: { cell: Cell; future: boolean; f: (k: number) => number; onSave: (e: YearEdit) => void; onReset: () => void; onClose: () => void }) {
+  const shown = (v: number) => groupDigits(Math.round(v * (future ? f(cell.k) : 1)), true);
+  const [txt, setTxt] = useState(shown(cell.edit?.amount ?? cell.value));
+  const [once, setOnce] = useState(cell.edit?.once ?? false);
+  const input = useRef<HTMLInputElement>(null);
+  // The figure selected as the window opens, so typing replaces it.
+  useEffect(() => {
+    const t = setTimeout(() => { input.current?.focus(); input.current?.select(); }, 60);
+    return () => clearTimeout(t);
+  }, []);
+  const save = () => {
+    const v = parseNum(txt);
+    if (!isFinite(v) || v < 0) return;
+    onSave({ what: cell.what, year: cell.year, amount: Math.round(v / (future ? f(cell.k) : 1)), once });
+  };
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent aria-labelledby="dshCellTitle" initialFocus={input}>
+        <h2 id="dshCellTitle" className="dsh-dlg-h">{cell.label} in {cell.year}</h2>
+        <form className="dsh-cellform" onSubmit={(e) => { e.preventDefault(); save(); }}>
+          <Affixed prefix="$" suffix="/yr"><MoneyInput ref={input} aria-label={`${cell.label} in ${cell.year}, per year`} nonNeg value={txt} onValueChange={setTxt} /></Affixed>
+          <Segmented aria-label="How long">
+            <SegmentedItem pressed={once} onPressedChange={() => setOnce(true)}>Just this year</SegmentedItem>
+            <SegmentedItem pressed={!once} onPressedChange={() => setOnce(false)}>Until retirement</SegmentedItem>
+          </Segmented>
+          <p className="dsh-cap">{future ? `In ${cell.year} dollars.` : "In today's dollars."} {cell.what === "spend"
+            ? (once ? "Saving makes up the difference that year." : "Saving makes up the difference from then on; later raises still split as set.")
+            : (once ? "Taxes and saving follow it that year." : "Raises carry on from it, and taxes and saving follow.")}</p>
+          <div className="dsh-navbtns dsh-wrapbtns">
+            <Button type="submit">Save</Button>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            {cell.edit ? <Button type="button" variant="link" onClick={onReset}>Use the plan&apos;s figure</Button> : null}
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

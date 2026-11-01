@@ -14,8 +14,9 @@ export type ScenarioKind = "children" | "saving" | "returns" | "lump" | "income"
     dashboard's order (brokerage first). */
 export type ScenarioAcct = "auto" | CoverLine;
 /** How a saving change is sized: dollars a month, a share of what's saved
-    then, or a share more (or less) each year, compounding. */
-export type ScenarioMode = "amount" | "pct" | "pctYearly";
+    then, or a share more (or less) each year, compounding. The Dashboard's
+    Save less adds a ceiling (`cap`, dollars a month) and stopping outright. */
+export type ScenarioMode = "amount" | "pct" | "pctYearly" | "cap" | "stop";
 
 export interface Scenario {
   id: string;
@@ -37,6 +38,8 @@ export interface Scenario {
   nominal: number;
   /** Whose pay an income change is (0 you, 1 your partner; yours when left out). */
   who?: 0 | 1;
+  /** Save less: still put in enough for the full employer match (left out: no). */
+  keepMatch?: boolean;
 }
 
 export const SCENARIO_KINDS: Record<ScenarioKind, string> = { children: "Children", saving: "Saving", returns: "Returns", lump: "Lump sum", income: "Pay", spending: "Spending" };
@@ -63,7 +66,7 @@ export function newScenario(id: string, kind: ScenarioKind, age: number, nominal
 }
 
 /** Saved scenarios, keeping only sound ones. */
-export function readScenarios(v: unknown): Scenario[] {
+export function readScenarios(v: unknown, opts: { dashboard?: boolean } = {}): Scenario[] {
   if (!Array.isArray(v)) return [];
   const out: Scenario[] = [];
   for (const x of v) {
@@ -76,13 +79,20 @@ export function readScenarios(v: unknown): Scenario[] {
     s.name = typeof o.name === "string" ? o.name : "";
     s.on = o.on !== false;
     s.from = num("from", 0); s.until = num("until", 0); s.amount = num("amount", 0); s.ramp = Math.max(0, num("ramp", 0)); s.nominal = num("nominal", 0);
-    s.mode = o.mode === "pct" || o.mode === "pctYearly" ? o.mode : "amount";
+    s.mode = o.mode === "pct" || o.mode === "pctYearly" || o.mode === "cap" || o.mode === "stop" ? o.mode : "amount";
+    if (o.keepMatch === true) s.keepMatch = true;
     s.acct = (COVER_ORDER as readonly string[]).includes(String(o.acct)) ? (o.acct as CoverLine) : "auto";
     s.who = o.who === 1 ? 1 : 0;
     // A pay change is a new figure or a share; a spending change, dollars.
     if (kind === "income" && s.mode === "pctYearly") s.mode = "pct";
     if (kind === "spending") s.mode = "amount";
     if (kind === "children") s.id = CHILDREN_ID;
+    // The Dashboard plans from pay: saving more or less by dollars is
+    // spending less or more by as much, and stopping is Save less's own.
+    if (opts.dashboard && kind === "saving") {
+      if (s.mode === "amount") Object.assign(s, { kind: "spending", amount: -s.amount });
+      else if (s.mode === "pct" && s.amount <= -100) s.mode = "stop";
+    }
     if (out.some((y) => y.id === s.id)) continue;
     out.push(s);
   }
@@ -135,11 +145,14 @@ export interface YearChange {
     scenarios build on earlier ones: a share works on the saving as the
     ones before it leave it. Lump sums aren't here: they're one-offs on
     the Calculator's stages (calc.ts). */
-export function yearChange(list: Scenario[], t: number, end: number, own: number): YearChange {
+export function yearChange(list: Scenario[], t: number, end: number, own: number, opts: { lines?: boolean } = {}): YearChange {
   const out: YearChange = { cut: 0, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [] };
   let running = own, stopped: string | null = null;
   for (const s of liveScenarios(list)) {
     if ((s.kind !== "saving" && s.kind !== "spending") || !runs(s, t, end)) continue;
+    // Save less works on the accounts themselves (saveLessAt) when the
+    // plan asks for it; here it's only named.
+    if (opts.lines && saveLess(s)) { out.tags.push(s.id); continue; }
     const k = t - s.from;
     if (s.kind === "saving" && stops(s, k)) { stopped = s.id; continue; }
     let d = 0;
@@ -159,6 +172,29 @@ export function yearChange(list: Scenario[], t: number, end: number, own: number
   // Saving stopped: nothing goes in, whatever the other changes add.
   if (stopped) return { cut: own, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [...out.tags, stopped] };
   return out;
+}
+
+/** Save less: a saving change that only lowers it (stop, a ceiling, a share less). */
+export const saveLess = (s: Scenario) => s.kind === "saving" && (s.mode === "stop" || s.mode === "cap" || (s.mode === "pct" && s.amount < 0));
+
+/** What Save less leaves of saving in the year you're `t`, on your own
+    saving of `own` a month, of which `match` is the 401(k) up to the
+    match: the lowest of the ones at work, each phased in over its years,
+    never below the match line when it keeps the match. Null when none is
+    at work. `acct` is the account the first one gives up first; `stop`,
+    whether one stops saving with nothing kept. */
+export function saveLessAt(list: Scenario[], t: number, end: number, own: number, match: number): { target: number | null; acct: ScenarioAcct; stop: boolean } {
+  let target: number | null = null, acct: ScenarioAcct = "auto", stop = false;
+  for (const s of liveScenarios(list)) {
+    if (!saveLess(s) || !runs(s, t, end)) continue;
+    const floor = s.keepMatch ? Math.min(own, match) : 0;
+    const full = s.mode === "stop" || (s.mode === "pct" && s.amount <= -100) ? floor : s.mode === "cap" ? Math.max(floor, s.amount) : Math.max(floor, own * (1 + s.amount / 100));
+    const T = s.mode === "stop" ? full : own - Math.max(0, own - full) * phased(s.ramp, t - s.from);
+    if (target == null) acct = s.acct;
+    if ((s.mode === "stop" || (s.mode === "pct" && s.amount <= -100)) && !s.keepMatch) stop = true;
+    target = Math.min(target ?? Infinity, Math.min(own, T));
+  }
+  return { target, acct, stop };
 }
 
 /** One of you's pay a year in the year you're `t`, from what it would be
@@ -229,7 +265,9 @@ export function scenarioSentence(s: Scenario, end: number, baseNominal: number, 
     return `Spend ${moneyText(s.amount)} per month ${less ? "less" : "more"} from ${at(s.from)} ${until}${how}: saving goes ${less ? "up" : "down"} by as much${where}.`;
   }
   const where = opts.pot ? "" : ", " + (less ? (s.acct === "auto" ? "out of brokerage first" : `out of ${acctWord(s.acct)} first`) : (s.acct === "auto" ? "into brokerage" : `into ${acctWord(s.acct)}`));
-  if (s.mode === "pct" && s.amount <= -100) return `Stop saving from ${at(s.from)} ${until}: nothing more goes in${opts.pot ? "" : ", the employer match included"}.`;
+  const keeps = s.keepMatch ? ", keeping enough in for the full employer match" : "";
+  if (s.mode === "stop" || (s.mode === "pct" && s.amount <= -100)) return `Stop saving from ${at(s.from)} ${until}${keeps || (opts.pot ? "" : ": nothing more goes in, the employer match included")}.`;
+  if (s.mode === "cap") return `Save at most ${moneyText(s.amount)} per month from ${at(s.from)} ${until}${s.ramp > 0 ? `, phased in over ${s.ramp} ${s.ramp === 1 ? "year" : "years"}` : ""}${keeps}. What isn't saved is spent.`;
   if (s.mode === "pctYearly") return `Save ${pctText(s.amount)} ${less ? "less" : "more"} each year from ${at(s.from)} ${until}, compounding (${pctText(s.amount)} ${less ? "less" : "more"} than the year before, every year)${where}.`;
   const amt = s.mode === "amount" ? `${moneyText(s.amount)} per month` : `${pctText(s.amount)} of what you'd save then`;
   const how = s.ramp > 0 ? `, phased in over ${s.ramp} ${s.ramp === 1 ? "year" : "years"}` : "";
@@ -239,7 +277,8 @@ export function scenarioSentence(s: Scenario, end: number, baseNominal: number, 
 /** The kind's usual name when the typed one is blank. */
 export const scenarioName = (s: Scenario) => s.name.trim() || (s.kind === "children" ? "Children" : s.kind === "returns" ? "Different returns" : s.kind === "lump" ? (s.amount < 0 ? "A big expense" : "A windfall")
   : s.kind === "income" ? (s.mode === "amount" ? "New pay" : s.amount <= -100 ? "Time off work" : s.amount < 0 ? "Lower pay" : "Higher pay")
-  : s.kind === "spending" ? (s.amount < 0 ? "Spending less" : "Spending more") : s.amount < 0 ? "Saving less" : "Saving more");
+  : s.kind === "spending" ? (s.amount < 0 ? "Spending less" : "Spending more")
+  : s.mode === "stop" || (s.mode === "pct" && s.amount <= -100) ? "Stop saving" : s.mode === "cap" || s.amount < 0 ? "Saving less" : "Saving more");
 
 /** A field's text as a number, or null when blank or not one. */
 export const numOrNull = (v: string) => (v.trim() === "" || !isFinite(parseNum(v)) ? null : parseNum(v));

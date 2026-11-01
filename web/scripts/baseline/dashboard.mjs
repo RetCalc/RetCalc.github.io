@@ -38,6 +38,12 @@ const PLANS = {
   // As the store carries it over on loading: 2% raises for both.
   "Saving grows 2% (old per-line rates)": (p) => ({ ...p, growth: { match: 0.02, hsa: 0.02, rothIra: 0.02, k401max: 0.02, brok: 0.02 }, yearly: { raise: [0.02, 0.02], keep: null } }),
   "Save $600 less from 50 to 55": (p) => ({ ...p, scenarios: [{ id: "x", kind: "saving", name: "", on: true, from: year - p.p1.by + 8, until: year - p.p1.by + 13, mode: "amount", amount: -600, ramp: 0, acct: "auto", nominal: 0 }] }),
+  "Stop saving at 50, keeping the match": (p) => ({ ...p, scenarios: [{ id: "x", kind: "saving", name: "", on: true, from: year - p.p1.by + 8, until: 0, mode: "stop", amount: 0, ramp: 0, acct: "auto", nominal: 0, keepMatch: true }] }),
+  "Stop saving at 50, nothing kept": (p) => ({ ...p, scenarios: [{ id: "x", kind: "saving", name: "", on: true, from: year - p.p1.by + 8, until: 0, mode: "stop", amount: 0, ramp: 0, acct: "auto", nominal: 0 }] }),
+  "Save at most $1,500 from 48": (p) => ({ ...p, scenarios: [{ id: "x", kind: "saving", name: "", on: true, from: year - p.p1.by + 6, until: 0, mode: "cap", amount: 1500, ramp: 0, acct: "auto", nominal: 0, keepMatch: true }] }),
+  "Sam's pay typed: $150,000 from 2030": (p) => ({ ...p, yearly: { ...p.yearly, edits: [{ what: "pay0", year: 2030, amount: 150000, once: false }] } }),
+  "Spending typed: $150,000 in 2031 only": (p) => ({ ...p, yearly: { ...p.yearly, edits: [{ what: "spend", year: 2031, amount: 150000, once: true }] } }),
+  "Spending typed: $120,000 from 2031": (p) => ({ ...p, yearly: { ...p.yearly, edits: [{ what: "spend", year: 2031, amount: 120000, once: false }] } }),
 };
 
 function run() {
@@ -64,7 +70,7 @@ if (mode === "record") {
   let diff = 0;
   for (const [name, n] of Object.entries(now)) {
     const o = was[name];
-    if (!o) { console.log("+ " + name + " (new)"); continue; }
+    if (!o) { console.log("+ " + name + " (new): at retirement " + n.fv + ", saving a month " + n.yearly.slice(3, 9).join(", ")); continue; }
     const fvd = n.fv != null && o.fv != null ? n.fv - o.fv : null;
     const same = n.fv === o.fv && n.success === o.success && JSON.stringify(n.yearly) === JSON.stringify(o.yearly);
     if (same) { console.log("✓ " + name); continue; }

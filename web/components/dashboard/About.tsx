@@ -237,6 +237,9 @@ export function About() {
                     <li><b>Children, college and spending changes</b> come out of that saving, in the
                     order and from the accounts you set, as before.</li>
                     <li><b>Spending</b> is what&apos;s left: pay, less taxes and saving.</li>
+                    <li><b>Type your own figure</b>: click a year&apos;s pay or spending in the table and
+                    type it, for that year only or from it to retirement. Taxes and saving follow, and
+                    a dot marks it. It&apos;s part of your plan, not a change ahead to switch on and off.</li>
                     <li>Figures are in today&apos;s dollars, or each year&apos;s own with <b>Future
                     dollars</b>. Your savings at retirement, on every tab, are built from these years.</li>
                   </ul>
@@ -336,10 +339,12 @@ export function About() {
                   <b>Pay changes</b> set one of your pay to a figure, or a share higher or lower,
                   from an age on: taxes and saving follow it, as on Year by year. <b>Spend more or
                   less</b> changes what&apos;s spent each month from an age on, and saving makes it
-                  up. <b>Save more or less</b> changes what you save from an age on, by dollars per
-                  month or a share of what you&apos;d save then, all at once or phased in, into or
-                  out of the account you name (a cut comes out of the accounts in the order
-                  below once that one runs out). <b>A lump sum</b> is one amount put into or
+                  up. <b>Save less</b> eases off from an age on: stop saving, save at most a
+                  figure per month, or save a share less, all at once or phased in, out of the
+                  account you name first and then the others in the order below. It keeps
+                  enough in for the full employer match unless you say not to, and what isn&apos;t
+                  saved is spent. (Saving more comes from earning more or spending less, so it&apos;s
+                  those changes.) <b>A lump sum</b> is one amount put into or
                   taken out of an account on the day you turn an age: an inheritance, a home
                   sale, a down payment. <b>Different returns</b> changes the return from an
                   age on, stepped or climbing. <b>Children</b> are the plan&apos;s own row: their

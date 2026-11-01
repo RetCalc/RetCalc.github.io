@@ -125,9 +125,10 @@ export interface Profile {
       profile over. */
   growth: Partial<Record<"match" | "hsa" | "rothIra" | "k401max" | "brok", number>>;
   /** Year by year: each of you's raise a year beyond inflation (0.01 is
-      1%), and how much of each raise, after tax, is saved (0.5 is half);
-      null saves the same share of take-home pay as now. */
-  yearly: { raise: [number, number]; keep: number | null };
+      1%), how much of each raise, after tax, is saved (0.5 is half; null
+      saves the same share of take-home pay as now), and figures typed into
+      its table. */
+  yearly: { raise: [number, number]; keep: number | null; edits?: YearEdit[] };
   /** Children planned: how many, years until the first, and years apart. */
   /** Children planned: how many, years until the first and between them.
       `bornAge` is your age at the first one's birth, kept so "the first in"
@@ -166,6 +167,11 @@ export interface Item {
       evenly). Left out, a retirement account's is guessed from the name. */
   owner?: 0 | 1 | null;
 }
+/** A figure typed into Year by year's table: your pay (`pay0`), your
+    partner's (`pay1`) or spending, per year in today's dollars, for its
+    calendar year only (`once`) or from it to retirement. */
+export interface YearEdit { what: "pay0" | "pay1" | "spend"; year: number; amount: number; once: boolean }
+
 /** What the household had and owed on a day (YYYY-MM-DD). One a day:
     saving again the same day replaces it. */
 export interface Entry { date: string; items: Item[]; from: "setup" | "accounts" }
@@ -227,14 +233,17 @@ function load(): DashData {
   p.planned = { ...EMPTY_PROFILE.planned, ...v.profile?.planned };
   p.college = { ...EMPTY_PROFILE.college, ...v.profile?.college };
   p.childCosts = { ...EMPTY_PROFILE.childCosts, ...v.profile?.childCosts };
-  if (v.profile?.scenarios != null) p.scenarios = readScenarios(v.profile.scenarios);
+  if (v.profile?.scenarios != null) p.scenarios = readScenarios(v.profile.scenarios, { dashboard: true });
   // Years until the first planned child, from the age you'll be then.
   const age = ageNow(p.p1);
   if (p.planned.bornAge != null && age != null) p.planned = { ...p.planned, firstIn: Math.max(0, Math.round((p.planned.bornAge - age) * 2) / 2) };
   // Raises, from before pay was planned year by year: saving's own growth
   // (one rate, or each line's), the average of the rates set.
   const y = v.profile?.yearly;
-  if (y && Array.isArray(y.raise)) p.yearly = { raise: [Number(y.raise[0]) || 0, Number(y.raise[1]) || 0], keep: typeof y.keep === "number" ? y.keep : null };
+  if (y && Array.isArray(y.raise)) {
+    const edits = Array.isArray(y.edits) ? y.edits.filter((e): e is YearEdit => !!e && ["pay0", "pay1", "spend"].includes(e.what) && Number.isFinite(e.year) && Number.isFinite(e.amount)).map((e) => ({ what: e.what, year: Math.round(e.year), amount: Math.max(0, e.amount), once: !!e.once })) : [];
+    p.yearly = { raise: [Number(y.raise[0]) || 0, Number(y.raise[1]) || 0], keep: typeof y.keep === "number" ? y.keep : null, ...(edits.length ? { edits } : {}) };
+  }
   else {
     const set = Object.values(v.profile?.growth ?? {}).filter((g): g is number => typeof g === "number" && g > 0);
     const r = set.length ? set.reduce((a, g) => a + g, 0) / set.length : v.profile?.raise || 0;

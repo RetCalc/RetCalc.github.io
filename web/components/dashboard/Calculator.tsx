@@ -41,7 +41,7 @@ import { KID_BASE } from "@/tools/stages/kids";
 import { Hosted } from "./host";
 import { newId, useDashboard, type Entry, type Profile } from "./store";
 import { CHILDREN_ID, acctWord, newScenario, scenarioName, scenarioSentence, type Scenario, type ScenarioKind } from "./scenarios";
-import { ChangeDialog, ChangesDialog, INCOME_KIND, LUMP_KIND, SPENDING_KIND, PickKind, RETURNS_KIND, SAVING_KIND, fx, kindClass, type ChangeTip, type Years } from "@/components/changes/ChangeUI";
+import { ChangeDialog, ChangesDialog, INCOME_KIND, LUMP_KIND, SAVE_LESS_KIND, SPENDING_KIND, PickKind, RETURNS_KIND, fx, kindClass, type ChangeTip, type Years } from "@/components/changes/ChangeUI";
 
 const Stages = dynamic(() => import("@/tools/stages/Stages").then((m) => m.Stages), { ssr: false });
 
@@ -336,6 +336,7 @@ export function Calculator() {
         {rows.length ? <Button variant="outline" className="flex-1" id="btnViewScenarios" onClick={() => setDlg({ at: "list" })}><PencilIcon aria-hidden="true" />View or edit</Button> : null}
         <Button variant="outline" className="flex-1" id="btnAddScenario" onClick={() => setDlg({ at: "pick" })}><PlusIcon aria-hidden="true" />Add a change</Button>
       </div>
+      <p className="hint mt-2 mb-0"><To href="/dashboard/years">See every year</To>: pay, taxes, spending and saving, with these changes in.</p>
     </div>
   );
 
@@ -357,9 +358,9 @@ export function Calculator() {
           figureOf={figureOf} sentenceOf={sentenceOf} warnOf={(r) => (shorts[r.id] ? shortWords(shorts[r.id]) : null)} edit={(r) => edit(r, true)} remove={remove} add={() => setDlg({ at: "pick", back: true })} close={() => setDlg(null)} />
       ) : null}
       {dlg?.at === "kids" ? <ChildCostsDialog close={done} /> : null}
-      {dlg?.at === "pick" ? <PickKind kinds={[INCOME_KIND, SPENDING_KIND, SAVING_KIND, LUMP_KIND, RETURNS_KIND]} note="What do you see coming? Pick one, then give it a name, ages and amounts. Children are added in Profile." close={done} pick={(k) => pick(k.kind, k.over, dlg.back)} /> : null}
+      {dlg?.at === "pick" ? <PickKind kinds={[INCOME_KIND, SPENDING_KIND, SAVE_LESS_KIND, LUMP_KIND, RETURNS_KIND]} note="What do you see coming? Pick one, then give it ages and amounts." foot="Children are added in Profile." close={done} pick={(k) => pick(k.kind, k.over, dlg.back)} /> : null}
       {dlg?.at === "edit" ? (
-        <ChangeDialog s={dlg.s} fresh={dlg.fresh} years={years} accounts label={tipLabel} names={names} sentence={(x) => scenarioSentence(x, retire, nominal, { names: names ?? undefined })} effectOf={effectOf}
+        <ChangeDialog s={dlg.s} fresh={dlg.fresh} years={years} accounts saveLess label={tipLabel} names={names} sentence={(x) => scenarioSentence(x, retire, nominal, { names: names ?? undefined })} effectOf={effectOf}
           where={(k) => `The rest comes out of your other accounts once ${acctWord(k)} runs out, the 401(k) up to the match last.`} close={done}
           save={(x) => { setProfile((p) => withRow(p, x)); done(); }}
           remove={() => { remove(dlg.s.id); done(); }} />

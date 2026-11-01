@@ -21,8 +21,8 @@ import { COVER_ORDER, type CoverLine } from "@/tools/plan/model";
 import { childCost, children } from "@/tools/guide/schedule";
 import type { Answers, YearSaving } from "@/tools/guide/store";
 import type { Flow } from "./flows";
-import { payAt, yearChange } from "./scenarios";
-import { OUTSIDE_US, type Profile } from "./store";
+import { payAt, saveLessAt, yearChange } from "./scenarios";
+import { OUTSIDE_US, type Profile, type YearEdit } from "./store";
 
 type Line = "brok" | "k401max" | "rothIra" | "hsa" | "match";
 /** The order saving is given up in when nothing's typed. */
@@ -116,6 +116,8 @@ export interface CashYear {
   kids: number; college: number; change: number; short: number;
   /** The changes at work that year (their ids), and who's working. */
   tags: string[]; works: [boolean, boolean];
+  /** The figures typed into the table for this year. */
+  edits: YearEdit[];
 }
 
 /** The plan's saving year by year from now to retirement, account by
@@ -171,6 +173,18 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
     }
     return out;
   };
+  /* Figures typed into the table: pay set from a year on (raises carry on
+     from it) or for that year only; spending set the same way, its
+     difference from the plan's carried on from its year. */
+  const edits = Yr.edits ?? [];
+  const typedPay = (w: "pay0" | "pay1", year: number, raise: number): number | null => {
+    const E = edits.filter((e) => e.what === w);
+    const once = E.find((e) => e.once && e.year === year);
+    if (once) return once.amount;
+    const from = E.filter((e) => !e.once && e.year <= year).sort((x, y) => y.year - x.year)[0];
+    return from ? from.amount * Math.pow(1 + raise, year - from.year) : null;
+  };
+  let spendShift = 0;
   // When your partner stops work, if before you: the calendar year.
   const r2 = pr.who === "couple" && pr.p2.by != null && pr.p2.retire != null ? pr.p2.by + pr.p2.retire : null;
   const year0 = new Date().getFullYear();
@@ -178,8 +192,8 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
   for (let t = age; t < end; t++) {
     const k = t - age, year = year0 + k;
     const works: [boolean, boolean] = [true, pi.gross2 > 0 && (r2 == null || year < r2)];
-    const P1 = payAt(scen, 0, t, end, pi.gross * Math.pow(1 + Yr.raise[0], k), Yr.raise[0]);
-    const P2 = works[1] ? payAt(scen, 1, t, end, pi.gross2 * Math.pow(1 + Yr.raise[1], k), Yr.raise[1]) : { pay: 0, tags: [] };
+    const P1 = payAt(scen, 0, t, end, typedPay("pay0", year, Yr.raise[0]) ?? pi.gross * Math.pow(1 + Yr.raise[0], k), Yr.raise[0]);
+    const P2 = works[1] ? payAt(scen, 1, t, end, typedPay("pay1", year, Yr.raise[1]) ?? pi.gross2 * Math.pow(1 + Yr.raise[1], k), Yr.raise[1]) : { pay: 0, tags: [] };
     const pk: PcInput = { ...pi, gross: P1.pay, gross2: P2.pay, ...(pi.two && !works[1] ? { two: false } : {}), ...(pi.ages ? { ages: [shift(pi.ages[0], k), shift(pi.ages[1], k)] } : {}) };
     // Saving follows take-home pay, which its own pre-tax part lowers the
     // taxes on: worked out until the two agree.
@@ -191,20 +205,49 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
       if (Math.abs(next - S) < 0.01) break;
       S = next; lines = alloc(S, pk); tx = taxOf(pk, lines);
     }
+    // Save less: what goes in is held to its ceiling, taken from the
+    // account it names first, then in the dashboard's order, the match last.
+    const SL = saveLessAt(scen, t, end, total(lines), lines.match);
+    if (SL.target != null && SL.target < total(lines) - 0.005) {
+      let cut = total(lines) - SL.target;
+      const first = SL.acct === "auto" ? [] : DASH_ORDER.filter((l) => kindOf(pk, l) === SL.acct);
+      for (const l of [...first, ...DASH_ORDER.filter((l) => !first.includes(l))]) {
+        const m = Math.min(lines[l], cut);
+        lines = { ...lines, [l]: lines[l] - m }; cut -= m;
+        if (cut <= 0.005) break;
+      }
+      tx = taxOf(pk, lines);
+    }
     const match = (tx.run.match * pk.p) / 12;
     // The Calculator's scenarios this year: saving given up (covered like
     // the children's costs, from the accounts they name first), and saving
     // added to an account.
-    const own = byKind(pk, lines), Y = yearChange(scen, t, end, own.brok + own.roth + own.trad + own.hsa);
+    const own = byKind(pk, lines), Y = yearChange(scen, t, end, own.brok + own.roth + own.trad + own.hsa, { lines: true });
     const kidsCost = kids.reduce((s, c) => s + childCost(c, t), 0) - costNow, college = opts.college[k] ?? 0;
     const need = kidsCost + college + Y.cut;
     const seg = segs.find((s) => s.from <= t && t < s.to);
     const typedKids = seg ? cover[stageKey(seg)] : undefined;
     const typed = Y.cut > 0 ? Object.fromEntries(COVER_ORDER.filter((a) => typedKids?.[a] != null || Y.typed[a] != null).map((a) => [a, (typedKids?.[a] ?? 0) + (Y.typed[a] ?? 0)])) as Partial<Monthly> : typedKids;
-    const c = Math.abs(need) < 0.5 ? null : coverDash(need, pk, typed, lines);
-    const left = own;
-    if (c) for (const kk of COVER_ORDER) left[kk] = Math.max(0, left[kk] - c.take[kk]);
-    for (const kk of COVER_ORDER) left[kk] += Y.add[kk];
+    const coverFor = (n: number) => (Math.abs(n) < 0.5 ? null : coverDash(n, pk, typed, lines));
+    const keptOf = (cv: ReturnType<typeof coverFor>) => {
+      const m = { ...own };
+      if (cv) for (const kk of COVER_ORDER) m[kk] = Math.max(0, m[kk] - cv.take[kk]);
+      if (!SL.stop) for (const kk of COVER_ORDER) m[kk] += Y.add[kk];
+      return m;
+    };
+    let c = coverFor(need);
+    // Spending typed for this year (or carried on from an earlier one): the
+    // difference from what the plan would spend comes out of saving, or
+    // goes into it.
+    const spendOnce = edits.find((e) => e.what === "spend" && e.once && e.year === year);
+    const spendFrom = edits.find((e) => e.what === "spend" && !e.once && (e.year === year || (k === 0 && e.year < year)));
+    if (spendOnce || spendFrom) {
+      const pre = inc - (tx.tax + (abroad ? 0 : c?.taxUp ?? 0)) - total(keptOf(c)) - ef;
+      if (spendFrom) spendShift = spendFrom.amount / 12 - pre;
+      const shift = spendOnce ? spendOnce.amount / 12 - pre : spendShift;
+      if (Math.abs(shift) >= 0.5) c = coverFor(need + shift);
+    } else if (Math.abs(spendShift) >= 0.5) c = coverFor(need + spendShift);
+    const left = keptOf(c);
     const emp = Math.max(0, match - (c?.matchLost ?? 0));
     // The employer's money goes in as the match line is taxed.
     const empRoth = pk.roth.match;
@@ -212,7 +255,8 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
     base.push(total(lines) + match);
     const taxes = tx.tax + (abroad ? 0 : c?.taxUp ?? 0), saved = total(left);
     years.push({ k, age: t, year, pay: [P1.pay / 12, P2.pay / 12], other, income: inc, taxes, spending: inc - taxes - saved - ef,
-      saved: { ...left }, match: emp, ef, kids: kidsCost, college, change: Y.cut - total(Y.add), short: c?.short ?? 0, tags: [...P1.tags, ...P2.tags, ...Y.tags], works });
+      saved: { ...left }, match: emp, ef, kids: kidsCost, college, change: Y.cut - total(Y.add), short: c?.short ?? 0, tags: [...P1.tags, ...P2.tags, ...Y.tags], works,
+      edits: edits.filter((e) => e.year === year && (e.what !== "pay1" || works[1])) });
   }
   return { rows, base, years };
 }
