@@ -17,7 +17,7 @@ export const CALC_PATHS: Record<CalcMode, string> = { simple: "/calculator", sin
 export const CALC_MODE_NAMES: Record<CalcMode, string> = { simple: "Basic", single: "Advanced" };
 
 /** The tab each page belongs to (lights up in the navigation bar). */
-export type Tab = "guide" | "calc" | "tools" | "about";
+export type Tab = "guide" | "calc" | "tools" | "learn" | "about";
 
 /** Pages that open a tool, and which tool: the strategy pages are the
     Drawdown Simulator set up for one strategy; /rmd is the Roth tool and
@@ -92,6 +92,7 @@ export function isSolo(slug: Slug): boolean {
 export function tabFor(slug: Slug): Tab | null {
   if (slug === "home" || slug === "financial-dashboard") return null;
   if (slug === "guide" || (slug as string).startsWith("guide/")) return "guide";
+  if ((slug as string) === "learn" || (slug as string).startsWith("learn/")) return "learn";
   if (slug === "about" || slug === "privacy") return "about";
   if (slug === "calculator" || slug === "advanced" || (slug as string) === "compare") return "calc";
   return "tools";

@@ -2,7 +2,7 @@
 
 /* The site header, one row pinned whole: the logo (a link home), the tabs
    (Guide with its Readiness / Paycheck menu, Calculator with its Basic /
-   Advanced menu, Tools, About), and on the right the household
+   Advanced menu, Tools, Learn, About), and on the right the household
    button and the theme button.
    Ported from src/js/app/09-navigation.js. A tool's own controls (its saved
    scenarios) are in its header or tool bar, not here.
@@ -29,6 +29,7 @@ const TABS: { tab: Tab; label: string; href: string; controls: string }[] = [
   { tab: "guide", label: "Guide", href: "/guide", controls: "tab-guide" },
   { tab: "calc", label: "Calculator", href: "/calculator", controls: "tab-simple" },
   { tab: "tools", label: "Tools", href: "/tools", controls: "tab-toolpicker" },
+  { tab: "learn", label: "Learn", href: "/learn", controls: "" },
   { tab: "about", label: "About", href: "/about", controls: "tab-about" },
 ];
 const MODES: { mode: CalcMode; desc: string }[] = [
@@ -58,7 +59,7 @@ export function NavBar({ states }: { states: StateOption[] }) {
   const router = useRouter();
   const slug = slugFromPath(path);
   // An address that isn't a page (the 404) sits under no tab.
-  const known = (slug as string) === "compare" || (slug as string) === "guide/report" || (slug as string) === "guide/paycheck" || (slug as string) === "guide/paycheck/report" || slug in ALIASES || (SLUGS as string[]).includes(slug);
+  const known = (slug as string) === "compare" || (slug as string) === "learn" || slug.startsWith("learn/") || (slug as string) === "guide/report" || (slug as string) === "guide/paycheck" || (slug as string) === "guide/paycheck/report" || slug in ALIASES || (SLUGS as string[]).includes(slug);
   const tab: Tab | null = known ? tabFor(slug) : null;
   const mode = calcModeFor(slug);
 
@@ -243,7 +244,7 @@ export function NavBar({ states }: { states: StateOption[] }) {
                 data-tab={t.tab}
                 // A tool page sits under Tools but isn't the picker panel, and
                 // Privacy sits under About but isn't the About panel.
-                aria-controls={isCalc ? `tab-${shownMode}` : selected && ((t.tab === "tools" && slug !== "tools") || (t.tab === "about" && slug !== "about")) ? undefined : t.controls}
+                aria-controls={isCalc ? `tab-${shownMode}` : !t.controls ? undefined : selected && ((t.tab === "tools" && slug !== "tools") || (t.tab === "about" && slug !== "about")) ? undefined : t.controls}
                 aria-selected={selected}
                 tabIndex={selected || (tab === null && i === 0) ? undefined : -1}
                 aria-haspopup={mt ? "menu" : undefined}
