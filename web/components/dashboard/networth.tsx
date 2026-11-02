@@ -383,11 +383,11 @@ export function TaxMix({ items }: { items: Item[] }) {
           ))}
         </tbody>
       </table>
-      <p className="dsh-cap dsh-mt6">
-        Taxed when spent is your pre-tax money plus the brokerage&apos;s gain. Tax-free is the Roth, the HSA, cash and the money you put into the brokerage.
-        {gain != null ? <> Of the brokerage&apos;s {money(brok.reduce((t, i) => t + i.value, 0))}, {gain >= 0 ? <>{money(gain)} is gain: the only part taxed when you sell.</> : <>{money(-gain)} is a loss, which can offset gains or some income when you sell.</>}</> : null}
+      {/* What "taxed when spent" means is the tile's "?"; said here are this brokerage's own figures. */}
+      {gain != null || guessed ? <p className="dsh-cap dsh-mt6">
+        {gain != null ? <>Of the brokerage&apos;s {money(brok.reduce((t, i) => t + i.value, 0))}, {gain >= 0 ? <>{money(gain)} is gain: the only part taxed when you sell.</> : <>{money(-gain)} is a loss, which can offset gains or some income when you sell.</>}</> : null}
         {guessed ? " A brokerage account's cost basis not given is taken as 60% of its balance; add it with Update balances." : ""}
-      </p>
+      </p> : null}
     </>
   );
 }

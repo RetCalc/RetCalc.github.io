@@ -9,13 +9,13 @@
    into each account as set here, rising each year by what's set below. */
 
 import Link from "next/link";
-import { LandmarkIcon, PiggyBankIcon } from "lucide-react";
 import { Affixed, Field, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { Badge } from "@/components/ui/badge";
 import { yearData } from "@/lib/engine/typed";
 import { LOCAL_TAX } from "@/tools/tax/local";
 import { TAX_DEF, type TaxInputs } from "@/tools/tax/model";
+import { PC_ZERO, paycheckRun } from "@/tools/budget/paycheck-math";
 import { withDefaults } from "@/components/tools/ToolState";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,8 +30,9 @@ import { raiseWords } from "./yearly";
 import { money } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { couple, nameOf, outsideUS } from "./model";
+import type { ReactNode } from "react";
 import { useDashboard, type Profile } from "./store";
-import { Note, Tile, Tip, TipLabel, To } from "./ui";
+import { Note, StackBar, StatusDot, Tip, TipLabel, type BarPart } from "./ui";
 
 const pct = (v: number) => String(Math.round(v * 1000) / 10);
 
@@ -90,28 +91,13 @@ export function Savings() {
   const { data, setProfile } = useDashboard();
   const pr = data.profile, F = flow(pr);
   const Budget = TOOL_VIEWS.budget;
-  const rate = F.gross > 0 ? (F.invested + F.match) / F.gross : null;
-  // Shown once the emergency fund line is in "Where the rest goes", even at 0.
-  const efOn = budgetFor(pr).pcEfOn;
   return (
     <Frame current="savings" title="Taxes & Savings" sub={F.hasPay ? `${F.tax ? money(F.tax.total) + " per year in taxes, " : ""}${money(F.invested + F.match)} per month into savings, with your employer's match` : "Where your paycheck goes"}>
-      <Taxes pr={pr} />
-      <Tile id="month" icon={PiggyBankIcon} title="Each month" className="dsh-r4">
-        <div className="dsh-stats">
-          <div className="dsh-stat"><div className="dsh-label">You save and invest</div><div className="dsh-fig dsh-key">{money(F.invested)}<small>per month</small></div></div>
-          <div className="dsh-stat"><div className="dsh-label">Employer match</div><div className="dsh-fig dsh-md">{money(F.match)}<small>per month</small></div></div>
-          {efOn ? <div className="dsh-stat"><div className="dsh-label">To the emergency fund</div><div className="dsh-fig dsh-md">{money(F.ef)}<small>per month</small></div></div> : null}
-          <div className="dsh-stat"><div className="dsh-label">{F.left >= 0 ? <TipLabel text="Not assigned" id="notAssigned" /> : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(F.left))}<small>per month</small></div></div>
-          {rate != null ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Savings rate, with the match" id="savingsRate" /></div><div className="dsh-fig dsh-md">{Math.round(rate * 1000) / 10}%</div></div> : null}
-        </div>
-        <div className="dsh-cap dsh-mt">
-          {F.fullMatch == null ? "No employer match set. Add it in Income if you have one." : F.fullMatch ? "You're getting the full employer match." : <b>You&apos;re not getting the full employer match: raise 401(k) up to the match to reach it.</b>}
-          {F.left > 0.5 ? " What's not assigned stays in checking, not invested." : ""}
-        </div>
-        {outsideUS(pr) ? <div className="dsh-mt"><Note>The 401(k), IRA and HSA lines follow US rules. Outside the US, use them for the accounts closest to yours.</Note></div> : null}
-      </Tile>
+      <Top pr={pr} />
       <div className="dsh-r4">
-        <Hosted household={null} slots={{ afterSliders: <Growth />, payFacts: <PayFacts pr={pr} />, ages: agesOf(pr) }}
+        {/* The paycheck's own reading (its figures and donut) is said by
+            Each month above, so it's left out here. */}
+        <Hosted household={null} slots={{ afterSliders: <Growth />, payFacts: <PayFacts pr={pr} />, ages: agesOf(pr), noReading: true }}
           seed={(id) => (id === "budget" ? ({ ...budgetFor(pr), view: "paycheck" } as unknown as ToolInputs) : id === "tax" ? (taxFor(pr) as unknown as ToolInputs) : undefined)}
           keep={(id, d) => { if (id === "budget") setProfile((p) => fromBudget(p, d as unknown as BudgetInputs)); }}>
           <Budget />
@@ -121,23 +107,68 @@ export function Savings() {
   );
 }
 
-/** The year's taxes on pay, as the Paycheck figures them. */
-function Taxes({ pr }: { pr: Profile }) {
-  const F = flow(pr), T = F.tax, abroad = outsideUS(pr);
-  if (abroad) return <Tile id="taxes" icon={LandmarkIcon} title="Taxes"><p className="dsh-cap dsh-mt6">Outside the US we don&apos;t work out taxes: your pay is entered after taxes, and figures for retirement are before taxes.</p></Tile>;
-  const yr = F.gross * 12;
+/** A label and its figure in a card's row of three. */
+function Fig({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return <div className="dsh-stat"><div className="dsh-label">{label}</div><div className="dsh-fig dsh-md">{children}</div></div>;
+}
+
+/** The two cards at the top, built alike so their rows line up (.dsh-duo):
+    the year's taxes, and where each month's pay goes. Each has a figure,
+    a row of three, and a bar with its key. */
+function Top({ pr }: { pr: Profile }) {
+  const F = flow(pr), T = F.tax, r = F.r, m = F.pi.p / 12, abroad = outsideUS(pr);
+  const free = paycheckRun(F.pi, PC_ZERO).toAssign * m;
+  const rate = F.gross > 0 ? (F.invested + F.match) / F.gross : null;
+  const yr = F.gross * 12, short = F.left < 0;
+  const pctOf = (v: number, of: number) => (of > 0 ? Math.round((v / of) * 100) + "%" : "");
+  const taxParts: BarPart[] = T ? [
+    { name: "Federal income tax", v: T.federal, color: "var(--dsh-c-tax)" },
+    { name: "State income tax", v: T.state, color: "var(--dsh-c-tax2)" },
+    ...(T.local > 0 ? [{ name: "Local income tax", v: T.local, color: "var(--dsh-c-tax3)" }] : []),
+    { name: <TipLabel text="FICA" id="fica" />, v: T.fica, color: "var(--dsh-c-tax4)" },
+  ].map((p) => ({ ...p, value: <>{money(p.v)}<small> per year</small></>, share: pctOf(p.v, T.total) + " of taxes" })) : [];
+  const monthParts: BarPart[] = [
+    { name: "Savings", v: r.saved * m, color: "var(--dsh-c-save)" },
+    { name: "Taxes", v: F.taxes, color: "var(--dsh-c-tax)" },
+    { name: "Expenses", v: (r.spend + r.health) * m, color: "var(--dsh-c-spend)" },
+    { name: short ? "Short" : <TipLabel text="Unassigned" id="notAssigned" />, v: Math.max(0, F.left), color: "", hatch: true, tone: short ? "loss" as const : undefined },
+  ].map((p) => ({ ...p, value: money(p.name === "Short" ? Math.abs(F.left) : p.v), share: pctOf(p.name === "Short" ? Math.abs(F.left) : p.v, F.gross) + " of pay" }));
   return (
-    <Tile id="taxes" icon={LandmarkIcon} title="Taxes this year">
-      <div className="dsh-stats">
-        <div className="dsh-stat"><div className="dsh-label">Pay after taxes</div><div className="dsh-fig dsh-key">{F.hasPay ? money(F.afterTax) : "—"}<small>per month</small></div></div>
-        <div className="dsh-stat"><div className="dsh-label">Federal income tax</div><div className="dsh-fig dsh-md">{T ? money(T.federal) : "—"}<small>per year</small></div></div>
-        <div className="dsh-stat"><div className="dsh-label">State income tax</div><div className="dsh-fig dsh-md">{T ? money(T.state) : "—"}<small>per year</small></div></div>
-        {T && T.local > 0 ? <div className="dsh-stat"><div className="dsh-label">Local income tax</div><div className="dsh-fig dsh-md">{money(T.local)}<small>per year</small></div></div> : null}
-        <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Social Security and Medicare" id="fica" /></div><div className="dsh-fig dsh-md">{T ? money(T.fica) : "—"}<small>per year</small></div></div>
-        {T && yr > 0 ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Of your pay" k="effrate" /></div><div className="dsh-fig dsh-md">{Math.round((T.total / yr) * 1000) / 10}%</div></div> : null}
-      </div>
-      <p className="dsh-cap dsh-mt">Pay comes from <To href="/dashboard/income#pay">Income</To>. Your deduction{LOCAL_TAX[taxState(pr)] ? " and local income tax are" : " is"} chosen with your paycheck below, and what goes to your 401(k), HSA and health premiums there lowers these taxes.</p>
-    </Tile>
+    <div className="dsh-duo">
+      <section className="dsh-tile" id="taxes">
+        <div className="dsh-tile-h"><span className="dsh-tile-t"><h2>Taxes this year</h2><Tip id="taxesFrom" title="Taxes this year" /></span></div>
+        {abroad ? <>
+          <p className="dsh-cap dsh-mt6">Outside the US we don&apos;t work out taxes: your pay is entered after taxes, and figures for retirement are before taxes.</p>
+        </> : <>
+          <div className="dsh-duo-hero"><div className="dsh-label">Pay after taxes</div><div className="dsh-fig dsh-key">{F.hasPay ? money(F.afterTax) : "—"}<small>per month</small></div></div>
+          <div className="dsh-duo-figs">
+            <Fig label="All taxes">{T ? money(T.total) : "—"}<small>per year</small></Fig>
+            <Fig label="Taxes each month">{T ? money(F.taxes) : "—"}<small>per month</small></Fig>
+            <Fig label={<TipLabel text="Of your pay" k="effrate" />}>{T && yr > 0 ? Math.round((T.total / yr) * 1000) / 10 + "%" : "—"}</Fig>
+          </div>
+          {T ? <>
+            <div className="dsh-duo-of">What makes up <b>{money(T.total)}</b> of taxes each year</div>
+            <StackBar label="What makes up the year's taxes" parts={taxParts} />
+          </> : null}
+        </>}
+      </section>
+      <section className="dsh-tile" id="month">
+        <div className="dsh-tile-h"><h2>Each month</h2></div>
+        <div className="dsh-duo-hero"><div className="dsh-label">You save and invest</div><div className="dsh-fig dsh-key">{money(F.invested)}<small>per month</small></div></div>
+        <div className="dsh-duo-figs">
+          <Fig label={<>Employer match{F.fullMatch == null ? null : <StatusDot ok={F.fullMatch} title="Employer match" text={F.fullMatch ? "You're getting the full employer match." : "You're not getting the full employer match: raise 401(k) up to the match to reach it."} />}</>}>{money(F.match)}<small>per month</small></Fig>
+          {budgetFor(pr).pcEfOn ? <Fig label="To the emergency fund">{money(F.ef)}<small>per month</small></Fig> : null}
+          <Fig label={<TipLabel text="Savings rate" id="savingsRate" />}>{rate != null ? Math.round(rate * 1000) / 10 + "%" : "—"}</Fig>
+          <Fig label={<TipLabel text="Free before saving" id="freeBefore" />}>{F.hasPay ? money(free) : "—"}<small>per month</small></Fig>
+        </div>
+        {F.hasPay ? <>
+          <div className="dsh-duo-of">Where <b>{money(F.gross)}</b> of pay goes each month</div>
+          <StackBar label="Where each month's pay goes" parts={monthParts} />
+        </> : <p className="dsh-cap dsh-mt">No pay yet: add it in <Link href="/dashboard/income#pay">Income</Link>.</p>}
+        {F.fullMatch == null && F.hasPay ? <p className="dsh-cap dsh-mt">No employer match set. Add it in Income if you have one.</p> : null}
+        {outsideUS(pr) ? <div className="dsh-mt"><Note>The 401(k), IRA and HSA lines follow US rules. Outside the US, use them for the accounts closest to yours.</Note></div> : null}
+      </section>
+    </div>
   );
 }
 
@@ -161,15 +192,12 @@ function TaxChoices() {
         <option value="item">Itemized</option>
       </SelectField>
       {t.dedType === "item" ? (
-        <Field id="dshItem" label="Itemized total, per year">
+        <Field id="dshItem" label={<TipLabel text="Itemized total, per year" id="itemized" />}>
           <Affixed prefix="$"><MoneyInput id="dshItem" nonNeg value={t.item} onValueChange={(v) => put({ item: v })} /></Affixed>
         </Field>
       ) : null}
-      <p className="dsh-cap">
-        {t.dedType === "item"
-          ? <>Mortgage interest, gifts to charity, and state and local taxes (income or sales, plus property) up to the cap, added up for the year.{parseNum(t.item) > 0 && parseNum(t.item) < std ? <b> That&apos;s less than the {money(std)} standard deduction, which you&apos;d take instead.</b> : null}</>
-          : "Most households take the standard deduction. Itemize only if your mortgage interest, charity and state and local taxes add up to more."}
-      </p>
+      {/* What a deduction is lives in its tip; only a warning is said here. */}
+      {t.dedType === "item" && parseNum(t.item) > 0 && parseNum(t.item) < std ? <p className="dsh-cap"><b>That&apos;s less than the {money(std)} standard deduction, which you&apos;d take instead.</b></p> : null}
       {local ? <>
         <NumberField id="dshLocal" label={<>Local income tax <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="%" step={0.1} max={20} value={t.localRate ?? "0"} onValueChange={(v) => put({ localRate: v })} />
         <p className="dsh-cap">{local.note} {localOn ? "" : "Leave it at 0 if there's none where you live. "}Your pay stub shows any local tax taken out{local.links.length ? ", or look up your rate: " : "."}

@@ -25,7 +25,7 @@ import "./globals.css";
 import { PaneMotion } from "@/components/shell/PaneMotion";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
-import { IBM_Plex_Sans } from "next/font/google";
+import { IBM_Plex_Sans, Inter } from "next/font/google";
 
 /* The site's one typeface, served from this site (next/font downloads it at
    build time, so visitors never contact Google) with a metric-matched
@@ -45,6 +45,16 @@ const plexItalic = IBM_Plex_Sans({
   display: "swap",
   preload: false,
   variable: "--font-plex-italic",
+});
+/* The Dashboard's face is SF Pro, built into Apple devices; elsewhere it's
+   Inter, its nearest free match (styles/22-dash-refresh.css). Not
+   preloaded, and named only on Dashboard pages, so the rest of the site and
+   every Apple device never download it. */
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+  variable: "--dsh-inter",
 });
 
 /** The production deployment, the one retcalc.app serves. */
@@ -80,7 +90,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // The theme script sets data-theme before React loads, so the server's
     // <html> and the browser's differ by that one attribute, on purpose.
-    <html lang="en" className={plexSans.variable + " " + plexItalic.variable} suppressHydrationWarning>
+    <html lang="en" className={plexSans.variable + " " + plexItalic.variable + " " + inter.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: STANDALONE_SCRIPT }} />

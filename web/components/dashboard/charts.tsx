@@ -66,7 +66,8 @@ function NetWorthPlot({ hist, proj, marks, until, height = 270, traces, px, desc
   const ymax = Math.max(...pts.map((p) => p.hi), ...hist.map((h) => h.v)) * 1.05;
   const step = niceStep(ymax), top = Math.ceil(ymax / step) * step || step;
   const X = (t: number) => L + ((t - x0) / (x1 - x0)) * (W - L - R), Y = (v: number) => T + (1 - Math.max(0, v) / top) * (H - T - B);
-  const span = x1 - x0, every = span > 40 ? 10 : span > 18 ? 5 : span > 6 ? 2 : 1;
+  // Years along the bottom at least 48px apart, so their labels never touch.
+  const span = x1 - x0, every = [1, 2, 5, 10, 20].find((e) => e >= (span > 40 ? 10 : span > 18 ? 5 : span > 6 ? 2 : 1) && ((W - L - R) * e) / span >= 48) ?? 20;
   const grid: number[] = [];
   for (let v = 0; v <= top + 1; v += step) grid.push(v);
   const years: number[] = [];

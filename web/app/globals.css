@@ -12,6 +12,7 @@
    nothing in it reaches a page without .dsh. */
 @import "../styles/19-dashboard.css";
 @import "../styles/21-learn.css";
+@import "../styles/22-dash-refresh.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 

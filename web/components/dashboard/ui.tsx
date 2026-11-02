@@ -37,6 +37,48 @@ export function TipLabel({ text, id, k }: { text: string; id?: TipId; k?: string
   return <>{m ? m[1] : ""}<span className="tipglue">{m ? m[2] : text} <Tip id={id} k={k} title={text} /></span></>;
 }
 
+/** One part of a StackBar: its share of the bar and its line in the key. */
+export type BarPart = { name: ReactNode; v: number; color: string; hatch?: boolean; value: ReactNode; share: ReactNode; tone?: "loss" };
+
+/** A bar split into parts on one axis (iPhone Storage's), its key under
+    it. Hovering or focusing a part or its key entry lights both and dims
+    the rest, and the part names its figures above itself. Renders the bar
+    and the key as two siblings (display: contents), so a card that lines
+    rows up with its neighbor (.dsh-duo) can give each its own row. */
+export function StackBar({ parts, label }: { parts: BarPart[]; label: string }) {
+  const [on, setOn] = useState<number | null>(null);
+  const tot = parts.reduce((a, p) => a + Math.max(0, p.v), 0) || 1;
+  const lit = on == null ? undefined : "";
+  return (
+    <div className="dsh-sbar-set" data-hl="" data-on={lit}>
+      <div className="dsh-sbar" role="img" aria-label={label} onMouseLeave={() => setOn(null)}>
+        {parts.map((p, i) => p.v > 0.5 ? (
+          <i key={i} data-i={i} data-on={on === i ? "" : undefined} className={p.hatch ? "dsh-hatch" : undefined}
+            style={{ "--g": p.v / tot, "--c": p.color } as React.CSSProperties} onMouseEnter={() => setOn(i)}>
+            {on === i ? <span className="dsh-sbar-pop" aria-hidden="true"><b>{p.name}</b>{p.value} · {p.share}</span> : null}
+          </i>
+        ) : null)}
+      </div>
+      <div className="dsh-barkey" onMouseLeave={() => setOn(null)}>
+        {parts.map((p, i) => (
+          <div key={i} className="dsh-lg" data-i={i} data-on={on === i ? "" : undefined} tabIndex={0}
+            onMouseEnter={() => setOn(i)} onFocus={() => setOn(i)} onBlur={() => setOn(null)}>
+            <span className="dsh-lg-n"><i className={p.hatch ? "dsh-hatch" : undefined} style={{ "--c": p.color } as React.CSSProperties} />{p.name}</span>
+            <span className={p.tone === "loss" ? "dsh-lg-v dsh-loss" : "dsh-lg-v"}>{p.value}</span>
+            <span className="dsh-lg-s">{p.share}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** A status beside a label (the full employer match): a check, or an
+    alert when it's short, with its sentence in the tip. */
+export function StatusDot({ ok, title, text }: { ok: boolean; title: string; text: string }) {
+  return <span className={ok ? "tipdot dsh-ok" : "tipdot dsh-warn"} data-tip="" data-tip-title={title} data-tip-text={text} role="button" tabIndex={0} aria-label={text}><span aria-hidden="true">{ok ? "✓" : "!"}</span></span>;
+}
+
 /** A tile with nothing to show yet: what it will show, and the one thing that fills it. */
 export function Empty({ icon, title, ghost, text, action, href }: { icon: LucideIcon; title: string; ghost: string; text: string; action: string; href: string }) {
   return (

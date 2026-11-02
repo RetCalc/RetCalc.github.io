@@ -52,6 +52,9 @@ export const TIPS = {
   /* Income, Spending, Taxes & Savings */
   otherIncome: "Money that comes in besides pay, after taxes: side work, rent from a property, a pension. It adds to what you have each month to spend and save.",
   deduction: "What comes off your income before federal income tax is figured. Everyone can take the standard deduction; itemizing (adding up mortgage interest, charity and state and local taxes) only helps when those come to more.",
+  taxesFrom: "Pay comes from Income. The deduction is chosen with your paycheck below, and what goes to your 401(k), HSA and health premiums there lowers these taxes.",
+  itemized: "Mortgage interest, gifts to charity, and state and local taxes (income or sales, plus property) up to the cap, added up for the year.",
+  freeBefore: "Pay, less taxes and your budget, with nothing saved.",
   fica: "Social Security and Medicare taxes, taken from every paycheck: 6.2% of pay for Social Security, up to a yearly limit, and 1.45% for Medicare.",
   leftAfter: "All income after taxes, less what you spend. Your saving comes out of this. Whatever isn't put toward saving shows on Taxes & Savings as not assigned.",
   notAssigned: "Money left each month after taxes, spending and saving that hasn't been given a place. It sits in checking and earns nothing; putting it toward saving raises your plan.",

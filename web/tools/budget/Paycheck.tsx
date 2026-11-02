@@ -200,7 +200,7 @@ export function Paycheck({ s, set, setState }: {
       </div>
 
       <div className="stack min-w-0 lg:col-span-2" id="tab-paycheck">
-        <Card size="flush" className="min-w-0">
+        <Card size="flush" className="min-w-0" hidden={scope?.slots?.noReading}>
           <HeroReading tone={empty ? "text" : "answer"} sized={!empty} row
             hero={{ label: "Saved and invested, each " + per, id: "pcSaved", value: empty ? DASH : money(r.saved), noteId: "pcSavedNote",
               note: empty ? "Enter your gross pay to begin" : ((r.saved / r.check) * 100).toFixed(1) + "% of gross pay" + (r.match > 0 ? ", plus " + money(r.match) + (two ? " in employer matches" : " from your employer") : "") }}
@@ -355,7 +355,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
       </CardHeader>
       <CardContent>
         {/* The figures: they tick to each new value as a slider moves. */}
-        <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-(--r-field) border border-border max-sm:grid-cols-2" aria-live="polite">
+        <div id="pcStats" className="mb-4 grid grid-cols-4 overflow-hidden rounded-(--r-field) border border-border max-sm:grid-cols-2" aria-live="polite">
           <Stat label="Saved and invested" value={empty ? DASH : money(r.saved)} tone="answer" id="pcSaved2" note={!empty && r.match > 0.005 ? cents(r.saved + r.match) + " with match" : undefined} />
           <Stat label="Available to save" value={empty ? DASH : money(r.saved + r.left)} id="pcAvail" />
           <Stat label={<>Taxes <TipDot k="pctaxes" /></>} value={empty ? DASH : money(r.taxes)} id="pcTaxes" note={!empty && taxCut > 0.005 ? cents(taxCut) + " saved" : undefined} />
