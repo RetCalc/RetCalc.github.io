@@ -109,6 +109,10 @@ export function Retirement() {
       {side === "health" ? <HealthTile /> : null}
 
       {side === "drawdown" ? <>
+      {/* A long page, every part open: a row of links to each part. */}
+      <nav className="dsh-jumps" aria-label="On this page">
+        {RET_JUMPS.map(([href, label]) => <a key={href} href={href}>{label}</a>)}
+      </nav>
       <div className="dsh-r4" id="compare"><Collapsible open={stratsOpen} onOpenChange={openStrats}><Tile id="strategies" icon={BookOpenIcon} title="The withdrawal strategies"
         right={<>{plan ? <Button variant="link" size="inline" onClick={() => setGuide(true)}>How the withdrawal strategies compare</Button> : null}
           <CollapsibleTrigger>{stratsOpen ? "Hide" : "Show all " + Object.keys(DD_UI).length}<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></>}>
@@ -278,6 +282,12 @@ function HealthCallout({ pr, R, onOpen, here }: { pr: Profile; R: Results; onOpe
     </div>
   );
 }
+
+/** Retirement's parts, for the row of links at the top of Drawdown. */
+const RET_JUMPS: [string, string][] = [
+  ["#strategies", "Strategies"], ["#drawdown", "Your drawdown"], ["#ddSeqPanel", "When you retire"], ["#ddScorePanel", "Spending scorecard"],
+  ["#ddYearsPanel", "Every start"], ["#ddDetailTitle", "Year by year"], ["#ddDistPanel", "The spread"], ["#ddSensPanel", "What moves it"],
+];
 
 /** Health cover once work stops: the Healthcare Cost Planner on the plan. */
 function HealthTile() {

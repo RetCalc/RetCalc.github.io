@@ -23,6 +23,16 @@ export const SERIES = {
   guide: "var(--ds-muted)",
 } as const;
 
+/** The account types, by meaning: a page that maps kinds of money to
+    colors (the Dashboard's --c-* tokens) sets these; elsewhere each falls
+    back to the series color it has always had. */
+export const ACCT = {
+  trad: "var(--c-trad, var(--ds-series-rose))",
+  roth: "var(--c-roth, var(--ds-series-teal))",
+  brok: "var(--c-brok, var(--ds-series-sky))",
+  hsa: "var(--c-hsa, var(--ds-series-lavender))",
+} as const;
+
 /** The inner (25th to 75th) band of a fan, as its legend and tooltip show it. */
 export const BAND_INNER = "color-mix(in srgb, var(--ds-series-teal) 55%, transparent)";
 

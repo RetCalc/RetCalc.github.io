@@ -14,13 +14,13 @@ import type { AccountResult } from "@/lib/accounts";
 import { yearData } from "@/lib/engine/typed";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { sendYearToTax } from "@/tools/tax/handoff";
-import { SERIES } from "@/lib/hues";
+import { ACCT } from "@/lib/hues";
 import { CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const ROWS = [
-  { k: "trad", label: "Traditional 401(k) / IRA", c: SERIES.rose },
-  { k: "roth", label: "Roth 401(k) / IRA", c: SERIES.teal },
-  { k: "brok", label: "Taxable brokerage", c: SERIES.sky },
+  { k: "trad", label: "Traditional 401(k) / IRA", c: ACCT.trad },
+  { k: "roth", label: "Roth 401(k) / IRA", c: ACCT.roth },
+  { k: "brok", label: "Taxable brokerage", c: ACCT.brok },
 ] as const;
 
 export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; B: AccountResult; years: number }) {
@@ -53,7 +53,7 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
             {/* The HSA, when there is one: kept for health care, so nothing's withdrawn from it (or taxed). */}
             {B.real.hsa > 0 ? (
               <tr>
-                <td><i className="acdot bg-(--swatch)" style={{ "--swatch": SERIES.lavender } as React.CSSProperties}></i>HSA</td>
+                <td><i className="acdot bg-(--swatch)" style={{ "--swatch": ACCT.hsa } as React.CSSProperties}></i>HSA</td>
                 <td>{money(B.real.hsa)}</td><td>{pctStr(B.shares.hsa, 0)}</td><td>{money(B.w.hsa)}</td><td>{money(0)}</td><td>{money(B.w.hsa)}</td>
               </tr>
             ) : null}

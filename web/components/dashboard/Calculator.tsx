@@ -342,7 +342,7 @@ export function Calculator() {
 
   const summary = <>{childrenSentence(pr)} <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Change them in Profile</Button></>;
   return (
-    <Frame current="calculator" title="Calculator" sub="Filled in from your plan. The changes ahead and what you set here are saved to your plan, and its result is your savings at retirement everywhere.">
+    <Frame current="calculator" title="Calculator" sub="Filled in from your plan, and saved back to it.">
       {changed ? (
         <p className="dsh-cap dsh-mt6">Your own changes here are saved in place of the plan&apos;s figures, and this result is your savings at retirement on every tab.{" "}
           <Button variant="link" size="inline" onClick={() => { setProfile((p) => ({ ...p, calcOwn: undefined })); setRev((r) => r + 1); }}>Use the plan&apos;s figures</Button></p>

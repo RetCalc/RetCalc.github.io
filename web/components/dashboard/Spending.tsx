@@ -49,7 +49,7 @@ export function Spending() {
           <div className="dsh-stat"><div className="dsh-label">Spending</div><div className="dsh-fig dsh-key">{money(F.spend)}<small data-u="/mo">per month</small></div>{premiums > 0.5 ? <div className="dsh-cap dsh-mt6">{money(premiums)} of it is premiums, taken out of pay</div> : null}</div>
           <div className="dsh-stat"><div className="dsh-label">Spending per year</div><div className="dsh-fig dsh-md">{money(F.spend * 12)}</div></div>
           {coming != null ? <div className="dsh-stat"><div className="dsh-label">All income after taxes</div><div className="dsh-fig dsh-md">{money(coming)}<small data-u="/mo">per month</small></div></div> : null}
-          {left != null ? <div className="dsh-stat"><div className="dsh-label">{left >= 0 ? <TipLabel text="Left after spending" id="leftAfter" /> : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(left))}<small data-u="/mo">per month</small></div></div> : null}
+          {left != null ? <div className="dsh-stat"><div className="dsh-label">{left >= 0 ? <TipLabel text="Available to save" id="leftAfter" /> : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(left))}<small data-u="/mo">per month</small></div></div> : null}
           <div className="dsh-stat"><div className="dsh-label">Emergency fund, {F.efMonths} months</div><div className="dsh-fig dsh-md">{money(F.efTarget)}</div></div>
           {kidCost > 0.5 ? (
             <div className="dsh-stat"><div className="dsh-label"><TipLabel text={kidsNow.length > 1 ? "Your children, in the plan now" : "Your child, in the plan now"} id="kidCostNow" /></div>

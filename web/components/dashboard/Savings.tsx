@@ -161,7 +161,7 @@ function Top({ pr }: { pr: Profile }) {
           <Fig label={<>Employer match{F.fullMatch == null ? null : <StatusDot ok={F.fullMatch} title="Employer match" text={F.fullMatch ? "You're getting the full employer match." : "You're not getting the full employer match: raise 401(k) up to the match to reach it."} />}</>}>{money(F.match)}<small data-u="/mo">per month</small></Fig>
           {budgetFor(pr).pcEfOn ? <Fig label="To the emergency fund">{money(F.ef)}<small data-u="/mo">per month</small></Fig> : null}
           <Fig label={<TipLabel text="Savings rate" id="savingsRate" />}>{rate != null ? Math.round(rate * 1000) / 10 + "%" : "—"}</Fig>
-          <Fig label={<TipLabel text="Free before saving" id="freeBefore" />}>{F.hasPay ? money(free) : "—"}<small data-u="/mo">per month</small></Fig>
+          <Fig label={<TipLabel text="If you saved nothing" id="freeBefore" />}>{F.hasPay ? money(free) : "—"}<small data-u="/mo">per month</small></Fig>
         </div>
         {F.hasPay ? <>
           <div className="dsh-duo-of">Where <b>{money(F.gross)}</b> of pay goes each month</div>

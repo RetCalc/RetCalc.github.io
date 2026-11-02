@@ -68,7 +68,7 @@ export function TodayBars({ items }: { items: Item[] }) {
         {row("asset", ASSET_GROUPS, 0)}
         {row("debt", DEBT_GROUPS, bh + gap)}
       </svg>
-      <div className="dsh-cap dsh-hoverline" aria-live="polite">{hover ?? <><span className="dsh-mouse">Point at a part of a bar for its amount.</span><span className="dsh-touch">Tap a part of a bar, or drag along it, for its amount.</span></>}</div>
+      <div className="dsh-cap dsh-hoverline" aria-live="polite">{hover ?? null}</div>
     </div>
   );
 }

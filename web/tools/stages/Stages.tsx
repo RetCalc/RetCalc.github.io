@@ -299,9 +299,11 @@ export function Stages() {
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
-        <PinnedReading main={{ label: "After-tax income, per year", value: money(R.afterTax) }} side={{ label: "Inflation adjusted", value: money(R.fvReal) }} />
+        <PinnedReading main={{ label: "After-tax income, per year", value: money(R.afterTax) }} side={{ label: "At retirement, today's dollars", value: money(R.fvReal) }} />
 
         <aside id="asideSeries" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+          {/* Screen readers' outline: the input groups below are h3s under this. */}
+          <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
               {/* The Dashboard's children come from its profile: their costs

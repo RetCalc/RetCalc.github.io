@@ -318,7 +318,6 @@ function Openings({ steps, active, onActive }: { steps: Step[]; active: number |
           );
         })}
       </svg>
-      <div className="dsh-cap dsh-mt6"><span className="dsh-mouse">Point at a dot or a row to match them up.</span><span className="dsh-touch">Tap a dot or a row to match them up.</span></div>
     </div>
   );
 }

@@ -266,17 +266,54 @@
 :root[data-theme="light"] .dsh :is(.toolcard, .tp-tile):hover { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.1); }
 
 /* Setup's progress: steps done in the text color, the current one amber. */
-.dsh .dsh-segs i { background: var(--dsh-fill); }
+.dsh .dsh-segs i:not(.dsh-on) { background: var(--dsh-fill); }
 
-/* ---------- Bars on one axis, with their key (StackBar) ---------- */
+/* ---------- One color per kind of money, on every tab ----------
+   Money coming in is blue, taxes pink, spending indigo, saving green (the
+   employer's match a lighter green); what you own is a green per account
+   (pre-tax deepest), cash gold, the home brown; what you owe a warm red
+   family. Each chart and key takes its color from here (--c-*), so a
+   color means the same thing wherever it shows. Shared tools read these
+   with their old color as the fallback, so the rest of the site keeps
+   its look until it takes this map too. */
 :root[data-theme="light"]:has(.dsh) {
-  --dsh-c-save: #1f9d55; --dsh-c-tax: #e8335f; --dsh-c-spend: #5856d6;
-  --dsh-c-tax2: #f0849f; --dsh-c-tax3: #f5aabd; --dsh-c-tax4: #f8c4d1;
+  --c-pay1: #1f6fd1; --c-pay2: #3a8bd0; --c-other: #8e8e93;
+  --c-tax: #e8335f; --c-tax2: #f0849f; --c-tax3: #f5aabd; --c-tax4: #f8c4d1;
+  --c-spend: #5856d6; --c-save: #1f9d55; --c-match: #7cc694;
+  --c-trad: #146c43; --c-roth: #2a9a63; --c-brok: #748f1f; --c-hsa: #11998e;
+  --c-cash: #a87b16; --c-home: #9a7b5b; --c-oth: #8e8e93;
+  --c-mort: #c4512a; --c-loan: #c4661c; --c-card: #d70015;
 }
 :root[data-theme="dark"]:has(.dsh) {
-  --dsh-c-save: #30d158; --dsh-c-tax: #ff4f74; --dsh-c-spend: #7d7aff;
-  --dsh-c-tax2: #c43d5c; --dsh-c-tax3: #9a3149; --dsh-c-tax4: #6e2738;
+  --c-pay1: #4da3ff; --c-pay2: #8ac8ff; --c-other: #8e8e93;
+  --c-tax: #ff4f74; --c-tax2: #c43d5c; --c-tax3: #9a3149; --c-tax4: #6e2738;
+  --c-spend: #7d7aff; --c-save: #30d158; --c-match: #1e7a3c;
+  --c-trad: #1f9e56; --c-roth: #4cd38a; --c-brok: #b5d44a; --c-hsa: #3fd0c4;
+  --c-cash: #ffd060; --c-home: #c9a27e; --c-oth: #8e8e93;
+  --c-mort: #ff8a5c; --c-loan: #ffb067; --c-card: #ff6961;
 }
+:root:has(.dsh) {
+  --dsh-c-save: var(--c-save); --dsh-c-tax: var(--c-tax); --dsh-c-spend: var(--c-spend);
+  --dsh-c-tax2: var(--c-tax2); --dsh-c-tax3: var(--c-tax3); --dsh-c-tax4: var(--c-tax4);
+}
+/* Net worth's groups, How it's taxed, the timeline, Year by year */
+.dsh .dsh-g-ret { --g: var(--c-trad); } .dsh .dsh-g-inv { --g: var(--c-brok); } .dsh .dsh-g-cash { --g: var(--c-cash); }
+.dsh .dsh-g-home { --g: var(--c-home); } .dsh .dsh-g-oth { --g: var(--c-oth); }
+.dsh .dsh-g-mort { --g: var(--c-mort); } .dsh .dsh-g-loan { --g: var(--c-loan); } .dsh .dsh-g-card { --g: var(--c-card); }
+.dsh .dsh-t-pre { --g: var(--c-trad); } .dsh .dsh-t-roth { --g: var(--c-roth); } .dsh .dsh-t-brok { --g: var(--c-brok); }
+.dsh .dsh-t-hsa { --g: var(--c-hsa); } .dsh .dsh-t-cash { --g: var(--c-cash); }
+/* When you can spend it: openings in time order, cash-now gold to the
+   last to open in the deepest green. */
+.dsh .dsh-k0 { --g: var(--c-cash); } .dsh .dsh-k1 { --g: var(--c-brok); } .dsh .dsh-k2 { --g: var(--c-roth); }
+.dsh .dsh-k3 { --g: var(--c-trad); } .dsh .dsh-k4 { --g: var(--c-hsa); } .dsh .dsh-k5 { --g: var(--c-oth); }
+.dsh .dsh-tl .dsh-k1 { stroke: var(--c-spend); } .dsh .dsh-tl .dsh-k2 { stroke: var(--c-save); } .dsh .dsh-tl .dsh-k3 { stroke: var(--c-mort); }
+.dsh .dsh-yc-p1 { --g: var(--c-pay1); } .dsh .dsh-yc-p2 { --g: var(--c-pay2); } .dsh .dsh-yc-oth { --g: var(--c-other); }
+.dsh .dsh-yc-spend { --g: var(--c-spend); } .dsh .dsh-yc-tax { --g: var(--c-tax); } .dsh .dsh-yc-save { --g: var(--c-save); } .dsh .dsh-yc-match { --g: var(--c-match); }
+/* The Tools tab's Income Tax card: take-home as pay, the taxes in pink. */
+.dsh .hm-tax .f-teal { fill: var(--c-pay1); } .dsh .hm-tax .f-sky { fill: var(--c-tax); }
+.dsh .hm-tax .f-lav { fill: var(--c-tax2); } .dsh .hm-tax .f-rose { fill: var(--c-tax3); }
+
+/* ---------- Bars on one axis, with their key (StackBar) ---------- */
 .dsh-sbar-set { display: contents; }
 .dsh-sbar { display: flex; gap: 2px; height: 30px; border-radius: 9px; overflow: visible; }
 .dsh-sbar > i { position: relative; display: block; flex-grow: var(--g, 1); min-width: 3px; height: 100%; background: var(--c); cursor: default; }
@@ -379,8 +416,7 @@
 /* Facts the column says in place of inputs (Taxes & Savings' pay) */
 .dsh .dsh-embed aside .dsh-facts { margin: 0; padding-block: 2px; }
 .dsh .dsh-embed aside .dsh-facts div:first-child { border-top: 0; }
-/* Inside a white tile (Retirement's drawdown), gray groups instead. */
-.dsh .dsh-tile .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) { background: var(--ds-ground); }
+
 
 /* ---------- Year by year: groups named over their own rules ----------
    Each group's name centered over a rule spanning its columns, a line
@@ -426,6 +462,34 @@
 .dsh-tight .dsh-fig small[data-u]::after { content: attr(data-u) / ""; font-size: 15px; }
 .dsh-tight .dsh-lg-v small[data-u]::after { content: attr(data-u) / ""; font-size: 13px; }
 .dsh-stack :is(.dsh-fig, .dsh-lg-v) small[data-u] { display: block !important; margin: 2px 0 0 !important; }
+
+/* ---------- Readable everywhere (the critique's audit, 2026-11-02) ----------
+   No text under 12px; the "On track" badge clears 4.5:1; a field being
+   typed in has a ring you can see; a switch's icon stays at text size. */
+:root:has(.dsh) { --text-label: 12px; }
+.dsh :is(.hint, .mssub, .ddwhy, .ddstrat-cap, .swipehint, .dsh-badge, .dsh-label, .tag) { font-size: max(12px, 1em); }
+.dsh :is(table th, .dsh-tbl th) { font-size: max(12px, 0.92em); }
+:root[data-theme="light"] .dsh .dsh-badge.dsh-gain { color: #17652c; }
+.dsh :is([data-slot="input"], [data-slot="native-select"], [data-slot="textarea"]):not([data-variant="inline"]):focus-visible,
+.dsh [data-slot="input-group"]:focus-within { outline: 2px solid var(--dsh-tint-fill); outline-offset: 1px; }
+.dsh [data-slot="segmented-item"] svg { width: 16px; height: 16px; }
+.dsh :is(.dsh-sbar > i, .dsh-sbar-pop) { font-style: normal; }
+.dsh #ddEraList p, .dsh .ddintro { max-width: 78ch; }
+/* Readiness: an area partly earned in a lighter green, not ink. */
+.dsh .dsh-split i b:not(.dsh-full) { background: color-mix(in srgb, var(--ds-gain) 55%, var(--ds-surface)); }
+
+/* ---------- A tile that holds a whole tool (Retirement's drawdown, Your
+   home's mortgage): no frame of its own, so the tool's cards stand on the
+   page as on Taxes & Savings, never a card in a card. ---------- */
+.dsh .dsh-tile:has(> .dsh-embed), .dsh .dsh-tile:has(> * > .dsh-embed) { background: transparent; box-shadow: none; padding: 0; border-color: transparent; }
+.dsh .dsh-tile:has(.dsh-embed) [data-slot="card"] { box-shadow: var(--dsh-card-shadow); border-color: transparent; }
+
+/* ---------- Links to each part of a long page (Retirement) ---------- */
+.dsh-jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 2px; }
+.dsh-jumps a { display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 999px; background: var(--dsh-fill); color: var(--ds-text); font-size: 13px; font-weight: 500; text-decoration: none; }
+.dsh-jumps a:hover { background: var(--dsh-tint-wash); color: var(--ds-amber); }
+:root:has(.dsh-jumps) { scroll-padding-top: 70px; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { :root:has(.dsh-jumps) { scroll-behavior: auto; } }
 
 /* ---------- Phones ---------- */
 /* Phones and touch tablets (the frame's own switch, 19-dashboard.css):

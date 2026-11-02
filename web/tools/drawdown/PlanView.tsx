@@ -16,7 +16,7 @@ import { HistLegend, McLegend } from "@/components/charts/Legend";
 import { Scatter } from "@/components/charts/Scatter";
 import { FanTipRows } from "@/components/charts/TipRows";
 import { fmtAxisMoney } from "@/components/charts/scale";
-import { Tipped } from "@/components/shell/Tooltips";
+import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { CsvButton } from "@/components/common/CsvButton";
 import { SignArrow, ToneGlyph } from "@/components/common/Signed";
 import { Html } from "@/components/common/Html";
@@ -322,19 +322,19 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
   const firstN = n === 1 ? "first year" : "first " + n + " years";
   const kept = M.name === "what was left", vb = kept ? "left" : "spent", per = kept ? "" : " per year";
   const firstW = n === 10 ? "first decades" : n === 1 ? "first years" : "first " + n + " years";
-  let txt = "The " + firstN + (n === 1 ? " decides" : " decide") + " most retirements: that's when withdrawals are largest against the balance, " +
-    "so losses then are locked in. The third of " + unit + " with the weakest " + firstN + " (under " +
+  // What the chart found, in a line: why the first years matter is the
+  // title's "?", and the pair of starts that shows it is a "?" of its own.
+  const txt = "The third of " + unit + " with the weakest " + firstN + " (under " +
     pct1(low[low.length - 1].dec1.port) + " per year after inflation, at your mix) " +
     (failLow ? "ran out in <b>" + failLow + " of " + low.length + "</b>, and " : "") + vb + " a typical <b>" + money(med(low)) + "</b>" +
-    per + ". The strongest third (over " + pct1(top[0].dec1.port) + ") " +
-    (failTop ? "ran out in " + failTop + " and " : "") + vb + " <b>" + money(med(top)) + "</b>" + per + ". ";
+    per + "; the strongest third (over " + pct1(top[0].dec1.port) + ") " +
+    (failTop ? "ran out in " + failTop + " and " : "") + vb + " <b>" + money(med(top)) + "</b>" + per + ".";
   const pr = seqPair(H, M);
-  if (pr && pr.kind === "beat")
-    txt += "Retiring in " + startLabel(pr.a, mo) + " ran out though its " + o.years + " years averaged " + pct1(pr.a.full.port) +
+  const pairTxt = !pr ? "" : pr.kind === "beat"
+    ? "Retiring in " + startLabel(pr.a, mo) + " ran out though its " + o.years + " years averaged " + pct1(pr.a.full.port) +
       " per year after inflation, while " + startLabel(pr.b, mo) + " lasted on " + pct1(pr.b.full.port) +
-      ": their " + firstW + " returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + ".";
-  else if (pr)
-    txt += "Retiring in " + startLabel(pr.a, mo) + " and in " + startLabel(pr.b, mo) + " both averaged about " + pct1(pr.a.full.port) +
+      ": their " + firstW + " returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + "."
+    : "Retiring in " + startLabel(pr.a, mo) + " and in " + startLabel(pr.b, mo) + " both averaged about " + pct1(pr.a.full.port) +
       " per year after inflation over " + o.years + " years, yet one " + (kept ? "left " + money(M.of(pr.a)) + " and the other " + money(M.of(pr.b))
         : "spent a typical " + money(M.of(pr.a)) + " per year and the other " + money(M.of(pr.b))) +
       ": their " + firstW + " returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + ".";
@@ -373,7 +373,7 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
         </SegmentedGroup>
         {full.button}
       </CardAction></CardHeader>
-      <CardContent id="ddSeqIntro"><Html className="ddintro" html={txt + (dec ? "" : " The dashed lines mark the eras below.")} /></CardContent>
+      <CardContent id="ddSeqIntro"><p className="ddintro"><Html as="span" html={txt + (dec ? "" : " The dashed lines mark the eras below.")} />{pairTxt ? <TipDot k="" title="Two starts that show it" text={pairTxt} /> : null}</p></CardContent>
       {seqChart()}
       {full.overlay(seqChart)}
       <Html className="legend" id="legendDDQ" html={(dec ? "" : "<span class='ddleg-k'>" + M.axis + ":</span> ") + swatch(SERIES.gain, "Lasted") + swatch(SERIES.loss, "Ran out") +

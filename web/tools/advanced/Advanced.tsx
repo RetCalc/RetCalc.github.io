@@ -267,7 +267,7 @@ export function Advanced() {
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
-        <PinnedReading main={{ label: "After-tax income, per year", value: money(R.afterTax) }} side={{ label: "Inflation adjusted", value: money(R.fvReal) }} />
+        <PinnedReading main={{ label: "After-tax income, per year", value: money(R.afterTax) }} side={{ label: "At retirement, today's dollars", value: money(R.fvReal) }} />
 
         <aside id="asideSingle" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>

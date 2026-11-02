@@ -5,7 +5,7 @@ export const PERIOD_NAMES = ["Weekly", "Bi-Weekly", "Monthly", "Quarterly", "Ann
 
 /** Mid-sentence: "$500 bi-weekly". */
 export const PERIOD_ADV: Record<string, string> = {
-  Weekly: "weekly", "Bi-Weekly": "bi-weekly", Monthly: "monthly", Quarterly: "quarterly", Annually: "annually",
+  Weekly: "per week", "Bi-Weekly": "every two weeks", Monthly: "per month", Quarterly: "per quarter", Annually: "per year",
 };
 
 /** After a dollar field: "$500/2wk". */

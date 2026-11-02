@@ -312,6 +312,8 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
   const taxCut = base.taxes - r.taxes;
   // In a walkthrough its next step does the copying, in order.
   const scope = useToolScope();
+  // The Dashboard says the figures over the sliders in whole dollars.
+  const dash = scope?.name === "dashboard";
   const store = useToolStore(), go = useToolNav(), toast = useToast(), showPopup = usePopup(), { profile } = useHousehold();
   /* Copy to Advanced: the saving, account by account, split by account
      type (asking first if that would replace saving already there), then
@@ -356,10 +358,10 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
       <CardContent>
         {/* The figures: they tick to each new value as a slider moves. */}
         <div id="pcStats" className="mb-4 grid grid-cols-4 overflow-hidden rounded-(--r-field) border border-border max-sm:grid-cols-2" aria-live="polite">
-          <Stat label="Saved and invested" value={empty ? DASH : money(r.saved)} tone="answer" id="pcSaved2" note={!empty && r.match > 0.005 ? cents(r.saved + r.match) + " with match" : undefined} />
+          <Stat label="Saved and invested" value={empty ? DASH : money(r.saved)} tone="answer" id="pcSaved2" note={!empty && r.match > 0.005 ? (dash ? money(r.saved + r.match) : cents(r.saved + r.match)) + " with match" : undefined} />
           <Stat label="Available to save" value={empty ? DASH : money(r.saved + r.left)} id="pcAvail" />
-          <Stat label={<>Taxes <TipDot k="pctaxes" /></>} value={empty ? DASH : money(r.taxes)} id="pcTaxes" note={!empty && taxCut > 0.005 ? cents(taxCut) + " saved" : undefined} />
-          <Stat label={short ? "Short" : "Unassigned"} value={empty ? DASH : cents(left)} id="pcUnassigned" tone={short ? "loss" : left === 0 && !empty ? "gain" : undefined} />
+          <Stat label={<>Taxes <TipDot k="pctaxes" /></>} value={empty ? DASH : money(r.taxes)} id="pcTaxes" note={!empty && taxCut > 0.005 ? (dash ? money(taxCut) : cents(taxCut)) + " saved" : undefined} />
+          <Stat label={short ? "Short" : "Unassigned"} value={empty ? DASH : dash ? money(left) : cents(left)} id="pcUnassigned" tone={short ? "loss" : left === 0 && !empty ? "gain" : undefined} />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -369,10 +371,11 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
           ))}
           <Button size="sm" variant="ghost" id="pcClear" onClick={clear}>Clear</Button>
         </div>
-        <p className="mt-1.5 mb-1 text-note text-muted-foreground" id="pcPlanNote">
+        {/* The Dashboard says what a plan does once one is picked, not before. */}
+        {plan || !dash ? <p className="mt-1.5 mb-1 text-note text-muted-foreground" id="pcPlanNote">
           {plan ? <>{PC_PLANS[plan].note}{pi.efOn ? (plan === "tax" ? ", with the emergency fund before the IRA." : ", with the emergency fund right after the match.") : "."}</>
             : "A plan sets every slider at once. Drag from there."}
-        </p>
+        </p> : null}
 
         <div id="pcSliders">
           {pi.order.map((k) => {
