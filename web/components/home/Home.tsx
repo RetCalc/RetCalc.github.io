@@ -38,7 +38,7 @@ export function Home({ data }: { data: HomeData }) {
         <h1 className="hm-display" id="hmTitle">The complete <em>retirement planning</em> toolkit.</h1>
         <div>
           <p className="hm-lede">
-            Calculators for saving, withdrawals, taxes, Roth conversions, healthcare and Social Security, with plans tested against <b>every market since 1926</b>. Free, and you don&apos;t need an account.
+            Saving, withdrawals, taxes and Social Security, tested against <b>every market since 1926</b>. Free, with no account needed.
           </p>
           <div className="hm-btns">
             <DashboardButton />
@@ -52,7 +52,7 @@ export function Home({ data }: { data: HomeData }) {
         <div className="hm-head">
           <h2 className="hm-h2" id="hmTools">From saving to retirement.</h2>
           <p className="hm-body">
-            A calculator, a guide and 14 planning tools. They share one household, so what you enter once fills in everywhere.
+            A calculator, a guide and 14 tools. Enter your household once and it fills in everywhere.
           </p>
         </div>
 
@@ -66,7 +66,7 @@ export function Home({ data }: { data: HomeData }) {
             <div className="hm-split">
               <div>
                 <h3 className="hm-h3">See what your savings grow to.</h3>
-                <p>Put in your age, what you&apos;ve saved and what you add each month. Advanced adds taxes, fees and the changes you see coming.</p>
+                <p>Enter your age, what you&apos;ve saved and what you add each month.</p>
                 <div className="hm-readout">
                   <div className="k">At 65, in today&apos;s dollars</div>
                   <CountUp className="v amber" to={fv} format={fmtMoney} />
@@ -78,7 +78,7 @@ export function Home({ data }: { data: HomeData }) {
           </Link>
 
           <Node row={3} label="30s" />
-          <Link href="/guide" className="hm-tile hm-jade hm-left hm-r3" data-draw="" data-rv="">
+          <Link href="/guide" className="hm-tile hm-jade hm-left hm-r3 hm-stag" data-draw="" data-rv="">
             <span className="hm-kick hm-c-jade">Retirement Readiness Guide</span>
             <h3 className="hm-h3">Get a readiness score.</h3>
             <div className="hm-guide">
@@ -92,26 +92,24 @@ export function Home({ data }: { data: HomeData }) {
             </div>
             <div className="rp-offer">
               <ReportThumb />
-              <p><b>It ends with your full report.</b>A full-color plan to print or save as a PDF: your savings against every market since 1926, Social Security, taxes, health insurance and your next moves.</p>
+              <p><b>It ends with your full report.</b>A full-color plan to print or save as a PDF.</p>
             </div>
             <Go>Start the guide</Go>
           </Link>
 
           <Node row={4} label="40s" />
-          <Tile href="/fire" className="hm-right hm-r4" kick="FIRE Calculator" title="Find the year work becomes optional."><FireChart /></Tile>
+          <Tile href="/fire" className="hm-right hm-r4 hm-stag" kick="FIRE Calculator" title="Find the year work becomes optional."><FireChart /></Tile>
 
           <Node row={5} label="52 to 59½" />
-          <Tile href="/bridge" className="hm-left hm-r5" kick="Early Retirement Bridge" kickClass="hm-c-lav" title="Pay for the years before 59½."
-            text="A Roth ladder, 72(t) payments, the rule of 55 or your brokerage account, with the tax and penalties of each."><BridgeChart /></Tile>
+          <Tile href="/bridge" className="hm-left hm-r5 hm-stag" kick="Early Retirement Bridge" kickClass="hm-c-lav" title="Pay for the years before 59½."><BridgeChart /></Tile>
 
           <Node row={6} label="Until 65" />
-          <Tile href="/healthcare" className="hm-right hm-r6" kick="Healthcare Cost Planner" kickClass="hm-c-sky" title="Price health insurance until Medicare."
-            text="ACA premiums and subsidies, then Part B, Part D and IRMAA."><HealthChart /></Tile>
+          <Tile href="/healthcare" className="hm-right hm-r6 hm-stag" kick="Healthcare Cost Planner" kickClass="hm-c-sky" title="Price health insurance until Medicare."><HealthChart /></Tile>
 
           <Node row={7} label="62 to 70" />
-          <Tile href="/optimizer" className="hm-left hm-r7" kick="Retirement Plan Optimizer" kickClass="hm-c-amber"
+          <Tile href="/optimizer" className="hm-left hm-r7 hm-stag" kick="Retirement Plan Optimizer" kickClass="hm-c-amber"
             title="Put it all together into one plan."
-            text="Tries thousands of claiming ages, withdrawal orders and Roth conversions, and finds the combination that leaves you the most."><CloudChart /></Tile>
+            text="Tries thousands of claiming ages, withdrawal orders and Roth conversions to find what leaves you the most."><CloudChart /></Tile>
 
           <Node row={8} label="65" />
           <Link href="/drawdown" className="hm-tile hm-steel hm-wide hm-r9" data-draw="" data-rv="">
@@ -119,7 +117,7 @@ export function Home({ data }: { data: HomeData }) {
             <div className="hm-split hm-dd">
               <div>
                 <h3 className="hm-h3">Check that your money lasts.</h3>
-                <p>It retires you in every month since 1926, through the Depression, the 1970s and 2008. 15 withdrawal strategies to compare.</p>
+                <p>Retire in every month since 1926, and compare 15 withdrawal strategies.</p>
                 <div className="hm-readout">
                   <div className="v">{Math.round(data.lasted * 100)}%</div>
                   <div className="k">of retirements since 1926 lasted 30 years at 4% per year</div>
@@ -132,7 +130,7 @@ export function Home({ data }: { data: HomeData }) {
 
           <Node row={10} label="73" />
           <Tile href="/roth" className="hm-right hm-r10" kick="Roth Conversion Calculator" kickClass="hm-c-teal" title="Plan for required distributions."
-            text="Your required withdrawals through the age you plan to, and what a conversion schedule saves against doing nothing."><RothChart /></Tile>
+            text="Your required withdrawals, and what converting saves against doing nothing."><RothChart /></Tile>
         </div>
       </section>
 
@@ -140,19 +138,14 @@ export function Home({ data }: { data: HomeData }) {
       <section aria-labelledby="hmDash">
         <div className="hm-head hm-later">
           <h2 className="hm-h2" id="hmDash" data-rv="">Your whole plan, in one place.</h2>
-          <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>With a free account, the Dashboard keeps your accounts, pay, spending and retirement together, all worked out from one profile.</p>
+          <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>A free account keeps your accounts, pay, spending and retirement together.</p>
         </div>
         <Link href="/dashboard" className="hm-tile hm-amber" data-draw="" data-rv="">
           <span className="hm-kick hm-c-amber">My Dashboard</span>
           <div className="hm-split hm-dash">
             <div>
               <h3 className="hm-h3">Net worth, readiness and what to do next, on one screen.</h3>
-              <p>Enter your numbers once, then update your balances each month or quarter and see how your plan moves. No bank logins: you type your own numbers.</p>
-              <ul className="hm-dashlist">
-                <li style={{ "--i": 0 } as React.CSSProperties}><CheckIcon aria-hidden="true" />Net worth now and projected through retirement</li>
-                <li style={{ "--i": 1 } as React.CSSProperties}><CheckIcon aria-hidden="true" />A readiness score and your chance of success</li>
-                <li style={{ "--i": 2 } as React.CSSProperties}><CheckIcon aria-hidden="true" />The tools, opened with your numbers filled in</li>
-              </ul>
+              <p>Update your balances each month or quarter and watch your plan move. No bank logins: you type your own numbers.</p>
             </div>
             <div className="hm-shot">
               <Image className="dl-lt" src="/dashboard-landing/v2/dash-light.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 760px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
@@ -166,22 +159,21 @@ export function Home({ data }: { data: HomeData }) {
       <section aria-labelledby="hmEveryday">
         <div className="hm-head hm-later">
           <h2 className="hm-h2" id="hmEveryday" data-rv="">Taxes, debt, housing and investing.</h2>
-          <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>These use the same household and saved scenarios.</p>
         </div>
         <div className="hm-grid">
           <Tile href="/incometax" className="hm-s6" name="Income Tax"
-            text={`Take-home pay, or the tax on a year of retirement income. Uses the ${NEWEST_YEAR} federal brackets and the income tax rules of all 50 states and DC.`}>
+            text={`Take-home pay, or the tax on a year in retirement. ${NEWEST_YEAR} rules for all 50 states and DC.`}>
             <TaxChart tax={data.tax} />
           </Tile>
           <Tile href="/rentbuy" className="hm-s6" name="Rent vs. Buy" d={1}
-            text="Your net worth if you buy, against renting and investing the difference, for up to 40 years.">
+            text="Buying, against renting and investing the difference.">
             <RentBuyBlueprint buy={data.rentbuy.buy} rent={data.rentbuy.rent} />
           </Tile>
           <Tile href="/mortgage" className="hm-s4" name="Mortgage Calculator"
-            text="Your payment, the interest over the life of the loan, and what extra payments save.">
+            text="Your payment, and what extra payments save.">
             <MortgageChart years={data.mortgage} />
           </Tile>
-          <Tile href="/budget" className="hm-s4" name="Budget" d={1} text="Where your money goes each month, and how much is left to save.">
+          <Tile href="/budget" className="hm-s4" name="Budget" d={1} text="Where your money goes, and what's left to save.">
             <BudgetChart />
           </Tile>
           <div className="hm-tile hm-s4" data-rv="" style={{ "--d": 2 } as React.CSSProperties}>
@@ -200,7 +192,7 @@ export function Home({ data }: { data: HomeData }) {
       <section className="hm-close" aria-labelledby="hmClose">
         <h2 className="hm-h2" id="hmClose" data-rv="">Find out where you stand.</h2>
         <div data-rv="" style={{ "--d": 1 } as React.CSSProperties}>
-          <p className="hm-body">Free, and no account needed. Everything you enter stays in your browser unless you sign in to save it.</p>
+          <p className="hm-body">Free. What you enter stays in your browser unless you sign in.</p>
           <div className="hm-btns">
             <DashboardButton />
             <Link href="/calculator" className={buttonVariants({ variant: "outline", size: "xl" })}>Open the Calculator</Link>
