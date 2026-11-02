@@ -39,6 +39,7 @@
   --ds-focus: #e88a00;
   --ds-float: 0 2px 6px rgba(0, 0, 0, 0.06), 0 18px 44px rgba(0, 0, 0, 0.14);
   --ds-float-up: 0 -10px 30px -12px rgba(0, 0, 0, 0.16);
+  --dsh-on-page: #3c3c43;
   --dsh-fill: rgba(118, 118, 128, 0.12);
   --dsh-fill-2: rgba(118, 118, 128, 0.07);
   --dsh-field: #ffffff;
@@ -65,6 +66,7 @@
   --ds-focus: #ff9f0a;
   --ds-float: 0 2px 6px rgba(0, 0, 0, 0.4), 0 18px 48px rgba(0, 0, 0, 0.6);
   --ds-float-up: 0 -12px 32px -12px rgba(0, 0, 0, 0.7);
+  --dsh-on-page: #d1d1d6;
   --dsh-fill: rgba(118, 118, 128, 0.24);
   --dsh-fill-2: rgba(118, 118, 128, 0.14);
   --dsh-field: #2c2c2e;
@@ -91,7 +93,7 @@
 /* The title bar becomes a large title with its line under it. */
 .dsh-top { height: auto; min-height: 64px; flex-wrap: wrap; align-items: flex-end; row-gap: 4px; padding: 30px 36px 6px; border-bottom: 0; }
 .dsh-top h1 { font: 700 32px/1.12 var(--dsh-display); letter-spacing: -0.022em; }
-.dsh-top .dsh-sub { flex-basis: 100%; order: 3; font-size: 16px; letter-spacing: -0.015em; }
+.dsh-top .dsh-sub { flex-basis: 100%; order: 3; font-size: 16px; letter-spacing: -0.015em; color: var(--dsh-on-page); }
 .dsh-top .dsh-r { align-self: center; }
 .dsh-page { padding: 22px 36px 110px; }
 
@@ -154,7 +156,12 @@
 .dsh [data-slot="input-group"]:focus-within {
   border-color: var(--dsh-tint-fill); outline: 3px solid var(--dsh-tint-wash); outline-offset: 0;
 }
-.dsh [data-slot="native-select"][data-variant="inline"] { background-color: transparent; }
+/* A blank in a sentence (the Social Security Calculator's): no box, a
+   straight underline, amber on hover and while typing. */
+.dsh :is([data-slot="input"], [data-slot="native-select"])[data-variant="inline"] {
+  background-color: transparent; border-radius: 0; border-width: 0 0 1.5px; border-color: var(--ds-rule-strong); outline: none;
+}
+.dsh :is([data-slot="input"], [data-slot="native-select"])[data-variant="inline"]:is(:hover, :focus-visible) { border-color: var(--dsh-tint-fill); outline: none; }
 .dsh [data-slot="checkbox"] { border-radius: 5px; border-color: var(--ds-rule-strong); background: var(--dsh-field); }
 .dsh [data-slot="checkbox"][data-checked] { border-color: var(--dsh-tint-fill); background: var(--dsh-tint-fill); color: #fff; }
 
@@ -304,7 +311,7 @@
 .dsh .dsh-embed aside > [data-slot="card"] { background: transparent; border: 0; box-shadow: none; gap: 0; padding: 0; --card-spacing: 0px; overflow: visible; }
 .dsh .dsh-embed aside > [data-slot="card"] + [data-slot="card"] { margin-top: 22px; }
 .dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-header"] { padding: 0 4px 8px; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-header"] [data-slot="card-title"] { font: 600 13px/1.3 var(--sans); letter-spacing: 0; color: var(--ds-muted); }
+.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-header"] [data-slot="card-title"] { font: 600 13px/1.3 var(--sans); letter-spacing: 0; color: var(--dsh-on-page); }
 .dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] { padding: 0; }
 .dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > * { margin: 0; }
 /* The groups */
@@ -318,10 +325,25 @@
 .dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :is(h3, :has(> h3:first-child)) { margin: 22px 0 8px; padding: 0 4px; border: 0; }
 .dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :is(h3, :has(> h3:first-child)):first-child { margin-top: 0; }
 .dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > h3,
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :has(> h3:first-child) > h3 { font: 600 13px/1.3 var(--sans); letter-spacing: 0; color: var(--ds-muted); }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :is(p, .hint, .dsh-cap) { padding: 7px 4px 0; font-size: 12.5px; line-height: 1.45; color: var(--ds-muted); background: none; }
-/* A button between groups (Show the lines): on the page, under its group */
+.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :has(> h3:first-child) > h3 { font: 600 13px/1.3 var(--sans); letter-spacing: 0; color: var(--dsh-on-page); }
+.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :is(p, .hint, .dsh-cap) { padding: 7px 4px 0; font-size: 12.5px; line-height: 1.45; color: var(--dsh-on-page); background: none; }
+/* A button between groups: a quiet one (Show the lines) is a link on the
+   page; a full one (See the 5 stages) is a white action row in amber,
+   as a settings list draws one. */
 .dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"] { margin: 8px 4px 0; }
+.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"], [data-variant="default"]) {
+  width: 100%; margin: 10px 0 0; height: 44px; border-radius: 14px; background: var(--ds-surface); color: var(--ds-amber); font-weight: 600;
+}
+.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"], [data-variant="default"]):hover { background: color-mix(in srgb, var(--ds-surface), var(--ds-text) 4%); }
+.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"] + * { margin-top: 10px; }
+/* The Calculator's changes ahead: its heading and notes on the page, its
+   buttons as white action rows. */
+.dsh .dsh-embed aside .dsh-sc { margin: 22px 0 0; padding: 0; background: none; border: 0; }
+.dsh .dsh-embed aside .dsh-sc > h3 { margin: 0 0 4px; padding: 0 4px; font: 600 13px/1.3 var(--sans); letter-spacing: 0; color: var(--dsh-on-page); }
+.dsh .dsh-embed aside .dsh-sc > p { padding: 0 4px; color: var(--dsh-on-page); }
+.dsh .dsh-embed aside .dsh-sc-rows { border-top: 0; display: grid; gap: 6px; }
+.dsh .dsh-embed aside .dsh-sc-row { border-bottom: 0; padding: 0; }
+.dsh .dsh-embed aside .dsh-sc-btns [data-slot="button"] { height: 44px; border-radius: 14px; background: var(--ds-surface); color: var(--ds-amber); font-weight: 600; }
 /* An input on its own: label left, box right */
 .dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > .field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 46%); align-items: center; column-gap: 14px; }
 .dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > .field > :first-child { margin: 0; }
@@ -335,13 +357,34 @@
 /* Inside a white tile (Retirement's drawdown), gray groups instead. */
 .dsh .dsh-tile .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :has(> h3:first-child)) { background: var(--ds-ground); }
 
-/* ---------- Year by year: each group of columns named over its own rule ---------- */
-.dsh .dsh-yby .dsh-yby-groups th { text-align: left; text-transform: none; letter-spacing: 0; font-size: 12.5px; font-weight: 600; color: var(--ds-text); box-shadow: none !important; padding: 0 0 6px; }
+/* ---------- Year by year: groups named over their own rules ----------
+   Each group's name centered over a rule spanning its columns, a line
+   down the table where each group starts, every column name centered on
+   its column (the figures stay right-aligned, so their digits line up). */
+.dsh .dsh-yby .dsh-yby-groups th { text-align: center; text-transform: none; letter-spacing: 0; font-size: 12.5px; font-weight: 600; color: var(--ds-text); box-shadow: none !important; padding: 0 0 6px; }
 .dsh .dsh-yby .dsh-yby-groups th > span { display: block; position: relative; margin: 0 8px 0 12px; padding-bottom: 6px; }
 .dsh .dsh-yby .dsh-yby-groups th > span::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 1px; background: var(--ds-rule-strong); opacity: 0.55; }
+.dsh .dsh-yby thead tr:not(.dsh-yby-groups) th { text-align: center; }
 .dsh .dsh-yby .dsh-yby-gs { box-shadow: inset 1px 0 0 var(--ds-rule); }
 .dsh .dsh-yby thead tr:not(.dsh-yby-groups) th.dsh-yby-gs { box-shadow: inset 1px 0 0 var(--ds-rule), inset 0 -1px 0 var(--ds-rule); }
 .dsh .dsh-yby :is(th, td).dsh-yby-gs { padding-left: 12px; }
+/* The crosshair: the row and column under the pointer, the cell where they
+   meet a step stronger, the column's name lit. Drawn on the cells, so the
+   year (held in place when the table scrolls sideways) lights too. */
+.dsh .dsh-yby tbody tr:hover { background: none; }
+.dsh .dsh-yby tbody tr:is(:hover, .dsh-yby-row) > td, .dsh .dsh-yby :is(td, th).dsh-yby-col { background: color-mix(in srgb, var(--ds-surface), var(--ds-text) 4.5%); }
+.dsh .dsh-yby tbody tr:is(:hover, .dsh-yby-row) > td.dsh-yby-col { background: color-mix(in srgb, var(--ds-surface), var(--dsh-tint-fill) 16%); }
+.dsh .dsh-yby thead th.dsh-yby-col { color: var(--ds-text); background: color-mix(in srgb, var(--ds-surface), var(--ds-text) 6%); }
+
+/* ---------- Check rows: a change or an option that's on reads clearly ----------
+   Off: an outlined row, gray text. On: a white row, full-strength text. */
+.dsh :is([data-checkrow], [data-slot="toggle"][data-variant="check"]) { border-color: transparent; background: transparent; box-shadow: inset 0 0 0 1px var(--ds-rule); border-radius: 12px; }
+.dsh :is([data-checkrow]:has([data-slot="toggle"][data-pressed]), [data-slot="toggle"][data-variant="check"][data-pressed]) { background: var(--ds-surface); box-shadow: 0 0 0 1px var(--ds-rule), var(--dsh-card-shadow); }
+.dsh [data-slot="toggle"]:is([data-variant="check"], [data-variant="checkInline"])[data-pressed] { color: var(--ds-text); }
+.dsh [data-slot="toggle"]:is([data-variant="check"], [data-variant="checkInline"]):not([data-pressed]) { color: var(--ds-muted); }
+
+/* ---------- Text straight on the page: darker than captions in a card ---------- */
+.dsh .dsh-page > :is(p, .dsh-cap), .dsh .dsh-page .dsh-cap:not(:is(.dsh-tile, [data-slot="card"]) .dsh-cap) { color: var(--dsh-on-page); }
 
 /* ---------- Figures that fit their row at any width or zoom ----------
    A row's figures shrink with its width first (container units, down to

@@ -8,7 +8,7 @@
    and the tables in src/js/app/15-drawdown.js, 15b and 15d. */
 
 import { useFullScreen, type Px } from "@/components/charts/FullScreen";
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { BandChart, type BandPoint } from "@/components/charts/BandChart";
 import { Histogram, roundBins } from "@/components/charts/Histogram";
@@ -37,8 +37,6 @@ import { SERIES } from "@/lib/hues";
 import { cn } from "@/lib/utils";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useToolScope } from "@/components/tools/ToolState";
 
 /** The return assumptions the sensitivity table tries: history less 2 and 1
     points a year, as it was, and 1 point better. */
@@ -106,8 +104,6 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
   const path = hist ? hist.H.prep.path : mc ? mc.M.path : [];
   const sensRows = hist ? hist.sens : mc ? mc.M.sens : null, ssRes = hist ? hist.ss : mc ? mc.M.ss : null;
   const sensOn = !!sensRows, ssOn = !!(ssRows(o, v.d) && ssRes);
-  // On the Dashboard the finer detail folds away under the charts.
-  const dash = useToolScope()?.name === "dashboard";
   /* A story, in order: the balance through retirement, when you retire,
      what spending was like, then every start and the finer detail. */
   return (
@@ -115,7 +111,8 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
       <BalancePanel v={v} R={R} ps={ps} show={show} showLabel={showLabel} />
       <SeqPanel v={v} H={H} ps={ps} />
       <IncomePanel v={v} R={R} view={view} show={show} showLabel={showLabel} />
-      <DetailFold on={dash} picks={ps.chartPicks}>
+      {/* The detail is always laid out, in the Dashboard as on the site. */}
+      <>
       {/* What living on it was like: the scorecard beside the spending
           figures, two lists of the same weight, at one height. */}
       <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 wide:grid-cols-2 wide:items-stretch" data-ddtabs="plan">
@@ -145,29 +142,8 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
         <Sensitivity rows={sensRows} label={mc ? "Baseline (sampled)" : "Baseline (historical)"} />
         <SSCompare v={v} res={ssRes} />
       </div>
-      </DetailFold>
+      </>
     </>
-  );
-}
-
-/** The Dashboard's fold over the scorecard and tables: closed until asked
-    for, and opened by picking a start on a chart (whose detail is in it).
-    Elsewhere the detail is laid out as it always is. */
-function DetailFold({ on, picks, children }: { on: boolean; picks: number; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const [seen, setSeen] = useState(picks);
-  if (picks !== seen) { setSeen(picks); setOpen(true); }
-  if (!on) return <>{children}</>;
-  return (
-    <Collapsible open={open} onOpenChange={setOpen} data-ddtabs="plan">
-      <Card size="flush" className="overflow-hidden">
-        <CollapsibleTrigger variant="row">
-          <span>{open ? "Hide the detail" : "The detail: spending scorecard, every start, year by year, the spread and what moves it"}</span>
-          <ChevronDownIcon aria-hidden="true" />
-        </CollapsibleTrigger>
-      </Card>
-      <CollapsibleContent><div className="stack mt-5 max-sm:mt-3.5">{children}</div></CollapsibleContent>
-    </Collapsible>
   );
 }
 

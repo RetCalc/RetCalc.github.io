@@ -32,6 +32,7 @@ function Input({
     <InputPrimitive
       type={type}
       data-slot="input"
+      data-variant={variant ?? "default"}
       className={cn(inputVariants({ variant }), className)}
       {...props}
     />

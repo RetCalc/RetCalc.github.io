@@ -226,11 +226,12 @@ function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend }: {
   const sum = (g: (y: CashYear) => number) => years.reduce((t, y) => t + yr(g(y)) * f(y.k), 0);
   const savedOf = (y: CashYear) => y.saved.trad + y.saved.roth + y.saved.hsa + y.saved.brok + y.ef;
   const ef = years.some((y) => y.ef > 0.5);
+  const cross = useCrosshair();
   return (
     <div className="dsh-scrollx dsh-yby-wrap">
       {/* Each group of columns (Coming in, Going out, Saved) is named over a
           rule of its own, and a line runs down the table where each starts. */}
-      <table className="dsh-tbl dsh-yby">
+      <table className="dsh-tbl dsh-yby" ref={cross}>
         <thead>
           <tr className="dsh-yby-groups">
             <th colSpan={2} />
@@ -290,6 +291,46 @@ function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend }: {
       </table>
     </div>
   );
+}
+
+/** A spreadsheet's crosshair: the row and the column under the pointer
+    (or holding keyboard focus) lit, the column's name with them. CSS
+    lights the row; this marks the column's cells, by column position, so
+    the footer's two-column first cell and the group names line up. */
+function useCrosshair() {
+  const ref = useRef<HTMLTableElement>(null);
+  useEffect(() => {
+    const t = ref.current;
+    if (!t) return;
+    const at = (row: HTMLTableRowElement, col: number) => {
+      let x = 0;
+      for (const c of Array.from(row.cells)) { if (col >= x && col < x + c.colSpan) return c; x += c.colSpan; }
+      return null;
+    };
+    const colOf = (cell: HTMLTableCellElement) => {
+      let x = 0;
+      for (const c of Array.from((cell.parentElement as HTMLTableRowElement).cells)) { if (c === cell) return x; x += c.colSpan; }
+      return -1;
+    };
+    let lit: Element[] = [];
+    const clear = () => { lit.forEach((c) => c.classList.remove("dsh-yby-col")); lit = []; t.querySelectorAll(".dsh-yby-row").forEach((r) => r.classList.remove("dsh-yby-row")); };
+    const light = (cell: HTMLTableCellElement | null) => {
+      clear();
+      if (!cell || cell.closest("thead")) return;
+      const col = colOf(cell);
+      if (col < 2) return;
+      cell.parentElement?.classList.add("dsh-yby-row");
+      lit = Array.from(t.rows).filter((r) => !r.classList.contains("dsh-yby-groups")).map((r) => at(r, col)).filter((c): c is HTMLTableCellElement => !!c && c.colSpan === 1);
+      lit.forEach((c) => c.classList.add("dsh-yby-col"));
+    };
+    const over = (e: Event) => light((e.target as Element).closest("td, th") as HTMLTableCellElement | null);
+    t.addEventListener("mouseover", over);
+    t.addEventListener("focusin", over);
+    t.addEventListener("mouseleave", clear);
+    t.addEventListener("focusout", clear);
+    return () => { t.removeEventListener("mouseover", over); t.removeEventListener("focusin", over); t.removeEventListener("mouseleave", clear); t.removeEventListener("focusout", clear); };
+  }, []);
+  return ref;
 }
 
 /* ---------- typing a figure ---------- */
