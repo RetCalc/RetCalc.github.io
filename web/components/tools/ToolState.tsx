@@ -252,6 +252,9 @@ export interface ToolScope {
     /** The Paycheck tab without its reading (the figures and the donut),
         when the scope's own page says them (Taxes & Savings). */
     noReading?: boolean;
+    /** The Budget's lines the page sets itself ("from your home"): what
+        its tip says they are. */
+    fromHome?: string;
     /** Said at the top of a tool's inputs: the figures the scope sets itself
         (`locked`), in its own words, with where each is changed. */
     facts?: ReactNode;

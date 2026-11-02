@@ -366,9 +366,6 @@ export function Advanced() {
                   <Affixed prefix="$"><MoneyInput id="target" value={s.target} onValueChange={set("target")} /></Affixed>
                 </Field>
               </div>
-              <div className="hint -mt-2 mb-3.5" id="targetHint">{s.solveFor === "After-Tax Withdrawal"
-                ? "The after-tax income you want each year, in today's spending power."
-                : "The portfolio balance you want, in today's spending power."}</div>
               <div className="two bottomalign max-sm:grid-cols-2">
                 <NumberField id="withdrawal" label={<Tipped text="Withdrawal rate" k="withdrawal" />} unit="%" value={s.withdrawal} onValueChange={set("withdrawal")}
                   aria-invalid={badWd || undefined} aria-describedby={badWd ? "payWarnText" : undefined} />

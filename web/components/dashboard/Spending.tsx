@@ -20,7 +20,7 @@ import { Hosted, TOOL_VIEWS, toolHref } from "./host";
 import { answers, otherMonth } from "./model";
 import { childCost, children } from "@/tools/guide/schedule";
 import { useDashboard } from "./store";
-import { Note, Tile, TipLabel, To } from "./ui";
+import { Note, Tile, TipLabel } from "./ui";
 import { housingLines } from "./housing";
 
 export function Spending() {
@@ -68,8 +68,9 @@ export function Spending() {
         {left != null && left < 0 ? <div className="dsh-mt"><Note>You&apos;re spending more than comes in after taxes. Check the numbers, or look for room in the budget below.</Note></div> : null}
       </Tile>
       <div className="dsh-r4" id="budget">
-        {housing.length ? <p className="dsh-cap dsh-mt6">Lines marked &ldquo;from your home&rdquo; are your {pr.home === "rent" ? "rent and renter's insurance" : "mortgage and what owning costs"}, set on <To href="/dashboard/home">Your home</To>.</p> : null}
+        {/* What "from your home" means is the tip beside each such line. */}
         <Hosted key={rev} household={null} locked={housing.map((n) => "row:" + n)}
+          slots={{ fromHome: `Your ${pr.home === "rent" ? "rent and renter's insurance" : "mortgage and what owning costs"}, set on Your home.` }}
           seed={(id) => (id === "budget" ? ({ ...budgetFor(pr), view: "budget" } as unknown as ToolInputs) : id === "tax" ? (taxFor(pr) as unknown as ToolInputs) : undefined)}
           keep={(id, d) => { if (id === "budget") setProfile((p) => fromBudget(p, d as unknown as BudgetInputs)); }}>
           <Budget />

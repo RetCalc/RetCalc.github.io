@@ -424,9 +424,6 @@ export function Stages() {
                   <Affixed prefix="$"><MoneyInput id="targetS" nonNeg value={s.target} onValueChange={set("target")} /></Affixed>
                 </Field>
               </div>
-              <div className="hint -mt-2 mb-3.5 empty:hidden" id="targetHintS">{F ? (s.solveFor === "After-Tax Withdrawal"
-                ? "The after-tax income you want each year, in today's spending power."
-                : "The portfolio balance you want, in today's spending power.") : ""}</div>
               <div className="two bottomalign max-sm:grid-cols-2">
                 <NumberField id="gWithdrawal" label="Withdrawal rate" unit="%" value={s.withdrawal} onValueChange={set("withdrawal")}
                   aria-invalid={badWd || undefined} aria-describedby={badWd ? "payWarnTextS" : undefined} />
