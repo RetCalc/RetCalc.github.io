@@ -41,7 +41,7 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
   return (
     <Tile id="assumptions" icon={SlidersHorizontalIcon} title="Assumptions" right={<span className="dsh-cap">Used by every figure on your Dashboard</span>}>
       <div className="dsh-stats">
-        <div className="dsh-stat"><div className="dsh-label">Savings grow, after inflation</div><div className="dsh-fig">{pct(real)}<small>per year</small></div></div>
+        <div className="dsh-stat"><div className="dsh-label">Savings grow, after inflation</div><div className="dsh-fig">{pct(real)}<small data-u="/yr">per year</small></div></div>
       </div>
       <div className="dsh-label dsh-mt">Help me choose: how your savings are invested until you retire</div>
       <div className="dsh-presets">
@@ -258,7 +258,7 @@ export function Profile() {
                 <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts#assets" />}>{accounts ? "Change in Net worth" : "Split into accounts"}</Button>
               </div>
               <div className="dsh-readonly">
-                <div><div className="dsh-label">Adding to it, with your employer&apos;s match</div><div className="dsh-fig dsh-md">{money(F.invested + F.match)}<small>per month</small></div></div>
+                <div><div className="dsh-label">Adding to it, with your employer&apos;s match</div><div className="dsh-fig dsh-md">{money(F.invested + F.match)}<small data-u="/mo">per month</small></div></div>
                 <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/savings#rest" />}>Change in Savings</Button>
               </div>
             </div>
@@ -275,7 +275,7 @@ export function Profile() {
         <div className="dsh-side">
           <Tile id="spending" icon={ReceiptIcon} title="Spending">
             <div className="dsh-fields dsh-fields-sm">
-              <div className="dsh-readonly"><div><div className="dsh-label">Your budget</div><div className="dsh-fig dsh-md">{money(spendMonth(pr) ?? 0)}<small>per month</small></div></div>
+              <div className="dsh-readonly"><div><div className="dsh-label">Your budget</div><div className="dsh-fig dsh-md">{money(spendMonth(pr) ?? 0)}<small data-u="/mo">per month</small></div></div>
                 <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/spending#budget" />}>Change in Spending</Button></div>
             </div>
           </Tile>

@@ -50,9 +50,9 @@ function PlanHero() {
     <Tile icon={SunsetIcon} title="Your plan">
       <div className="dsh-stats">
         <div className="dsh-stat"><div className="dsh-label">Savings at retirement{R.retireYear ? ", " + R.retireYear : ""}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
-        <div className="dsh-stat"><div className="dsh-label">{ownRate ? <TipLabel text="Your strategy spends" id="stratSpend" /> : <TipLabel text="You plan to spend" id="retSpend" />}</div><div className="dsh-fig dsh-md">{money(R.spend ?? goal)}<small>per month</small></div>{ownRate && R.goal != null ? <div className="dsh-cap dsh-mt6">Your goal: {money(R.goal)}</div> : null}</div>
-        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Taxes, on top" id="taxes" /></div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div></div> : null}
-        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text={"Social Security" + (R.ssYear ? ", from " + R.ssYear : "")} id="ssTotal" /></div><div className="dsh-fig dsh-md">{money(ss)}<small>per month</small></div></div> : null}
+        <div className="dsh-stat"><div className="dsh-label">{ownRate ? <TipLabel text="Your strategy spends" id="stratSpend" /> : <TipLabel text="You plan to spend" id="retSpend" />}</div><div className="dsh-fig dsh-md">{money(R.spend ?? goal)}<small data-u="/mo">per month</small></div>{ownRate && R.goal != null ? <div className="dsh-cap dsh-mt6">Your goal: {money(R.goal)}</div> : null}</div>
+        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Taxes, on top" id="taxes" /></div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small data-u="/mo">per month</small></div></div> : null}
+        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text={"Social Security" + (R.ssYear ? ", from " + R.ssYear : "")} id="ssTotal" /></div><div className="dsh-fig dsh-md">{money(ss)}<small data-u="/mo">per month</small></div></div> : null}
         <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? pctDown(R.success) + "%" : "—"}</div></div>
       </div>
       <p className="dsh-cap dsh-mt">
@@ -222,7 +222,7 @@ function HealthCover({ pr, R }: { pr: Profile; R: Results }) {
       <Tile icon={HeartPulseIcon} title="Health cover before Medicare" right={<To href="/dashboard/retirement#health">Plan health cover</To>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">With no job&apos;s plan</div><div className="dsh-fig dsh-md">{gap.years} {gap.years === 1 ? "year" : "years"}</div><div className="dsh-cap dsh-mt6">{gap.from} to {gap.to}</div></div>
-          <div className="dsh-stat"><div className="dsh-label">Your plan counts</div><div className="dsh-fig dsh-md">{R.S && R.S.hcYr > 0 ? money(R.S.hcYr / 12) : "—"}<small>per month</small></div><div className="dsh-cap dsh-mt6">for marketplace cover, on top of your spending</div></div>
+          <div className="dsh-stat"><div className="dsh-label">Your plan counts</div><div className="dsh-fig dsh-md">{R.S && R.S.hcYr > 0 ? money(R.S.hcYr / 12) : "—"}<small data-u="/mo">per month</small></div><div className="dsh-cap dsh-mt6">for marketplace cover, on top of your spending</div></div>
         </div>
         <p className="dsh-cap dsh-mt">{healthWords(pr, gap)} Until Medicare starts, cover is a marketplace plan priced on your income, and it&apos;s often one of the biggest costs of retiring early.</p>
       </Tile>

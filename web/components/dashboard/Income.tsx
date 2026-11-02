@@ -53,8 +53,8 @@ function PayHistory({ pr, set, close }: { pr: Profile; set: (f: (p: Profile) => 
       <p className="dsh-cap">Social Security averages your best 35 years of pay. Type what you earned in past years (your statement at ssa.gov lists them), and what you expect ahead in today&apos;s dollars.</p>
       <PayYears who={who} setWho={setWho} both={both} inputs={s[who]} person={who === "you" ? S.you : S.spouse!} setP={setP} setEdits={setEdits} />
       <div className="dsh-stats">
-        <div className="dsh-stat"><div className="dsh-label"><TipLabel text={`${nameOf(pr, 0)}: benefit at full retirement age`} k="fra" /></div><div className="dsh-fig dsh-md">{money(B.you)}<small>per month</small></div></div>
-        {B.spouse != null ? <div className="dsh-stat"><div className="dsh-label">{nameOf(pr, 1)}</div><div className="dsh-fig dsh-md">{money(B.spouse)}<small>per month</small></div></div> : null}
+        <div className="dsh-stat"><div className="dsh-label"><TipLabel text={`${nameOf(pr, 0)}: benefit at full retirement age`} k="fra" /></div><div className="dsh-fig dsh-md">{money(B.you)}<small data-u="/mo">per month</small></div></div>
+        {B.spouse != null ? <div className="dsh-stat"><div className="dsh-label">{nameOf(pr, 1)}</div><div className="dsh-fig dsh-md">{money(B.spouse)}<small data-u="/mo">per month</small></div></div> : null}
       </div>
       <div className="dsh-navbtns"><DialogClose render={<Button variant="outline" />}>Cancel</DialogClose><Button onClick={save}>Use in my plan</Button></div>
     </div>
@@ -86,10 +86,10 @@ export function Income() {
     <Frame current="income" title="Income" sub={R.takehome ? `About ${money(R.takehome)} per month coming in, after taxes` : "What comes in"}>
       <Tile icon={BanknoteIcon} title="Coming in">
         <div className="dsh-stats">
-          <div className="dsh-stat"><div className="dsh-label">All income after taxes</div><div className="dsh-fig dsh-key">{R.takehome ? money(R.takehome) : "—"}<small>per month</small></div></div>
-          {!abroad ? <div className="dsh-stat"><div className="dsh-label">Pay before taxes</div><div className="dsh-fig dsh-md">{F.gross ? money(F.gross * 12) : "—"}<small>per year</small></div></div> : null}
-          {!abroad ? <div className="dsh-stat"><div className="dsh-label">Employer match</div><div className="dsh-fig dsh-md">{money(F.match)}<small>per month</small></div></div> : null}
-          {otherMonth(pr) ? <div className="dsh-stat"><div className="dsh-label">Other income</div><div className="dsh-fig dsh-md">{money(otherMonth(pr))}<small>per month</small></div></div> : null}
+          <div className="dsh-stat"><div className="dsh-label">All income after taxes</div><div className="dsh-fig dsh-key">{R.takehome ? money(R.takehome) : "—"}<small data-u="/mo">per month</small></div></div>
+          {!abroad ? <div className="dsh-stat"><div className="dsh-label">Pay before taxes</div><div className="dsh-fig dsh-md">{F.gross ? money(F.gross * 12) : "—"}<small data-u="/yr">per year</small></div></div> : null}
+          {!abroad ? <div className="dsh-stat"><div className="dsh-label">Employer match</div><div className="dsh-fig dsh-md">{money(F.match)}<small data-u="/mo">per month</small></div></div> : null}
+          {otherMonth(pr) ? <div className="dsh-stat"><div className="dsh-label">Other income</div><div className="dsh-fig dsh-md">{money(otherMonth(pr))}<small data-u="/mo">per month</small></div></div> : null}
         </div>
       </Tile>
       <div className="dsh-grid dsh-two">
@@ -135,7 +135,7 @@ export function Income() {
                     value={txt(i ? pr.ss.own2 : pr.ss.own1)} onValueChange={(v) => set((p) => ({ ...p, ss: { ...p.ss, ...(i ? { own2: num(v) } : { own1: num(v) }), checked: true } }))} />
                   <ClaimField pr={pr} set={set} i={i} />
                   <div><div className="dsh-label">Claimed at {(i ? R.claim2 : R.claim1) ?? "—"}{(i ? pr.p2 : pr.p1).by ? `, in ${yearAt(i ? pr.p2 : pr.p1, (i ? R.claim2 : R.claim1) ?? 67)}` : ""}{share < 100 ? `, at ${share}%` : ""}</div>
-                    <div className="dsh-fig dsh-md">{(i ? R.ss2 : R.ss1) != null ? money((i ? R.ss2 : R.ss1)!) : "—"}<small>per month</small></div></div>
+                    <div className="dsh-fig dsh-md">{(i ? R.ss2 : R.ss1) != null ? money((i ? R.ss2 : R.ss1)!) : "—"}<small data-u="/mo">per month</small></div></div>
                 </div>
               ))}
               <div className="dsh-perrow">

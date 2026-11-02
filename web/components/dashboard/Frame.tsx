@@ -161,12 +161,53 @@ export function SignedIn({ children, setup }: { children: ReactNode; setup?: boo
   return <div className="dsh">{children}</div>;
 }
 
+/** Rows of figures fit their width at any window size or zoom: the
+    figures shrink first (styles/22-dash-refresh.css), and if any unit in
+    a row would still wrap onto its own line, the whole row says its units
+    short ("/mo", "/yr", from each unit's data-u) by taking .dsh-tight.
+    Measured with the long units, again whenever the page resizes or its
+    figures change. */
+function useFitFigures() {
+  useEffect(() => {
+    const page = document.getElementById("dsh-page");
+    if (!page) return;
+    let raf = 0;
+    // A figure doesn't fit when its unit drops a line or runs past its column.
+    const misfit = (f: HTMLElement) => {
+      const u = f.querySelector<HTMLElement>("small[data-u]");
+      if (!u) return false;
+      const fr = f.getBoundingClientRect(), ur = u.getBoundingClientRect();
+      return f.scrollWidth > f.clientWidth + 1 || ur.right > fr.right + 1 || ur.bottom - fr.top > parseFloat(getComputedStyle(f).fontSize) * 1.5;
+    };
+    // Long units; if any misfits, short ones; if one still does, every
+    // unit in the row under its figure.
+    const fit = () => {
+      raf = 0;
+      page.querySelectorAll<HTMLElement>(".dsh-stats, .dsh-duo-figs, .dsh-barkey").forEach((row) => {
+        row.classList.remove("dsh-tight", "dsh-stack");
+        const figs = [...row.querySelectorAll<HTMLElement>(".dsh-fig, .dsh-lg-v")];
+        if (!figs.some(misfit)) return;
+        row.classList.add("dsh-tight");
+        if (figs.some(misfit)) row.classList.add("dsh-stack");
+      });
+    };
+    const soon = () => { if (!raf) raf = requestAnimationFrame(fit); };
+    const ro = new ResizeObserver(soon);
+    ro.observe(page);
+    const mo = new MutationObserver(soon);
+    mo.observe(page, { childList: true, subtree: true, characterData: true });
+    soon();
+    return () => { ro.disconnect(); mo.disconnect(); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+}
+
 /** A dashboard page: the rail, the title bar and the page. Someone who
     hasn't started setup sees the front page instead (SignedIn). */
 export function Frame({ current, title, sub, actions, help, children }: { current: Section; title: string; sub?: ReactNode; actions?: ReactNode; help?: string; children: ReactNode }) {
   const { data } = useDashboard();
   const fresh = unstarted(data);
   useLanding();
+  useFitFigures();
   // A dot on a section with something still to fill in.
   const abroad = data.profile.state === OUTSIDE_US;
   const dots: Partial<Record<Section, boolean>> = {

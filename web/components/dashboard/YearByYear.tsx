@@ -228,23 +228,25 @@ function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend }: {
   const ef = years.some((y) => y.ef > 0.5);
   return (
     <div className="dsh-scrollx dsh-yby-wrap">
+      {/* Each group of columns (Coming in, Going out, Saved) is named over a
+          rule of its own, and a line runs down the table where each starts. */}
       <table className="dsh-tbl dsh-yby">
         <thead>
           <tr className="dsh-yby-groups">
             <th colSpan={2} />
-            <th colSpan={(names ? 2 : 1) + (other ? 1 : 0) + 1}>Coming in</th>
-            <th colSpan={2}>Going out</th>
-            <th colSpan={ef ? 6 : 5}>Saved</th>
+            <th colSpan={(names ? 2 : 1) + (other ? 1 : 0) + 1}><span>Coming in</span></th>
+            <th colSpan={2}><span>Going out</span></th>
+            <th colSpan={ef ? 6 : 5}><span>Saved</span></th>
             <th />
           </tr>
           <tr>
             <th>Year</th><th>{names ? "Ages" : "Age"}</th>
-            {names ? <><th>{names[0]}&apos;s pay</th><th>{names[1]}&apos;s pay</th></> : <th>Pay</th>}
+            {names ? <><th className="dsh-yby-gs">{names[0]}&apos;s pay</th><th>{names[1]}&apos;s pay</th></> : <th className="dsh-yby-gs">Pay</th>}
             {other ? <th>Other income</th> : null}
             <th>Income</th>
-            <th>Taxes</th><th>Spending</th>
-            <th>Traditional</th><th>Roth and HSA</th><th>Brokerage</th>{ef ? <th>Emergency fund</th> : null}<th>Employer match</th><th>All saved</th>
-            <th className="dsh-yby-notes">What&apos;s going on</th>
+            <th className="dsh-yby-gs">Taxes</th><th>Spending</th>
+            <th className="dsh-yby-gs">Traditional</th><th>Roth and HSA</th><th>Brokerage</th>{ef ? <th>Emergency fund</th> : null}<th>Employer match</th><th>All saved</th>
+            <th className="dsh-yby-notes dsh-yby-gs">What&apos;s going on</th>
           </tr>
         </thead>
         <tbody>
@@ -255,19 +257,19 @@ function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend }: {
                 <td>{y.year}</td>
                 <td>{y.age}{names && age2now != null ? " · " + (age2now + y.k) : ""}</td>
                 {([0, 1] as const).slice(0, names ? 2 : 1).map((who) => (
-                  <td key={who}>{y.works[who] ? <button type="button" className="dsh-yby-cell" onClick={() => onPay(y, who)} title={`Type ${names ? names[who] + "'s" : "your"} pay in ${y.year}`}>{m(y.pay[who], y.k)}{dot(y, who ? "pay1" : "pay0")}</button> : <span className="dsh-muted">Stopped</span>}</td>
+                  <td key={who} className={who === 0 ? "dsh-yby-gs" : undefined}>{y.works[who] ? <button type="button" className="dsh-yby-cell" onClick={() => onPay(y, who)} title={`Type ${names ? names[who] + "'s" : "your"} pay in ${y.year}`}>{m(y.pay[who], y.k)}{dot(y, who ? "pay1" : "pay0")}</button> : <span className="dsh-muted">Stopped</span>}</td>
                 ))}
                 {other ? <td>{m(y.other, y.k)}</td> : null}
                 <td className="dsh-yby-strong">{m(y.income, y.k)}</td>
-                <td>{m(y.taxes, y.k)}</td>
+                <td className="dsh-yby-gs">{m(y.taxes, y.k)}</td>
                 <td><button type="button" className="dsh-yby-cell" onClick={() => onSpend(y)} title={`Type spending in ${y.year}`}>{m(y.spending, y.k)}{dot(y, "spend")}</button></td>
-                <td>{m(y.saved.trad, y.k)}</td>
+                <td className="dsh-yby-gs">{m(y.saved.trad, y.k)}</td>
                 <td>{m(y.saved.roth + y.saved.hsa, y.k)}</td>
                 <td>{m(y.saved.brok, y.k)}</td>
                 {ef ? <td>{m(y.ef, y.k)}</td> : null}
                 <td>{m(y.match, y.k)}</td>
                 <td className="dsh-yby-strong">{m(savedOf(y) + y.match, y.k)}</td>
-                <td className="dsh-yby-notes">{notes.map((n, j) => <span key={j} className={n.warn ? "dsh-yby-note dsh-dn" : "dsh-yby-note"}>{n.text}</span>)}</td>
+                <td className="dsh-yby-notes dsh-yby-gs">{notes.map((n, j) => <span key={j} className={n.warn ? "dsh-yby-note dsh-dn" : "dsh-yby-note"}>{n.text}</span>)}</td>
               </tr>
             );
           })}
@@ -275,14 +277,14 @@ function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend }: {
         <tfoot>
           <tr>
             <td colSpan={2}>All {years.length} years</td>
-            {names ? <><td>{money(sum((y) => y.pay[0]))}</td><td>{money(sum((y) => y.pay[1]))}</td></> : <td>{money(sum((y) => y.pay[0]))}</td>}
+            {names ? <><td className="dsh-yby-gs">{money(sum((y) => y.pay[0]))}</td><td>{money(sum((y) => y.pay[1]))}</td></> : <td className="dsh-yby-gs">{money(sum((y) => y.pay[0]))}</td>}
             {other ? <td>{money(sum((y) => y.other))}</td> : null}
             <td>{money(sum((y) => y.income))}</td>
-            <td>{money(sum((y) => y.taxes))}</td><td>{money(sum((y) => y.spending))}</td>
-            <td>{money(sum((y) => y.saved.trad))}</td><td>{money(sum((y) => y.saved.roth + y.saved.hsa))}</td><td>{money(sum((y) => y.saved.brok))}</td>
+            <td className="dsh-yby-gs">{money(sum((y) => y.taxes))}</td><td>{money(sum((y) => y.spending))}</td>
+            <td className="dsh-yby-gs">{money(sum((y) => y.saved.trad))}</td><td>{money(sum((y) => y.saved.roth + y.saved.hsa))}</td><td>{money(sum((y) => y.saved.brok))}</td>
             {ef ? <td>{money(sum((y) => y.ef))}</td> : null}
             <td>{money(sum((y) => y.match))}</td><td>{money(sum((y) => savedOf(y) + y.match))}</td>
-            <td className="dsh-yby-notes" />
+            <td className="dsh-yby-notes dsh-yby-gs" />
           </tr>
         </tfoot>
       </table>

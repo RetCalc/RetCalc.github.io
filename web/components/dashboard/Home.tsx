@@ -72,7 +72,7 @@ export function Home() {
           <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Equity" id="equity" /></div><div className="dsh-fig dsh-key">{money(M.value - M.owed)}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Worth</div><div className="dsh-fig dsh-md">{money(M.value)}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Left on the mortgage</div><div className="dsh-fig dsh-md">{money(M.owed)}</div></div>
-          {own != null ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="To own it, per month" id="ownCost" /></div><div className="dsh-fig dsh-md">{money(own)}<small>per month</small></div></div> : null}
+          {own != null ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="To own it, per month" id="ownCost" /></div><div className="dsh-fig dsh-md">{money(own)}<small data-u="/mo">per month</small></div></div> : null}
         </div>
       </Tile>
       <div className="dsh-r4"><Tile id="mortgage" icon={LandmarkIcon} title="Mortgage">

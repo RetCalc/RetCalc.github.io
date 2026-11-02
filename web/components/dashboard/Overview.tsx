@@ -253,7 +253,7 @@ export function Overview() {
 
       <div className="dsh-grid dsh-r2">
         <Tile icon={BanknoteIcon} title="Retirement income" tip="retIncome">
-          <div className="dsh-fig dsh-mt">{R.S ? money((R.S.spend + R.S.taxYr) / 12) : "—"}<small>per month</small></div>
+          <div className="dsh-fig dsh-mt">{R.S ? money((R.S.spend + R.S.taxYr) / 12) : "—"}<small data-u="/mo">per month</small></div>
           <div className="dsh-cap dsh-mt6">{R.S ? <>To spend <b>{money(R.S.spend / 12)}</b>{!R.abroad ? <> and pay about <b>{money(R.S.taxYr / 12)}</b> in taxes</> : null}, in today&apos;s dollars{tax}</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}</div>
           {R.S ? <div className="dsh-foot"><span className="dsh-cap">{R.ss ? <>Social Security pays <b>{money(R.ss)}</b> of it from {R.ssYear}. Savings pay the rest.</> : "Savings pay all of it."}</span></div> : null}
         </Tile>
@@ -261,7 +261,7 @@ export function Overview() {
           <Tile icon={IdCardIcon} title="Social Security"><div className="dsh-fig dsh-mt">Not counted</div><div className="dsh-cap dsh-mt6">Outside the US, your plan leaves it out.</div></Tile>
         ) : R.ss != null ? (
           <Tile id="social-security" icon={IdCardIcon} title="Social Security" tip={pr.ss.checked ? "ssTotal" : "ssEstimate"} right={pr.ss.checked ? null : <span className="dsh-badge">Estimated</span>}>
-            <div className="dsh-fig dsh-mt">{money(R.ss)}<small>per month</small></div>
+            <div className="dsh-fig dsh-mt">{money(R.ss)}<small data-u="/mo">per month</small></div>
             <div className="dsh-cap dsh-mt6">{nameOf(pr, 0)} at {R.claim1} ({money(R.ss1 ?? 0)}){p2 && R.ss2 != null ? `, ${nameOf(pr, 1)} at ${R.claim2} (${money(R.ss2)})` : ""}{pr.ss.checked ? "" : ". Estimated from today's pay"}</div>
             <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income#social-security" />}>{pr.ss.checked ? "When to claim →" : "Check your benefit →"}</Button></div>
           </Tile>
