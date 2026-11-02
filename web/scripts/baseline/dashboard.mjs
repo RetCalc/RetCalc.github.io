@@ -43,6 +43,8 @@ const PLANS = {
   "Save at most $1,500 from 48": (p) => ({ ...p, scenarios: [{ id: "x", kind: "saving", name: "", on: true, from: year - p.p1.by + 6, until: 0, mode: "cap", amount: 1500, ramp: 0, acct: "auto", nominal: 0, keepMatch: true }] }),
   "Sam's pay typed: $150,000 from 2030": (p) => ({ ...p, yearly: { ...p.yearly, edits: [{ what: "pay0", year: 2030, amount: 150000, once: false }] } }),
   "Spending typed: $150,000 in 2031 only": (p) => ({ ...p, yearly: { ...p.yearly, edits: [{ what: "spend", year: 2031, amount: 150000, once: true }] } }),
+  // Both 401(k)s at the limit: they stay there (in today's dollars) as pay rises.
+  "Both 401(k)s maxed, 2% raises": (p) => ({ ...p, tools: { budget: { pcMatch: "1070", pcK401max: "3013" } }, yearly: { raise: [0.02, 0.02], keep: null } }),
   "Spending typed: $120,000 from 2031": (p) => ({ ...p, yearly: { ...p.yearly, edits: [{ what: "spend", year: 2031, amount: 120000, once: false }] } }),
 };
 

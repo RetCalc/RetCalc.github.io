@@ -161,8 +161,13 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
     const r = S0 > 0 ? S / S0 : 0;
     const out = Object.fromEntries(DASH_ORDER.map((l) => [l, L0[l] * r])) as Record<Line, number>;
     if (S0 <= 0) { out.brok = S; return out; }
+    // Not held below today, with the two of you as today: a line already
+    // over its limit stays as it is. The 401(k) beyond the match shares the
+    // limit with the line up to it, so as that one grows with pay, this one
+    // gives way: together they stay at today's 401(k) or the limit.
     const same = pk.two === pi.two;
-    const capOf = (l: Line) => { const c = (pcCap(pk, l, amountsOf(pk, out)) * pk.p) / 12; return isFinite(c) ? Math.max(c, same ? L0[l] : 0) : Infinity; };
+    const floorOf = (l: Line) => (!same ? 0 : l === "k401max" ? Math.max(0, L0.match + L0.k401max - out.match) : L0[l]);
+    const capOf = (l: Line) => { const c = (pcCap(pk, l, amountsOf(pk, out)) * pk.p) / 12; return isFinite(c) ? Math.max(c, floorOf(l)) : Infinity; };
     let over = 0;
     for (const l of DASH_ORDER) { const c = capOf(l); if (out[l] > c) { over += out[l] - c; out[l] = c; } }
     const order = [...pk.order.filter((x): x is Line => x !== "ef" && x !== "brok" && L0[x as Line] > 0), "brok" as const];
@@ -171,6 +176,10 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
       const m = Math.min(Math.max(0, capOf(l) - out[l]), over);
       out[l] += m; over -= m;
     }
+    // The match line may have filled up above: the 401(k) beyond it gives
+    // way, and what it gives goes to the brokerage.
+    const ex = out.k401max - capOf("k401max");
+    if (ex > 0.005) { out.k401max -= ex; out.brok += ex; }
     return out;
   };
   /* Figures typed into the table: pay set from a year on (raises carry on
