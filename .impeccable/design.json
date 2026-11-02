@@ -719,7 +719,7 @@
       "money-match": {
         "role": "data",
         "displayName": "Money Match",
-        "canonical": "#7cc694",
+        "canonical": "#55a36f",
         "oklch": "oklch(76.4% 0.104 153.8)",
         "tonalRamp": [
           "oklch(15.0% 0.104 153.8)",

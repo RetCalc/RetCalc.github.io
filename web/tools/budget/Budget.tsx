@@ -287,8 +287,7 @@ export function Budget() {
               {/* In a walkthrough the emergency fund is a figure, not a budget of its own. */}
               {!scope || dash ? (
                 <div className="mt-3.5 grid gap-2.5">
-                  {/* The Dashboard leaves the usual target to the "?" above, which says it. */}
-                  {dash ? null : <p className="hint m-0">Most people aim for 3 to 6 months, or 6 to 12 if income varies.</p>}
+                  {/* The usual target is the "?" above's to say. */}
                   {emerg ? (
                     <>
                       <div className="flex"><Segmented id="efBasis" attr="data-efb" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={s.efBasis} onChange={set("efBasis")} /></div>

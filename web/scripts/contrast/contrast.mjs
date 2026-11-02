@@ -25,27 +25,29 @@ function readTokens() {
   return Object.fromEntries([...block.matchAll(/^ {2}([\w-]+): "(#[0-9A-Fa-f]{6})"/gm)].map((m) => [m[1], m[2]]));
 }
 
-/* Each theme's roles. Light swaps Graphite for Paper and the accent,
-   semantic and chart colors (and the logo) for their Deep twins. */
+/* Each theme's roles (Clear Glass, DESIGN.md): light is Glass, dark is
+   Night; the chart series and the logo take their Deep twins in light. */
 function themes(c) {
   const need = (k) => {
     if (!c[k]) throw new Error(`DESIGN.md has no color token "${k}"`);
     return c[k];
   };
-  const theme = (n, deep) => {
-    const d = (k) => (deep && c[`${k}-deep`] ? c[`${k}-deep`] : need(k));
+  const theme = (n, night) => {
+    const d = (k) => (!night && c[`${k}-deep`] ? c[`${k}-deep`] : need(k));
+    const p = (k) => need(night ? `night-${k}` : k);
     return {
       ground: need(`${n}-ground`), surface: need(`${n}-surface`), raised: need(`${n}-raised`),
-      ruleStrong: need(`${n}-rule-strong`), text: need(`${n}-text`), muted: need(`${n}-muted`),
-      accent: deep ? need("signal-amber-deep") : need("signal-amber"),
-      onAccent: deep ? need("on-signal-amber-deep") : need("on-signal-amber"),
-      gain: deep ? need("gain-deep") : need("gain"),
-      loss: deep ? need("loss-deep") : need("loss"),
+      ruleStrong: need(`${n}-rule-strong`), text: need(`${n}-text`), muted: need(`${n}-muted`), onPage: need(`${n}-on-page`),
+      accent: p("amber-text"), onAccent: p("on-amber"),
+      gain: p("gain"), loss: p("loss"),
+      field: need(`${n}-field`),
+      badge: { gain: night ? p("gain") : (c["gain-badge-text"] ?? p("gain")), loss: night ? p("loss") : (c["loss-badge-text"] ?? p("loss")) },
       series: Object.fromEntries(["sky", "teal", "rose", "lavender", "gray"].map((s) => [s, d(`series-${s}`)])),
+      money: Object.fromEntries(Object.keys(c).filter((k) => k.startsWith("money-") && !/tax[234]$/.test(k)).map((k) => [k.slice(6), p(k)])),
       logo: Object.fromEntries(["gold", "jade", "steel"].map((s) => [s, d(`brand-${s}`)])),
     };
   };
-  return { dark: theme("graphite", false), light: theme("paper", true) };
+  return { dark: theme("night", true), light: theme("glass", false) };
 }
 
 const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -73,15 +75,17 @@ function pairs(t) {
   for (const fg of ["text", "muted", "accent", "gain", "loss"])
     for (const [bg, v] of Object.entries(bgs)) text.push([fg, t[fg], bg, v]);
   text.push(["on-accent", t.onAccent, "accent (primary button)", t.accent]);
+  text.push(["on-page", t.onPage, "ground", t.ground]);
   for (const s of ["gain", "loss"]) {
     const pill = tint(t[s], t.surface, PILL);
-    text.push([s, t[s], `${s} badge (15% on surface)`, pill]);
+    text.push([s, t.badge[s], `${s} badge (15% on surface)`, pill]);
     text.push(["text", t.text, `${s} badge (15% on surface)`, pill]);
   }
-  const edges = { surface: t.surface, raised: t.raised, "input fill (ground)": t.ground };
+  const edges = { surface: t.surface, "field fill": t.field };
   for (const [bg, v] of Object.entries(edges)) marks.push(["border-strong", t.ruleStrong, bg, v]);
   for (const [bg, v] of Object.entries(bgs)) marks.push(["focus ring (text)", t.text, bg, v]);
   const lines = { plan: t.accent, ...t.series };
+  for (const [m, v] of Object.entries(t.money)) for (const bg of ["surface"]) marks.push([`money ${m}`, v, bg, bgs[bg]]);
   for (const [s, v] of Object.entries(lines))
     for (const bg of ["surface", "raised"]) marks.push([`chart ${s}`, v, bg, bgs[bg]]);
   // The tool icons: each category's series color on its flat Raised tile

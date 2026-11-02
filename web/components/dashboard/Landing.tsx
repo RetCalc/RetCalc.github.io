@@ -159,13 +159,13 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
         <div className="dl-steps">
           <div className="dl-step">
             <div className="dl-step-t"><span className="dl-n">1</span><h3>Answer a few questions</h3><p>Who&apos;s in your household, what you earn, what you&apos;ve saved and when you&apos;d like to retire.</p></div>
-            <div className="dl-pic"><div className="dl-sum"><Shot name="setupsum" w={720} h={1080} sizes="340px" alt="Your plan so far: household, ages, retirement ages, pay and savings, filling in as you answer" /></div></div>
+            <div className="dl-pic"><div className="dl-sum"><Shot name="setupsum" w={720} h={1143} sizes="340px" alt="Your plan so far: household, ages, retirement ages, pay and savings, filling in as you answer" /></div></div>
           </div>
           <div className="dl-step">
             <div className="dl-step-t"><span className="dl-n">2</span><h3>See where you stand</h3><p>A readiness score out of 100, your chance of success and the changes that would move your plan most.</p></div>
             <div className="dl-pic">
               <div className="dl-snip" aria-hidden="true">
-                <p><b>You&apos;re on track:</b> $1,969,000 at 60, and your plan lasted in every past market since 1926.</p>
+                <p><b>You&apos;re on track:</b> $1,895,000 at 60, and your plan lasted in every past market since 1926.</p>
                 <div className="dl-snrow"><div><small>Readiness score</small><strong>96</strong><span> of 100</span></div><div><small>Chance of success</small><strong>100%</strong></div></div>
               </div>
             </div>
@@ -174,11 +174,11 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
             <div className="dl-step-t"><span className="dl-n">3</span><h3>Come back and update</h3><p>Add today&apos;s balances each month or quarter. Each entry is saved, so you can see how your net worth changes.</p></div>
             <div className="dl-pic">
               <div className="dl-snip" aria-hidden="true">
-                <div className="dl-entry"><span>Your last entry was <b>October 1, 2026</b>, 24 days ago.</span><span className="dl-fakebtn">Update balances</span></div>
+                <div className="dl-entry"><span>Your last entry was <b>October 20, 2026</b>, 13 days ago.</span><span className="dl-fakebtn">Update balances</span></div>
                 <ul className="dl-entries">
-                  <li><span>October 1, 2026</span><b>$300,000</b><em>+$15,500</em></li>
-                  <li><span>July 1, 2026</span><b>$284,500</b><em>+$13,300</em></li>
-                  <li><span>April 1, 2026</span><b>$271,200</b><em>+$9,800</em></li>
+                  <li><span>October 20, 2026</span><b>$610,500</b><em>+$51,865</em></li>
+                  <li><span>April 15, 2026</span><b>$558,635</b><em>+$55,762</em></li>
+                  <li><span>October 15, 2025</span><b>$502,873</b><em>First entry</em></li>
                 </ul>
               </div>
             </div>
@@ -188,29 +188,29 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
 
       <Feature kicker="Net worth" title="Your net worth now, and where it's heading." sub="Your accounts, home and debts added up, then projected through retirement."
         points={["Your own entries over time, then the projection", "The range of 8 in 10 past markets", "All in today's dollars, so it compares with what things cost now"]}>
-        <Shot name="networth-tile" w={1734} h={982} sizes="(max-width: 900px) 100vw, 760px" alt="Net worth chart with entries, the projection and the range of past markets" />
+        <Shot name="networth-tile" w={1707} h={1064} sizes="(max-width: 900px) 100vw, 760px" alt="Net worth chart with entries, the projection and the range of past markets" />
       </Feature>
       <Feature flip kicker="Income, taxes, spending and savings" title="See where each paycheck goes." sub="Pay, taxes, your budget and your saving are worked out together, so the numbers match on every page."
         points={["Federal, state, Social Security and Medicare taxes worked out for you", "Saving split across your 401(k), HSA, IRA and brokerage", "Shows whether you're getting your full employer match"]}>
-        <Shot name="savings" w={1742} h={734} sizes="(max-width: 900px) 100vw, 760px" alt="Where each month's pay goes: savings, taxes, expenses and unassigned" />
+        <Shot name="savings" w={1280} h={814} sizes="(max-width: 900px) 100vw, 760px" alt="Each month: what you save and invest, the employer match, your savings rate, and where each month's pay goes: savings, taxes, expenses and unassigned" />
       </Feature>
       <Feature kicker="Retirement" title="Test your retirement plan against past markets." sub="Choose from 15 withdrawal strategies and see how often your plan lasted in every market since 1926."
         points={["What you'll have, what you'll spend and the taxes on it", "Social Security for each of you, from the age you claim", "Health cover until Medicare, and a bridge to 59½ if you retire early"]}>
-        <Shot name="retire-tile" w={1512} h={612} sizes="(max-width: 900px) 100vw, 760px" alt="At retirement: savings, chance of success, planned spending, taxes and Social Security, and the years of health cover to plan before Medicare" />
+        <Shot name="retire-tile" w={1520} h={650} sizes="(max-width: 900px) 100vw, 760px" alt="At retirement: savings, chance of success, planned spending, taxes and Social Security, and the years of health cover to plan before Medicare" />
       </Feature>
       <Feature flip kicker="Next steps" title="Know what to work on next." sub="A short list of changes, ranked by how much each one improves your plan, with a link to make each one.">
-        <Shot name="next" w={1734} h={778} sizes="(max-width: 900px) 100vw, 760px" alt="What to do next: four changes, ranked" />
+        <Shot name="next" w={1707} h={806} sizes="(max-width: 900px) 100vw, 760px" alt="What to do next: four changes, ranked" />
       </Feature>
       <Feature kicker="Learn" title="Learn the ideas behind your plan." sub="56 short lessons in 8 tracks, from saving and taxes to Social Security and drawing your savings down."
         points={["A lesson picked for what your plan needs next", "Lessons that show the idea with your own numbers", "Each one links to the page or tool where you act on it"]}>
-        <Shot name="learn" w={1752} h={572} sizes="(max-width: 900px) 100vw, 760px" alt="Next for you: a lesson on the emergency fund, picked because cash covers 2.9 months of spending" />
+        <Shot name="learn" w={1720} h={570} sizes="(max-width: 900px) 100vw, 760px" alt="Next for you: a lesson on the emergency fund, picked because cash covers 2.9 months of spending" />
       </Feature>
 
       <section className="dl-sec dl-center">
         <div className="dl-kicker">Your timeline</div>
         <h2 className="dl-h2">The years ahead, on a timeline.</h2>
         <p className="dl-sub">Retirement, Medicare, Social Security, daycare and college, year by year for each person in your household.</p>
-        <div className="dl-shot dl-wide"><Shot name="timeline" w={2632} h={646} sizes="(max-width: 1330px) 100vw, 1290px" alt="Timeline of retirement, Medicare, Social Security and college for each person" /></div>
+        <div className="dl-shot dl-wide"><Shot name="timeline" w={2600} h={673} sizes="(max-width: 1330px) 100vw, 1290px" alt="Timeline of retirement, Medicare, Social Security and college for each person" /></div>
       </section>
 
       <section className="dl-sec dl-center">

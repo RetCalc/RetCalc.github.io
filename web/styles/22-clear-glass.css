@@ -1,20 +1,19 @@
-/* The Dashboard's refreshed face ("Clear Glass", 2026-11-02): an Apple-like
-   restyle of every signed-in Dashboard page, from the approved Taxes &
-   Savings mock A (.impeccable/mocks/taxes-savings). It switches on only
-   while a Dashboard page is showing (:root:has(.dsh)): the tokens change at
-   the root, so the tools the Dashboard hosts and the menus, dialogs and
-   tips drawn outside it follow, and the rest of the site keeps its own
-   look. The signed-out front page (.dl) renders no .dsh and is untouched.
-   Unlayered, after 19-dashboard.css, so it wins over both it and the
-   components' utilities. Nothing here changes a figure.
+/* Clear Glass (2026-11-02): the site's look, an Apple-like restyle first
+   built for the Dashboard from the approved Taxes & Savings mock A
+   (.impeccable/mocks/taxes-savings) and spec'd in DESIGN.md. Gray ground,
+   borderless white cards (true black in dark), SF Pro (Inter elsewhere),
+   pill buttons, iOS switches and sliders, fields with a visible edge, an
+   ⓘ tip, one color per kind of money. Tokens sit on :root, so every page,
+   tool, menu, dialog and tip follows; rules under .dsh are the Dashboard's
+   own frame and pages. Unlayered, after 19-dashboard.css, so it wins over
+   both it and the components' utilities. Nothing here changes a figure.
 
-   Owner's rules for this face (memory: design-rules-inputs-hover-alignment):
-   inputs look fillable, the inputs column fits the window, hover shows
-   tips and lights chart parts, things that can line up do, and
-   explanations live in tips rather than under them. */
+   Owner's rules for this look (DESIGN.md's named rules): inputs look
+   fillable, the inputs column fits the window, hover shows tips and lights
+   chart parts, things that can line up do, explanations live in tips. */
 
 /* ---------- Tokens ---------- */
-:root:has(.dsh) {
+html:root {
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--dsh-inter, system-ui), "Helvetica Neue", Arial, sans-serif;
   --mono: var(--sans);
   --dsh-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--dsh-inter, system-ui), "Helvetica Neue", Arial, sans-serif;
@@ -24,7 +23,7 @@
   --r-well: 10px;
   --radius: 0.625rem;
 }
-:root[data-theme="light"]:has(.dsh) {
+html:root[data-theme="light"] {
   --ds-ground: #f5f5f7;
   --ds-surface: #ffffff;
   --ds-raised: #f2f2f4;
@@ -51,7 +50,7 @@
   --dsh-glass: rgba(255, 255, 255, 0.86);
   --dsh-knob-shadow: 0 0.5px 4px rgba(0, 0, 0, 0.12), 0 6px 13px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
 }
-:root[data-theme="dark"]:has(.dsh) {
+html:root[data-theme="dark"] {
   --ds-ground: #000000;
   --ds-surface: #1c1c1e;
   --ds-raised: #2c2c2e;
@@ -78,8 +77,8 @@
   --dsh-glass: rgba(44, 44, 46, 0.9);
   --dsh-knob-shadow: 0 0.5px 4px rgba(0, 0, 0, 0.3), 0 6px 13px rgba(0, 0, 0, 0.3);
 }
-:root:has(.dsh) body { font-family: var(--sans); -webkit-font-smoothing: antialiased; }
-:root:has(.dsh) ::selection { background: var(--dsh-tint-wash); }
+body { font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--dsh-tint-wash); }
 
 /* ---------- The frame ---------- */
 .dsh { letter-spacing: -0.01em; }
@@ -127,19 +126,19 @@
 .dsh-tb[aria-current] { color: var(--ds-amber); }
 
 /* ---------- Surfaces: white cards with no edge, soft shadow (flat in dark) ---------- */
-.dsh [data-slot="card"], .dsh .dsh-tile {
+[data-slot="card"], .dsh .dsh-tile {
   border-color: transparent; border-radius: var(--r-panel); box-shadow: var(--dsh-card-shadow);
 }
-.dsh [data-slot="card"] { --card-spacing: 20px; }
-.dsh [data-slot="card"][data-size="sm"] { --card-spacing: 14px; }
+[data-slot="card"] { --card-spacing: 20px; }
+[data-slot="card"][data-size="sm"] { --card-spacing: 14px; }
 .dsh .dsh-tile { padding: 20px 22px; }
 .dsh .dsh-tile.dsh-empty { box-shadow: none; border-color: var(--ds-rule-strong); }
 .dsh .dsh-grid { gap: 20px; }
 
 /* Titles: heavier and larger; the small icon before each tile's name goes. */
 .dsh .dsh-tile-h { min-height: 26px; }
-.dsh .dsh-tile-h h2, .dsh [data-slot="card-title"] { font-family: var(--dsh-display); font-size: 19px; font-weight: 600; letter-spacing: -0.02em; }
-.dsh [data-slot="card"][data-size="sm"] [data-slot="card-title"] { font-size: 16px; }
+.dsh .dsh-tile-h h2, [data-slot="card-title"] { font-family: var(--dsh-display); font-size: 19px; font-weight: 600; letter-spacing: -0.02em; }
+[data-slot="card"][data-size="sm"] [data-slot="card-title"] { font-size: 16px; }
 .dsh .dsh-ti { display: none; }
 
 /* Figures: SF Display, semibold; secondary figures stay large. */
@@ -153,88 +152,88 @@
 
 /* ---------- Controls ---------- */
 /* Buttons: pills. The outline and secondary kinds become gray fills. */
-.dsh [data-slot="button"] { border-radius: 999px; }
-.dsh [data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"]) { border-color: transparent; background: var(--dsh-fill); }
-.dsh [data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"]):hover { border-color: transparent; background: color-mix(in srgb, var(--dsh-fill), var(--ds-text) 7%); }
-.dsh [data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"])[aria-pressed="true"] { background: var(--dsh-tint-wash); color: var(--ds-amber); }
-.dsh [data-slot="button"][data-variant="ghost"]:hover { background: var(--dsh-fill-2); }
+[data-slot="button"] { border-radius: 999px; }
+[data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"]) { border-color: transparent; background: var(--dsh-fill); }
+[data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"]):hover { border-color: transparent; background: color-mix(in srgb, var(--dsh-fill), var(--ds-text) 7%); }
+[data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"])[aria-pressed="true"] { background: var(--dsh-tint-wash); color: var(--ds-amber); }
+[data-slot="button"][data-variant="ghost"]:hover { background: var(--dsh-fill-2); }
 /* Links in running text: the tint, with a soft underline that firms up on
    hover. Links that are whole rows or cards (lesson titles, tool cards)
    keep the text color. */
-.dsh [data-slot="button"][data-variant="link"],
-.dsh .dsh-page :is(p, li, dd, td, label, .dsh-cap, .dsh-foot, .hint, .dsh-note, [data-slot="card-description"]) > a:not([data-slot]) {
+[data-slot="button"][data-variant="link"],
+:is(.dsh-page, main) :is(p, li, dd, td, label, .dsh-cap, .dsh-foot, .hint, .dsh-note, [data-slot="card-description"]) > a:not([data-slot]) {
   color: var(--ds-amber); text-decoration-color: color-mix(in srgb, var(--ds-amber) 40%, transparent); text-underline-offset: 3px;
 }
-.dsh [data-slot="button"][data-variant="link"]:hover,
-.dsh .dsh-page :is(p, li, dd, td, label, .dsh-cap, .dsh-foot, .hint, .dsh-note, [data-slot="card-description"]) > a:not([data-slot]):hover { text-decoration-color: currentColor; }
+[data-slot="button"][data-variant="link"]:hover,
+:is(.dsh-page, main) :is(p, li, dd, td, label, .dsh-cap, .dsh-foot, .hint, .dsh-note, [data-slot="card-description"]) > a:not([data-slot]):hover { text-decoration-color: currentColor; }
 
 /* Fields: white (dark gray in dark) with a visible edge, so they read as
    places to type; amber ring while typing. */
-.dsh :is([data-slot="input"], [data-slot="native-select"], [data-slot="textarea"]),
-.dsh [data-slot="input-group"] {
+:is([data-slot="input"], [data-slot="native-select"], [data-slot="textarea"]),
+[data-slot="input-group"] {
   background-color: var(--dsh-field); border-color: var(--ds-rule-strong); border-radius: 10px;
 }
-.dsh [data-slot="input-group"] [data-slot="input"] { background: transparent; }
-.dsh :is([data-slot="input"], [data-slot="native-select"], [data-slot="textarea"]):focus-visible,
-.dsh [data-slot="input-group"]:focus-within {
+[data-slot="input-group"] [data-slot="input"] { background: transparent; }
+:is([data-slot="input"], [data-slot="native-select"], [data-slot="textarea"]):focus-visible,
+[data-slot="input-group"]:focus-within {
   border-color: var(--dsh-tint-fill); outline: 3px solid var(--dsh-tint-wash); outline-offset: 0;
 }
 /* A blank in a sentence (the Social Security Calculator's): no box, a
    straight underline, amber on hover and while typing. */
-.dsh :is([data-slot="input"], [data-slot="native-select"])[data-variant="inline"] {
+:is([data-slot="input"], [data-slot="native-select"])[data-variant="inline"] {
   background-color: transparent; border-radius: 0; border-width: 0 0 1.5px; border-color: var(--ds-rule-strong); outline: none;
 }
-.dsh :is([data-slot="input"], [data-slot="native-select"])[data-variant="inline"]:is(:hover, :focus-visible) { border-color: var(--dsh-tint-fill); outline: none; }
-.dsh [data-slot="checkbox"] { border-radius: 5px; border-color: var(--ds-rule-strong); background: var(--dsh-field); }
-.dsh [data-slot="checkbox"][data-checked] { border-color: var(--ds-amber); background: var(--ds-amber); color: var(--ds-on-amber); }
+:is([data-slot="input"], [data-slot="native-select"])[data-variant="inline"]:is(:hover, :focus-visible) { border-color: var(--dsh-tint-fill); outline: none; }
+[data-slot="checkbox"] { border-radius: 5px; border-color: var(--ds-rule-strong); background: var(--dsh-field); }
+[data-slot="checkbox"][data-checked] { border-color: var(--ds-amber); background: var(--ds-amber); color: var(--ds-on-amber); }
 
 /* Segmented switches: a gray track with a white knob (iOS). */
-.dsh .seg { border-color: transparent; background: var(--dsh-fill); padding: 2px; border-radius: 9px; }
-.dsh [data-slot="segmented-item"] { border-radius: 7px; color: var(--ds-text); }
-.dsh [data-slot="segmented-item"]:hover:not([data-pressed]) { background: transparent; color: var(--ds-text); }
-.dsh [data-slot="segmented-item"][data-pressed] {
+.seg { border-color: transparent; background: var(--dsh-fill); padding: 2px; border-radius: 9px; }
+[data-slot="segmented-item"] { border-radius: 7px; color: var(--ds-text); }
+[data-slot="segmented-item"]:hover:not([data-pressed]) { background: transparent; color: var(--ds-text); }
+[data-slot="segmented-item"][data-pressed] {
   background: var(--dsh-knob); color: #1d1d1f; font-weight: 600;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04);
 }
-:root[data-theme="dark"] .dsh [data-slot="segmented-item"][data-pressed] { background: #636366; color: #fff; }
+:root[data-theme="dark"] [data-slot="segmented-item"][data-pressed] { background: #636366; color: #fff; }
 
 /* Sliders: a thin track, filled in amber, and a round white thumb. */
-.dsh [data-slot="native-range"] { height: 28px; }
-.dsh [data-slot="native-range"]::-webkit-slider-runnable-track {
+[data-slot="native-range"] { height: 28px; }
+[data-slot="native-range"]::-webkit-slider-runnable-track {
   height: 4px; border-radius: 4px; background: linear-gradient(to right, var(--dsh-tint-fill) var(--fill, 0%), var(--dsh-fill) var(--fill, 0%));
 }
-.dsh [data-slot="native-range"]::-moz-range-track { height: 4px; border-radius: 4px; background: var(--dsh-fill); }
-.dsh [data-slot="native-range"]::-moz-range-progress { height: 4px; border-radius: 4px; background: var(--dsh-tint-fill); }
-.dsh [data-slot="native-range"]::-webkit-slider-thumb {
+[data-slot="native-range"]::-moz-range-track { height: 4px; border-radius: 4px; background: var(--dsh-fill); }
+[data-slot="native-range"]::-moz-range-progress { height: 4px; border-radius: 4px; background: var(--dsh-tint-fill); }
+[data-slot="native-range"]::-webkit-slider-thumb {
   width: 26px; height: 26px; margin-top: -11px; border: 0; background: var(--dsh-knob); box-shadow: var(--dsh-knob-shadow);
 }
-.dsh [data-slot="native-range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; background: var(--dsh-knob); box-shadow: var(--dsh-knob-shadow); }
-.dsh [data-slot="native-range"]:focus-visible::-webkit-slider-thumb { box-shadow: var(--dsh-knob-shadow), 0 0 0 4px var(--dsh-tint-wash); }
+[data-slot="native-range"]::-moz-range-thumb { width: 26px; height: 26px; border: 0; background: var(--dsh-knob); box-shadow: var(--dsh-knob-shadow); }
+[data-slot="native-range"]:focus-visible::-webkit-slider-thumb { box-shadow: var(--dsh-knob-shadow), 0 0 0 4px var(--dsh-tint-wash); }
 
 /* ---------- Tips: an ⓘ, opened by hover or tap, in a frosted box ---------- */
-.dsh .tipdot {
+.tipdot {
   width: 16px; height: 16px; border: 0; color: var(--ds-muted); background: currentColor; border-radius: 0; margin-left: 4px;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 16.5v-5M12 7.8h.01'/%3E%3C/svg%3E") center / 100% no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 16.5v-5M12 7.8h.01'/%3E%3C/svg%3E") center / 100% no-repeat;
 }
-.dsh .tipdot > span { visibility: hidden; }
-.dsh .tipdot:hover, .dsh .tipdot.on { color: var(--ds-amber); }
+.tipdot > span { visibility: hidden; }
+.tipdot:hover, .tipdot.on { color: var(--ds-amber); }
 /* A status beside a label (the full match): a check or an alert, its
    sentence in the tip. */
-.dsh .tipdot.dsh-ok, .dsh .tipdot.dsh-warn { width: 17px; height: 17px; }
-.dsh .tipdot.dsh-ok { color: var(--ds-gain); -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='m8.5 12 2.4 2.4 4.6-4.8'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='m8.5 12 2.4 2.4 4.6-4.8'/%3E%3C/svg%3E"); }
-.dsh .tipdot.dsh-warn { color: var(--ds-loss); -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 7.5v5M12 16.3h.01'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 7.5v5M12 16.3h.01'/%3E%3C/svg%3E"); }
-.dsh .tipdot.dsh-ok:hover, .dsh .tipdot.dsh-ok.on { color: var(--ds-gain); }
-.dsh .tipdot.dsh-warn:hover, .dsh .tipdot.dsh-warn.on { color: var(--ds-loss); }
-:root:has(.dsh) .tipbox {
+.tipdot.dsh-ok, .tipdot.dsh-warn { width: 17px; height: 17px; }
+.tipdot.dsh-ok { color: var(--ds-gain); -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='m8.5 12 2.4 2.4 4.6-4.8'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='m8.5 12 2.4 2.4 4.6-4.8'/%3E%3C/svg%3E"); }
+.tipdot.dsh-warn { color: var(--ds-loss); -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 7.5v5M12 16.3h.01'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 7.5v5M12 16.3h.01'/%3E%3C/svg%3E"); }
+.tipdot.dsh-ok:hover, .tipdot.dsh-ok.on { color: var(--ds-gain); }
+.tipdot.dsh-warn:hover, .tipdot.dsh-warn.on { color: var(--ds-loss); }
+.tipbox {
   max-width: 320px; padding: 13px 15px; border: 0; border-radius: 16px; font-size: 13px; line-height: 1.5;
   background: var(--dsh-glass); -webkit-backdrop-filter: blur(24px) saturate(1.8); backdrop-filter: blur(24px) saturate(1.8); box-shadow: var(--ds-float);
 }
 
 /* ---------- Floating things: dialogs, menus, sheets ---------- */
-:root:has(.dsh) [data-slot="dialog-content"] { border-color: transparent; border-radius: 22px; box-shadow: var(--ds-float); }
-:root:has(.dsh) [data-slot="dropdown-menu-content"] { border-color: transparent; border-radius: 14px; box-shadow: var(--ds-float); }
-:root:has(.dsh) .selmenu { border-radius: 22px 22px 0 0; border-color: transparent; }
+[data-slot="dialog-content"] { border-color: transparent; border-radius: 22px; box-shadow: var(--ds-float); }
+[data-slot="dropdown-menu-content"] { border-color: transparent; border-radius: 14px; box-shadow: var(--ds-float); }
+.selmenu { border-radius: 22px 22px 0 0; border-color: transparent; }
 
 /* ---------- Lists of facts: grouped, label left, value right ---------- */
 .dsh .dsh-facts div { border-top-color: var(--ds-rule); padding: 9px 0; }
@@ -262,8 +261,8 @@
 .dsh .dsh-sum { border-color: transparent; box-shadow: var(--dsh-card-shadow); border-radius: var(--r-panel); }
 .dsh .dsh-tile [data-slot="card"] { box-shadow: none; border-color: var(--ds-rule); }
 /* The Tools tab's cards: as the Dashboard's own. */
-.dsh :is(.toolcard, .tp-tile) { border-color: transparent; box-shadow: var(--dsh-card-shadow); border-radius: var(--r-panel); }
-:root[data-theme="light"] .dsh :is(.toolcard, .tp-tile):hover { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.1); }
+:is(.toolcard, .tp-tile) { border-color: transparent; box-shadow: var(--dsh-card-shadow); border-radius: var(--r-panel); }
+:root[data-theme="light"] :is(.toolcard, .tp-tile):hover { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.1); }
 
 /* Setup's progress: steps done in the text color, the current one amber. */
 .dsh .dsh-segs i:not(.dsh-on) { background: var(--dsh-fill); }
@@ -276,15 +275,15 @@
    color means the same thing wherever it shows. Shared tools read these
    with their old color as the fallback, so the rest of the site keeps
    its look until it takes this map too. */
-:root[data-theme="light"]:has(.dsh) {
+html:root[data-theme="light"] {
   --c-pay1: #1f6fd1; --c-pay2: #3a8bd0; --c-other: #8e8e93;
   --c-tax: #e8335f; --c-tax2: #f0849f; --c-tax3: #f5aabd; --c-tax4: #f8c4d1;
-  --c-spend: #5856d6; --c-save: #1f9d55; --c-match: #7cc694;
+  --c-spend: #5856d6; --c-save: #1f9d55; --c-match: #55a36f;
   --c-trad: #146c43; --c-roth: #2a9a63; --c-brok: #748f1f; --c-hsa: #11998e;
   --c-cash: #a87b16; --c-home: #9a7b5b; --c-oth: #8e8e93;
   --c-mort: #c4512a; --c-loan: #c4661c; --c-card: #d70015;
 }
-:root[data-theme="dark"]:has(.dsh) {
+html:root[data-theme="dark"] {
   --c-pay1: #4da3ff; --c-pay2: #8ac8ff; --c-other: #8e8e93;
   --c-tax: #ff4f74; --c-tax2: #c43d5c; --c-tax3: #9a3149; --c-tax4: #6e2738;
   --c-spend: #7d7aff; --c-save: #30d158; --c-match: #1e7a3c;
@@ -292,7 +291,7 @@
   --c-cash: #ffd060; --c-home: #c9a27e; --c-oth: #8e8e93;
   --c-mort: #ff8a5c; --c-loan: #ffb067; --c-card: #ff6961;
 }
-:root:has(.dsh) {
+html:root {
   --dsh-c-save: var(--c-save); --dsh-c-tax: var(--c-tax); --dsh-c-spend: var(--c-spend);
   --dsh-c-tax2: var(--c-tax2); --dsh-c-tax3: var(--c-tax3); --dsh-c-tax4: var(--c-tax4);
 }
@@ -310,8 +309,8 @@
 .dsh .dsh-yc-p1 { --g: var(--c-pay1); } .dsh .dsh-yc-p2 { --g: var(--c-pay2); } .dsh .dsh-yc-oth { --g: var(--c-other); }
 .dsh .dsh-yc-spend { --g: var(--c-spend); } .dsh .dsh-yc-tax { --g: var(--c-tax); } .dsh .dsh-yc-save { --g: var(--c-save); } .dsh .dsh-yc-match { --g: var(--c-match); }
 /* The Tools tab's Income Tax card: take-home as pay, the taxes in pink. */
-.dsh .hm-tax .f-teal { fill: var(--c-pay1); } .dsh .hm-tax .f-sky { fill: var(--c-tax); }
-.dsh .hm-tax .f-lav { fill: var(--c-tax2); } .dsh .hm-tax .f-rose { fill: var(--c-tax3); }
+.hm-tax .f-teal { fill: var(--c-pay1); } .hm-tax .f-sky { fill: var(--c-tax); }
+.hm-tax .f-lav { fill: var(--c-tax2); } .hm-tax .f-rose { fill: var(--c-tax3); }
 
 /* ---------- Bars on one axis, with their key (StackBar) ---------- */
 .dsh-sbar-set { display: contents; }
@@ -336,7 +335,7 @@
 .dsh-lg-v.dsh-loss { color: var(--ds-loss); }
 .dsh-lg-s { font-size: 13px; color: var(--ds-muted); }
 .dsh [data-hl][data-on] :is(.dsh-sbar > i, .dsh-lg):not([data-on]) { opacity: 0.3; }
-.dsh :is(.dsh-sbar > i, .dsh-lg) { transition: opacity 0.15s; }
+:is(.dsh-sbar > i, .dsh-lg) { transition: opacity 0.15s; }
 
 /* ---------- Two cards whose rows line up (Taxes & Savings) ----------
    Each card is the title, a figure, a row of figures, the bar's caption,
@@ -361,43 +360,45 @@
 .dsh #pcStats { position: sticky; top: var(--dsh-pin, 0px); z-index: 4; border: 0; border-radius: 0; margin-inline: calc(-1 * var(--card-spacing)); padding-inline: 8px;
   background: var(--ds-surface); border-block: 1px solid var(--ds-rule); }
 /* Money taken out says so with its minus sign, not in red. */
-.dsh #pcStub td.text-destructive { color: inherit; }
+#pcStub td.text-destructive { color: inherit; }
 
 /* ---------- Inputs columns: grouped lists on the page (mock A) ----------
+   Every tool's aside is its inputs column but the Budget's, which holds
+   its answer (the total, the emergency fund) and stays a card. 
    A tool's inputs column loses its card: its headings and notes sit on
    the page, and each run of inputs between them becomes one white rounded
    group, divided by hairlines. An input on its own puts its label left and
    its box right. Inside a white Dashboard tile the groups are gray. */
-.dsh .dsh-embed aside > [data-slot="card"] { background: transparent; border: 0; box-shadow: none; gap: 0; padding: 0; --card-spacing: 0px; overflow: visible; }
-.dsh .dsh-embed aside > [data-slot="card"] + [data-slot="card"] { margin-top: 22px; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-header"] { padding: 0 4px 8px; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-header"] [data-slot="card-title"] { font: 600 13px/1.3 var(--sans); letter-spacing: 0; color: var(--dsh-on-page); }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] { padding: 0; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > * { margin: 0; }
+aside:not(#asideBudget) > [data-slot="card"] { background: transparent; border: 0; box-shadow: none; gap: 0; padding: 0; --card-spacing: 0px; overflow: visible; }
+aside:not(#asideBudget) > [data-slot="card"] + [data-slot="card"] { margin-top: 22px; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-header"] { padding: 0 4px 8px; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-header"] [data-slot="card-title"] { font: 600 13px/1.3 var(--sans); letter-spacing: 0; color: var(--dsh-on-page); }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] { padding: 0; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > * { margin: 0; }
 /* The groups */
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) {
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) {
   background: var(--ds-surface); padding: 12px 16px;
 }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)):is(:first-child, :is(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) + *) { border-top-left-radius: 14px; border-top-right-radius: 14px; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)):is(:last-child, :has(+ :is(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden])), :has(+ * > h3:first-child)) { border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) + :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) { border-top: 1px solid var(--ds-rule); }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)):is(:first-child, :is(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) + *) { border-top-left-radius: 14px; border-top-right-radius: 14px; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)):is(:last-child, :has(+ :is(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden])), :has(+ * > h3:first-child)) { border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) + :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) { border-top: 1px solid var(--ds-rule); }
 /* Headings and notes, on the page */
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :is(h3, :has(> h3:first-child)) { margin: 22px 0 8px; padding: 0 4px; border: 0; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :is(h3, :has(> h3:first-child)):first-child { margin-top: 0; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > h3,
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :has(> h3:first-child) > h3 { font: 600 13px/1.3 var(--sans); letter-spacing: 0; color: var(--dsh-on-page); }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :is(p, .hint, .dsh-cap) { padding: 7px 4px 0; font-size: 12.5px; line-height: 1.45; color: var(--dsh-on-page); background: none; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :is(h3, :has(> h3:first-child)) { margin: 22px 0 8px; padding: 0 4px; border: 0; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :is(h3, :has(> h3:first-child)):first-child { margin-top: 0; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > h3,
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :has(> h3:first-child) > h3 { font: 600 13px/1.3 var(--sans); letter-spacing: 0; color: var(--dsh-on-page); }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :is(p, .hint, .dsh-cap) { padding: 7px 4px 0; font-size: 12.5px; line-height: 1.45; color: var(--dsh-on-page); background: none; }
 /* Empty lines (a warning not showing) take no room and end no group. */
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > :empty { display: none; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :empty { display: none; }
 /* A button between groups: a quiet one (Show the lines) is a link on the
    page; a full one (See the 5 stages) is a white action row in amber,
    as a settings list draws one. */
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"] { margin: 8px 4px 0; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"], [data-variant="default"]) {
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"] { margin: 8px 4px 0; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"], [data-variant="default"]) {
   width: 100%; margin: 10px 0 0; height: 44px; border-radius: 14px; background: var(--ds-surface); color: var(--ds-amber); font-weight: 600;
 }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"], [data-variant="default"]):hover { background: color-mix(in srgb, var(--ds-surface), var(--ds-text) 4%); }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"] + * { margin-top: 10px; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"]:is([data-variant="outline"], [data-variant="secondary"], [data-variant="default"]):hover { background: color-mix(in srgb, var(--ds-surface), var(--ds-text) 4%); }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > [data-slot="button"] + * { margin-top: 10px; }
 /* The Calculator's changes ahead: its heading and notes on the page, its
    buttons as white action rows. */
 .dsh .dsh-embed aside .dsh-sc { margin: 22px 0 0; padding: 0; background: none; border: 0; }
@@ -407,11 +408,11 @@
 .dsh .dsh-embed aside .dsh-sc-row { border-bottom: 0; padding: 0; }
 .dsh .dsh-embed aside .dsh-sc-btns [data-slot="button"] { height: 44px; border-radius: 14px; background: var(--ds-surface); color: var(--ds-amber); font-weight: 600; }
 /* An input on its own: label left, box right */
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > .field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 46%); align-items: center; column-gap: 14px; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > .field > :first-child { margin: 0; }
-.dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > .field > :nth-child(n + 3) { grid-column: 1 / -1; margin-top: 6px; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 46%); align-items: center; column-gap: 14px; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field > :first-child { margin: 0; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field > :nth-child(n + 3) { grid-column: 1 / -1; margin-top: 6px; }
 @media (max-width: 560px) {
-  .dsh .dsh-embed aside > [data-slot="card"] > [data-slot="card-content"] > .field { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
+  aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
 }
 /* Facts the column says in place of inputs (Taxes & Savings' pay) */
 .dsh .dsh-embed aside .dsh-facts { margin: 0; padding-block: 2px; }
@@ -439,10 +440,10 @@
 
 /* ---------- Check rows: a change or an option that's on reads clearly ----------
    Off: an outlined row, gray text. On: a white row, full-strength text. */
-.dsh :is([data-checkrow], [data-slot="toggle"][data-variant="check"]) { border-color: transparent; background: transparent; box-shadow: inset 0 0 0 1px var(--ds-rule); border-radius: 12px; }
-.dsh :is([data-checkrow]:has([data-slot="toggle"][data-pressed]), [data-slot="toggle"][data-variant="check"][data-pressed]) { background: var(--ds-surface); box-shadow: 0 0 0 1px var(--ds-rule), var(--dsh-card-shadow); }
-.dsh [data-slot="toggle"]:is([data-variant="check"], [data-variant="checkInline"])[data-pressed] { color: var(--ds-text); }
-.dsh [data-slot="toggle"]:is([data-variant="check"], [data-variant="checkInline"]):not([data-pressed]) { color: var(--ds-muted); }
+:is([data-checkrow], [data-slot="toggle"][data-variant="check"]) { border-color: transparent; background: transparent; box-shadow: inset 0 0 0 1px var(--ds-rule); border-radius: 12px; }
+:is([data-checkrow]:has([data-slot="toggle"][data-pressed]), [data-slot="toggle"][data-variant="check"][data-pressed]) { background: var(--ds-surface); box-shadow: 0 0 0 1px var(--ds-rule), var(--dsh-card-shadow); }
+[data-slot="toggle"]:is([data-variant="check"], [data-variant="checkInline"])[data-pressed] { color: var(--ds-text); }
+[data-slot="toggle"]:is([data-variant="check"], [data-variant="checkInline"]):not([data-pressed]) { color: var(--ds-muted); }
 
 /* ---------- Text straight on the page: darker than captions in a card ---------- */
 .dsh .dsh-page > :is(p, .dsh-cap), .dsh .dsh-page .dsh-cap:not(:is(.dsh-tile, [data-slot="card"]) .dsh-cap) { color: var(--dsh-on-page); }
@@ -466,15 +467,16 @@
 /* ---------- Readable everywhere (the critique's audit, 2026-11-02) ----------
    No text under 12px; the "On track" badge clears 4.5:1; a field being
    typed in has a ring you can see; a switch's icon stays at text size. */
-:root:has(.dsh) { --text-label: 12px; }
-.dsh :is(.hint, .mssub, .ddwhy, .ddstrat-cap, .swipehint, .dsh-badge, .dsh-label, .tag) { font-size: max(12px, 1em); }
-.dsh :is(table th, .dsh-tbl th) { font-size: max(12px, 0.92em); }
+html:root { --text-label: 12px; }
+:is(.hint, .mssub, .ddwhy, .ddstrat-cap, .swipehint, .dsh-badge, .dsh-label, .tag) { font-size: max(12px, 1em); }
+:is(table th, .dsh-tbl th) { font-size: max(12px, 0.92em); }
 :root[data-theme="light"] .dsh .dsh-badge.dsh-gain { color: #17652c; }
-.dsh :is([data-slot="input"], [data-slot="native-select"], [data-slot="textarea"]):not([data-variant="inline"]):focus-visible,
-.dsh [data-slot="input-group"]:focus-within { outline: 2px solid var(--dsh-tint-fill); outline-offset: 1px; }
-.dsh [data-slot="segmented-item"] svg { width: 16px; height: 16px; }
-.dsh :is(.dsh-sbar > i, .dsh-sbar-pop) { font-style: normal; }
-.dsh #ddEraList p, .dsh .ddintro { max-width: 78ch; }
+:root[data-theme="light"] .dsh .dsh-badge.dsh-loss { color: #b0000f; }
+:is([data-slot="input"], [data-slot="native-select"], [data-slot="textarea"]):not([data-variant="inline"]):focus-visible,
+[data-slot="input-group"]:focus-within { outline: 2px solid var(--dsh-tint-fill); outline-offset: 1px; }
+[data-slot="segmented-item"] svg { width: 16px; height: 16px; }
+:is(.dsh-sbar > i, .dsh-sbar-pop) { font-style: normal; }
+#ddEraList p, .ddintro { max-width: 78ch; }
 /* Readiness: an area partly earned in a lighter green, not ink. */
 .dsh .dsh-split i b:not(.dsh-full) { background: color-mix(in srgb, var(--ds-gain) 55%, var(--ds-surface)); }
 
@@ -490,6 +492,48 @@
 .dsh-jumps a:hover { background: var(--dsh-tint-wash); color: var(--ds-amber); }
 :root:has(.dsh-jumps) { scroll-padding-top: 70px; scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { :root:has(.dsh-jumps) { scroll-behavior: auto; } }
+
+/* ---------- The main site's frame (2026-11-02 rollout) ----------
+   Everything the header and footer carry stays; only their look follows
+   Clear Glass. */
+/* The top bar: frosted once the page scrolls under it. */
+.navbar.stuck { background: var(--dsh-glass); -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8); box-shadow: inset 0 -1px 0 var(--ds-rule); }
+/* A tool's or the Calculator's name: a large title, as on the Dashboard. */
+.toolhead-name { font-family: var(--dsh-display); font-size: 30px; letter-spacing: -0.022em; }
+.toolhead-desc { color: var(--dsh-on-page); font-size: 15px; }
+/* The footer: quiet links in the page's text color, amber on hover. */
+.sitefoot { border-top-color: var(--ds-rule); }
+.sitefoot [data-slot="button"][data-variant="link"], .sitefoot-link { color: var(--dsh-on-page); text-decoration-color: color-mix(in srgb, var(--dsh-on-page) 35%, transparent); }
+.sitefoot [data-slot="button"][data-variant="link"]:hover, .sitefoot-link:hover { color: var(--ds-amber); text-decoration-color: currentColor; }
+.sitefoot-txt p { color: var(--dsh-on-page); }
+.sitefoot-txt p.src { color: var(--ds-muted); font-size: 12px; }
+.sitefoot-brand span { font-size: 12px; }
+/* The homepage's tiles: no outline, a soft shadow, as every card. */
+.hm-tile { border-color: transparent; box-shadow: var(--dsh-card-shadow); }
+a.hm-tile:hover { border-color: transparent; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 14px 36px rgba(0, 0, 0, 0.12); }
+/* The Guide's choices and offers: soft tiles, the chosen one ringed in amber. */
+.gd-choice { border-color: transparent; background: var(--dsh-fill-2); border-radius: 14px; }
+.gd-choice:hover { border-color: transparent; background: var(--dsh-fill); }
+.gd-choice.on { border-color: transparent; background: var(--dsh-tint-wash); box-shadow: inset 0 0 0 2px var(--dsh-tint-fill); }
+.gd-choice.on .dot { border-color: var(--ds-amber); }
+.gd-choice.on .dot::after { background: var(--ds-amber); }
+.rp-offer { border-color: transparent; background: var(--dsh-fill-2); }
+.op-goal { border-color: transparent; background: var(--dsh-fill-2); border-radius: 14px; }
+.op-goal:hover { border-color: transparent; background: var(--dsh-fill); }
+.op-goal.on { border-color: transparent; background: var(--dsh-tint-wash); box-shadow: inset 0 0 0 2px var(--dsh-tint-fill); }
+.op-goal.on .dot { border-color: var(--ds-amber); }
+.op-goal.on .dot::after { background: var(--ds-amber); }
+
+/* The Dashboard's front page (signed out): its steps and pictures as
+   cards on the page, the pictures on a soft gray band. */
+.dl-step, .dl-shot { border-color: transparent; box-shadow: var(--dsh-card-shadow); }
+.dl-pic { border-top: 0; background: var(--dsh-fill-2); }
+.dl-sum, .dl-snip { border-color: transparent; box-shadow: var(--dsh-card-shadow); }
+.dl-n { border-color: var(--ds-amber); color: var(--ds-amber); }
+.dl-fakebtn { border-radius: 999px; }
+.dl-entries em { width: auto; min-width: 76px; }
+.dl-entries li:last-child em { color: var(--ds-muted); }
+.dl-shot { border-radius: var(--r-panel); }
 
 /* ---------- Phones ---------- */
 /* Phones and touch tablets (the frame's own switch, 19-dashboard.css):

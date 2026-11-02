@@ -22,6 +22,7 @@ colors:
   on-amber: "#ffffff"
   gain: "#1f7a35"
   gain-badge-text: "#17652c"
+  loss-badge-text: "#b0000f"
   loss: "#d70015"
   night-ground: "#000000"
   night-surface: "#1c1c1e"
@@ -52,7 +53,7 @@ colors:
   money-tax4: "#f8c4d1"
   money-spend: "#5856d6"
   money-save: "#1f9d55"
-  money-match: "#7cc694"
+  money-match: "#55a36f"
   money-trad: "#146c43"
   money-roth: "#2a9a63"
   money-brok: "#748f1f"
@@ -325,9 +326,10 @@ components:
 
 ## Status
 
-- **Live today on the signed-in Dashboard pages only.** The whole system is scoped by `:root:has(.dsh)`: while a Dashboard page is showing, the tokens change at the root, so the tools the Dashboard hosts and the menus, dialogs and tips drawn outside it follow. The signed-out Dashboard front page (`.dl`) renders no `.dsh` and is untouched.
-- **The rest of the site still runs the previous system** (Graphite/Paper tokens on `:root` in `web/app/globals.css`, IBM Plex Sans, "The Four Places Rule"). That system is being retired; the main site moves onto Clear Glass next. Until a page has moved, its old look is not a defect to fix piecemeal.
-- **Moving a page across** means putting it under the same token set (today the selectors are `:root:has(.dsh)` and `.dsh …`; site-wide they become `:root`), not restyling it by hand. Shared tools already read the money map with their old series color as a fallback (`ACCT` in `web/lib/hues.ts`: `var(--c-trad, var(--ds-series-rose))`), so they change color the moment a page sets `--c-*`.
+- **Live site-wide since 2026-11-02.** `web/styles/22-clear-glass.css` sets the tokens on `:root` (written `html:root` so they outrank the old tokens in `web/app/globals.css`, which still exist underneath as names the older stylesheets read). Every page, tool, menu, dialog and tip follows. Rules under `.dsh` are the Dashboard's own frame and pages; the rest apply everywhere.
+- **The main site keeps all its frame's content.** The top bar, footer, homepage, Guide, articles and Learn carry everything they did; only their look moved (frosted top bar once scrolled, large tool titles, quiet footer links, borderless homepage tiles, soft choice tiles).
+- **The previous system** (Graphite/Paper, IBM Plex Sans, "The Four Places Rule") is retired; its spec is in `git show a1b2b55:DESIGN.md`. Older stylesheets (`00`–`21`) still carry its structure and are overridden here, not rewritten: an old color or radius that shows through on some page is a defect to fix in `22-clear-glass.css`.
+- **Not moved yet:** the marketing package (`marketing/`) and the Dashboard promo video still show the old look (held by the owner, 2026-11-02). The printed report, one-page summary and share card keep their own fixed palettes (see Print and share).
 - Tokens below are the light theme (`glass-*`) and the dark theme (`night-*`); in code they are the same custom property names in both themes (`--ds-ground`, `--ds-amber`, `--dsh-fill`, `--c-save` …), switched by `data-theme`.
 
 ## Overview
