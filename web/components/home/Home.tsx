@@ -25,6 +25,7 @@ import {
   BridgeChart, BudgetChart, CloudChart, FanChart, FireChart, GrowthChart, HealthChart, MortgageChart, RothChart, ScoreRing, TaxChart,
 } from "./charts";
 import { RentBuyBlueprint } from "@/components/tools/picker-charts";
+import { Century } from "./Century";
 
 const fmtMoney = (v: number) => (v >= 1e6 ? "$" + (v / 1e6).toFixed(2) + "M" : "$" + Math.round(v / 1000).toLocaleString("en-US") + "K");
 
@@ -46,6 +47,7 @@ export function Home({ data }: { data: HomeData }) {
             <Link href="/guide" className={buttonVariants({ variant: "outline", size: "xl" })}>Start the guide</Link>
           </div>
         </div>
+        <Century start={data.century.start} real={data.century.real} />
       </section>
 
       <section aria-labelledby="hmTools">
@@ -138,22 +140,26 @@ export function Home({ data }: { data: HomeData }) {
       <section aria-labelledby="hmDash">
         <div className="hm-head hm-later">
           <h2 className="hm-h2" id="hmDash" data-rv="">Your whole plan, in one place.</h2>
-          <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>A free account keeps your accounts, pay, spending and retirement together.</p>
+          <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>A free account keeps your accounts, pay, spending and retirement together. No bank logins: you type your own numbers.</p>
         </div>
-        <Link href="/dashboard" className="hm-tile hm-amber" data-draw="" data-rv="">
-          <span className="hm-kick hm-c-amber">My Dashboard</span>
-          <div className="hm-split hm-dash">
-            <div>
-              <h3 className="hm-h3">Net worth, readiness and what to do next, on one screen.</h3>
-              <p>Update your balances each month or quarter and watch your plan move. No bank logins: you type your own numbers.</p>
-            </div>
-            <div className="hm-shot">
-              <Image className="dl-lt" src="/dashboard-landing/v2/dash-light.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 760px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
-              <Image className="dl-dk" src="/dashboard-landing/v2/dash-dark.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 760px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
-            </div>
+        {/* The Dashboard on a laptop and an iPhone, with three of its figures lifted out. */}
+        <Link href="/dashboard" className="hm-devices" data-draw="" aria-label="Open My Dashboard">
+          <div className="hm-mac">
+            <Image className="dl-lt" src="/dashboard-landing/v2/dash-light.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 1100px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
+            <Image className="dl-dk" src="/dashboard-landing/v2/dash-dark.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 1100px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
           </div>
-          <Go>Open My Dashboard</Go>
+          <div className="hm-iphone">
+            <i className="hm-island" aria-hidden="true" />
+            <Image className="dl-lt" src="/dashboard-landing/v2/phone-networth-light.png" width={1206} height={2622} sizes="(max-width: 900px) 34vw, 260px" alt="The Dashboard's net worth chart on an iPhone" />
+            <Image className="dl-dk" src="/dashboard-landing/v2/phone-networth-dark.png" width={1206} height={2622} sizes="(max-width: 900px) 34vw, 260px" alt="The Dashboard's net worth chart on an iPhone" />
+          </div>
+          <div className="hm-callout hm-co1"><CountUp className="v" to={96} format={(x) => String(Math.round(x))} /><span>Readiness score, of 100</span></div>
+          <div className="hm-callout hm-co2"><CountUp className="v" to={610500} format={(x) => "$" + Math.round(x).toLocaleString("en-US")} /><span>Net worth today</span></div>
+          <div className="hm-callout hm-co3"><CountUp className="v" to={100} format={(x) => Math.round(x) + "%"} /><span>Chance of success</span></div>
         </Link>
+        <div className="hm-devices-go" data-rv="">
+          <Link href="/dashboard" className={buttonVariants({ size: "xl" })}>Open My Dashboard<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>
+        </div>
       </section>
 
       <section aria-labelledby="hmEveryday">

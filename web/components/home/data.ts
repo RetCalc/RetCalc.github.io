@@ -9,11 +9,15 @@ import { RENTBUY_DEFAULTS, rentBuyInput } from "@/tools/rentbuy/model";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
 import { mortgage, projectBasic, rentBuyCalc } from "@/lib/engine/typed";
 import { historicalBacktest } from "@/lib/engine/typed-drawdown";
+import { HIST_M_INFL, HIST_M_STOCK, HIST_START } from "@/lib/engine/data/history.js";
 
 /** The example household: 32, $60,000 saved, $1,500 per month, Balanced. */
 export const EXAMPLE = { age: 32, retire: 65, saved: 60000, monthly: 1500 };
 
 export interface HomeData {
+  /** The first year of market history, and each calendar year's stock return
+      after inflation since then, in percent (the hero's chart). */
+  century: { start: number; real: number[] };
   /** Balance at each age from 32 to 65, in today's dollars. */
   growth: number[];
   /** One line per January start since 1926 (real dollars, $1M start), and whether it ran out. */
@@ -53,7 +57,16 @@ export function homeData(): HomeData {
   const rb = rentBuyCalc(rentBuyInput({ ...RENTBUY_DEFAULTS, rent: "2300", rentInc: "4" })).years;
   const m = mortgage(mortgageInput(MORTGAGE_DEFAULTS));
 
+  // Each calendar year: twelve months of stock returns, less twelve months of inflation.
+  const real: number[] = [];
+  for (let y = 0; y * 12 + 11 < HIST_M_STOCK.length; y++) {
+    let st = 1, inf = 1;
+    for (let m = y * 12; m < y * 12 + 12; m++) { st *= 1 + HIST_M_STOCK[m] / 100; inf *= 1 + HIST_M_INFL[m] / 100; }
+    real.push(Math.round((st / inf - 1) * 1000) / 10);
+  }
+
   return {
+    century: { start: HIST_START, real },
     growth,
     fan,
     lasted: H.successRate,
