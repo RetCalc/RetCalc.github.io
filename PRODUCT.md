@@ -75,6 +75,7 @@ Everything runs in the browser, with no payments. An account is optional (since 
   - stock photos of retirees
 - **References named by the owner:**
   - ProjectionLab, for the category
+  - Apple's own apps (iOS and macOS: Settings, Health, Wallet), for the look the site is moving to, "Clear Glass" (2026-11-02, DESIGN.md)
   - Stripe and Linear, for restraint and typography
   - the FT and Observable, for chart clarity
 
