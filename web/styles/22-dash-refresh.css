@@ -97,6 +97,29 @@
 .dsh-top .dsh-r { align-self: center; }
 .dsh-page { padding: 22px 36px 110px; }
 
+/* The slim bar that takes over once the large title scrolls away: the
+   page's name and Help, frosted, along the top of the page column. While
+   it shows (data-pinned), whatever else holds to the top sits below it. */
+.dsh-pin {
+  position: fixed; top: var(--sb-clear, 0px); left: 68px; right: 0; z-index: 30; height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 36px;
+  background: var(--dsh-glass); -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8);
+  box-shadow: inset 0 -1px 0 var(--ds-rule); opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity 0.18s, transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dsh-app[data-pinned] .dsh-pin { opacity: 1; transform: none; pointer-events: auto; }
+.dsh-pin-t { flex: 1; min-width: 0; font: 600 17px/1.2 var(--dsh-display); letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsh-app[data-pinned] { --dsh-pin: 52px; }
+.dsh .dsh-embed aside { top: calc(16px + var(--dsh-pin, 0px)); max-height: calc(100vh - 32px - var(--dsh-pin, 0px)); }
+.dsh .dsh-changebar { top: calc(12px + var(--dsh-pin, 0px)); }
+.dsh .dsh-yby thead tr.dsh-yby-groups th { top: var(--dsh-pin, 0px); }
+.dsh .dsh-yby thead tr:not(.dsh-yby-groups) th { top: calc(24px + var(--dsh-pin, 0px)); }
+
+/* The Dashboard's footer: one quiet line, on the page. */
+.dsh-pagefoot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 20px; margin: -60px 36px 0; padding: 18px 0 40px; border-top: 1px solid var(--ds-rule); font-size: 12.5px; color: var(--dsh-on-page); }
+.dsh-pagefoot-l { display: flex; gap: 18px; }
+.dsh-pagefoot a { color: var(--dsh-on-page); text-decoration: none; }
+.dsh-pagefoot a:hover { color: var(--ds-amber); text-decoration: underline; text-underline-offset: 3px; }
+
 /* More (phones), the bottom bar */
 .dsh-mi { border: 0; background: var(--ds-surface); box-shadow: var(--dsh-card-shadow); border-radius: 14px; }
 .dsh-mi[aria-current] { border: 0; box-shadow: inset 0 0 0 2px var(--dsh-tint-fill); background: var(--dsh-tint-wash); }
@@ -298,7 +321,7 @@
 
 /* ---------- The Paycheck inside the Dashboard ---------- */
 /* The figures over the sliders stay in view while you drag. */
-.dsh #pcStats { position: sticky; top: 0; z-index: 4; border: 0; border-radius: 0; margin-inline: calc(-1 * var(--card-spacing)); padding-inline: 8px;
+.dsh #pcStats { position: sticky; top: var(--dsh-pin, 0px); z-index: 4; border: 0; border-radius: 0; margin-inline: calc(-1 * var(--card-spacing)); padding-inline: 8px;
   background: var(--ds-surface); border-block: 1px solid var(--ds-rule); }
 /* Money taken out says so with its minus sign, not in red. */
 .dsh #pcStub td.text-destructive { color: inherit; }
@@ -405,6 +428,18 @@
 .dsh-stack :is(.dsh-fig, .dsh-lg-v) small[data-u] { display: block !important; margin: 2px 0 0 !important; }
 
 /* ---------- Phones ---------- */
+/* Phones and touch tablets (the frame's own switch, 19-dashboard.css):
+   no pinned bar (the bottom tab bar and a tool's pinned answer have the
+   edges), and the footer clears the tab bar. */
+@media (max-width: 760px), (hover: none) and (pointer: coarse) and (max-width: 1023px), (hover: none) and (pointer: coarse) and (max-height: 500px) {
+  .dsh-pin { display: none; }
+  .dsh-app[data-pinned] { --dsh-pin: 0px; }
+  .dsh-pagefoot { margin: -72px 16px 0; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+}
+@media (min-width: 1700px) and (hover: hover) {
+  .dsh-pin { left: 236px; padding-inline: max(36px, calc((100% - 1372px) / 2 + 36px)); }
+  .dsh-pagefoot { max-width: 1300px; margin-inline: auto; }
+}
 @media (max-width: 767px) {
   .dsh-top { padding: 20px 16px 4px; }
   .dsh-top h1 { font-size: 28px; }

@@ -7,7 +7,7 @@
    rail, its labels always showing. */
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   BanknoteIcon, CalculatorIcon, MenuIcon, MonitorIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
    SunsetIcon, CalendarRangeIcon, UserRoundIcon, WalletIcon, type LucideIcon,
@@ -21,6 +21,7 @@ import { setThemeChoice, useThemeChoice, type ThemeChoice } from "@/lib/theme";
 import { useLanding } from "./land";
 import { HelpButton } from "@/tools/help/ToolHelp";
 import { Landing } from "./Landing";
+import { MailMe } from "./MailMe";
 import { TAB_TOURS } from "./tours";
 import { OUTSIDE_US, hasAccounts, unstarted, useDashboard } from "./store";
 
@@ -201,6 +202,21 @@ function useFitFigures() {
   }, []);
 }
 
+/** True once the page's large title has scrolled out of view: the slim
+    bar pinned to the top takes over (iOS's large title, collapsing). */
+function usePinned() {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const [pinned, setPinned] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setPinned(!e.isIntersecting && e.boundingClientRect.top < 0));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return [ref, pinned] as const;
+}
+
 /** A dashboard page: the rail, the title bar and the page. Someone who
     hasn't started setup sees the front page instead (SignedIn). */
 export function Frame({ current, title, sub, actions, help, children }: { current: Section; title: string; sub?: ReactNode; actions?: ReactNode; help?: string; children: ReactNode }) {
@@ -208,6 +224,8 @@ export function Frame({ current, title, sub, actions, help, children }: { curren
   const fresh = unstarted(data);
   useLanding();
   useFitFigures();
+  const [titleRef, pinned] = usePinned();
+  const hasHelp = !!(help || TAB_TOURS[current]);
   // A dot on a section with something still to fill in.
   const abroad = data.profile.state === OUTSIDE_US;
   const dots: Partial<Record<Section, boolean>> = {
@@ -215,13 +233,13 @@ export function Frame({ current, title, sub, actions, help, children }: { curren
     profile: !data.done || data.skipped.length > 0,
   };
   return (
-    <div className="dsh-app">
+    <div className="dsh-app" data-pinned={pinned ? "" : undefined}>
       <a className="dsh-skip" href="#dsh-page">Skip to the page</a>
       <Rail current={current} dots={dots} />
       <div className="dsh-main">
         <header className="dsh-top">
           <div className="dsh-title">
-            <h1>{title}</h1>
+            <h1 ref={titleRef}>{title}</h1>
           </div>
           {sub ? <span className="dsh-sub">{sub}</span> : null}
           {/* On a phone these wrappers let Help and the account stay beside
@@ -232,7 +250,18 @@ export function Frame({ current, title, sub, actions, help, children }: { curren
             <span className="dsh-acct"><AccountButton inDashboard /></span>
           </div>
         </header>
+        {/* Once the large title scrolls away: the page's name, and Help,
+            in a slim bar along the top. Help here presses the title bar's. */}
+        <div className="dsh-pin" aria-hidden={!pinned} inert={!pinned}>
+          <span className="dsh-pin-t">{title}</span>
+          {hasHelp ? <Button variant="outline" size="sm" onClick={() => document.getElementById("toolHelpBtn")?.click()}>Help</Button> : null}
+        </div>
         <div className="dsh-page" id="dsh-page" tabIndex={-1}>{fresh ? null : children}</div>
+        {/* The site's footer is a website's; the Dashboard keeps one line of it. */}
+        <footer className="dsh-pagefoot">
+          <span>An educational tool, not financial or tax advice. Past returns don&apos;t predict future ones.</span>
+          <span className="dsh-pagefoot-l"><Link href="/dashboard/about#disclaimer">Disclaimer</Link><Link href="/privacy">Privacy</Link><MailMe user="contact" domain="retcalc.app" /></span>
+        </footer>
       </div>
       <TabBar current={current} dots={dots} />
     </div>
