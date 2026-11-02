@@ -24,8 +24,9 @@ const W = 1000, H = 260;
 export function Century({ start, real }: { start: number; real: number[] }) {
   const [at, setAt] = useState<number | null>(null);
   const n = real.length, end = start + n - 1;
-  const top = Math.max(...real.map((v) => Math.abs(v)));
-  const base = H / 2, k = (H / 2 - 4) / top, bw = W / n;
+  // Room above the line for the best year and below it for the worst, no more.
+  const hi = Math.max(0, ...real), lo = Math.max(0, ...real.map((v) => -v));
+  const k = (H - 4) / (hi + lo), base = 2 + hi * k, bw = W / n;
   const marks = [start, 1950, 1975, 2000, end];
   const pick = (e: React.PointerEvent<SVGSVGElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -34,7 +35,7 @@ export function Century({ start, real }: { start: number; real: number[] }) {
   };
   const v = at == null ? 0 : real[at];
   return (
-    <figure className="hm-century" data-on={at != null ? "" : undefined}>
+    <figure className="hm-century" data-on={at != null ? "" : undefined} style={{ "--base": `${(base / H) * 100}%` } as React.CSSProperties}>
       <div className="hm-cbars">
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img"
           aria-label={`Stock returns after inflation, each year from ${start} to ${end}: ${real.filter((x) => x >= 0).length} years up, ${real.filter((x) => x < 0).length} down`}

@@ -22,7 +22,7 @@
 
 /* hero */
 .hm-hero{display:grid;grid-template-columns:1.3fr 1fr;gap:24px 64px;align-items:end;
-  padding:clamp(40px,7vw,96px) 0 clamp(32px,4vw,56px)}
+  padding:clamp(24px,3vw,44px) 0 clamp(32px,4vw,56px)}
 .hm-display{font-size:clamp(44px,6.2vw,88px);line-height:.98;letter-spacing:-.045em;font-weight:600;
   color:var(--ds-text);text-wrap:balance}
 .hm-display em{font-style:normal;color:var(--ds-amber)}
@@ -37,7 +37,10 @@
    their size. */
 .hm-century{grid-column:1 / -1;margin:clamp(16px,3vw,40px) 0 0}
 .hm-cbars{position:relative;height:clamp(150px,20vw,270px)}
-.hm-cbars::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--ds-rule)}
+/* Beside each other, the hero's words and the chart share the first screen:
+   on a short window the bars give up height so the key under them still shows. */
+@media (min-width:901px){ .hm-cbars{height:clamp(140px,min(20vw,calc(100vh - 540px)),270px);height:clamp(140px,min(20vw,calc(100svh - 540px)),270px)} }
+.hm-cbars::before{content:"";position:absolute;left:0;right:0;top:var(--base,50%);height:1px;background:var(--ds-rule)}
 .hm-cbars svg{position:relative;display:block;width:100%;height:100%;overflow:visible;touch-action:pan-y;cursor:crosshair}
 .hm-cbars rect{transform-box:fill-box;animation:hm-grow .8s var(--hm-ease) both;animation-delay:calc(var(--i) * 7ms);transition:opacity .15s}
 .hm-cbars rect.up{fill:var(--ds-gain);transform-origin:50% 100%}
