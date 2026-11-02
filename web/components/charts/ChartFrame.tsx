@@ -158,6 +158,18 @@ export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, fadeIn,
   const tipRef = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<{ i: number; left: number; top: number } | null>(null);
 
+  /* The drawing's units per screen pixel (--u), so its labels can be set to
+     a true 12px on screen at any width (styles/22-clear-glass.css). */
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const fit = () => { if (svg.clientWidth) svg.style.setProperty("--u", String(size.W / svg.clientWidth)); };
+    const ro = new ResizeObserver(fit);
+    ro.observe(svg);
+    fit();
+    return () => ro.disconnect();
+  }, [size.W]);
+
   /* The point nearest the pointer, and the tooltip beside it, flipped to
      stay inside the chart. */
   const probe = (clientX: number, clientY: number) => {

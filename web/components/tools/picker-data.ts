@@ -11,6 +11,9 @@ export interface PickerData {
   rentbuy: HomeData["rentbuy"];
   /** The example household's savings by age (the homepage's Calculator tile). */
   growth: HomeData["growth"];
+  /** The household's budget by group, each a month, largest first: the
+      Dashboard's Tools tab sets it, so the Budget card shows their own. */
+  budget?: [string, number][];
 }
 
 export function pickerData(): PickerData {

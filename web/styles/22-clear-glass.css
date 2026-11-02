@@ -553,6 +553,14 @@ a.hm-tile:hover { border-color: transparent; box-shadow: 0 2px 4px rgba(0, 0, 0,
    text in the page's darker gray. */
 .hm-tile p, .hm-kick, [data-slot="alert"], [data-slot="alert-description"] { color: var(--dsh-on-page); }
 
+/* The Tools tab's Budget card, in the household's own figures: spending's color. */
+.hm-chart .f-spend { fill: var(--c-spend, var(--ds-series-lavender)); }
+
+/* Chart labels: a true 12px on screen whatever width the chart is drawn
+   at (ChartFrame sets --u, its drawing units per pixel). */
+.chartwrap > svg text { font-size: calc(12px * var(--u, 1.1)); }
+.dsh-chart text { font-size: 12px; }
+
 /* ---------- Phones ---------- */
 /* Phones and touch tablets (the frame's own switch, 19-dashboard.css):
    no pinned bar (the bottom tab bar and a tool's pinned answer have the

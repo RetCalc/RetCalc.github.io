@@ -42,7 +42,7 @@ function chartFor(sub: ToolSub, data: PickerData): { chart: React.ReactNode; bar
     case "college": return { chart: <CollegeStairs /> };
     case "rentbuy": return { chart: <RentBuyBlueprint buy={data.rentbuy.buy} rent={data.rentbuy.rent} /> };
     case "tax": return { chart: <TaxChart tax={data.tax} />, bars: "across" };
-    case "budget": return { chart: <BudgetChart />, bars: "across" };
+    case "budget": return { chart: <BudgetChart own={data.budget} />, bars: "across" };
     case "mortgage": return { chart: <MortgageChart years={data.mortgage} />, bars: "up" };
     case "debt": return { chart: <DebtDownhill /> };
   }

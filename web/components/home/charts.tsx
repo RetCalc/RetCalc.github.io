@@ -213,10 +213,15 @@ export function MortgageChart({ years, w = 340, h = 130 }: { years: HomeData["mo
   );
 }
 
-/** Budget: a month's spending by category (example). */
-export function BudgetChart({ w = 340, h = 130 }) {
-  const cats: [string, number, string][] = [["Housing", 2800, "f-sky"], ["Saving", 1500, "f-amber"], ["Food", 1000, "f-teal"], ["Transport", 700, "f-lav"], ["Everything else", 1400, "f-gray"]];
-  const x = scale(0, 2800, 0, w - 150);
+/** Budget: a month's spending by category: an example, or the household's
+    own (`own`: each group's amount a month, largest first), its four largest
+    and the rest as "Everything else", in the spending color. */
+export function BudgetChart({ w = 340, h = 130, own }: { w?: number; h?: number; own?: [string, number][] }) {
+  const cats: [string, number, string][] = own?.length
+    ? [...own.slice(0, own.length > 5 ? 4 : 5).map(([n, v]) => [n, v, "f-spend"] as [string, number, string]),
+      ...(own.length > 5 ? [["Everything else", own.slice(4).reduce((a, [, v]) => a + v, 0), "f-gray"] as [string, number, string]] : [])]
+    : [["Housing", 2800, "f-sky"], ["Saving", 1500, "f-amber"], ["Food", 1000, "f-teal"], ["Transport", 700, "f-lav"], ["Everything else", 1400, "f-gray"]];
+  const x = scale(0, Math.max(1, ...cats.map((c) => c[1])), 0, w - 150);
   return (
     <svg className="hm-chart" viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
       {cats.map(([n, v, c], i) => (

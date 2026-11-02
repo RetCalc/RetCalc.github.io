@@ -22,7 +22,8 @@ import { Frame, SECTIONS, SignedIn } from "./Frame";
 import { Hosted, TOOL_VIEWS, householdOf, seedFor, toolHref } from "./host";
 import { useDashboard, type Entry, type Profile } from "./store";
 import { applyCollege, collegeNeedOf, sameCollege } from "./college";
-import { flow, mixWords, retireMix } from "./flows";
+import { budgetFor, flow, mixWords, retireMix } from "./flows";
+import { budgetGroups } from "@/tools/budget/model";
 import { money, pctDown } from "./format";
 import { holdings, mortgage, results } from "./model";
 import { Note } from "./ui";
@@ -119,10 +120,15 @@ function ToolsList({ data }: { data: PickerData }) {
   const { data: d } = useDashboard();
   const yours = useMemo(() => yoursFor(d.profile, d.entries), [d.profile, d.entries]);
   const atRetire = useMemo(() => results(d.profile, d.entries).atRetire, [d.profile, d.entries]);
+  // The Budget card draws the household's own budget, by group.
+  const withBudget = useMemo((): PickerData => {
+    const own = budgetGroups(budgetFor(d.profile)).map((g): [string, number] => [g.group, g.yr / 12]);
+    return own.length ? { ...data, budget: own } : data;
+  }, [data, d.profile]);
   const lead = calcLead(data, atRetire != null ? `Your plan: ${money(Math.round(atRetire / 1000) * 1000)} at retirement, in today's dollars` : undefined);
   return (
     <Frame current="tools" title="Tools" sub="Each one opens here, with what you've told us filled in">
-      <ToolsBrowser data={data} hrefFor={(sub) => toolHref(sub, "/dashboard/tools")} yours={yours} lead={lead} />
+      <ToolsBrowser data={withBudget} hrefFor={(sub) => toolHref(sub, "/dashboard/tools")} yours={yours} lead={lead} />
     </Frame>
   );
 }

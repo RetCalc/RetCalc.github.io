@@ -320,10 +320,8 @@ export function Advanced() {
                 {acOn ? null : growthField}
                 <NumberField id="years" className={acOn ? "col-span-2" : undefined} label="Time period" unit="yrs" max={100} negative value={s.years} onValueChange={setTiming("years")} />
               </div>
-              <div className="two bottomalign max-sm:grid-cols-2">
-                <NumberField id="age" label={<>Your age <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="yrs" max={119} value={s.age} onValueChange={set("age")} />
-                <div className="hint mb-3.5 self-end" id="ageHint">{age != null ? "Retiring at " + (age + Math.round(parseNum(s.years))) + ". Changes ahead read by age." : "With it, the changes ahead read by age."}</div>
-              </div>
+              <NumberField id="age" label={<>Your age <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="yrs" max={119} value={s.age} onValueChange={set("age")} />
+              {age != null ? <div className="hint -mt-1.5 mb-3.5" id="ageHint">Retiring at {age + Math.round(parseNum(s.years))}.</div> : null}
 
               <GroupHead>Markets</GroupHead>
               <Field id="nominal" label={<Tipped text="Rate of return" k="nominalreturn" />}>
