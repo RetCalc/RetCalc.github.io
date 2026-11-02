@@ -30,6 +30,8 @@ import { acctWord, liveScenarios, newScenario, scenarioName, scenarioSentence, t
 import { newId, useDashboard, type Profile, type YearEdit } from "./store";
 import { KEEP_CHOICES, pctWord } from "./yearly";
 import { Tile, TipLabel, To } from "./ui";
+import { useTyped } from "./fields";
+import { CsvButton } from "@/components/common/CsvButton";
 
 /** The kinds this page adds: pay, spending, and saving outright. */
 const KINDS: Kind[] = [INCOME_KIND, SPENDING_KIND, SAVE_LESS_KIND];
@@ -106,8 +108,8 @@ export function YearByYear() {
         </div>
         <div className="dsh-yby-drivers dsh-mt">
           {(names ?? [nameOf(pr, 0)]).map((n, i) => (
-            <NumberField key={i} id={"dshRaise" + i} label={names ? `${n}'s raise per year` : "Your raise per year"} unit="%" step={0.5} max={15} negative
-              value={pctText(pr.yearly.raise[i])} onValueChange={(v) => { const r = (parseFloat(v) || 0) / 100; setYearly({ raise: (i ? [pr.yearly.raise[0], r] : [r, names ? pr.yearly.raise[1] : r]) as [number, number] }); }} />
+            <RaiseField key={i} id={"dshRaise" + i} label={names ? `${n}'s raise per year` : "Your raise per year"} rate={pr.yearly.raise[i]}
+              onRate={(r) => setYearly({ raise: (i ? [pr.yearly.raise[0], r] : [r, names ? pr.yearly.raise[1] : r]) as [number, number] })} />
           ))}
           <SelectField id="dshKeep" label={<TipLabel text="How much of each raise you save" id="raiseSaved" />} value={pr.yearly.keep == null ? "same" : String(pr.yearly.keep)} onChange={(v) => setYearly({ keep: v === "same" ? null : Number(v) })}>
             {KEEP_CHOICES.map((c) => <option key={String(c.v)} value={c.v == null ? "same" : String(c.v)}>{c.label}</option>)}
@@ -136,10 +138,13 @@ export function YearByYear() {
       </Tile>
 
       <Tile id="table" icon={TableIcon} title="Every year to retirement" className="dsh-r4" right={
-        <Segmented aria-label="Dollars">
-          <SegmentedItem pressed={!future} onPressedChange={() => setFuture(false)}>Today&apos;s dollars</SegmentedItem>
-          <SegmentedItem pressed={future} onPressedChange={() => setFuture(true)}>Future dollars</SegmentedItem>
-        </Segmented>
+        <div className="dsh-yby-tools">
+          <Segmented aria-label="Dollars">
+            <SegmentedItem pressed={!future} onPressedChange={() => setFuture(false)}>Today&apos;s dollars</SegmentedItem>
+            <SegmentedItem pressed={future} onPressedChange={() => setFuture(true)}>Future dollars</SegmentedItem>
+          </Segmented>
+          <CsvButton label="Year by year" filename={`retcalc-year-by-year-${future ? "future" : "todays"}-dollars.csv`} rows={csvRows} />
+        </div>
       }>
         <YearTable years={years} names={names} other={other} f={f} age2now={age2now} pr={pr} a={a}
           onPay={(y, who) => setCell({ what: who ? "pay1" : "pay0", year: y.year, k: y.k, value: yr(y.pay[who]), label: names ? names[who] + "'s pay" : "Your pay", edit: y.edits.find((e) => e.what === (who ? "pay1" : "pay0")) ?? null })}
@@ -166,6 +171,26 @@ export function YearByYear() {
       ) : null}
     </Frame>
   );
+}
+
+/** A raise per year in percent, keeping a half-typed "1." as typed. */
+function RaiseField({ id, label, rate, onRate }: { id: string; label: string; rate: number; onRate: (r: number) => void }) {
+  const [text, setText] = useTyped(pctText(rate));
+  return <NumberField id={id} label={label} unit="%" step={0.5} max={15} negative value={text}
+    onValueChange={(v) => { setText(v); const n = parseNum(v); onRate(isFinite(n) ? n / 100 : 0); }} />;
+}
+
+/** The table as CSV, as it shows: its column names, every year and the
+    totals, in the dollars chosen (the groups over the names left out). */
+function csvRows(): string[][] | null {
+  const t = document.querySelector<HTMLTableElement>(".dsh-yby");
+  if (!t?.querySelector("tbody tr")) return null;
+  const text = (c: Element) => {
+    const notes = [...c.querySelectorAll(".dsh-yby-note")].map((n) => n.textContent?.trim() ?? "");
+    return notes.length ? notes.join("; ") : (c.textContent ?? "").replace(/\s+/g, " ").trim();
+  };
+  return [...t.querySelectorAll("tr")].filter((tr) => !tr.classList.contains("dsh-yby-groups"))
+    .map((tr) => [...tr.querySelectorAll("th,td")].flatMap((c) => [text(c), ...Array.from({ length: ((c as HTMLTableCellElement).colSpan || 1) - 1 }, () => "")]));
 }
 
 /* ---------- the table ---------- */
