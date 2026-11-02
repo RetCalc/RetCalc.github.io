@@ -198,7 +198,7 @@
       "amber-text": {
         "role": "primary",
         "displayName": "Amber Text",
-        "canonical": "#a35a00",
+        "canonical": "#975300",
         "oklch": "oklch(54.2% 0.127 60.2)",
         "tonalRamp": [
           "oklch(15.0% 0.127 60.2)",
@@ -1971,7 +1971,7 @@
       "refersTo": "button-fill",
       "description": "The default button: a gray pill; pressed takes the amber wash.",
       "html": "<button class=\"ds-btn\">Update balances</button> <button class=\"ds-btn\" aria-pressed=\"true\">Per month</button>",
-      "css": ".ds-btn{font:500 14px/1 -apple-system,BlinkMacSystemFont,Inter,sans-serif;height:36px;padding:0 14px;border:0;border-radius:999px;background:rgba(118,118,128,.12);color:#1d1d1f;cursor:pointer;transition:background .15s}.ds-btn:hover{background:rgba(118,118,128,.2)}.ds-btn:focus-visible{outline:2px solid #e88a00;outline-offset:2px}.ds-btn[aria-pressed=true]{background:rgba(232,138,0,.12);color:#a35a00}"
+      "css": ".ds-btn{font:500 14px/1 -apple-system,BlinkMacSystemFont,Inter,sans-serif;height:36px;padding:0 14px;border:0;border-radius:999px;background:rgba(118,118,128,.12);color:#1d1d1f;cursor:pointer;transition:background .15s}.ds-btn:hover{background:rgba(118,118,128,.2)}.ds-btn:focus-visible{outline:2px solid #e88a00;outline-offset:2px}.ds-btn[aria-pressed=true]{background:rgba(232,138,0,.12);color:#975300}"
     },
     {
       "name": "Action Row",
@@ -1979,7 +1979,7 @@
       "refersTo": "button-action-row",
       "description": "A full-width button between input groups, as a settings list draws one.",
       "html": "<div class=\"ds-page\"><button class=\"ds-act\">See the 5 stages</button></div>",
-      "css": ".ds-page{background:#f5f5f7;padding:16px}.ds-act{width:100%;height:44px;border:0;border-radius:14px;background:#fff;color:#a35a00;font:600 15px -apple-system,BlinkMacSystemFont,Inter,sans-serif;cursor:pointer}.ds-act:hover{background:#f5f5f6}.ds-act:focus-visible{outline:2px solid #e88a00;outline-offset:1px}"
+      "css": ".ds-page{background:#f5f5f7;padding:16px}.ds-act{width:100%;height:44px;border:0;border-radius:14px;background:#fff;color:#975300;font:600 15px -apple-system,BlinkMacSystemFont,Inter,sans-serif;cursor:pointer}.ds-act:hover{background:#f5f5f6}.ds-act:focus-visible{outline:2px solid #e88a00;outline-offset:1px}"
     },
     {
       "name": "Input Group",
@@ -2010,7 +2010,7 @@
       "refersTo": "card",
       "description": "Borderless white card, soft shadow; title, amber key figure, a row of secondary figures with a status icon.",
       "html": "<div class=\"ds-page\"><section class=\"ds-card\"><h2>Savings</h2><div class=\"ds-lb\">You save and invest</div><div class=\"ds-hero\">$2,140<small>per month</small></div><div class=\"ds-figs\"><div><div class=\"ds-lb\">Employer match <svg class=\"ds-ok\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9.5\"/><path d=\"m8.5 12 2.4 2.4 4.6-4.8\"/></svg></div><div class=\"ds-fig\">$533<small>per month</small></div></div><div><div class=\"ds-lb\">Savings rate</div><div class=\"ds-fig\">16%</div></div></div></section></div>",
-      "css": ".ds-page{background:#f5f5f7;padding:20px;font-family:-apple-system,BlinkMacSystemFont,Inter,sans-serif;font-variant-numeric:tabular-nums;color:#1d1d1f;letter-spacing:-.01em}.ds-card{background:#fff;border-radius:20px;padding:20px 22px;box-shadow:0 1px 1px rgba(0,0,0,.03),0 6px 24px rgba(0,0,0,.05)}.ds-card h2{margin:0 0 12px;font:600 19px/1.25 inherit;letter-spacing:-.02em}.ds-lb{font-size:13px;color:#6e6e73;display:flex;align-items:center;gap:4px;white-space:nowrap}.ds-hero{font:600 44px/1.06 inherit;letter-spacing:-.03em;color:#a35a00}.ds-hero small,.ds-fig small{font-size:15px;font-weight:500;margin-left:4px;letter-spacing:-.01em;white-space:nowrap}.ds-figs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:24px;margin-top:20px;padding-top:18px;border-top:1px solid #e3e3e8}.ds-fig{font:600 30px/1.06 inherit;letter-spacing:-.025em}.ds-ok{width:17px;height:17px;color:#1f7a35}"
+      "css": ".ds-page{background:#f5f5f7;padding:20px;font-family:-apple-system,BlinkMacSystemFont,Inter,sans-serif;font-variant-numeric:tabular-nums;color:#1d1d1f;letter-spacing:-.01em}.ds-card{background:#fff;border-radius:20px;padding:20px 22px;box-shadow:0 1px 1px rgba(0,0,0,.03),0 6px 24px rgba(0,0,0,.05)}.ds-card h2{margin:0 0 12px;font:600 19px/1.25 inherit;letter-spacing:-.02em}.ds-lb{font-size:13px;color:#6e6e73;display:flex;align-items:center;gap:4px;white-space:nowrap}.ds-hero{font:600 44px/1.06 inherit;letter-spacing:-.03em;color:#975300}.ds-hero small,.ds-fig small{font-size:15px;font-weight:500;margin-left:4px;letter-spacing:-.01em;white-space:nowrap}.ds-figs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:24px;margin-top:20px;padding-top:18px;border-top:1px solid #e3e3e8}.ds-fig{font:600 30px/1.06 inherit;letter-spacing:-.025em}.ds-ok{width:17px;height:17px;color:#1f7a35}"
     },
     {
       "name": "StackBar",
@@ -2025,14 +2025,14 @@
       "refersTo": "tipbox",
       "description": "An ⓘ that opens a frosted box on hover or focus.",
       "html": "<div class=\"ds-tw\"><span class=\"ds-lab\">FICA <button class=\"ds-i\" aria-label=\"About FICA\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9.5\"/><path d=\"M12 16.5v-5M12 7.8h.01\"/></svg></button></span><div class=\"ds-box\">Social Security and Medicare taxes, taken from each paycheck.</div></div>",
-      "css": ".ds-tw{position:relative;padding:20px 20px 90px;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,Inter,sans-serif}.ds-lab{font-size:13px;color:#6e6e73;display:inline-flex;align-items:center;gap:4px}.ds-i{width:16px;height:16px;padding:0;border:0;background:none;color:#6e6e73;cursor:pointer}.ds-i:hover,.ds-i:focus-visible{color:#a35a00;outline:none}.ds-box{position:absolute;left:20px;top:46px;max-width:320px;padding:13px 15px;border-radius:16px;font-size:13px;line-height:1.5;color:#1d1d1f;background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8);box-shadow:0 2px 6px rgba(0,0,0,.06),0 18px 44px rgba(0,0,0,.14);opacity:0;transition:opacity .15s}.ds-tw:has(.ds-i:hover,.ds-i:focus-visible) .ds-box{opacity:1}"
+      "css": ".ds-tw{position:relative;padding:20px 20px 90px;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,Inter,sans-serif}.ds-lab{font-size:13px;color:#6e6e73;display:inline-flex;align-items:center;gap:4px}.ds-i{width:16px;height:16px;padding:0;border:0;background:none;color:#6e6e73;cursor:pointer}.ds-i:hover,.ds-i:focus-visible{color:#975300;outline:none}.ds-box{position:absolute;left:20px;top:46px;max-width:320px;padding:13px 15px;border-radius:16px;font-size:13px;line-height:1.5;color:#1d1d1f;background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8);box-shadow:0 2px 6px rgba(0,0,0,.06),0 18px 44px rgba(0,0,0,.14);opacity:0;transition:opacity .15s}.ds-tw:has(.ds-i:hover,.ds-i:focus-visible) .ds-box{opacity:1}"
     },
     {
       "name": "Side Rail",
       "kind": "nav",
       "description": "Icon rail; current item in the amber wash.",
       "html": "<nav class=\"ds-rail\"><a href=\"#\">Overview</a><a href=\"#\" aria-current=\"page\">Taxes &amp; Savings</a><a href=\"#\">Retirement</a></nav>",
-      "css": ".ds-rail{display:flex;flex-direction:column;gap:2px;width:220px;padding:14px 10px;background:#fbfbfd;border-right:1px solid #e3e3e8;font:15px -apple-system,BlinkMacSystemFont,Inter,sans-serif}.ds-rail a{padding:9px 12px;border-radius:12px;color:#1d1d1f;text-decoration:none}.ds-rail a:hover{background:rgba(118,118,128,.07)}.ds-rail a:focus-visible{outline:2px solid #e88a00}.ds-rail a[aria-current]{background:rgba(232,138,0,.12);color:#a35a00;font-weight:600}"
+      "css": ".ds-rail{display:flex;flex-direction:column;gap:2px;width:220px;padding:14px 10px;background:#fbfbfd;border-right:1px solid #e3e3e8;font:15px -apple-system,BlinkMacSystemFont,Inter,sans-serif}.ds-rail a{padding:9px 12px;border-radius:12px;color:#1d1d1f;text-decoration:none}.ds-rail a:hover{background:rgba(118,118,128,.07)}.ds-rail a:focus-visible{outline:2px solid #e88a00}.ds-rail a[aria-current]{background:rgba(232,138,0,.12);color:#975300;font-weight:600}"
     }
   ],
   "narrative": {

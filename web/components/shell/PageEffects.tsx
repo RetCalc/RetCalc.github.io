@@ -109,9 +109,36 @@ function fitAsides() {
   };
 }
 
+/* A tool's inputs column draws each run of inputs as one rounded group
+   (styles/22-clear-glass.css). Which rows start and end a run depends on
+   what's showing (a tool hides rows with its own classes), so each visible
+   row is marked here: data-gr="first", "mid", "last" or "only". */
+const NOT_ROW = "h3, p, .hint, .dsh-cap, [data-slot=button], :empty";
+function markGroups() {
+  let queued = false;
+  const mark = () => {
+    queued = false;
+    for (const cc of document.querySelectorAll<HTMLElement>("aside:not(#asideBudget) > [data-slot=card] > [data-slot=card-content]")) {
+      const vis = [...cc.children].filter((e) => getComputedStyle(e).display !== "none") as HTMLElement[];
+      const row = vis.map((e) => !e.matches(NOT_ROW) && !(e.firstElementChild?.tagName === "H3"));
+      vis.forEach((e, i) => {
+        const v = !row[i] ? null : (row[i - 1] ? (row[i + 1] ? "mid" : "last") : row[i + 1] ? "first" : "only");
+        if (v == null) { if (e.dataset.gr) delete e.dataset.gr; } else if (e.dataset.gr !== v) e.dataset.gr = v;
+      });
+    }
+  };
+  const queue = () => { if (!queued) { queued = true; requestAnimationFrame(mark); } };
+  const mo = new MutationObserver(queue);
+  mo.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "hidden", "data-inputs", "style"] });
+  addEventListener("resize", queue);
+  queue();
+  return () => { mo.disconnect(); removeEventListener("resize", queue); };
+}
+
 export function PageEffects() {
   useEffect(noFocusZoom, []);
   useEffect(fitAsides, []);
+  useEffect(markGroups, []);
   useEffect(() => {
     const main = document.getElementById("main");
     if (!main) return;

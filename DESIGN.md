@@ -16,7 +16,7 @@ colors:
   glass-rail: "#fbfbfd"
   glass-frost: "rgba(255, 255, 255, 0.86)"
   glass-knob: "#ffffff"
-  amber-text: "#a35a00"
+  amber-text: "#975300"
   amber-fill: "#e88a00"
   amber-wash: "rgba(232, 138, 0, 0.12)"
   on-amber: "#ffffff"

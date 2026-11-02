@@ -31,7 +31,7 @@ html:root[data-theme="light"] {
   --ds-rule-strong: #8e8e93;
   --ds-text: #1d1d1f;
   --ds-muted: #6e6e73;
-  --ds-amber: #a35a00;
+  --ds-amber: #975300;
   --ds-on-amber: #ffffff;
   --ds-gain: #1f7a35;
   --ds-loss: #d70015;
@@ -190,6 +190,7 @@ body { font-family: var(--sans); -webkit-font-smoothing: antialiased; }
 /* Segmented switches: a gray track with a white knob (iOS). */
 .seg { border-color: transparent; background: var(--dsh-fill); padding: 2px; border-radius: 9px; }
 [data-slot="segmented-item"] { border-radius: 7px; color: var(--ds-text); }
+.seg[data-size="compact"] [data-slot="segmented-item"] { font-size: 12px; }
 [data-slot="segmented-item"]:hover:not([data-pressed]) { background: transparent; color: var(--ds-text); }
 [data-slot="segmented-item"][data-pressed] {
   background: var(--dsh-knob); color: #1d1d1f; font-weight: 600;
@@ -379,9 +380,11 @@ aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > * { 
 aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) {
   background: var(--ds-surface); padding: 12px 16px;
 }
-aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)):is(:first-child, :is(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) + *) { border-top-left-radius: 14px; border-top-right-radius: 14px; }
-aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)):is(:last-child, :has(+ :is(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden])), :has(+ * > h3:first-child)) { border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
-aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) + :not(h3, p, .hint, .dsh-cap, [data-slot="button"], :empty, [hidden], :has(> h3:first-child)) { border-top: 1px solid var(--ds-rule); }
+/* Each run's corners and dividers follow the rows that are showing
+   (PageEffects marks them: data-gr first / mid / last / only). */
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :is([data-gr="first"], [data-gr="only"]) { border-top-left-radius: 14px; border-top-right-radius: 14px; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :is([data-gr="last"], [data-gr="only"]) { border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :is([data-gr="mid"], [data-gr="last"]) { border-top: 1px solid var(--ds-rule); }
 /* Headings and notes, on the page */
 aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :is(h3, :has(> h3:first-child)) { margin: 22px 0 8px; padding: 0 4px; border: 0; }
 aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :is(h3, :has(> h3:first-child)):first-child { margin-top: 0; }
@@ -467,16 +470,20 @@ aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .fie
 /* ---------- Readable everywhere (the critique's audit, 2026-11-02) ----------
    No text under 12px; the "On track" badge clears 4.5:1; a field being
    typed in has a ring you can see; a switch's icon stays at text size. */
-html:root { --text-label: 12px; }
+html:root { --text-label: 12px; --text-fine: 12px; }
 :is(.hint, .mssub, .ddwhy, .ddstrat-cap, .swipehint, .dsh-badge, .dsh-label, .tag) { font-size: max(12px, 1em); }
 :is(table th, .dsh-tbl th) { font-size: max(12px, 0.92em); }
-:root[data-theme="light"] .dsh .dsh-badge.dsh-gain { color: #17652c; }
-:root[data-theme="light"] .dsh .dsh-badge.dsh-loss { color: #b0000f; }
+:root[data-theme="light"] :is(.dsh-badge.dsh-gain, [data-slot="badge"][data-variant="positive"]) { color: #17652c; }
+:root[data-theme="light"] :is(.dsh-badge.dsh-loss, [data-slot="badge"][data-variant="destructive"], [data-slot="button"][data-variant="destructive"]) { color: #b0000f; }
+/* A note on a gray panel, in the page's darker text. */
+.rp-offer p, .dsh-note { color: var(--dsh-on-page); }
+/* Chart keys, a chart's stats, small table notes and labels: 12px. */
+.gd-seg span, .gd-fac .sub, .calcdetails > summary, .hm-kick, .legend, .dsh-legend, .ddcount-of, .ddstats div, #brCompare .br-desc, #brAtTable th .br-yr, .itemrow .itemtxt small, .lrn-eyebrow, .toolgroup-h, .toolgroup-h span { font-size: 12px; }
 :is([data-slot="input"], [data-slot="native-select"], [data-slot="textarea"]):not([data-variant="inline"]):focus-visible,
 [data-slot="input-group"]:focus-within { outline: 2px solid var(--dsh-tint-fill); outline-offset: 1px; }
 [data-slot="segmented-item"] svg { width: 16px; height: 16px; }
 :is(.dsh-sbar > i, .dsh-sbar-pop) { font-style: normal; }
-#ddEraList p, .ddintro { max-width: 78ch; }
+
 /* Readiness: an area partly earned in a lighter green, not ink. */
 .dsh .dsh-split i b:not(.dsh-full) { background: color-mix(in srgb, var(--ds-gain) 55%, var(--ds-surface)); }
 
@@ -534,6 +541,17 @@ a.hm-tile:hover { border-color: transparent; box-shadow: 0 2px 4px rgba(0, 0, 0,
 .dl-entries em { width: auto; min-width: 76px; }
 .dl-entries li:last-child em { color: var(--ds-muted); }
 .dl-shot { border-radius: var(--r-panel); }
+
+/* Prose keeps to about 80 characters a line (em, since SF's "ch" is a
+   wide zero). */
+.ddintro, #ddEraList p, #ddDetailNote, .rp-offer p, .sitefoot-txt p { max-width: 40em; }
+/* What floats (menus, a chart's tooltip, the toast) has a shadow and no
+   outline; a note inside a card is a soft panel, not a box. */
+:is(.calcmenu, .tip, .toast) { border-color: transparent !important; }
+.mcnote, [data-slot="alert"] { border-color: transparent; background: var(--dsh-fill-2); }
+/* The homepage's tinted tiles, and notes on a gray panel: their small
+   text in the page's darker gray. */
+.hm-tile p, .hm-kick, [data-slot="alert"], [data-slot="alert-description"] { color: var(--dsh-on-page); }
 
 /* ---------- Phones ---------- */
 /* Phones and touch tablets (the frame's own switch, 19-dashboard.css):

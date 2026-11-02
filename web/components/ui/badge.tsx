@@ -44,7 +44,9 @@ function Badge({
     props: mergeProps<"span">(
       {
         className: cn(badgeVariants({ variant }), className),
-      },
+        "data-slot": "badge",
+        "data-variant": variant ?? "default",
+      } as React.ComponentProps<"span">,
       props
     ),
     render,
