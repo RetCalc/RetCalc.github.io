@@ -245,7 +245,7 @@ export interface ToolScope {
       is the Paycheck tab, after where the rest goes; "payFacts" takes the
       place of the Paycheck's pay, filing status, state and match fields,
       when the scope keeps those itself. */
-  slots?: { afterSliders?: ReactNode; kidsSummary?: ReactNode; payFacts?: ReactNode;
+  slots?: { afterSliders?: ReactNode; payFacts?: ReactNode;
     /** The Paycheck tab's ages, you and your spouse, at the end of this
         year (null: not known), when the scope keeps them itself. */
     ages?: [number | null, number | null];
@@ -260,11 +260,12 @@ export interface ToolScope {
     facts?: ReactNode;
     /** The Drawdown Simulator's Social Security, said in place of its fields. */
     ssFacts?: ReactNode;
-    /** The Dashboard's Calculator: its scenarios in place of the Stages
-        tool's stage list (the stages are built from them, read-only), lanes
-        under the chart, the chart's marks (where each scenario starts) and
-        your age at year 0, so the stages read by age. */
-    scenarios?: ReactNode; marks?: { year: number; label: string }[]; stagesAge?: number;
+    /** The Dashboard's Calculator: the Advanced calculator runs on the
+        plan's own stages (`plan`), with its changes ahead in place of the
+        fields that make them (the stages are built from them, read-only),
+        the chart's marks (where each change starts) and your age at year
+        0, so the stages read by age. */
+    plan?: boolean; scenarios?: ReactNode; marks?: { year: number; label: string }[]; stagesAge?: number;
     /** In place of "Reach your target": the Dashboard's own card (when you
         could stop saving). */
     reach?: ReactNode;

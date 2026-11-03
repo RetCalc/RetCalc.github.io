@@ -1,6 +1,7 @@
 "use client";
 
-/* Calculator: the Stages calculator on your plan, driven by scenarios.
+/* Calculator: the Advanced calculator on your plan, run as stages and
+   driven by scenarios (tools/advanced/PlanScreen.tsx).
    Its stages are the plan's own saving year by year (children, college
    years, saving that grows to its limits, both employers' match) with your
    scenarios on top: a change in saving from an age on, a lump sum, a
@@ -14,7 +15,6 @@
    the Calculator's result becomes the plan's savings at retirement. "Use
    the plan's figures" lets go of them. */
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
@@ -43,7 +43,7 @@ import { newId, useDashboard, type Entry, type Profile } from "./store";
 import { CHILDREN_ID, acctWord, newScenario, scenarioName, scenarioSentence, type Scenario, type ScenarioKind } from "./scenarios";
 import { ChangeDialog, ChangesDialog, INCOME_KIND, LUMP_KIND, SAVE_LESS_KIND, SPENDING_KIND, PickKind, RETURNS_KIND, fx, kindClass, type ChangeTip, type Years } from "@/components/changes/ChangeUI";
 
-const Stages = dynamic(() => import("@/tools/stages/Stages").then((m) => m.Stages), { ssr: false });
+const Advanced = dynamic(() => import("@/tools/advanced/Advanced").then((m) => m.Advanced), { ssr: false });
 
 /** What the profile keeps from the calculator: historical mode's mix, the
     children's costs, and how they're covered (by your age, where the
@@ -340,7 +340,6 @@ export function Calculator() {
     </div>
   );
 
-  const summary = <>{childrenSentence(pr)} <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Change them in Profile</Button></>;
   return (
     <Frame current="calculator" title="Calculator" sub="Filled in from your plan, and saved back to it.">
       {changed ? (
@@ -350,8 +349,8 @@ export function Calculator() {
       {/* New child costs or changes build the stages again, from the plan,
           with the tool open where it is (the page keeps its place). */}
       <Hosted key={rev} seedKey={costsKey(pr) + "|" + JSON.stringify(pr.scenarios ?? [])} household={null} cover={coverScope(flow(pr))} seed={seed} keep={keep}
-        locked={CALC_LOCKED} slots={{ kidsSummary: summary, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, marks: onCount ? marks : undefined, stagesAge: age, chart: chartHold, reach }}>
-        <Stages />
+        locked={CALC_LOCKED} slots={{ plan: true, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, marks: onCount ? marks : undefined, stagesAge: age, chart: chartHold, reach }}>
+        <Advanced />
       </Hosted>
       {dlg?.at === "list" ? (
         <ChangesDialog rows={rows} years={years} kidSpan={kidSpan} fixed={(r) => r.kind === "children"}

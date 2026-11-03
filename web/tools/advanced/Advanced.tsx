@@ -35,6 +35,8 @@ import { ADVANCED_DEF, ADVANCED_DEFAULTS, advancedCompute, advancedPlan, glideNo
 import { changesCompute, changesOn, liveChanges, type Compiled } from "./changes";
 import { scenarioName } from "@/components/dashboard/scenarios";
 import { ChangesAhead, ReachCard, ageOf } from "./ChangesAhead";
+import { PlanScreen } from "./PlanScreen";
+import { GroupHead } from "./ui";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
 import { InputGroupInput } from "@/components/ui/input-group";
@@ -52,7 +54,13 @@ import { NativeSelect } from "@/components/ui/native-select";
 
 const TARGET_LABEL = "(the portfolio behind your target above)";
 
+/** The Advanced calculator. On the Dashboard's Calculator it runs on the
+    plan's own stages (PlanScreen.tsx); everywhere else, on its inputs. */
 export function Advanced() {
+  return useToolScope()?.slots?.plan ? <PlanScreen /> : <SiteAdvanced />;
+}
+
+function SiteAdvanced() {
   const { state: s, set, setState } = useToolState(ADVANCED_DEF);
   const { profile } = useHousehold();
   const store = useToolStore(), go = useToolNav();
@@ -461,11 +469,6 @@ export function Advanced() {
       {growthDialog}
     </div>
   );
-}
-
-/** A heading over one group of the inputs, on a rule after the first. */
-function GroupHead({ first, children }: { first?: boolean; children: React.ReactNode }) {
-  return <h3 className={cn("m-0 mb-3 text-sm font-semibold", !first && "mt-1 border-t border-border pt-4")}>{children}</h3>;
 }
 
 /** An account's heading inside the split: its name at Title size, what kind
