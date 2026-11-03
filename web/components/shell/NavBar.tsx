@@ -1,7 +1,7 @@
 "use client";
 
 /* The site header, one row pinned whole: the logo (a link home), the tabs
-   (Guide, Calculator, Tools, Learn, About), and on the right the household
+   (Calculator, Tools, Guide, Learn, About), and on the right the household
    button and the theme button.
    Ported from src/js/app/09-navigation.js. A tool's own controls (its saved
    scenarios) are in its header or tool bar, not here.
@@ -23,9 +23,9 @@ import { BrandLink, ThemeButton } from "./Masthead";
 export { slugFromPath };
 
 const TABS: { tab: Tab; label: string; href: string; controls: string }[] = [
-  { tab: "guide", label: "Guide", href: "/guide", controls: "tab-guide" },
   { tab: "calc", label: "Calculator", href: "/calculator", controls: "tab-simple" },
   { tab: "tools", label: "Tools", href: "/tools", controls: "tab-toolpicker" },
+  { tab: "guide", label: "Guide", href: "/guide", controls: "tab-guide" },
   { tab: "learn", label: "Learn", href: "/learn", controls: "" },
   { tab: "about", label: "About", href: "/about", controls: "tab-about" },
 ];
