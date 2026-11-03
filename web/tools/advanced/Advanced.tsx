@@ -7,7 +7,7 @@
    04-charts.js, 06-solve.js and 07-converter.js, and the Advanced parts of
    src/main/02-calculator-inputs.html and 03-calculator-results.html. */
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { CheckToggle, SignFlip } from "@/components/fields/CheckToggle";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
@@ -18,10 +18,9 @@ import { AccountTable } from "@/components/tools/AccountTable";
 import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
 import { ProjectionChart, ProjectionReading, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
 import { useToolNav, useToolScope, useToolState, useToolStore } from "@/components/tools/ToolState";
-import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
 import { growthBlend, matchPer, spreadTotal, withHsaRate, type GrowthRates } from "@/lib/accounts";
-import { historicalRuns, monteCarlo, project, projectSeries, PER_YEAR } from "@/lib/engine/typed";
+import { historicalRuns, monteCarlo, project, PER_YEAR } from "@/lib/engine/typed";
 import { dollarsField, fmtNum, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
 import { PERIOD_SHORT, PeriodOptions } from "@/lib/periods";
@@ -32,21 +31,21 @@ import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { useShareKit } from "@/components/shell/share";
 import { projectionShare } from "./share";
 import { ADVANCED_DEF, ADVANCED_DEFAULTS, advancedCompute, advancedPlan, glideNote, glideYearsFor, type AdvancedInputs } from "./model";
-import { changesCompute, changesOn, liveChanges, type Compiled } from "./changes";
+import { changesCompute, changesOn, liveChanges } from "./changes";
 import { scenarioName } from "@/components/dashboard/scenarios";
 import { ChangesAhead, ReachCard, ageOf } from "./ChangesAhead";
 import { PlanScreen } from "./PlanScreen";
-import { GroupHead } from "./ui";
+import { GoalFields, GroupHead, YearTable, payCheck } from "./ui";
+import { HistMixButton, histMixOf } from "./HistMix";
+import { stagesChart } from "./stagesChart";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
-import { InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, XIcon } from "lucide-react";
+import { CircleCheckIcon, CircleXIcon, XIcon } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Series } from "@/lib/engine/types";
 import { SERIES } from "@/lib/hues";
@@ -71,7 +70,6 @@ function SiteAdvanced() {
   const [mode, setMode] = useState<ChartMode>("band");
   const [band, setBand] = useState("2");
   const [dialog, setDialog] = useState<"conv" | "growth" | null>(null);
-  const tableRef = useRef<HTMLTableElement>(null);
   // Arriving from an old Stages link (/stages sends here): say where it went.
   const [fromStages, setFromStages] = useState(false);
   useEffect(() => {
@@ -127,7 +125,7 @@ function SiteAdvanced() {
   useShareKit(ADVANCED_DEF.id, projectionShare({ kind: "advanced", P, R, s: typed, household: profile, changes: CH ? liveChanges(typed).map(scenarioName) : [], need: CH ? CH.V.portToday : V.S.portToday, mode }));
   const chart = useMemo(() => {
     if (!CH) return chartData(typed, V, mode, parseNum(band) / 100, seed);
-    const c = changesChart(typed, CH.C, CH.V, mode, parseNum(band) / 100, seed);
+    const c = stagesChart(typed, CH.V, mode, parseNum(band) / 100, seed, CH.C.glideAt);
     // Where each change starts, numbered as the list numbers them.
     const order = [...(typed.changes ?? []).filter((x) => x.kind === "children"), ...(typed.changes ?? []).filter((x) => x.kind !== "children")];
     const marks = CH.C.starts.filter((m) => m.year > 0).map((m) => ({ year: m.year, label: String(order.findIndex((x) => x.id === m.id) + 1) }))
@@ -248,11 +246,7 @@ function SiteAdvanced() {
   const VerdictIcon = onTrack ? CircleCheckIcon : CircleXIcon;
   // An after-tax income target can't be met by a portfolio that pays
   // nothing after tax: no contribution or timeline reaches it.
-  const noPay = income && target > 0 && !(p.withdrawal > 0 && p.taxRate < 1);
-  const payWarn = !noPay ? "" : p.withdrawal > 0
-    ? "At a 100% tax rate nothing is left after tax, so no portfolio reaches an after-tax income. Lower the tax rate."
-    : "At a 0% withdrawal rate the portfolio pays no income, so no amount reaches your target. Set a withdrawal rate above 0%.";
-  const badWd = noPay && !(p.withdrawal > 0), badTax = noPay && !badWd && !acOn;
+  const pay = payCheck(income, target, p.withdrawal, p.taxRate, acOn);
 
   const toDrawdown = () => {
     sendToDrawdown({ initial: Math.round(R.fvReal) });
@@ -362,31 +356,8 @@ function SiteAdvanced() {
 
               <ChangesAhead s={s} setState={setState} household={profile} freed={freed} />
 
-              <GroupHead>Your goal</GroupHead>
-              <div className="two bottomalign">
-                <SelectField id="solveFor" label="Solve for" value={s.solveFor} onChange={set("solveFor")}>
-                  <option value="After-Tax Withdrawal">After-tax income</option>
-                  <option value="Portfolio Value">Portfolio value</option>
-                </SelectField>
-                <Field id="target" label="Target, inflation adjusted">
-                  <Affixed prefix="$"><MoneyInput id="target" value={s.target} onValueChange={set("target")} /></Affixed>
-                </Field>
-              </div>
-              <div className="two bottomalign max-sm:grid-cols-2">
-                <NumberField id="withdrawal" label={<Tipped text="Withdrawal rate" k="withdrawal" />} unit="%" value={s.withdrawal} onValueChange={set("withdrawal")}
-                  aria-invalid={badWd || undefined} aria-describedby={badWd ? "payWarnText" : undefined} />
-                <NumberField id="taxrate" wrapId="taxrateField" hidden={acOn} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")}
-                  aria-invalid={badTax || undefined} aria-describedby={badTax ? "payWarnText" : undefined} />
-                <div className="field" id="acTaxField" hidden={!acOn}>
-                  <Label className="mb-1.5"><span><Tipped text="Tax on withdrawals" k="actax" /></span></Label>
-                  <Affixed suffix="calc">
-                    <InputGroupInput variant="numeric" id="acTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={acRate != null ? pctStr(acRate, 1) : ""} /></Affixed>
-                </div>
-              </div>
-              <div className="-mt-1 mb-1 flex items-start gap-2 text-note text-destructive" id="payWarn" hidden={!noPay}>
-                <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                <span id="payWarnText" role="alert">{payWarn}</span>
-              </div>
+              <GoalFields ids={{ solveFor: "solveFor", target: "target", withdrawal: "withdrawal", taxRate: "taxrate", taxRateWrap: "taxrateField", calc: "acTaxField", calcOut: "acTaxOut", warn: "payWarn" }}
+                s={s} set={set} split={acOn} calcRate={acRate} pay={pay} wdTip />
             </CardContent>
           </Card>
         </aside>
@@ -414,6 +385,7 @@ function SiteAdvanced() {
         <ProjectionChart sfx="" segId="segSingle" ariaLabel="Projected inflation-adjusted balance at three rates of return"
           mode={mode} setMode={setMode} band={band} setBand={setBand}
           histMix={s.histMix} setHistMix={set("histMix")} histMixEnd={s.histMixEnd} setHistMixEnd={set("histMixEnd")} glides={p.glide.on}
+          mixButton={<HistMixButton sfx="" s={s} save={(f) => setState((c) => ({ ...c, ...f }))} />}
           mcFields={<Field id="volatility" label={<Tipped text="Volatility" k="volatility" />}><Affixed suffix="%/yr" className="w-26"><NumberInput id="volatility" nonNeg value={s.vol} onValueChange={set("vol")} /></Affixed></Field>}
           mcHint="Each redraw runs 5,000 simulations."
           chart={chart} maxX={p.years} bandItems={CH ? changesLegend(parseNum(band) / 100, chart.marks.length > 0) : bandLegend(p.nominal, parseNum(band) / 100)} legendExtra={CH && chart.marks.length ? "A change starts" : undefined}
@@ -439,26 +411,8 @@ function SiteAdvanced() {
           </Card>
         </div>
 
-        <Collapsible className="min-w-0" render={<Card />}>
-          <CardHeader>
-            <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
-            <CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction>
-          </CardHeader>
-          <CollapsibleContent keepMounted>
-            <div className="swipehint">Swipe the table sideways to see every column.</div>
-            <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
-              <table id="yearTable" ref={tableRef}>
-                <thead><tr><th>Year</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
-                <tbody>
-                  {(CH ? CH.V.R.calRows : V.R.years).map((y) => (
-                    <tr key={y.year}><td>{y.year}</td><td>{money(y.start)}</td><td>{money(y.contrib)}</td><td className="pos">{money(y.growth)}</td>
-                      <td>{money(y.end)}</td><td>{money(y.end / Math.pow(1 + p.inflation, y.year))}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        <YearTable id="yearTable" when="Year" rows={(CH ? CH.V.R.calRows : V.R.years).map((y) => ({
+          key: y.year, when: y.year, start: y.start, contrib: y.contrib, growth: y.growth, end: y.end, real: y.end / Math.pow(1 + p.inflation, y.year) }))} />
       </div>
 
       {dialog === "conv" ? (
@@ -503,36 +457,6 @@ function changesLegend(band: number, marks: boolean): [string, string][] {
 
 /* ---- the numbers ---- */
 
-/** What the chart draws with changes on: the stages' run, as Stages draws
-    it. A glide split year by year moves historical mode's mix along with it. */
-function changesChart(s: AdvancedInputs, C: Compiled, V: ReturnType<typeof changesCompute>["V"], mode: ChartMode, band: number, seed: number): ChartData {
-  const { P, R } = V, g = P.g;
-  if (!R.rows.length) return emptyChart();
-  const defl = (yr: number) => Math.pow(1 + g.inflation, yr);
-  const start = { year: 0, stage: 1, base: g.initial, hi: g.initial, lo: g.initial, p25: g.initial, p75: g.initial };
-  if (mode === "hist") {
-    const mix = fraction(s.histMix), endMix = fraction(s.histMixEnd);
-    const H = historicalRuns({ initial: g.initial, fees: g.fees }, P.eff.map((st, i) => {
-      const at = C.glideAt[i];
-      return { ...st, mix: at == null ? mix : mix + (endMix - mix) * at, ...(st.glide?.on ? { glide: { ...st.glide, endMix } } : {}) };
-    }));
-    return histChart(start, H);
-  }
-  if (mode === "mc") {
-    const mc = monteCarlo(g, P.eff, MC_RUNS, seed);
-    const pts = fanPoints({ ...start, det: g.initial }, mc.bands, (b, i) => ({ det: R.chartRows[i] ? R.chartRows[i].end / defl(R.chartRows[i].year) : b.p50 }));
-    return { ...emptyChart(true), pts, legend: "mc", mc };
-  }
-  const shift = (d: number) => P.eff.map((st) => ({ ...st, nominal: Math.max(-0.99, st.nominal + d) }));
-  const hiR = projectSeries(g, shift(band)), loR = projectSeries(g, shift(-band));
-  const pts = [{ year: 0, base: g.initial, hi: g.initial, lo: g.initial }, ...R.chartRows.map((r, i) => ({
-    year: r.year, base: r.end / defl(r.year),
-    hi: (hiR.chartRows[i] ? hiR.chartRows[i].end : r.end) / defl(r.year),
-    lo: (loR.chartRows[i] ? loR.chartRows[i].end : r.end) / defl(r.year),
-  }))];
-  return { ...emptyChart(), pts, legend: "band" };
-}
-
 /** What the chart draws in each mode. */
 function chartData(s: AdvancedInputs, V: ReturnType<typeof advancedCompute>, mode: ChartMode, band: number, seed: number): ChartData {
   const { p, R } = V;
@@ -540,8 +464,9 @@ function chartData(s: AdvancedInputs, V: ReturnType<typeof advancedCompute>, mod
   const real = (v: number, yr: number) => v / Math.pow(1 + p.inflation, yr);
   const start = { year: 0, base: p.initial, hi: p.initial, lo: p.initial, p25: p.initial, p75: p.initial };
   if (mode === "hist") {
+    const { mix, full } = histMixOf(s);
     return histChart(start, historicalRuns({ initial: p.initial, fees: p.fees }, [{
-      years: p.years, contrib: p.contrib, period: p.period, growth: p.growth, nominal: p.nominal, mix: fraction(s.histMix),
+      years: p.years, contrib: p.contrib, period: p.period, growth: p.growth, nominal: p.nominal, mix, ...full,
       glide: p.glide.on ? { on: true, years: p.glide.years, endMix: fraction(s.histMixEnd) } : { on: false },
     }]));
   }

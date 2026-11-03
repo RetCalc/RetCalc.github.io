@@ -11,35 +11,31 @@
    saved back to the plan. The stages math is tools/stages/model.ts. */
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { Affixed, Field, NumberField, SelectField } from "@/components/fields/Field";
-import { MoneyInput } from "@/components/fields/NumberInput";
+import { NumberField } from "@/components/fields/Field";
 import { useHouseholdFill, useHousehold } from "@/components/household/HouseholdProvider";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
-import { ProjectionChart, ProjectionReading, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
+import { ProjectionChart, ProjectionReading, bandLabel, type ChartMode } from "@/components/tools/Projection";
 import { useToolScope, useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
-import { PPY, historicalRuns, monteCarlo, projectSeries } from "@/lib/engine/typed";
-import { DASH, fmtNum, fraction, money, parseNum, pctStr } from "@/lib/format";
-import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
+import { PPY } from "@/lib/engine/typed";
+import { DASH, fmtNum, money, parseNum, pctStr } from "@/lib/format";
+import { useMcSeed } from "@/lib/mc-seed";
 import { useShareKit } from "@/components/shell/share";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
-import { InputGroupInput } from "@/components/ui/input-group";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PinnedReading } from "@/components/common/Reading";
 import { Modal, ModalTop } from "@/components/shell/Modal";
 import { SERIES } from "@/lib/hues";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, ChevronRightIcon, CircleAlertIcon } from "lucide-react";
-import { MixRows, mixForm, mixOk, type MixForm } from "@/tools/drawdown/MixRows";
 import { STAGES_DEF, stagesCompute, readStage, stageSplit, type StagesInputs } from "@/tools/stages/model";
 import { projectionShare } from "./share";
-import { GroupHead } from "./ui";
+import { GoalFields, GroupHead, YearTable, payCheck } from "./ui";
+import { HistMixButton } from "./HistMix";
+import { stagesChart } from "./stagesChart";
 
 const TARGET_LABEL = "(your target above)";
 
@@ -59,7 +55,7 @@ export function PlanScreen() {
   const [band, setBand] = useState(held?.band ?? "2");
   useEffect(() => { held?.keep(mode, band); }, [held, mode, band]);
   const age0 = scope?.slots?.stagesAge;
-  const stageTable = useRef<HTMLTableElement>(null), yearTable = useRef<HTMLTableElement>(null);
+  const stageTable = useRef<HTMLTableElement>(null);
   // The page fills these in from its plan.
   useHouseholdFill("stages", s, setState, (_h, c) => c);
 
@@ -71,7 +67,7 @@ export function PlanScreen() {
   const g = P.g;
   // Where each change starts, in place of the stage boundaries.
   const scMarks = scope?.slots?.marks;
-  const chart = useMemo(() => { const c = chartData(typed, V, mode, parseNum(band) / 100, seed); return scMarks ? { ...c, marks: scMarks } : c; }, [typed, V, mode, band, seed, scMarks]);
+  const chart = useMemo(() => { const c = stagesChart(typed, V, mode, parseNum(band) / 100, seed); return scMarks ? { ...c, marks: scMarks } : c; }, [typed, V, mode, band, seed, scMarks]);
   const markWord = scMarks ? "A change starts" : "Stage boundary";
   const n = s.stages.length;
   const split = s.saOn;
@@ -82,13 +78,8 @@ export function PlanScreen() {
   // The target beside the answer, in its own words.
   const target = parseNum(typed.target);
   const income = typed.solveFor === "After-Tax Withdrawal";
-  // An after-tax income target can't be met by a portfolio that pays
-  // nothing after tax.
-  const noPay = income && target > 0 && !(g.withdrawal > 0 && rate < 1);
-  const payWarn = !noPay ? "" : g.withdrawal > 0
-    ? "At a 100% tax rate nothing is left after tax, so no portfolio reaches an after-tax income. Lower the tax rate."
-    : "At a 0% withdrawal rate the portfolio pays no income, so no amount reaches your target. Set a withdrawal rate above 0%.";
-  const badWd = noPay && !(g.withdrawal > 0), badTax = noPay && !badWd && !split;
+  // An after-tax income target can't be met by a portfolio that pays nothing after tax.
+  const pay = payCheck(income, target, g.withdrawal, rate, split);
 
   // The read-only view of the stages the plan and its changes build.
   const [behind, setBehind] = useState(false);
@@ -131,31 +122,8 @@ export function PlanScreen() {
                 <NumberField id="gFees" label={<>Fees <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
               </div>
 
-              <GroupHead>Your goal</GroupHead>
-              <div className="two bottomalign">
-                <SelectField id="solveForS" label="Solve for" value={s.solveFor} onChange={set("solveFor")}>
-                  <option value="After-Tax Withdrawal">After-tax income</option>
-                  <option value="Portfolio Value">Portfolio value</option>
-                </SelectField>
-                <Field id="targetS" label="Target, inflation adjusted">
-                  <Affixed prefix="$"><MoneyInput id="targetS" nonNeg value={s.target} onValueChange={set("target")} /></Affixed>
-                </Field>
-              </div>
-              <div className="two bottomalign max-sm:grid-cols-2">
-                <NumberField id="gWithdrawal" label="Withdrawal rate" unit="%" value={s.withdrawal} onValueChange={set("withdrawal")}
-                  aria-invalid={badWd || undefined} aria-describedby={badWd ? "payWarnTextS" : undefined} />
-                <NumberField id="gTaxrate" wrapId="gTaxrateField" hidden={split} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")}
-                  aria-invalid={badTax || undefined} aria-describedby={badTax ? "payWarnTextS" : undefined} />
-                <div className="field" id="saTaxField" hidden={!split}>
-                  <Label className="mb-1.5"><span><Tipped text="Tax on withdrawals" k="actax" /></span></Label>
-                  <Affixed suffix="calc">
-                    <InputGroupInput variant="numeric" id="saTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={V.saRate != null ? pctStr(V.saRate, 1) : ""} /></Affixed>
-                </div>
-              </div>
-              <div className="-mt-1 mb-1 flex items-start gap-2 text-note text-destructive" id="payWarnS" hidden={!noPay}>
-                <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                <span id="payWarnTextS" role="alert">{payWarn}</span>
-              </div>
+              <GoalFields ids={{ solveFor: "solveForS", target: "targetS", withdrawal: "gWithdrawal", taxRate: "gTaxrate", taxRateWrap: "gTaxrateField", calc: "saTaxField", calcOut: "saTaxOut", warn: "payWarnS" }}
+                s={s} set={set} split={split} calcRate={V.saRate ?? null} pay={pay} nonNegTarget />
             </CardContent>
           </Card>
         </aside>
@@ -195,7 +163,7 @@ export function PlanScreen() {
             mode={mode} setMode={setMode} band={band} setBand={setBand}
             histMix={s.histMix} setHistMix={set("histMix")} histMixEnd={s.histMixEnd} setHistMixEnd={set("histMixEnd")}
             glides={mode === "hist" && R.rows.length > 0 && !!last?.glide?.on}
-            mixButton={<HistMixButton s={s} setState={setState} />}
+            mixButton={<HistMixButton sfx="S" s={s} save={(f) => setState((c) => ({ ...c, ...f }))} />}
             mcHint={<>5,000 simulations per redraw, at 15% volatility per year.</>}
             chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100, markWord)} legendExtra={markWord}
             tipHead={(b) => <><b>{age0 != null ? "Age " + fmtNum(age0 + b.year) : "Year " + fmtNum(b.year)}</b> <span className="text-dim">&middot; stage {String(b.stage)}</span></>}
@@ -228,27 +196,10 @@ export function PlanScreen() {
           </div>
         </Card>
 
-        <Collapsible className="min-w-0" hidden={!n} render={<Card />}>
-          <CardHeader>
-            <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
-            <CardAction><CsvButton table={yearTable} label="Year by year" /></CardAction>
-          </CardHeader>
-          <CollapsibleContent keepMounted>
-            <div className="swipehint">Swipe the table sideways to see every column.</div>
-            <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
-              <table id="xYearTable" ref={yearTable}>
-                {/* Your age at each year's end, as the chart has it. */}
-                <thead><tr><th>{age0 != null ? "Age" : "Year"}</th><th>Stage</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
-                <tbody>
-                  {R.calRows.map((r) => (
-                    <tr key={r.year}><td>{age0 != null ? fmtNum(age0 + r.year) : r.year}</td><td>{r.stageFrom === r.stage ? r.stage : r.stageFrom + "–" + r.stage}</td><td>{money(r.start)}</td>
-                      <td>{money(r.contrib)}</td><td className="pos">{money(r.growth)}</td><td>{money(r.end)}</td><td>{money(r.end / Math.pow(1 + g.inflation, r.t))}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        {/* Your age at each year's end, as the chart has it. */}
+        <YearTable id="xYearTable" hidden={!n} when={age0 != null ? "Age" : "Year"} stage rows={R.calRows.map((r) => ({
+          key: r.year, when: age0 != null ? fmtNum(age0 + r.year) : r.year, stage: r.stageFrom === r.stage ? r.stage : r.stageFrom + "–" + r.stage,
+          start: r.start, contrib: r.contrib, growth: r.growth, end: r.end, real: r.end / Math.pow(1 + g.inflation, r.t) }))} />
       </div>
     </div>
   );
@@ -300,80 +251,5 @@ function StagesBehind({ s, nums, names, age }: { s: StagesInputs; nums: ReturnTy
         </table>
       </div>
     </>
-  );
-}
-
-/* ---- the numbers ---- */
-
-function chartData(s: StagesInputs, V: ReturnType<typeof stagesCompute>, mode: ChartMode, band: number, seed: number): ChartData {
-  const { P, R } = V, g = P.g;
-  if (!R.rows.length) return emptyChart();
-  const defl = (yr: number) => Math.pow(1 + g.inflation, yr);
-  const marks = R.summary.slice(0, -1).map((x) => ({ year: x.endYear, label: String(x.stage + 1) }));
-  const start = { year: 0, stage: 1, base: g.initial, hi: g.initial, lo: g.initial, p25: g.initial, p75: g.initial };
-  if (mode === "hist") {
-    // US stocks and small-cap value together are the stocks; small value's
-    // share of them and cash's share of the rest (bonds are what's left).
-    const us = fraction(s.histMix), svP = fraction(s.histSv ?? "0"), cashP = fraction(s.histCash ?? "0"), stocks = Math.min(1, us + svP);
-    const mix = stocks, endMix = fraction(s.histMixEnd);
-    const full = svP > 0 || cashP > 0 ? { sv: stocks > 0 ? svP / stocks : 0, cash: stocks < 1 ? cashP / (1 - stocks) : 0 } : {};
-    const H = historicalRuns({ initial: g.initial, fees: g.fees }, P.eff.map((st) => ({ ...st, mix, ...full, ...(st.glide?.on ? { glide: { ...st.glide, endMix } } : {}) })));
-    return histChart(start, H, marks, (b) => ({ stage: (b as { stage?: number }).stage }));
-  }
-  if (mode === "mc") {
-    const mc = monteCarlo(g, P.eff, MC_RUNS, seed);
-    const pts = fanPoints({ ...start, det: g.initial }, mc.bands, (b, i) => ({
-      stage: R.chartRows[i] ? R.chartRows[i].stage : 1,
-      det: R.chartRows[i] ? R.chartRows[i].end / defl(R.chartRows[i].year) : b.p50,
-    }));
-    return { ...emptyChart(true), pts, marks, legend: "mc", mc };
-  }
-  const shift = (d: number) => P.eff.map((st) => ({ ...st, nominal: Math.max(-0.99, st.nominal + d) }));
-  const hiR = projectSeries(g, shift(band)), loR = projectSeries(g, shift(-band));
-  const pts = [{ year: 0, stage: 1, base: g.initial, hi: g.initial, lo: g.initial }, ...R.chartRows.map((r, i) => ({
-    year: r.year, stage: r.stage, base: r.end / defl(r.year),
-    hi: (hiR.chartRows[i] ? hiR.chartRows[i].end : r.end) / defl(r.year),
-    lo: (loR.chartRows[i] ? loR.chartRows[i].end : r.end) / defl(r.year),
-  }))];
-  return { ...emptyChart(), pts, marks, legend: "band" };
-}
-
-/* Historical mode's mix in the Dashboard's Calculator: the four holdings of
-   the Drawdown Simulator's and the Backtest's pop-ups, adding up to 100%,
-   each earning its actual returns. */
-function mixWords(s: StagesInputs): string {
-  const us = parseNum(s.histMix), sv = parseNum(s.histSv ?? "0"), cash = parseNum(s.histCash ?? "0"), bond = Math.max(0, 100 - us - sv - cash);
-  const parts: [number, string][] = [[us, "US stocks"], [sv, "small-cap value"], [bond, "bonds"], [cash, "cash"]];
-  return parts.filter(([v]) => v > 0).map(([v, n]) => fmtNum(v) + "% " + n).join(", ") || "Nothing invested";
-}
-function HistMixButton({ s, setState }: { s: StagesInputs; setState: (f: (c: StagesInputs) => StagesInputs) => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <Field id="histMixBtnS" label={<Tipped text="Asset mix" k="histmix" />}>
-      <Button variant="outline" className="w-full max-w-90 justify-between" id="histMixBtnS" onClick={() => setOpen(true)}>
-        <span className="min-w-0 flex-1 truncate text-left">{mixWords(s)}</span><ChevronRightIcon className="text-muted-foreground" aria-hidden="true" /></Button>
-      {open ? <HistMixDialog s={s} close={() => setOpen(false)} save={(f) => setState((c) => ({ ...c, histMix: f.stock, histSv: f.sv, histCash: f.cash }))} /> : null}
-    </Field>
-  );
-}
-function HistMixDialog({ s, close, save }: { s: StagesInputs; close: () => void; save: (f: MixForm) => void }) {
-  const [f, setF] = useState<MixForm>(() => {
-    const stock = parseNum(s.histMix), sv = parseNum(s.histSv ?? "0"), cash = parseNum(s.histCash ?? "0");
-    return mixForm({ stock, sv, bond: Math.max(0, 100 - stock - sv - cash), cash });
-  });
-  const up = (k: keyof MixForm) => (v: string) => setF((c) => ({ ...c, [k]: v }));
-  const ok = mixOk(f);
-  return (
-    <Modal size="wide" onClose={close} focus="[data-mix]">
-      <h3>Asset mix</h3>
-      <div className="formhint">How your savings are invested while you save. Each holding earns its actual monthly returns; small-cap value and cash start in July 1926, so a mix with either starts its runs there. A glide in your last stage moves the stocks&apos; total, small-cap value keeping its share of them.</div>
-      <MixRows f={f} up={up} totId="histMixTotS" />
-      <div className="formactions"><Button variant="outline" className="flex-1" data-mixcancel onClick={close}>Cancel</Button>
-        <Button className="flex-1" data-mixok disabled={!ok} onClick={() => {
-          if (!ok) return;
-          save({ stock: String(parseNum(f.stock)), sv: String(parseNum(f.sv)), bond: f.bond, cash: String(parseNum(f.cash)) });
-          close();
-        }}>Use this mix</Button></div>
-    </Modal>
   );
 }

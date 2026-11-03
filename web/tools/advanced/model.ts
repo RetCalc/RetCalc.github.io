@@ -44,6 +44,9 @@ export const ADVANCED_DEFAULTS = {
   ...advancedFields(DEFAULTS as PlainPlan),
   ...ACCOUNT_FIELDS,
   solveFor: "After-Tax Withdrawal", target: groupDigits(100000), histMix: "80", histMixEnd: "40",
+  /** Historical mode's fuller mix (HistMix.tsx): small-cap value and cash,
+      in percent, beside histMix's US stocks; bonds are the rest. */
+  histSv: "0", histCash: "0",
   /** Your age now, optional: with it, the changes ahead read by age. */
   age: "",
   /** Changes ahead (changes.ts), their ages as years from now, and the

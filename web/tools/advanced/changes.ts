@@ -82,7 +82,7 @@ interface Slice { a: number; b: number; monthly: Monthly; nominal: number; tags:
     dollar cut frees a dollar. */
 export function compileChanges(s: AdvancedInputs, household: Household | null, freed?: Freed): Compiled {
   const P = advancedPlan(s, household), p = P.p, a = P.a;
-  const { next } = stagesFromAdvanced(P, s, { ...STAGES_DEFAULTS, histMix: s.histMix, histMixEnd: s.histMixEnd }, null);
+  const { next } = stagesFromAdvanced(P, s, { ...STAGES_DEFAULTS, histMix: s.histMix, histMixEnd: s.histMixEnd, histSv: s.histSv, histCash: s.histCash }, null);
   const st0 = next.stages[0];
   const T = p.years, infl = p.inflation, ppy = PER_YEAR[p.period] ?? 12;
   const list = liveChanges(s);
