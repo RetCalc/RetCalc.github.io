@@ -15,10 +15,10 @@ import { ToolHeader } from "./ToolHeader";
 import { HouseholdNudge } from "@/components/household/HouseholdNudge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-/** The calculator's three modes, named over their tool. */
-const CALC_HEAD: Partial<Record<Slug, { title: string; desc: string }>> = {
-  calculator: { title: "Basic calculator", desc: "Answer these questions to see what you could have at retirement." },
-  advanced: { title: "Advanced calculator", desc: "Inflation, fees, taxes and account types, the changes you see coming, worked back from a target." },
+/** The calculator's two modes, under one title with a switch between them. */
+const CALC_HEAD: Partial<Record<Slug, { title: string; desc: string; modes: boolean }>> = {
+  calculator: { title: "Retirement calculator", modes: true, desc: "Answer these questions to see what you could have at retirement." },
+  advanced: { title: "Retirement calculator", modes: true, desc: "Inflation, fees, taxes and account types, the changes you see coming, worked back from a target." },
 };
 
 export function PageShell({ slug, children }: { slug: Slug; children: React.ReactNode }) {

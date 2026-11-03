@@ -228,7 +228,7 @@ export function Guide() {
       if (typeof sheet === "string") toast(sheet); else printSheet(sheet);
       return;
     } else if (what === "share") {
-      sendLink(window.location.origin + "/guide#g=" + encodeHash(linkPayload(guide())), "Link copied. It opens this plan in the guide, with your numbers.", toast);
+      sendLink(window.location.origin + "/guide/readiness#g=" + encodeHash(linkPayload(guide())), "Link copied. It opens this plan in the guide, with your numbers.", toast);
       return;
     }
     redraw();
@@ -298,6 +298,25 @@ export function Guide() {
       if (again) redraw();
     },
   };
+
+  /* Arriving from the Guide landing page (/guide) with ?start=: quick or
+     full starts that pace past the welcome card (unless the guide is
+     already under way, when it opens where it was), retired starts from
+     what you have, resume picks up where you left off. Read once. */
+  const started = useRef(false);
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    const q = new URLSearchParams(window.location.search).get("start");
+    if (!q) return;
+    try { history.replaceState(history.state, "", window.location.pathname + window.location.hash); } catch { /* old browsers */ }
+    const fresh = !Object.keys(guide().done).length && guide().cur === "welcome";
+    if ((q === "quick" || q === "full") && fresh) { view.act("pace:" + q); view.act("next"); }
+    else if (q === "retired" && fresh) { view.set("retired", true, true); view.go("retired"); }
+    else if (!fresh) view.act("resume");
+    // view's functions read the guide as it stands; this runs once, on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* A new step: its question gets focus, and the card's top comes back
      into view if it had scrolled above the tab rail. */

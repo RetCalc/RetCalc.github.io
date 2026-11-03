@@ -62,64 +62,9 @@ nav[role=tablist] button[aria-selected="true"]::after{transition:none}
 @media (prefers-reduced-motion:reduce){nav[role=tablist] button::after,nav[role=tablist] .tabmark{transition:none}}
 nav[role=tablist] button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 
-/* ---------- Calculator tab: a mode menu ----------
-   Basic, Advanced and Stages share one tab. The tab carries the open mode
-   beside its name, so the rail still says which one you're on, and opens a
-   menu to switch. On a desktop the menu drops from the tab; on a phone it
-   spans the screen with finger-sized rows over a dimmed page; in the
-   home-screen web app it rises from the bottom bar instead (see the
-   html.pwa block below). */
-/* The mode reads as the second half of the tab's name ("Calculator | Basic"),
-   in regular weight behind a hairline, not as a badge beside it. */
-.calcbtn{display:inline-flex;align-items:baseline;gap:9px}
-.calc-mode{display:inline-flex;align-items:center;gap:3px;align-self:center;
-  padding-left:9px;border-left:1px solid var(--ds-rule-strong);line-height:1.1;
-  font-size:13px;font-weight:400;color:var(--dimmer);transition:color .15s ease}
-nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
-.calc-chev{width:12px;height:12px;flex:none;align-self:center;transition:transform .2s cubic-bezier(.2,.7,.3,1)}
-.calcbtn[aria-expanded="true"] .calc-chev{transform:rotate(180deg)}
-.navbar.menu-open{z-index:45}
-.calcmenu{position:absolute;top:calc(100% + 6px);left:0;z-index:2;width:310px;
-  padding:6px;background:var(--ds-raised);border:1px solid var(--line);border-radius:var(--r-card);
-  box-shadow:var(--ds-float);transform-origin:top left;
-  animation:calcmenu-in .16s cubic-bezier(.2,.7,.3,1)}
-.calcmenu[hidden]{display:none}
-@media (hover:hover) and (pointer:fine){
-  .calcmenu::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px}
-}
+/* The open-and-close animation the select menus use
+   (14-footer-menus-mobile.css). */
 @keyframes calcmenu-in{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
-.calcmenu-h{display:none}
-.calcmenu button{display:grid;grid-template-columns:1fr auto;align-items:center;
-  column-gap:12px;width:100%;text-align:left;font-family:var(--sans);
-  background:transparent;border:0;border-radius:8px;padding:10px 12px;
-  color:var(--text);cursor:pointer;transition:background .12s ease}
-.calcmenu button + button{margin-top:2px}
-.calcmenu button:hover,.calcmenu button:focus-visible{background:var(--panel-2)}
-.calcmenu button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
-.cm-name{grid-column:1;font-size:14px;font-weight:600;letter-spacing:-.01em}
-.cm-desc{grid-column:1;font-size:13px;color:var(--dimmer);line-height:1.4;margin-top:2px}
-/* the open mode gets a check, in the text color */
-.calcmenu button::after{content:"";grid-column:2;grid-row:1 / span 2;width:14px;height:8px;
-  border-left:2px solid var(--text);border-bottom:2px solid var(--text);
-  transform:translateY(-2px) rotate(-45deg);opacity:0}
-.calcmenu button[aria-checked="true"] .cm-name{color:var(--text)}
-.calcmenu button[aria-checked="true"]::after{opacity:1}
-.calcscrim{display:none}
-@media (max-width:640px){
-  /* Full width under the rail, with rows tall enough to hit with a thumb. */
-  .calcmenu{left:10px !important;right:10px;width:auto;
-    padding:8px;border-radius:16px;transform-origin:top center}
-  .calcmenu button{min-height:58px;padding:11px 14px}
-  .cm-name{font-size:15px}
-  /* above the guide's coach panel (30), below the open navbar (45) */
-  .calcscrim:not([hidden]){display:block;position:fixed;inset:0;z-index:35;
-    background:var(--ds-scrim);animation:calcscrim-in .16s ease}
-  @keyframes calcscrim-in{from{opacity:0}to{opacity:1}}
-}
-@media (prefers-reduced-motion:reduce){
-  .calcmenu,.calcscrim:not([hidden]){animation:none}
-  .calc-chev{transition:none}
-}
 
 /* ---------- tool cards: a rail, not a lift ---------- */
 /* Grouped into three short sections, each a heading over its own grid, so
@@ -277,8 +222,6 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
   html:not(.pwa) .navbar.oneline nav[role=tablist]{justify-content:space-evenly;gap:0}
   html:not(.pwa) .navbar.oneline nav[role=tablist] button{margin-right:0;padding-inline:clamp(1px,.8vw,6px);font-size:clamp(13px,3.6vw,17.5px)}
   @media (max-width:340px){ html:not(.pwa) .navbar.oneline nav[role=tablist] button{font-size:13px;padding-inline:1px} }
-  /* No room for the mode beside Calculator; its menu still says which. */
-  .navbar.oneline .calc-mode{display:none}
   /* The home-screen app docks the whole row at the bottom as a tab bar (see
      11-charts.css): the five tabs share the width, and the account button
      (or the theme button, with no accounts) closes the row. The logo has no
@@ -288,7 +231,6 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
   html.pwa .navbar.oneline .brand{display:none}
   html.pwa .navbar.oneline nav[role=tablist]{flex:1 1 0;min-width:0}
   html.pwa .navbar.oneline nav[role=tablist] button{margin-right:0;padding:10px 1px 9px}
-  html.pwa .navbar.oneline .calc-mode{display:flex}
   html.pwa .navbar.oneline .navrow-end{flex:none;gap:0;padding:0 10px 0 2px}
   /* There the button drops its outline and reads like a tab: plain icon,
      Muted until its menu is open. !important because the button's look is

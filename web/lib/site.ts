@@ -83,7 +83,7 @@ export function strategyLede(slug: Slug): string | null {
 // /72t), Roth Conversion (with /rmd), College Savings and Rent vs. Buy lay out their own columns (components/home/Home.tsx, tools/basic/Basic.tsx,
 // tools/advanced/Advanced.tsx, tools/drawdown/Drawdown.tsx,
 // tools/tax/Tax.tsx, tools/optimizer/Optimizer.tsx, tools/bridge/Bridge.tsx, tools/roth/Roth.tsx).
-const SOLO = new Set<string>(["home", "calculator", "advanced", "incometax", "optimizer", "social-security", "bridge", "72t", "roth", "rmd", "healthcare", "fire", "backtest", "college", "rentbuy", "tools", "guide", "about", "budget", "debt", "mortgage", "compare", "account", "privacy", "guide/report", "guide/paycheck", "guide/paycheck/report", "financial-dashboard"]);
+const SOLO = new Set<string>(["home", "calculator", "advanced", "incometax", "optimizer", "social-security", "bridge", "72t", "roth", "rmd", "healthcare", "fire", "backtest", "college", "rentbuy", "tools", "guide", "guide/readiness", "about", "budget", "debt", "mortgage", "compare", "account", "privacy", "guide/report", "guide/paycheck", "guide/paycheck/report", "financial-dashboard"]);
 export function isSolo(slug: Slug): boolean {
   return SOLO.has(slug) || TOOL_SUB[slug] === "drawdown";
 }
@@ -101,7 +101,7 @@ export function tabFor(slug: Slug): Tab | null {
 /** Pages with a tool on them, which get its saved scenarios (in the tool
     header, or ToolBar.tsx on the calculator's pages). */
 export function hasToolControls(slug: Slug): boolean {
-  return slug !== "home" && slug !== "about" && slug !== "tools" && slug !== "privacy" && slug !== "financial-dashboard";
+  return slug !== "home" && slug !== "guide" && slug !== "about" && slug !== "tools" && slug !== "privacy" && slug !== "financial-dashboard";
 }
 
 export function calcModeFor(slug: Slug): CalcMode | null {

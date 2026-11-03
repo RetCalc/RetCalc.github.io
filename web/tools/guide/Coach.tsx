@@ -13,5 +13,5 @@ const CoachBody = dynamic(() => import("./CoachBody"), { ssr: false });
 
 export function GuideCoach() {
   const g = useGuide(), path = usePathname(), helping = !!useHelp();
-  return g.trip && path !== "/guide" && !helping ? <CoachBody /> : null;
+  return g.trip && path !== "/guide/readiness" && !helping ? <CoachBody /> : null;
 }

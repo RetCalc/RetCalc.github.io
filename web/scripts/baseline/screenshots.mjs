@@ -25,7 +25,7 @@ const BASE = process.env.BASE ?? "http://localhost:3200";
 
 export const PAGES = {
   home: "/", calculator: "/calculator", advanced: "/advanced", tools: "/tools", drawdown: "/drawdown",
-  incometax: "/incometax", roth: "/roth", mortgage: "/mortgage", guide: "/guide", about: "/about",
+  incometax: "/incometax", roth: "/roth", mortgage: "/mortgage", guide: "/guide/readiness", about: "/about",
 };
 /* Tool pages with a chart beyond the main ten. */
 export const CHART_PAGES = {

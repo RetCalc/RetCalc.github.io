@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const CALC: CalcMode[] = ["simple", "single"];
-const GUIDES = [{ href: "/guide", name: "Readiness Guide" }, { href: "/guide/paycheck", name: "Paycheck to Retirement" }];
+const GUIDES = [{ href: "/guide/readiness", name: "Readiness Guide" }, { href: "/guide/paycheck", name: "Paycheck to Retirement" }];
 
 /** The pages the sidebar stands beside: the calculator's modes, Compare and every tool's page. */
 export function hasRail(slug: Slug): boolean {

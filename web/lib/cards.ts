@@ -32,6 +32,8 @@ export const CARDS: Partial<Record<Slug | "dashboard", Card>> = {
     text: "Project your savings with taxes, fees and account types, and the changes you see coming." },
   guide: { title: "Retirement Readiness Check", art: "guide",
     text: "Answer a few questions and get a score out of 100, with a plan for what to do next." },
+  "guide/readiness": { title: "Retirement Readiness Check", art: "guide",
+    text: "Answer a few questions and get a score out of 100, with a plan for what to do next." },
   dashboard: { title: "Financial Dashboard", art: "dashboard", foot: "Free with an account",
     text: "Net worth, pay, taxes, spending, saving and your retirement plan, all in one place." },
   "financial-dashboard": { title: "Financial Dashboard", art: "dashboard", foot: "Free with an account",

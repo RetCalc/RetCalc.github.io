@@ -116,7 +116,7 @@ export function Report({ fontClass }: { fontClass: string }) {
     <div className={"rp " + fontClass}>
       <div className="rp-bar">
         <div className="rp-bar-l">
-          <Link href="/guide" className="rp-back">← Back to the Guide</Link>
+          <Link href="/guide/readiness" className="rp-back">← Back to the Guide</Link>
           <h1 id="pageH1">Your retirement report</h1>
           <p>{M ? M.pages.length + " pages, from your Guide answers. Everything here was worked out in your browser." : "Your plan, from your Guide answers, ready to print or save as a PDF."}</p>
         </div>
@@ -133,7 +133,7 @@ export function Report({ fontClass }: { fontClass: string }) {
       <div className="rp-stage" ref={wrap}>
         {M === undefined ? <p className="rp-wait" role="status">Building your report…</p>
           : M === null ? <div className="rp-wait"><p>Answer more of the Guide to build your report: it needs your age, savings, retirement age and spending in retirement.</p>
-            <Link href="/guide" className={buttonVariants()}>Open the Guide</Link></div>
+            <Link href="/guide/readiness" className={buttonVariants()}>Open the Guide</Link></div>
             : <div className="rp-fit" style={{ "--rp-zoom": scale, "--rp-h": tall } as React.CSSProperties}>
               <div className="rp-pages" ref={pagesRef}><ReportPages M={M} /></div></div>}
       </div>

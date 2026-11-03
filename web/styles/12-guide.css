@@ -713,3 +713,85 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 .gd-stage-short{display:block;margin-top:4px;font-size:11.5px;font-weight:600;color:var(--ds-loss);text-align:right;font-variant-numeric:tabular-nums}
 /* The trip box's "you'll learn" line. */
 .gd-task-learn{margin:2px 0 8px;font-size:13.5px;line-height:1.5;color:var(--text);max-width:62ch}
+
+/* ---------- the Guide tab's landing page (tools/guide/Landing.tsx) ----------
+   A short head, then the two walkthroughs side by side as equal cards: a
+   picture of what each gives you on top, then what it's for, what you get,
+   how long it takes, and its start. Stacked on a phone. The report line
+   closes the page under both. */
+.gl{grid-column:1 / -1;display:flex;flex-direction:column;gap:22px;width:100%}
+.gl-head{text-align:center;max-width:760px;margin:6px auto 0}
+.gl-title{margin:0;font-size:clamp(26px,3.2vw,36px);line-height:1.12;font-weight:650;letter-spacing:-.02em;color:var(--ds-text)}
+.gl-lede{margin:10px 0 0;font-size:16px;line-height:1.55;color:var(--ds-muted)}
+.gl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch}
+.gl-in{display:flex;flex-direction:column;flex:1;overflow:hidden;border-radius:inherit}
+.gl-art{display:flex;align-items:center;justify-content:center;gap:28px;min-height:176px;padding:22px 26px;
+  background:var(--panel-2);border-bottom:1px solid var(--ds-rule)}
+.gl-body{display:flex;flex-direction:column;flex:1;padding:22px 26px 26px}
+.gl-body > p{margin:0;font-size:15px;line-height:1.55;color:var(--ds-text)}
+.gl-kick{font-size:13px !important;font-weight:600;color:var(--ds-muted) !important}
+.gl-h{margin:4px 0 0;font-size:24px;line-height:1.2;font-weight:650;letter-spacing:-.015em}
+.gl-for{margin:6px 0 12px !important;font-weight:600}
+.gl-sub{margin:20px 0 10px !important;font-size:13px !important;font-weight:600;color:var(--ds-muted) !important}
+.gl-go{margin-top:auto;align-self:flex-start}
+.gl-steps{margin-bottom:24px !important}
+.gl-body .hint{margin-top:14px}
+
+/* the score's five parts, by their points */
+.gl-factors{list-style:none;margin:0;padding:0;display:grid;gap:5px;font-size:13px;color:var(--ds-muted)}
+.gl-factors li{display:flex;align-items:baseline;gap:10px}
+.gl-factors b{min-width:22px;text-align:right;font-family:var(--mono);font-weight:600;color:var(--ds-text)}
+
+/* the two paces, side by side, each with its own start */
+.gl-paces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;flex:1}
+.gl-pace{display:flex;flex-direction:column;gap:8px;padding:14px 16px 16px;border:1px solid var(--ds-rule);border-radius:12px}
+.gl-pace-t{margin:0;display:flex;flex-direction:column;gap:1px}
+.gl-pace-t b{font-size:15px;font-weight:600}
+.gl-pace-t span{font-size:13px;color:var(--ds-muted)}
+.gl-pace-x{margin:0 0 6px;font-size:13.5px;line-height:1.5;color:var(--ds-muted)}
+.gl-pace .gl-go{width:100%;justify-content:center}
+.gl-resume{display:flex;flex-direction:column;gap:12px;margin-top:20px;padding:16px;border:1px solid var(--ds-rule);border-radius:12px}
+.gl-resume p{margin:0;font-size:14px;color:var(--ds-muted)}
+.gl-resume a{align-self:flex-start}
+
+/* a paycheck split three ways: an illustration, no figures */
+.gl-split{width:min(100%,340px)}
+.gl-split-h{margin:0 0 8px;font-size:13px;font-weight:600;color:var(--ds-muted)}
+.gl-bar{display:flex;height:34px;border-radius:9px;overflow:hidden;gap:3px}
+.gl-bar i{display:block}
+.gl-bar .tax,.gl-split-k .tax{background:var(--ds-muted);opacity:.45}
+.gl-bar .spend,.gl-split-k .spend{background:var(--ds-text);opacity:.75}
+.gl-bar .save,.gl-split-k .save{background:var(--ds-gain)}
+.gl-bar .tax{flex:0 0 24%}.gl-bar .spend{flex:0 0 56%}.gl-bar .save{flex:1}
+.gl-split-k{margin:10px 0 0;display:flex;gap:16px;font-size:13px;color:var(--ds-muted)}
+.gl-split-k span{display:inline-flex;align-items:center;gap:6px}
+.gl-split-k i{display:inline-block;width:9px;height:9px;border-radius:3px}
+
+/* the five steps, numbered, a line each */
+.gl-steps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.gl-steps li{display:flex;gap:12px;align-items:baseline;font-size:13.5px;line-height:1.45;color:var(--ds-muted)}
+.gl-steps li > b{flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--ds-rule-strong);
+  font-size:11.5px;font-weight:600;color:var(--ds-text);transform:translateY(-1px)}
+.gl-step-n{display:block;font-size:14.5px;font-weight:600;color:var(--ds-text)}
+.gl-step-n em{font-style:normal;font-weight:400;color:var(--ds-muted)}
+
+/* the report, once, under both */
+.gl-report{display:flex;align-items:center;justify-content:center;gap:18px;padding:6px 0 4px}
+.gl-report .rp-thumb{width:72px}
+.gl-report p{margin:0;max-width:560px;font-size:14px;line-height:1.55;color:var(--ds-muted)}
+.gl-report b{color:var(--ds-text);font-weight:600}
+
+@media (max-width:900px){
+  .gl-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:560px){
+  .gl{gap:16px}
+  .gl-head{text-align:left}
+  .gl-lede{font-size:15px}
+  .gl-art{min-height:0;padding:18px;gap:20px}
+  .gl-body{padding:18px 18px 20px}
+  .gl-h{font-size:21px}
+  .gl-paces{grid-template-columns:minmax(0,1fr)}
+  .gl-body > .gl-go{align-self:stretch;justify-content:center}
+  .gl-report{justify-content:flex-start;align-items:flex-start}
+}

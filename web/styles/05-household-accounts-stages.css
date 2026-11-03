@@ -47,6 +47,11 @@
   flex-wrap:wrap;min-width:0}
 .toolbar .scgroup{margin-left:auto}
 .toolbar-t{flex:1 1 360px;min-width:0}
+/* The calculator's title with its Basic / Advanced switch beside it; on a
+   phone the switch takes its own line, full width. */
+.toolbar-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.toolbar-h + .toolhead-desc{margin-top:6px}
+@media (max-width:639px){ .toolbar-h > [data-slot=segmented]{flex:1 1 100%} }
 @media (max-width:640px){
   .toolbar .scgroup{flex:1 1 100%;margin-left:0}
 }

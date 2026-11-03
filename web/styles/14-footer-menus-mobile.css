@@ -29,7 +29,7 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
 
 
 /* ---------- dropdown menus ----------
-   The list a select opens, drawn like the Calculator menu: a card under the
+   The list a select opens: a card under the
    field on a wide screen, a sheet from the bottom on a phone. */
 .selmenu{position:fixed;z-index:120;min-width:180px;max-width:min(440px,calc(100vw - 16px));
   overflow-y:auto;overscroll-behavior:contain;padding:6px;background:var(--pop);

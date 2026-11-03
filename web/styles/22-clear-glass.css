@@ -547,7 +547,7 @@ a.hm-tile:hover { border-color: transparent; box-shadow: 0 2px 4px rgba(0, 0, 0,
 .ddintro, #ddEraList p, #ddDetailNote, .rp-offer p, .sitefoot-txt p { max-width: 40em; }
 /* What floats (menus, a chart's tooltip, the toast) has a shadow and no
    outline; a note inside a card is a soft panel, not a box. */
-:is(.calcmenu, .tip, .toast) { border-color: transparent !important; }
+:is(.tip, .toast) { border-color: transparent !important; }
 .mcnote, [data-slot="alert"] { border-color: transparent; background: var(--dsh-fill-2); }
 /* The homepage's tinted tiles, and notes on a gray panel: their small
    text in the page's darker gray. */

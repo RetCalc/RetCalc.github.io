@@ -75,7 +75,7 @@ export default function CoachBody() {
         setTimeout(() => revealFor(meta.pages![n].focus), 0);
       } } : undefined}
       chip={chip || (here ? "When you're done here:" : "")}
-      foot={<Button className="flex-none" id="gdCoachBack" onClick={() => { setNavDir("back"); router.push("/guide"); }}>Back to guide</Button>}>
+      foot={<Button className="flex-none" id="gdCoachBack" onClick={() => { setNavDir("back"); router.push("/guide/readiness"); }}>Back to guide</Button>}>
       {here ? undefined : (
         <>
           <p>You&apos;ve stepped away from the {meta.name}. Head back to finish this step, or return to the guide.</p>

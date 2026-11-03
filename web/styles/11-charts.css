@@ -165,19 +165,6 @@ svg{display:block;width:100%;height:auto}
   /* The bottom bar marks its tab with its own top-edge bar instead. */
   html.pwa nav[role=tablist] .tabmark{display:none}
   html.pwa nav[role=tablist] button[aria-selected="true"]::after{transition:transform .22s cubic-bezier(.2,.7,.3,1)}
-  /* Calculator stacks its open mode under its name, and its chevron points
-     up, since the menu rises out of the bar. The menu is a sheet sitting just
-     above the bar, where the thumb already is. */
-  html.pwa nav[role=tablist] .calcbtn{align-items:center}
-  html.pwa .calc-mode{position:absolute;left:0;right:0;top:calc(50% + 13px);padding-left:0;border-left:0;
-    justify-content:center;align-items:center;font-size:11.5px;line-height:1;letter-spacing:0}
-  html.pwa .calc-chev{transform:rotate(180deg)}
-  html.pwa .calcbtn[aria-expanded="true"] .calc-chev{transform:none}
-  html.pwa .calcmenu{top:auto !important;bottom:calc(100% + 8px);
-    transform-origin:bottom center;animation-name:calcmenu-up}
-  @keyframes calcmenu-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  html.pwa .calcmenu-h{display:block;padding:6px 14px 8px;font-size:11px;font-weight:600;
-    letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
   /* Room so the fixed (taller) bar never covers the last panel, and lift
      toasts above it. */
   html.pwa main{padding-bottom:30px}

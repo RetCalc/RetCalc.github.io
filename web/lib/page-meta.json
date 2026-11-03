@@ -17,6 +17,11 @@
 "desc": "Project retirement savings with fees, account types, employer match and 2026 taxes, add the changes you see coming, then test it against every market since 1926."
 },
 "guide": {
+"h1": "Retirement Planning Guides",
+"title": "Retirement Planning Guides: Readiness Check and Paycheck Plan | RetCalc",
+"desc": "Two free walkthroughs: a retirement readiness check with a score out of 100, quick or in full, and Paycheck to Retirement, from your take-home pay to a savings plan."
+},
+"guide/readiness": {
 "h1": "Retirement Readiness Guide",
 "title": "Retirement Readiness Check: Are You on Track? | RetCalc",
 "desc": "A guided retirement check-up: your number, a readiness score out of 100, your plan tested against every market since 1926, and the moves that matter."

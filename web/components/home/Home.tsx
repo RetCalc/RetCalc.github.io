@@ -80,7 +80,7 @@ export function Home({ data }: { data: HomeData }) {
           </Link>
 
           <Node row={3} label="30s" />
-          <Link href="/guide" className="hm-tile hm-jade hm-left hm-r3 hm-stag" data-draw="" data-rv="">
+          <Link href="/guide/readiness" className="hm-tile hm-jade hm-left hm-r3 hm-stag" data-draw="" data-rv="">
             <span className="hm-kick hm-c-jade">Retirement Readiness Guide</span>
             <h3 className="hm-h3">Get a readiness score.</h3>
             <div className="hm-guide">
