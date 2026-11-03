@@ -129,23 +129,33 @@ export function About({ states }: { states: StateOption[] }) {
         <Card id="about-what">
           <CardHeader><CardTitle>What this is</CardTitle></CardHeader>
           <CardContent><div className="about">
-            <p>A personal finance calculator built around one question: are you on track?
-            You describe your savings, contributions, and expected returns, and it projects
-            where you land at retirement, how long that money lasts, and what it all means
-            in today&apos;s dollars. Everything runs in your browser, and nothing leaves it unless you sign in to save it.</p>
-            <p>The Guide tab is the place to start, and it holds two walkthroughs. The
-            Retirement Readiness Guide is for when you&apos;re not sure where you stand: it
-            asks about your money one question at a time, gives you a readiness score, and
-            walks you through whichever tool finds an answer you don&apos;t know. Paycheck to
-            Retirement goes straight to the numbers, from your pay and its taxes to your
-            budget, where each paycheck&apos;s saving goes, and what that adds up to by
-            retirement.</p>
-            <p>The core retirement planner, under the Calculator tab, has two modes for
-            different levels of detail, from a five-question starting point (Basic) to every
-            assumption and the changes you see coming (Advanced). The Tools tab
-            extends that with calculators for taxes, mortgage, college savings, rent vs.
-            buy, drawdown, FIRE planning, budget, and more. Each tool is described in
-            its own section below.</p>
+            <p>A free retirement planner built around one question: are you on track? You
+            enter what you have, what you save and what you plan to spend, and it shows where
+            you land at retirement and how long the money lasts, tested against every stretch
+            of the stock market since 1926, with the figures in today&apos;s dollars. No account
+            is needed, and what you enter stays in your browser unless you sign in.</p>
+            <ul>
+              <li><b>Guide</b> is the place to start, with two walkthroughs. The Retirement
+              Readiness Guide asks about your money one question at a time, gives you a
+              readiness score, and sends you to the tool that answers whatever you don&apos;t
+              know. Paycheck to Retirement goes straight to the numbers: your pay and its
+              taxes, your budget, where each paycheck&apos;s saving goes, and what that adds up
+              to by retirement. Each ends with a report you can print or save as a PDF.</li>
+              <li><b>Calculator</b> is the retirement planner itself, in two modes: Basic, five
+              questions to start from, and Advanced, with every assumption and the changes you
+              see coming. Compare puts up to three saved scenarios side by side.</li>
+              <li><b>Tools</b> holds 14 more calculators, for income tax, Social Security, Roth
+              conversions, drawdown, retiring early, healthcare, a mortgage, college savings,
+              rent vs. buy, debt, your budget and more. Each is described in its own section
+              below.</li>
+              <li><b>Learn</b> has 56 short lessons on the ideas behind a plan, from the 4%
+              rule and sequence risk to when to claim Social Security and Medicare&apos;s
+              IRMAA surcharges.</li>
+            </ul>
+            <p><b>My Dashboard</b>, with a free account, keeps your whole picture together:
+            your accounts and debts, pay, taxes, spending and saving, turned into one
+            retirement plan you can come back to. There are no bank logins; you type in your
+            own numbers. It has its own About page for how it works.</p>
             <p><b>Your household</b>, set up from the top of every page (on a phone, from the account menu), holds the facts most
             tools ask for: household type, ages, retirement age, state, savings, monthly
             saving, income and retirement spending. Saving it fills those numbers into
