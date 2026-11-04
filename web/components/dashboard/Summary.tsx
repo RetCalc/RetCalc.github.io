@@ -123,7 +123,7 @@ export function Summary() {
   const H = holdings(data.entries, pr);
 
   return (
-    <Frame current="summary" title="Plan summary" sub="Everything we know, on one page" actions={<ReportButton />}>
+    <Frame current="summary" title="Plan summary" actions={<ReportButton />}>
       {S ? (
         <div className="dsh-psum">
           <PlanHero />

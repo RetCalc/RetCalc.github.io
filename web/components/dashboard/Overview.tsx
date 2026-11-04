@@ -203,7 +203,6 @@ export function Overview() {
   ];
   const filled = sections.filter((s) => s[2]).length;
   const tl = timeline(data, R);
-  const names = people(pr).map((_, i) => nameOf(pr, i ? 1 : 0)).join(" and ");
   const kept = accounts || data.entries.length > 1;
 
   const hello = kept && last
@@ -212,7 +211,7 @@ export function Overview() {
       <div className="dsh-r"><span className="dsh-cap">Profile {filled} of {sections.length}</span><div className="dsh-segs" aria-hidden="true">{sections.map((s, i) => <i key={s[1]} className={i < filled ? "dsh-on" : undefined} />)}</div></div></>;
 
   return (
-    <Frame current="overview" title="Dashboard" sub={names + (last ? " · updated " + longDate(last.date) : "")} actions={R.S ? <ReportButton /> : undefined}>
+    <Frame current="overview" title="Dashboard" actions={R.S ? <ReportButton /> : undefined}>
       <Answer R={R} pr={pr} entries={data.entries} />
       <div className="dsh-hello">{hello}</div>
       <div className="dsh-grid dsh-r1">

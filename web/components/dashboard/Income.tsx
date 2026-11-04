@@ -83,7 +83,7 @@ export function Income() {
     );
   };
   return (
-    <Frame current="income" title="Income" sub={R.takehome ? `About ${money(R.takehome)} per month coming in, after taxes` : "What comes in"}>
+    <Frame current="income" title="Income">
       <Tile icon={BanknoteIcon} title="Coming in">
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">All income after taxes</div><div className="dsh-fig dsh-key">{R.takehome ? money(R.takehome) : "—"}<small data-u="/mo">per month</small></div></div>

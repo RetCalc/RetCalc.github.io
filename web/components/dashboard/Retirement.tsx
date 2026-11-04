@@ -84,7 +84,7 @@ export function Retirement() {
   }, [pr, plan, set, setGuide]);
 
   return (
-    <Frame current="retirement" title="Retirement" sub={R.retireYear ? `Starting ${R.retireYear}` : R.gap ?? "Needs your ages and retirement age"} help={side === "health" ? "dsh-retirement-health" : early ? "dsh-retirement-early" : undefined}>
+    <Frame current="retirement" title="Retirement" help={side === "health" ? "dsh-retirement-health" : early ? "dsh-retirement-early" : undefined}>
       <Tile id="at-retirement" icon={SunsetIcon} title="At retirement" right={<To href="/dashboard/profile#plan-retirement">Ages, spending and assumptions</To>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Savings, {R.retireYear ?? "—"}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>

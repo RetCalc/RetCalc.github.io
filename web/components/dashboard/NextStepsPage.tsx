@@ -18,7 +18,7 @@ export function NextSteps() {
   const R = useMemo(() => results(data.profile, data.entries), [data.profile, data.entries]);
   const steps = allSteps(data, R), todo = steps.filter((s) => !s.done), done = steps.filter((s) => s.done);
   return (
-    <Frame current="next" title="Next steps" sub={`${todo.length} to do, ${done.length} done`}>
+    <Frame current="next" title="Next steps">
       <Tile icon={ListChecksIcon} title="To do" right={<span className="dsh-cap">Ordered by how much each moves your plan</span>}>
         <ol className="dsh-steps">
           {todo.map((s, i) => (

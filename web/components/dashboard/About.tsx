@@ -103,7 +103,7 @@ export function About() {
     return () => window.removeEventListener("hashchange", fromHash);
   }, [set]);
   return (
-    <Frame current="about" title="About" sub="How your Dashboard works, what it assumes, and the fine print">
+    <Frame current="about" title="About">
       <OpenCtx.Provider value={{ open, set }}>
         <div className="dsh-about" id="tab-about">
           <div className="about-layout">

@@ -208,7 +208,7 @@ export function Profile() {
   const accounts = hasAccounts(data.entries);
   const [rateTxt, setRateTxt] = useTyped(pctTxt(mortgage(pr, data.entries).rate));
   return (
-    <Frame current="profile" title="Profile" sub="Everything your plan is built on. Changes save as you go.">
+    <Frame current="profile" title="Profile">
       <ChangeBar />
       <div className="dsh-grid dsh-two dsh-flush">
         <Tile id="household" icon={two ? UsersRoundIcon : UserRoundIcon} title="Household">

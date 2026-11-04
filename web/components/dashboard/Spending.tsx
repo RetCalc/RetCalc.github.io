@@ -43,7 +43,7 @@ export function Spending() {
   const a = answers(pr, data.entries), kidsNow = children(a).filter((c) => !c.planned);
   const kidCost = a.age != null ? kidsNow.reduce((s, c) => s + childCost(c, Math.round(a.age!)), 0) : 0;
   return (
-    <Frame current="spending" title="Spending" sub={F.spend ? `${money(F.spend)} per month` : "What goes out"}>
+    <Frame current="spending" title="Spending">
       <Tile id="month" icon={ReceiptIcon} title="Each month">
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Spending</div><div className="dsh-fig dsh-key">{money(F.spend)}<small data-u="/mo">per month</small></div>{premiums > 0.5 ? <div className="dsh-cap dsh-mt6">{money(premiums)} of it is premiums, taken out of pay</div> : null}</div>

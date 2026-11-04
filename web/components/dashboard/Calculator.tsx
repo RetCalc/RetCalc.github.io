@@ -341,7 +341,7 @@ export function Calculator() {
   );
 
   return (
-    <Frame current="calculator" title="Calculator" sub="Filled in from your plan, and saved back to it.">
+    <Frame current="calculator" title="Calculator">
       {changed ? (
         <p className="dsh-cap dsh-mt6">Your own changes here are saved in place of the plan&apos;s figures, and this result is your savings at retirement on every tab.{" "}
           <Button variant="link" size="inline" onClick={() => { setProfile((p) => ({ ...p, calcOwn: undefined })); setRev((r) => r + 1); }}>Use the plan&apos;s figures</Button></p>

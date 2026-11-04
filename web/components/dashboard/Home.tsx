@@ -21,7 +21,7 @@ import { Frame } from "./Frame";
 import { num, pctTxt, txt, useTyped } from "./fields";
 import { MONTHS, money } from "./format";
 import { Hosted, TOOL_VIEWS, seedFor } from "./host";
-import { fromMortgage, housingLines, mortgageFor, ownCost, payoffDrop, sameCosts } from "./housing";
+import { fromMortgage, mortgageFor, ownCost, payoffDrop, sameCosts } from "./housing";
 import { mortgage } from "./model";
 import { useDashboard, withHome } from "./store";
 import { Note, PlanFacts, Tile, TipLabel, To } from "./ui";
@@ -36,9 +36,8 @@ export function Home() {
   const seeded = useMemo(() => (pr.home === "own" ? mortgageFor(pr, entries) : null), [pr, entries]);
 
   if (pr.home === "rent") {
-    const lines = housingLines(pr), total = Object.values(lines).reduce((s, v) => s + v, 0);
     return (
-      <Frame current="home" title="Your home" sub={pr.rent ? `Renting, ${money(total)} per month` : "Renting"}>
+      <Frame current="home" title="Your home">
         <Tile icon={Building2Icon} title="Your home">
           <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3">
             <MoneyField id="dshHRent" label="Rent" unit="per month" value={txt(pr.rent)} onValueChange={(v) => set((p) => ({ ...p, rent: num(v) }))} />
@@ -66,7 +65,7 @@ export function Home() {
   const own = ownCost(pr), drop = payoffDrop(pr, entries);
   const retYear = pr.p1.by != null && pr.p1.retire != null ? pr.p1.by + pr.p1.retire : null;
   return (
-    <Frame current="home" title="Your home" sub={pr.home === "own" ? (own != null ? `Owned, ${money(own)} per month to own` : "Owned") : "Not given yet"}>
+    <Frame current="home" title="Your home">
       <Tile icon={HouseIcon} title="Your home" right={<To href="/dashboard/accounts#assets">Change in Net worth</To>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Equity" id="equity" /></div><div className="dsh-fig dsh-key">{money(M.value - M.owed)}</div></div>

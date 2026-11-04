@@ -257,7 +257,7 @@ export function Accounts() {
   const leave = (save: boolean) => { if (save) saveEntry(); else setDraft(null); const to = leaving!; setLeaving(null); router.push(to); };
 
   return (
-    <Frame current="accounts" title="Net worth" sub={last ? (draft ? "Editing. Saving adds a new entry." : "As of " + longDate(last.date)) : "Nothing entered yet"}>
+    <Frame current="accounts" title="Net worth" meta={last ? (draft ? "Editing" : "As of " + longDate(last.date)) : undefined}>
       {names && !draft ? <WhoseFilter names={names} who={who} onWho={setWho} /> : null}
       <Tile id="picture" icon={ChartBarIcon} title={mode === "time" && !draft ? "Net worth over time" : "Assets and debts"} right={draft ? null :
         <Segmented aria-label="Today or over time">

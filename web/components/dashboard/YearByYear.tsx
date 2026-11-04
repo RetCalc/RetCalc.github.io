@@ -83,7 +83,7 @@ export function YearByYear() {
 
   if (!years.length || age == null || retire == null) {
     return (
-      <Frame current="years" title="Year by year" sub="Every year from now to retirement">
+      <Frame current="years" title="Year by year">
         <Tile icon={CalendarRangeIcon} title="Every year to retirement">
           <p className="dsh-cap">This needs your pay, your age and when you plan to retire. Add your pay on <To href="/dashboard/income">Income</To> and your ages on <To href="/dashboard/profile">Profile</To>, and every year from now to retirement shows here.</p>
         </Tile>
@@ -98,7 +98,7 @@ export function YearByYear() {
   const other = years.some((y) => y.other > 0);
 
   return (
-    <Frame current="years" title="Year by year" sub={`${y0.year} to ${last.year + 1}, when you retire at ${retire}. ${future ? "In each year's own dollars." : "In today's dollars."}`}>
+    <Frame current="years" title="Year by year" meta={future ? "Each year's own dollars" : "Today's dollars"}>
       <Tile id="drivers" icon={SlidersHorizontalIcon} title="What shapes the years" tip="yearDrivers">
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Savings at retirement</div><div className="dsh-fig dsh-key">{fv != null ? money(fv) : "…"}</div></div>

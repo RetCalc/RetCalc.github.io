@@ -9,10 +9,11 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  BanknoteIcon, CalculatorIcon, MenuIcon, MonitorIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
+  BanknoteIcon, CalculatorIcon, MenuIcon, MonitorIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, PiggyBankIcon, ChevronLeftIcon, ChevronRightIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
    SunsetIcon, CalendarRangeIcon, UserRoundIcon, WalletIcon, type LucideIcon,
 } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { useAccount } from "@/components/account/AccountProvider";
@@ -217,14 +218,26 @@ function usePinned() {
   return [ref, pinned] as const;
 }
 
+/** The line over the page's title: today's date on the Dashboard's front
+    tab, the way back to Tools in a tool opened from there, and the
+    Dashboard's name everywhere else. */
+function Crumb({ current, title }: { current: Section; title: string }) {
+  if (current === "overview")
+    return <span className="dsh-crumb" suppressHydrationWarning>{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</span>;
+  if (current === "tools" && title !== SECTION_NAMES.tools)
+    return <Link className="dsh-crumb" href={hrefFor("tools")}>{SECTION_NAMES.tools}<ChevronRightIcon aria-hidden="true" /></Link>;
+  return <Link className="dsh-crumb" href={hrefFor("overview")}>My Dashboard<ChevronRightIcon aria-hidden="true" /></Link>;
+}
+
 /** A dashboard page: the rail, the title bar and the page. Someone who
     hasn't started setup sees the front page instead (SignedIn). */
-export function Frame({ current, title, sub, actions, help, children }: { current: Section; title: string; sub?: ReactNode; actions?: ReactNode; help?: string; children: ReactNode }) {
+export function Frame({ current, title, meta, actions, help, children }: { current: Section; title: string; meta?: ReactNode; actions?: ReactNode; help?: string; children: ReactNode }) {
   const { data } = useDashboard();
   const fresh = unstarted(data);
   useLanding();
   useFitFigures();
   const [titleRef, pinned] = usePinned();
+  const Icon = SECTIONS.find((s) => s.id === current)!.icon;
   const hasHelp = !!(help || TAB_TOURS[current]);
   // A dot on a section with something still to fill in.
   const abroad = data.profile.state === OUTSIDE_US;
@@ -239,9 +252,13 @@ export function Frame({ current, title, sub, actions, help, children }: { curren
       <div className="dsh-main">
         <header className="dsh-top">
           <div className="dsh-title">
-            <h1 ref={titleRef}>{title}</h1>
+            <span className="dsh-ico" aria-hidden="true"><Icon /></span>
+            <div className="dsh-tt">
+              <Crumb current={current} title={title} />
+              <h1 ref={titleRef}>{title}</h1>
+            </div>
+            {meta ? <span className="dsh-meta"><Badge variant="outline">{meta}</Badge></span> : null}
           </div>
-          {sub ? <span className="dsh-sub">{sub}</span> : null}
           {/* On a phone these wrappers let Help and the account stay beside
               the title, and the page's own buttons take a row of their own. */}
           <div className="dsh-r">

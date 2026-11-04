@@ -127,7 +127,7 @@ function ToolsList({ data }: { data: PickerData }) {
   }, [data, d.profile]);
   const lead = calcLead(data, atRetire != null ? `Your plan: ${money(Math.round(atRetire / 1000) * 1000)} at retirement, in today's dollars` : undefined);
   return (
-    <Frame current="tools" title="Tools" sub="Each one opens here, with what you've told us filled in">
+    <Frame current="tools" title="Tools">
       <ToolsBrowser data={withBudget} hrefFor={(sub) => toolHref(sub, "/dashboard/tools")} yours={yours} lead={lead} />
     </Frame>
   );
@@ -164,7 +164,7 @@ function Tool({ sub }: { sub: DashTool }) {
   const View = VIEWS[sub], tab = PLAN_TAB[sub];
   return (
     <Frame current="tools" title={nameOf(sub)} help={sub === "advanced" ? undefined : sub}
-      sub={tab ? undefined : "Filled in from your Dashboard. Changes here stay in this tool."}
+      meta={tab ? undefined : "Doesn't change your plan"}
       actions={<>
         {/* Saved scenarios, the site's own lists: one saved here is there too.
             Reset goes back to your plan's figures. */}
@@ -197,7 +197,7 @@ export function ToolPage({ sub }: { sub: DashTool }) {
 const CompareView = dynamic(() => import("@/tools/compare/Compare").then((m) => m.Compare), { ssr: false });
 function CompareTool() {
   return (
-    <Frame current="tools" title="Compare scenarios" sub="Saved Basic and Advanced scenarios side by side. Nothing here changes your plan."
+    <Frame current="tools" title="Compare scenarios" meta="Doesn't change your plan"
       actions={<Button variant="outline" nativeButton={false} render={<Link href="/dashboard/tools/advanced" />}><ChevronLeftIcon aria-hidden="true" />Back to the Advanced Calculator</Button>}>
       <div className="dsh-embed"><CompareView /></div>
     </Frame>

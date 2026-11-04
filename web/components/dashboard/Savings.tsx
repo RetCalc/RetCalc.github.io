@@ -91,10 +91,10 @@ function PayFacts({ pr }: { pr: Profile }) {
 
 export function Savings() {
   const { data, setProfile } = useDashboard();
-  const pr = data.profile, F = flow(pr);
+  const pr = data.profile;
   const Budget = TOOL_VIEWS.budget;
   return (
-    <Frame current="savings" title="Taxes & Savings" sub={F.hasPay ? `${F.tax ? money(F.tax.total) + " per year in taxes, " : ""}${money(F.invested + F.match)} per month into savings, with your employer's match` : "Where your paycheck goes"}>
+    <Frame current="savings" title="Taxes & Savings">
       <Top pr={pr} />
       <div className="dsh-r4">
         {/* The paycheck's own reading (its figures and donut) is said by
