@@ -517,12 +517,11 @@ html:root { --text-label: 12px; --text-fine: 12px; }
 .dsh .dsh-tile:has(> .dsh-embed), .dsh .dsh-tile:has(> * > .dsh-embed) { background: transparent; box-shadow: none; padding: 0; border-color: transparent; }
 .dsh .dsh-tile:has(.dsh-embed) [data-slot="card"] { box-shadow: var(--dsh-card-shadow); border-color: transparent; }
 
-/* ---------- Links to each part of a long page (Retirement) ---------- */
-.dsh-jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 2px; }
-.dsh-jumps a { display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 999px; background: var(--dsh-fill); color: var(--ds-text); font-size: 13px; font-weight: 500; text-decoration: none; }
-.dsh-jumps a:hover { background: var(--dsh-tint-wash); color: var(--ds-amber); }
-:root:has(.dsh-jumps) { scroll-padding-top: 70px; scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) { :root:has(.dsh-jumps) { scroll-behavior: auto; } }
+/* ---------- Retirement ---------- */
+/* Links to a part of Retirement land clear of the pinned bar. */
+:root:has(#retSide) { scroll-padding-top: 70px; }
+/* The strategies, closed: one row. */
+.dsh .dsh-tile.dsh-shut { padding-block: 14px; }
 
 /* ---------- The main site's frame (2026-11-02 rollout) ----------
    Everything the header and footer carry stays; only their look follows

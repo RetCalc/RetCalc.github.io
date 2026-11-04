@@ -11,7 +11,7 @@
    each in a line, to learn them before choosing. */
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { ArrowDownToLineIcon, BookOpenIcon, ChevronDownIcon, HeartPulseIcon, MilestoneIcon, SunsetIcon } from "lucide-react";
+import { ArrowDownToLineIcon, BookOpenIcon, ChevronDownIcon, HeartPulseIcon, MilestoneIcon, RotateCcwIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
@@ -40,7 +40,6 @@ const STRATS_KEY = "retcalc.dashboard.strategiesOpen";
 function readStratsOpen() { try { return localStorage.getItem(STRATS_KEY) === "1"; } catch { return false; } }
 function saveStratsOpen(v: boolean) { try { localStorage.setItem(STRATS_KEY, v ? "1" : "0"); } catch { /* remembered for this visit only */ } }
 
-const OWN_WORDS: Record<string, string> = { rate: "starting rate", years: "years in retirement" };
 
 /* The address's part ("#bridge"), as it changes. */
 const onHash = (f: () => void) => { window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); };
@@ -109,15 +108,11 @@ export function Retirement() {
       {side === "health" ? <HealthTile /> : null}
 
       {side === "drawdown" ? <>
-      {/* A long page, every part open: a row of links to each part. */}
-      <nav className="dsh-jumps" aria-label="On this page">
-        {RET_JUMPS.map(([href, label]) => <a key={href} href={href}>{label}</a>)}
-      </nav>
-      <div className="dsh-r4" id="compare"><Collapsible open={stratsOpen} onOpenChange={openStrats}><Tile id="strategies" icon={BookOpenIcon} title="The withdrawal strategies"
-        right={<>{plan ? <Button variant="link" size="inline" onClick={() => setGuide(true)}>How the withdrawal strategies compare</Button> : null}
+      <div className="dsh-r4" id="compare"><Collapsible open={stratsOpen} onOpenChange={openStrats}><Tile id="strategies" icon={BookOpenIcon} title="The withdrawal strategies" className={stratsOpen ? undefined : "dsh-shut"}
+        right={<>{stratsOpen ? null : <span className="dsh-cap">Your strategy: <b>{R.strategy?.name ?? "Fixed amount"}</b></span>}{plan ? <Button variant="link" size="inline" onClick={() => setGuide(true)}>How the withdrawal strategies compare</Button> : null}
           <CollapsibleTrigger>{stratsOpen ? "Hide" : "Show all " + Object.keys(DD_UI).length}<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></>}>
-        <p className="dsh-cap dsh-mt6">{stratsOpen ? "How each decides what you spend each year. Pick one to use it across your plan." : <>Your strategy: <b>{R.strategy?.name ?? "Fixed amount"}</b>. Open the list to read how each one decides what you spend, and to pick a different one.</>}</p>
         <CollapsibleContent variant="plain">
+        <p className="dsh-cap dsh-mt6">How each decides what you spend each year. Pick one to use it across your plan.</p>
         <div className="dsh-strats" data-all={allStrats ? "" : undefined}>
           {Object.entries(DD_UI).map(([id, u]) => {
             const on = pr.strategy === id;
@@ -140,11 +135,10 @@ export function Retirement() {
 
       <div className="dsh-r4">
         {plan ? (
-          <Tile id="drawdown" icon={ArrowDownToLineIcon} title="Your drawdown" right={<span className="dsh-cap">On your savings at retirement, through every market since 1926</span>}>
-            {own.length ? (
-              <p className="dsh-cap dsh-mt6">Your own {own.map((k) => OWN_WORDS[k]).join(" and ")} {own.length > 1 ? "are" : "is"} saved to your plan in place of its figures.{ownRate ? " Your strategy's spending is now the plan's, and Profile's spending is your goal." : ""}{" "}
-                <Button variant="link" size="inline" onClick={() => { set((p) => ({ ...p, ddOwn: undefined })); setRev((r) => r + 1); }}>Use the plan&apos;s figures</Button></p>
-            ) : null}
+          <Tile id="drawdown" icon={ArrowDownToLineIcon} title="Your drawdown" 
+            /* A starting rate or years typed below stay until reset to the
+               ones worked out from Profile. */
+            right={own.length ? <Button variant="link" size="inline" onClick={() => { set((p) => ({ ...p, ddOwn: undefined })); setRev((r) => r + 1); }}><RotateCcwIcon aria-hidden="true" />Reset to my Profile&apos;s figures</Button> : undefined}>
             <div className="dsh-mt">
               {/* Opened again when the plan under it changes (the claiming ages on Income, say). */}
               <Hosted key={rev + "|" + JSON.stringify([plan, pr.ss.pct, pr.p2.retire])} household={null} locked={DD_LOCKED}
@@ -282,12 +276,6 @@ function HealthCallout({ pr, R, onOpen, here }: { pr: Profile; R: Results; onOpe
     </div>
   );
 }
-
-/** Retirement's parts, for the row of links at the top of Drawdown. */
-const RET_JUMPS: [string, string][] = [
-  ["#strategies", "Strategies"], ["#drawdown", "Your drawdown"], ["#ddSeqPanel", "When you retire"], ["#ddScorePanel", "Spending scorecard"],
-  ["#ddYearsPanel", "Every start"], ["#ddDetailTitle", "Year by year"], ["#ddDistPanel", "The spread"], ["#ddSensPanel", "What moves it"],
-];
 
 /** Health cover once work stops: the Healthcare Cost Planner on the plan. */
 function HealthTile() {

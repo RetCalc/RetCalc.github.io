@@ -157,7 +157,7 @@ const retirement: Tour<DashData> = { name: "Retirement", title: "Make your savin
       { h: "<b>Asset mix</b> is how your savings are invested once retired: US stocks, small-cap value, bonds and cash, and whether the stocks glide down over the years. It's your plan's mix everywhere." },
       { h: "<b>Starting withdrawal rate</b> is the share of your savings the first year takes, taxes included. Change it and your plan spends what that rate gives; Profile's spending stays as your goal.", ok: done(s.profile.ddOwn?.rate != null) },
       { h: "Around 4% has lasted through almost every market in history for a 30-year retirement. A longer retirement, or a strategy that never cuts, needs a lower rate." },
-      { h: "Changed your mind? <b>Use the plan's figures</b>, above the simulator, puts them all back." },
+      { h: "Changed your mind? <b>Reset to my Profile's figures</b>, beside Your drawdown, puts them back." },
     ] },
   ],
   chip: () => "" };
