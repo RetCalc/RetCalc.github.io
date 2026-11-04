@@ -165,7 +165,7 @@ export function Drawdown({ landing }: { landing?: string }) {
         toast("Run a retirement projection first");
         return;
       }
-      const i = sources.length === 1 ? 0 : await showPopup("Copy from which plan?", sources.map((x) => ({ label: x.label, desc: money(x.value), money: true })));
+      const i = sources.length === 1 ? 0 : await showPopup("Copy from which calculator?", sources.map((x) => ({ label: x.label, desc: money(x.value), money: true })));
       if (i < 0) return;
       setState((c) => ({ ...c, initial: dollarsField(sources[i].value) }));
       toast("Copied " + money(sources[i].value) + " from " + sources[i].label);

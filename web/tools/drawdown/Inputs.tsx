@@ -234,7 +234,7 @@ export function Inputs({ v, fromNote, periods, open }: {
                 <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 <span id="ddInitialWarn">Enter your portfolio value to run the simulation.</span>
               </div>
-              <Button variant="outline" size="sm" className="mt-1.5" id="ddCopy" onClick={v.copyFromPlan}>Copy from your plan</Button>
+              <Button variant="outline" size="sm" className="mt-1.5" id="ddCopy" onClick={v.copyFromPlan}>Copy from the Calculator</Button>
             </Field>
           )}
           <Field id="ddMixBtn" label={<Tipped text="Asset mix" k="ddstocks" />}>

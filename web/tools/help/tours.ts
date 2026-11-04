@@ -193,7 +193,7 @@ const drawdown: Tour<DrawdownState> = { name: "Drawdown Simulator", title: "Will
   pages: [
     { title: "Your plan", focus: "#asideDD", show: ddTab("plan"), tasks: ({ base }) => [
       { h: "<b>Simple</b> shows the five things a first run needs; <b>Advanced</b>, at the top of the panel, adds the rest: rebalancing, fees, Social Security, other income, spending limits, goals and how history is tested. Settings you've hidden still count, and Simple lists any that are in use.", ok: tried(ddInputsView() !== base.inputs) },
-      { h: "<b>Portfolio value</b> is all your savings the day you stop working. <b>Copy from your plan</b> brings a projection over from the retirement calculators." },
+      { h: "<b>Portfolio value</b> is all your savings the day you stop working. <b>Copy from the Calculator</b> brings its projection over, Basic or Advanced." },
       { h: "<b>Asset mix</b> opens the split among US stocks, small-cap value, bonds and cash, each with its real returns since 1926. It can also glide the stock share over retirement, and set part of the savings aside to buy guaranteed income: a TIPS ladder or an annuity.", ok: tried(text("#ddMixText") !== base.mix) },
       { h: "<b>Years in retirement</b>: plan to about 95. Running out late is the costly mistake." },
       { h: "<b>Withdrawal strategy</b> and its rate decide each year's spending. The 4% rule takes 4% of savings the first year and raises it with inflation. Amounts are before income tax." },
