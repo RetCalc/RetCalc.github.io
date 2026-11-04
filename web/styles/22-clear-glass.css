@@ -410,10 +410,11 @@ aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :has
 /* A column that opens on a heading (no title of its own) takes that
    heading inside the group under it, so the column's top lines up with
    the answer's card beside it. */
-aside:not(#asideBudget) > [data-slot="card"]:not([data-slot="card"] ~ *, :has(> [data-slot="card-header"])) > [data-slot="card-content"] > h3:first-child:has(+ :is([data-gr="first"], [data-gr="only"])) {
+aside:not(#asideBudget) > [data-slot="card"]:not([data-slot="card"] ~ *, :has(> [data-slot="card-header"])) > [data-slot="card-content"] > :is(h3, :has(> h3:first-child)):first-child:has(+ :is([data-gr="first"], [data-gr="only"])) {
   margin: 0; padding: 14px 16px 4px; background: var(--ds-surface); border-radius: 14px 14px 0 0; color: var(--ds-text);
 }
-aside:not(#asideBudget) > [data-slot="card"]:not([data-slot="card"] ~ *, :has(> [data-slot="card-header"])) > [data-slot="card-content"] > h3:first-child + :is([data-gr="first"], [data-gr="only"]) { border-top-left-radius: 0; border-top-right-radius: 0; }
+aside:not(#asideBudget) > [data-slot="card"]:not([data-slot="card"] ~ *, :has(> [data-slot="card-header"])) > [data-slot="card-content"] > :is(h3, :has(> h3:first-child)):first-child + :is([data-gr="first"], [data-gr="only"]) { border-top-left-radius: 0; border-top-right-radius: 0; }
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :has(> h3:first-child) > h3 { margin: 0; }
 aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :is(p, .hint, .dsh-cap) { padding: 7px 4px 0; font-size: 12.5px; line-height: 1.45; color: var(--dsh-on-page); background: none; }
 /* Empty lines (a warning not showing) take no room and end no group. */
 aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > :empty { display: none; }

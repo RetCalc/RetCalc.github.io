@@ -43,10 +43,10 @@ export function NavBar({ states }: { states: StateOption[] }) {
   const [lastMode, setLastMode] = useState<CalcMode>("simple");
   if (mode && mode !== lastMode) setLastMode(mode);
 
-  // The Tools tab reopens the tool last used (a page under Tools other
-  // than the picker); from that tool it goes to the picker.
+  // The Tools tab reopens the page under it last seen, the tool list or a
+  // tool; from a tool it goes to the list.
   const [lastTool, setLastTool] = useState<string | null>(null);
-  if (tab === "tools" && slug !== "tools" && path !== lastTool) setLastTool(path);
+  if (tab === "tools" && path !== lastTool) setLastTool(path);
   const hrefFor = (t: Tab, fallback: string) =>
     t === "calc" ? CALC_PATHS[lastMode] : t === "tools" && tab !== "tools" && lastTool ? lastTool : fallback;
 

@@ -28,7 +28,7 @@ import type { DDView } from "./Drawdown";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -212,17 +212,20 @@ export function Inputs({ v, fromNote, periods, open }: {
   return (
     <aside id="asideDD" data-inputs={inputs} className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
       <Card>
-        {/* In the Dashboard the column opens on the plan's figures, which
-            aren't changed here, so it has no title of its own. */}
-        {scope?.name === "dashboard" ? null : <CardHeader><CardTitle>Your inputs</CardTitle><CardAction>
-          <SegmentedGroup id="segDDIn" aria-label="How many inputs">
-            <SegmentedItem data-ddin="simple" pressed={inputs === "simple"} onClick={() => setInputs("simple")}>Simple</SegmentedItem>
-            <SegmentedItem data-ddin="adv" pressed={inputs === "adv"} onClick={() => setInputs("adv")}>Advanced</SegmentedItem>
-          </SegmentedGroup>
-        </CardAction></CardHeader>}
+        {/* No title of its own: the column opens on its first group, the
+            Simple / Advanced switch beside that group's heading (not in the
+            Dashboard, which opens on the plan's figures and shows them all). */}
         <CardContent>
           {scope?.slots?.facts}
-          <GroupHead first>Your portfolio at retirement</GroupHead>
+          {scope?.name === "dashboard" ? <GroupHead first>Your portfolio at retirement</GroupHead> : (
+            <div className="flex items-center justify-between gap-3">
+              <GroupHead first>Your portfolio at retirement</GroupHead>
+              <SegmentedGroup id="segDDIn" aria-label="How many inputs">
+                <SegmentedItem data-ddin="simple" pressed={inputs === "simple"} onClick={() => setInputs("simple")}>Simple</SegmentedItem>
+                <SegmentedItem data-ddin="adv" pressed={inputs === "adv"} onClick={() => setInputs("adv")}>Advanced</SegmentedItem>
+              </SegmentedGroup>
+            </div>
+          )}
           {locked.has("initial") ? null : (
             <Field id="ddInitial" label="Portfolio value">
               <Affixed prefix="$"><MoneyInput id="ddInitial" nonNeg value={str("initial")} onValueChange={set("initial")}

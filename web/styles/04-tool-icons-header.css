@@ -152,7 +152,11 @@
 /* ---------- back to the tool picker, and the tool's header ---------- */
 .toolback{grid-column:1 / -1;display:flex;align-items:center;flex-wrap:wrap;gap:11px;
   min-width:0;margin:-2px 0 0}
-.toolhead{flex:1 1 0;display:flex;flex-wrap:wrap;align-items:center;gap:12px 15px;min-width:0;margin-left:10px}
+.toolhead{flex:1 1 0;display:flex;flex-wrap:wrap;align-items:center;gap:12px 15px;min-width:0}
+/* Back to the tool list: a small line over the tool's name. */
+.toolhead-back{display:inline-flex;align-items:center;gap:2px;margin:0 0 3px -3px;font-size:13px;font-weight:500;color:var(--dim);text-decoration:none}
+.toolhead-back svg{width:15px;height:15px}
+.toolhead-back:hover{color:var(--ds-amber)}
 .toolhead-icon{width:52px;height:52px;padding:9px}
 .toolhead-t{flex:1 1 360px;min-width:0}
 /* Saved scenarios and Help, on the right of the header row. Below the
