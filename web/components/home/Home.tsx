@@ -143,7 +143,7 @@ export function Home({ data }: { data: HomeData }) {
           <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>A free account keeps your accounts, pay, spending and retirement together. No bank logins: you type your own numbers.</p>
         </div>
         {/* The Dashboard on a laptop and an iPhone, with three of its figures lifted out. */}
-        <Link href="/dashboard" className="hm-devices" data-draw="" aria-label="Open My Dashboard">
+        <Link href="/dashboard" className="hm-devices" data-draw="" data-draw-at="0.25" aria-label="Open My Dashboard">
           <div className="hm-mac">
             <Image className="dl-lt" src="/dashboard-landing/v2/dash-light.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 1100px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
             <Image className="dl-dk" src="/dashboard-landing/v2/dash-dark.png" width={2880} height={1800} sizes="(max-width: 900px) 100vw, 1100px" alt="The Dashboard: net worth, readiness score, chance of success and retirement income" />
@@ -302,7 +302,9 @@ function useHomeMotion(root: React.RefObject<HTMLDivElement | null>) {
         }
         for (const n of draws) {
           const r = n.getBoundingClientRect(), on = n.getAttribute("data-draw") === "go";
-          const need = Math.min(r.height, vh - top) * 0.9, seen = Math.min(r.bottom, vh) - Math.max(r.top, top);
+          // How much of it must show first: most of it, or its own share
+          // (data-draw-at) for one so tall that most of it leaves a gap.
+          const need = Math.min(r.height, vh - top) * Number(n.dataset.drawAt ?? 0.9), seen = Math.min(r.bottom, vh) - Math.max(r.top, top);
           if (!on && seen >= need) { n.setAttribute("data-draw", "go"); n.dispatchEvent(new Event("hm:draw")); }
           else if (on && r.top >= vh) { n.setAttribute("data-draw", "pending"); n.dispatchEvent(new Event("hm:undraw")); }
         }

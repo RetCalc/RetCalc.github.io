@@ -6,7 +6,8 @@
 
    Motion: Home.tsx sets data-rv="pre" on text until it scrolls into view,
    and data-draw="pending" / "go" on each chart's tile: "go" once about 90%
-   of it is on screen, back to "pending" when it drops below the fold again,
+   of it is on screen (a quarter for the Dashboard devices, data-draw-at),
+   back to "pending" when it drops below the fold again,
    so scrolling up and down replays it. Without JavaScript, or with reduced
    motion, everything simply shows. */
 
