@@ -44,7 +44,7 @@ export function CoverDialog({ close, kids }: { close: () => void; kids?: PlanKid
   const { data, setProfile } = useDashboard();
   const pr = data.profile, C = coverScope(pr, flow(pr), answers(pr, data.entries));
   return (
-    <CoverStagesDialog segs={coverSegs(pr, kids)} today={C.today} usual={C.usual} initial={pr.coverRule ?? null} freesLess matchLast saveLabel="Save"
+    <CoverStagesDialog segs={coverSegs(pr, kids)} today={C.today} usual={C.usual} initial={pr.coverRule ?? null} freesLess matchLast spending saveLabel="Save"
       stage={(s, rule) => C.stage(s.from, s.change, rule)}
       close={close} save={(rule) => { setProfile((p) => ({ ...p, coverRule: rule })); close(); }} />
   );

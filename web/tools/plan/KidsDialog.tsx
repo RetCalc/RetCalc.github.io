@@ -6,7 +6,8 @@
    Advanced's Children change, the Dashboard and Stages use them. */
 
 import { useState } from "react";
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { ChevronRightIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { Segmented } from "@/components/common/Readout";
@@ -174,131 +175,155 @@ export function KidsDialog({ kids, age, retire, base, cover = true, close, save,
   );
 }
 
-/** "How will you cover this?": one rule for every stage, where the
-    children's costs come out of saving: one account at a time in an order
-    you set, or a share of each. Below, what the rule takes in each stage,
-    worked out on that stage's first year of saving (`stage`), as the plan
-    runs it; nothing in the table is typed. `today`: saving a month now, by
-    account; `usual`: the order when none is set. `freesLess`: cuts are
-    sized to the paycheck's taxes; `matchLast`: the 401(k) up to the match
-    always goes last (the Dashboard). */
-export function CoverStagesDialog({ segs, today, usual = [...COVER_ORDER], initial, base, stage, freesLess, matchLast, close, save, saveLabel }: {
+type Pick = "usual" | "share" | "own";
+const lower = (k: CoverLine) => (k === "brok" || k === "trad" ? ACCT[k].toLowerCase() : ACCT[k]);
+const listed = (xs: string[]) => (xs.length < 2 ? xs.join("") : xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1]);
+const stagesWord = (n: number) => (n === 1 ? "one stage" : n + " stages");
+
+/** "How will you cover this?": one choice for every stage, where the
+    children's costs come out of saving: the usual order (the brokerage
+    first), a bit from each account, or an order you set. Under it, what
+    that means in a few plain sentences, worked out on each stage's first
+    year of saving (`stage`), as the plan runs it; each stage's figures
+    behind a link. `today`: saving a month now, by account; `usual`: the
+    order when none is set. `freesLess`: cuts are sized to the paycheck's
+    taxes; `matchLast`: the 401(k) up to the match always goes last;
+    `spending`: what saving can't cover comes out of spending (the
+    Dashboard, which has a budget). */
+export function CoverStagesDialog({ segs, today, usual = [...COVER_ORDER], initial, base, stage, freesLess, matchLast, spending, close, save, saveLabel }: {
   segs: KidStage[]; today: Monthly; usual?: CoverLine[]; initial: CoverRule | null; base?: number;
   stage: (s: KidStage, rule: CoverRule | null) => { room: Monthly; cover: Cover };
-  freesLess?: boolean; matchLast?: boolean; close: () => void; save: (rule: CoverRule | null) => void; saveLabel?: string;
+  freesLess?: boolean; matchLast?: boolean; spending?: boolean; close: () => void; save: (rule: CoverRule | null) => void; saveLabel?: string;
 }) {
-  const [by, setBy] = useState<CoverRule["by"]>(initial?.by ?? "order");
+  const [pick, setPick] = useState<Pick>(() => (initial?.by === "share" ? "share" : initial?.order && initial.order.join() !== usual.join() ? "own" : "usual"));
   const [order, setOrder] = useState<CoverLine[]>(() => initial?.order ?? usual);
-  const usualOrder = order.join() === usual.join();
-  const rule: CoverRule | null = by === "order" && usualOrder ? null : { by, ...(usualOrder ? {} : { order }) };
+  const [open, setOpen] = useState(false);
+  const [drag, setDrag] = useState<CoverLine | null>(null);
+  const used = pick === "own" ? order : usual;
+  const rule: CoverRule | null = pick === "share" ? { by: "share" } : pick === "own" && order.join() !== usual.join() ? { by: "order", order } : null;
   const rows = segs.map((s) => ({ s, ...stage(s, rule) }));
-  // The accounts that have saving, now or in any stage, in the order set.
-  const shown = (by === "order" ? order : usual).filter((k) => today[k] > 0.5 || rows.some((r) => r.room[k] > 0.5));
-  const move = (k: CoverLine, d: -1 | 1) => setOrder((o) => {
-    // Past the next account shown (ones with no saving keep their place).
-    const vis = o.filter((x) => shown.includes(x)), i = vis.indexOf(k), j = i + d;
-    if (j < 0 || j >= vis.length) return o;
-    const swap = vis[j], out = [...o], a = out.indexOf(k), b = out.indexOf(swap);
-    [out[a], out[b]] = [out[b], out[a]];
+  // The accounts that have saving, now or in any stage, in the order used.
+  const shown = used.filter((k) => today[k] > 0.5 || rows.some((r) => r.room[k] > 0.5));
+  const usualShown = usual.filter((k) => shown.includes(k) || today[k] > 0.5);
+  // Moves `k` to where `to` is (ones with no saving keep their place).
+  const moveTo = (k: CoverLine, to: CoverLine) => setOrder((o) => {
+    if (k === to) return o;
+    const out = o.filter((x) => x !== k);
+    out.splice(out.indexOf(to) + (o.indexOf(k) < o.indexOf(to) ? 1 : 0), 0, k);
     return out;
   });
-  const anyMatch = rows.some((r) => r.cover.matchLost > 0.5);
+  const earlier = (k: CoverLine) => { const vis = order.filter((x) => shown.includes(x)), i = vis.indexOf(k); if (i > 0) moveTo(k, vis[i - 1]); };
+
+  // What the choice means, in a few sentences.
+  const costly = rows.filter((r) => r.s.change > 0);
+  const takes = (r: (typeof rows)[number], k: CoverLine) => r.cover.take[k] > 0.5;
+  const says: { text: string; warn?: boolean }[] = [];
+  if (shown.length <= 1) {
+    says.push({ text: shown.length ? `It all comes from ${lower(shown[0])}, the only account you're saving to.` : "You aren't saving to any account yet." });
+  } else if (pick === "share") {
+    const pct = costly.map((r) => { const room = shown.reduce((t, k) => t + r.room[k], 0); return room > 0 ? Math.min(1, shown.reduce((t, k) => t + Math.max(0, r.cover.take[k]), 0) / room) : 1; });
+    const lo = Math.round(Math.min(...pct) * 100), hi = Math.round(Math.max(...pct) * 100);
+    says.push({ text: `Each stage takes the same share from every account: ${lo === hi ? `${lo}% of what goes into each` : `from ${lo}% of what goes into each in the lightest stage to ${hi}% at the most expensive`}.` });
+  } else {
+    const [first, second, ...rest] = shown;
+    const alone = costly.filter((r) => shown.every((k) => k === first || !takes(r, k))).length;
+    says.push({ text: alone === costly.length ? `${ACCT[first]} covers all of it in every stage.`
+      : `${ACCT[first]} goes first${alone ? ` and covers all of it in ${stagesWord(alone)}` : ""}. ${ACCT[second]} tops it up when that isn't enough.` });
+    const later = rest.filter((k) => costly.some((r) => takes(r, k)));
+    if (later.length) {
+      const n = costly.filter((r) => later.some((k) => takes(r, k))).length;
+      says.push({ text: `${listed(later.map((k) => ACCT[k]))} ${later.length === 1 ? "is" : "are"} only touched in the ${n === 1 ? "most expensive stage" : n + " most expensive stages"}.` });
+    } else if (rest.length && alone < costly.length) says.push({ text: `${listed(rest.map((k) => ACCT[k]))} ${rest.length === 1 ? "isn't" : "aren't"} touched.` });
+  }
+  if (freesLess && costly.some((r) => takes(r, "trad") || takes(r, "hsa")))
+    says.push({ text: "Money kept out of traditional or the HSA is taxed as pay again, so a cut there is made a little bigger to cover the cost." });
+  const matchCut = costly.filter((r) => r.cover.matchLost > 0.5).length;
+  if (matchCut) says.push({ warn: true, text: `In ${stagesWord(matchCut)} this cuts into the 401(k) up to the match, so the match shrinks too.` });
+  const short = costly.filter((r) => r.cover.short > 0);
+  const over = (n: number) => (spending ? `plus ${money(n)} per month from spending` : `and ${money(n)} per month more than that`);
+  if (short.length === 1) {
+    const r = short[0];
+    says.push({ warn: true, text: `${spanText(r.s.from, r.s.to, base)} (${r.s.label.charAt(0).toLowerCase() + r.s.label.slice(1)}, ${money(r.s.change)} per month) take everything you save, ${over(r.cover.short)}.` });
+  } else if (short.length > 1) {
+    const most = short.reduce((m, r) => (r.cover.short > m.cover.short ? r : m));
+    says.push({ warn: true, text: `In ${stagesWord(short.length)} the children cost more than you save. The most is ${spanText(most.s.from, most.s.to, base).toLowerCase()}: everything you save, ${over(most.cover.short)}.` });
+  }
+
+  const choices: [Pick, string, string][] = [
+    ["usual", "Brokerage first", (usualShown.length > 1 ? "Then " + usualShown.slice(1).map(lower).join(", then ") + "." : "") + (matchLast ? " The 401(k) up to the match goes last." : " Your tax-advantaged accounts keep growing the longest.")],
+    ["share", "A bit from each", "Every account gives up the same share of what goes into it."],
+    ["own", "My own order", "Choose which account goes first."],
+  ];
   return (
-    <Modal size="table" onClose={close}>
+    <Modal size="wide" onClose={close}>
       <h3>How will you cover this?</h3>
-      <p className="formhint">Some stages cost more than you spend now. The difference comes out of what you save, the same way in every stage.
-        {" "}What saving can&apos;t cover comes out of spending.</p>
+      <p className="formhint">{spending
+        ? "Children cost more in some years than you spend now. That difference comes out of what you save; anything saving can't cover comes out of spending."
+        : "Children's costs come out of what you save. Choose which accounts give it up."}</p>
 
-      <div className="mt-4 grid gap-5 md:grid-cols-5 md:items-start">
-        <div className="grid gap-3 md:col-span-2">
-          {shown.length <= 1 ? (
-            <p className="text-note text-muted-foreground">{shown.length ? <>All of it comes from <b className="font-medium text-foreground">{ACCT[shown[0]]}</b>, the only account you&apos;re saving to.</> : "You aren't saving to any account yet, so all of it comes out of spending."}
-              {matchLast && shown.length ? " The 401(k) up to the match goes last, so you keep the match as long as you can." : ""}</p>
-          ) : <>
-            <div className="text-label text-muted-foreground">Take it from</div>
-            <Segmented attr="data-cvby" size="fill" options={[["order", "One account at a time"], ["share", "Every account"]] as const} value={by} onChange={setBy} />
-            <p className="text-note text-muted-foreground">
-              {by === "order" ? "Each account gives up all its saving before the next one gives up any." : "Every account gives up the same share of what goes into it."}
-              {matchLast ? " The 401(k) up to the match goes last, so you keep the match." : ""}
-            </p>
-            {by === "order" ? (
-              <div className="grid gap-1.5">
-                <ol className="m-0 grid list-none gap-1.5 p-0" aria-label="The order accounts give up saving">
-                  {shown.map((k, i) => (
-                    <li key={k} className="m-0 flex items-center gap-3 rounded-(--r-well) border border-input bg-background py-1.5 pr-1.5 pl-3">
-                      <span className="grid size-6 flex-none place-items-center rounded-full bg-muted text-label font-medium tabular-nums" aria-hidden="true">{i + 1}</span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block font-medium">{ACCT[k]}</span>
-                        <span className="block text-label text-muted-foreground tabular-nums">{money(today[k])} per month now</span>
-                      </span>
-                      <Button variant="ghost" size="icon-sm" aria-label={"Move " + ACCT[k] + " up"} disabled={i === 0} onClick={() => move(k, -1)}><ChevronUpIcon /></Button>
-                      <Button variant="ghost" size="icon-sm" aria-label={"Move " + ACCT[k] + " down"} disabled={i === shown.length - 1} onClick={() => move(k, 1)}><ChevronDownIcon /></Button>
-                    </li>
-                  ))}
-                </ol>
-                {usualOrder ? null : <Button variant="link" size="inline" className="justify-self-start" onClick={() => setOrder(usual)}>Back to the usual order</Button>}
+      {shown.length > 1 ? (
+        <div className="mt-4 grid gap-2" role="radiogroup" aria-label="Which accounts give it up">
+          {choices.map(([id, name, desc]) => {
+            const on = pick === id;
+            return (
+              <div key={id} className={"rounded-(--r-card) border transition-colors " + (on ? "border-foreground bg-muted" : "border-border hover:border-muted-foreground")}>
+                <button type="button" role="radio" aria-checked={on} onClick={() => setPick(id)}
+                  className="flex w-full cursor-pointer items-start gap-2.5 border-0 bg-transparent px-3.5 py-3 text-left font-sans text-base text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+                  <span aria-hidden="true" className={"mt-0.5 grid size-4.5 flex-none place-items-center rounded-full border-2 " + (on ? "border-foreground" : "border-input")}>{on ? <span className="size-2 rounded-full bg-foreground" /> : null}</span>
+                  <span className="min-w-0">
+                    <span className="flex flex-wrap items-center gap-2 font-medium">{name}{id === "usual" ? <Badge variant="outline">Recommended</Badge> : null}</span>
+                    <span className="mt-0.5 block text-note text-muted-foreground">{desc}</span>
+                  </span>
+                </button>
+                {id === "own" && on ? (
+                  <div className="px-3.5 pb-3 pl-10.5">
+                    <ol className="m-0 flex list-none flex-wrap items-center gap-1.5 p-0" aria-label="The order accounts give up saving">
+                      {order.filter((k) => shown.includes(k)).map((k, i) => (
+                        <li key={k} className="m-0 flex items-center gap-1.5">
+                          {i ? <ChevronRightIcon aria-hidden="true" className="size-3.5 text-muted-foreground" /> : null}
+                          <button type="button" draggable onDragStart={() => setDrag(k)} onDragEnd={() => setDrag(null)} onDragOver={(e) => e.preventDefault()}
+                            onDrop={() => { if (drag) moveTo(drag, k); setDrag(null); }} onClick={() => earlier(k)}
+                            aria-label={i ? `${ACCT[k]}, ${i + 1} of ${shown.length}: move it earlier` : `${ACCT[k]}, first`}
+                            className={"inline-flex cursor-grab items-center gap-1.5 rounded-full border border-input bg-background px-2.5 py-1 font-sans text-note text-foreground active:cursor-grabbing focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" + (drag === k ? " opacity-50" : "")}>
+                            <b className="font-medium">{ACCT[k]}</b><span className="text-label text-muted-foreground tabular-nums">{money(today[k])} per month now</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ol>
+                    <p className="mt-1.5 text-label text-muted-foreground">Drag to change the order, or tap one to move it earlier.</p>
+                  </div>
+                ) : null}
               </div>
-            ) : null}
-          </>}
+            );
+          })}
         </div>
+      ) : null}
 
-        <div className="min-w-0 md:col-span-3">
-          <div className="text-label text-muted-foreground">What that takes, per month</div>
-          {/* On a phone, each stage with its accounts under it; the table from sm up. */}
-          <ul className="m-0 mt-2 grid list-none p-0 text-note tabular-nums sm:hidden">
-            {rows.map(({ s, room, cover: c }) => (
-              <li key={stageKey(s)} className="m-0 border-t border-border py-2.5">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span><b className="font-medium">{s.label}</b><span className="block text-label text-muted-foreground">{spanText(s.from, s.to, base)}</span></span>
-                  <span className="whitespace-nowrap">{(s.change < 0 ? "−" : "+") + money(Math.abs(s.change))}</span>
-                </div>
-                <dl className="m-0 mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5 text-label">
-                  {shown.filter((k) => Math.abs(c.take[k]) > 0.5).map((k) => (
-                    <div key={k} className="contents">
-                      <dt className="text-muted-foreground">{ACCT[k]}</dt>
-                      <dd className="m-0 text-right">{c.take[k] > 0 ? <>−{money(c.take[k])} <span className="text-muted-foreground">of {money(room[k])}</span></> : <span className="text-gain">+{money(-c.take[k])}</span>}
-                        {k === "trad" && c.matchLost > 0.5 ? <span className="block text-loss">−{money(c.matchLost)} match</span> : null}</dd>
-                    </div>
-                  ))}
-                  {c.short > 0 ? <><dt className="text-muted-foreground">From spending</dt><dd className="m-0 text-right text-loss">−{money(c.short)}</dd></> : null}
-                </dl>
-              </li>
-            ))}
+      <div className="mt-5 border-t border-border pt-4">
+        <div className="text-label text-muted-foreground">What this means for your plan</div>
+        <ul className="m-0 mt-2 grid list-none gap-2 p-0">
+          {says.map((x, i) => (
+            <li key={i} className="m-0 flex items-start gap-2.5">
+              <span aria-hidden="true" className={"mt-2 size-1.5 flex-none rounded-full " + (x.warn ? "bg-loss" : "bg-muted-foreground")} />
+              <span>{x.text}</span>
+            </li>
+          ))}
+        </ul>
+        <Button variant="link" size="inline" className="mt-3" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{open ? "Hide each stage" : "See each stage"}</Button>
+        {open ? (
+          <ul className="m-0 mt-2 list-none p-0 text-note tabular-nums">
+            {rows.map(({ s, cover: c }) => {
+              const from = shown.filter((k) => Math.abs(c.take[k]) > 0.5).map((k) => c.take[k] > 0 ? `${ACCT[k]} ${money(c.take[k])}` : `${ACCT[k]} +${money(-c.take[k])}`);
+              return (
+                <li key={stageKey(s)} className="m-0 border-t border-border py-2 first:border-t-0">
+                  <b className="font-medium">{spanText(s.from, s.to, base)}</b> · {s.label}
+                  <span className="block text-muted-foreground">{money(Math.abs(s.change))} per month{s.change < 0 ? " less than today, added to the brokerage" : ": " + (from.join(" · ") || "nothing")}
+                    {c.short > 0 ? <span className="text-loss"> · {money(c.short)} {spending ? "from spending" : "more than you save"}</span> : null}</span>
+                </li>
+              );
+            })}
           </ul>
-          <div className="mt-2 overflow-x-auto max-sm:hidden">
-            <table className="w-full min-w-120 text-note tabular-nums">
-              <thead><tr className="text-label text-muted-foreground">
-                <th className="py-1.5 text-left font-medium">Stage</th><th className="py-1.5 text-right font-medium">Children cost</th>
-                {shown.map((k) => <th key={k} className="py-1.5 pl-3 text-right font-medium">{ACCT[k]}</th>)}
-                <th className="py-1.5 pl-3 text-right font-medium">From spending</th>
-              </tr></thead>
-              <tbody>
-                {rows.map(({ s, room, cover: c }) => (
-                  <tr key={stageKey(s)} className="border-t border-border align-top">
-                    <td className="py-2 pr-2"><b className="font-medium">{s.label}</b><span className="block text-label text-muted-foreground">{spanText(s.from, s.to, base)}</span></td>
-                    <td className="py-2 text-right whitespace-nowrap">{(s.change < 0 ? "−" : "+") + money(Math.abs(s.change))}</td>
-                    {shown.map((k) => (
-                      <td key={k} className="py-2 pl-3 text-right whitespace-nowrap">
-                        {c.take[k] > 0.5 ? <>
-                          <span className="font-medium">−{money(c.take[k])}</span>
-                          <span className="block text-label text-muted-foreground">of {money(room[k])}</span>
-                          {/* A pre-tax cut, sized to the paycheck's taxes, frees less than itself: say what it frees. */}
-                          {freesLess && (k === "trad" || k === "hsa") && c.take[k] - c.freedBy[k] > 0.5 ? <span className="block text-label text-muted-foreground">frees {money(c.freedBy[k])}</span> : null}
-                          {k === "trad" && c.matchLost > 0.5 ? <span className="block text-label text-loss">−{money(c.matchLost)} match</span> : null}
-                        </> : c.take[k] < -0.5 ? <span className="text-gain">+{money(-c.take[k])}</span> : <span className="text-muted-foreground">–</span>}
-                      </td>
-                    ))}
-                    <td className={"py-2 pl-3 text-right whitespace-nowrap" + (c.short > 0 ? " text-loss" : "")}>{c.short > 0 ? "−" + money(c.short) : <span className="text-muted-foreground">–</span>}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {anyMatch ? <p className="hint mt-3 text-loss">A cut shown in red goes below what earns the full employer match, so the match shrinks too.{shown.length > 1 ? " Putting Traditional later keeps it." : ""}</p> : null}
-          <p className="hint mt-3">Each stage at its first year, in today&apos;s dollars, from what you&apos;ll be saving then. {by === "order" ? "As saving grows through a stage, more of it can come from the first account." : "As saving grows through a stage, each account gives up a smaller share."}
-            {freesLess ? " Money kept out of a traditional account or the HSA is taxed as pay again, so a cut there is made bigger to cover the cost after that tax." : ""}
-            {rows.some((r) => r.s.change < 0) ? " A stage that costs less than today adds the difference to the brokerage." : ""}</p>
-        </div>
+        ) : null}
       </div>
 
       <div className="formactions mt-5">
