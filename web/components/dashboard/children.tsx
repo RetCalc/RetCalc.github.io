@@ -17,7 +17,7 @@ import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
 import { planKidsOf } from "./calc";
 import { coverScope } from "./cover";
 import { flow } from "./flows";
-import { ageOf } from "./model";
+import { ageOf, answers } from "./model";
 import { useDashboard, type Profile } from "./store";
 
 /** "Maya, 5, and 2 planned, the first in 2 years, then one every 3 years." */
@@ -38,13 +38,15 @@ export function coverSegs(pr: Profile, k: PlanKids | null = planKidsOf(pr)) {
   return kidStages(k, age, retire).filter((s) => s.change !== 0);
 }
 
-/** "How will you cover it?" on the profile's children. */
+/** "How will you cover it?" on the profile's children: each stage worked
+    out on that year's saving, as the plan runs it. */
 export function CoverDialog({ close, kids }: { close: () => void; kids?: PlanKids }) {
   const { data, setProfile } = useDashboard();
-  const pr = data.profile, C = coverScope(flow(pr));
+  const pr = data.profile, C = coverScope(pr, flow(pr), answers(pr, data.entries));
   return (
-    <CoverStagesDialog segs={coverSegs(pr, kids)} today={C.today} ppy={12} initial={pr.kidCover ?? {}} coverFn={C.fn} order={C.order} saveLabel="Save"
-      close={close} save={(cover) => { setProfile((p) => ({ ...p, kidCover: cover as Profile["kidCover"] })); close(); }} />
+    <CoverStagesDialog segs={coverSegs(pr, kids)} today={C.today} usual={C.usual} initial={pr.coverRule ?? null} freesLess matchLast saveLabel="Save"
+      stage={(s, rule) => C.stage(s.from, s.change, rule)}
+      close={close} save={(rule) => { setProfile((p) => ({ ...p, coverRule: rule })); close(); }} />
   );
 }
 

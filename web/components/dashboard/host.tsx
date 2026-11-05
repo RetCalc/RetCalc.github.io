@@ -104,9 +104,9 @@ export function seedFor(pr: Profile, entries: Entry[]): (id: string) => ToolInpu
 /** Runs tools in the Dashboard's scope. `seed` gives each tool's first
     inputs; `keep`, when given, takes its edits into the profile; links
     between tools stay inside the Dashboard. */
-export function Hosted({ seed, keep, household, slots, cover, locked, bridgeBudget, seedKey, scenarios, children }: {
+export function Hosted({ seed, keep, household, slots, locked, bridgeBudget, seedKey, scenarios, children }: {
   seed: (id: string) => ToolInputs | undefined; keep?: (id: string, data: ToolInputs) => void;
-  household: SavedHousehold | null; slots?: ToolScope["slots"]; cover?: ToolScope["cover"]; locked?: ToolScope["locked"];
+  household: SavedHousehold | null; slots?: ToolScope["slots"]; locked?: ToolScope["locked"];
   bridgeBudget?: ToolScope["bridgeBudget"];
   /** Changes when the page has new inputs for its tools: an open tool reads
       them again in place (its own state, such as a chart's mode, stays). */
@@ -116,8 +116,8 @@ export function Hosted({ seed, keep, household, slots, cover, locked, bridgeBudg
   children: ReactNode;
 }) {
   const router = useRouter();
-  const latest = useRef({ seed, keep, slots, locked, household, cover, bridgeBudget });
-  useEffect(() => { latest.current = { seed, keep, slots, locked, household, cover, bridgeBudget }; });
+  const latest = useRef({ seed, keep, slots, locked, household, bridgeBudget });
+  useEffect(() => { latest.current = { seed, keep, slots, locked, household, bridgeBudget }; });
   // One scope for the host's life, made again only when the seed key
   // changes (the tools then read their inputs again): the tools read it as
   // they open. What the page says in them, and what it locks, follow the
@@ -130,7 +130,6 @@ export function Hosted({ seed, keep, household, slots, cover, locked, bridgeBudg
     return {
       name: "dashboard",
       get household() { return latest.current.household; },
-      get cover() { return latest.current.cover; },
       get slots() { return latest.current.slots; },
       get locked() { return latest.current.locked; },
       get bridgeBudget() { return latest.current.bridgeBudget; },

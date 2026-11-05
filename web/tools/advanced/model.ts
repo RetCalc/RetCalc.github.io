@@ -9,9 +9,8 @@ import type { Plan } from "@/lib/engine/types";
 import { groupDigits, oneOf, parseNum, pctStr } from "@/lib/format";
 import type { Household } from "@/lib/household";
 import { readScenarios, type Scenario } from "@/components/dashboard/scenarios";
-import type { PlanKids } from "@/tools/plan/model";
-import type { Monthly } from "@/tools/plan/kids";
-import { readCover, readKids } from "@/tools/plan/kidsRead";
+import type { CoverRule, PlanKids } from "@/tools/plan/model";
+import { readKids, readRule } from "@/tools/plan/kidsRead";
 
 /** A plan in the engine's own terms: rates as decimals, dollars as numbers. */
 export interface PlainPlan {
@@ -50,8 +49,9 @@ export const ADVANCED_DEFAULTS = {
   /** Your age now, optional: with it, the changes ahead read by age. */
   age: "",
   /** Changes ahead (changes.ts), their ages as years from now, and the
-      children their row stands for, with how their costs are covered. */
-  changes: [] as Scenario[], kids: null as PlanKids | null, kidCover: {} as Record<string, Partial<Monthly>>,
+      children their row stands for, with how their costs are covered
+      (unset: the usual order). */
+  changes: [] as Scenario[], kids: null as PlanKids | null, coverRule: null as CoverRule | null,
 };
 export type AdvancedInputs = typeof ADVANCED_DEFAULTS;
 
@@ -62,7 +62,7 @@ export const ADVANCED_DEF: ToolDef<AdvancedInputs> = {
   id: "advanced", label: "Advanced", noun: "retirement scenario", defaults: ADVANCED_DEFAULTS,
   clean: (s) => ({
     ...s, period: oneOf(s.period, PERIODS, ADVANCED_DEFAULTS.period), acStatus: oneOf(s.acStatus, ["s", "m"], "s"),
-    age: typeof s.age === "string" ? s.age : "", changes: readScenarios(s.changes), kids: readKids(s.kids), kidCover: readCover(s.kidCover),
+    age: typeof s.age === "string" ? s.age : "", changes: readScenarios(s.changes), kids: readKids(s.kids), coverRule: readRule(s.coverRule),
   }),
 };
 

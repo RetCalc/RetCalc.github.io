@@ -14,7 +14,7 @@ import { glideAnnualRate } from "@/lib/engine/math";
 import type { Household } from "@/lib/household";
 import { parseNum } from "@/lib/format";
 import { COVER_ORDER, type CoverLine, type PlanKids } from "@/tools/plan/model";
-import { coverStage, kidStages, stageKey, type Freed, type Monthly } from "@/tools/plan/kids";
+import { coverStage, kidStages, type Cover, type Freed, type Monthly } from "@/tools/plan/kids";
 import { KID_BASE } from "@/tools/stages/kids";
 import { STAGES_DEFAULTS, stagesCompute, type StageInputs, type StagesInputs } from "@/tools/stages/model";
 import { CHILDREN_ID, lumpAccount, nominalAt, scenarioName, yearChange, type Scenario } from "@/components/dashboard/scenarios";
@@ -41,6 +41,9 @@ export interface ShownStage {
   lump: { amount: number; to: "t" | "r" | "b" | "h" } | null; names: string[];
   /** The children cost more than is saved then, by so much a month. */
   short: number;
+  /** How the children's cost (beyond today's) comes out of saving at its
+      start, as the rule says; null when they cost the same as today. */
+  kidCover: Cover | null;
 }
 
 export interface Compiled {
@@ -72,9 +75,24 @@ function cutFrom(m: Monthly, cut: number, typed: Partial<Monthly>): number {
   return Math.max(0, left);
 }
 
+/** Your own saving a month by account `at` years from now, in today's
+    dollars: one pot (counted as brokerage) without the split, rising at
+    the plan's rate (with rates by account, their blend, as Advanced runs
+    the plan) from the start of its year. */
+export function savingOver(s: AdvancedInputs, household: Household | null): (at: number) => Monthly {
+  const P = advancedPlan(s, household), p = P.p, a = P.a, ppy = PER_YEAR[p.period] ?? 12;
+  const mo = (v: number) => (v * ppy) / 12;
+  const today: Monthly = a ? { brok: mo(a.brokC), roth: mo(a.rothC), trad: mo(a.tradC), hsa: mo(a.hsaC) } : { ...ZERO(), brok: mo(p.contrib) };
+  return (at) => {
+    const yr = Math.floor(at), real = Math.pow(1 + p.inflation, at), m = ZERO();
+    for (const k of COVER_ORDER) m[k] = (today[k] * Math.pow(1 + p.growth, yr)) / real;
+    return m;
+  };
+}
+
 /** A slice of the plan with one thing going on: the saving at its start,
     its return and what's at work. */
-interface Slice { a: number; b: number; monthly: Monthly; nominal: number; tags: string[]; kid: string; lump: ShownStage["lump"]; short: number; lumpIds: string[]; cutShort: number }
+interface Slice { a: number; b: number; monthly: Monthly; nominal: number; tags: string[]; kid: string; lump: ShownStage["lump"]; short: number; lumpIds: string[]; cutShort: number; kidCover: Cover | null }
 
 /** The plan's stages under the changes, with the inputs in `s`. */
 /** `freed`: what a cut from each account frees in take-home pay, when
@@ -89,13 +107,8 @@ export function compileChanges(s: AdvancedInputs, household: Household | null, f
   const kidsOn = list.some((c) => c.kind === "children") && !!s.kids;
   const changes = list.filter((c) => c.kind !== "children");
 
-  // Today's saving a month by account, your own: one pot (counted as
-  // brokerage) without the split.
-  const mo = (v: number) => (v * ppy) / 12;
-  const today: Monthly = a ? { brok: mo(a.brokC), roth: mo(a.rothC), trad: mo(a.tradC), hsa: mo(a.hsaC) } : { ...ZERO(), brok: mo(p.contrib) };
-  // Contributions rise at the plan's rate: with rates by account, their
-  // blend, as Advanced runs the plan.
-  const rateOf = (k: CoverLine) => (void k, p.growth);
+  const savingAt = savingOver(s, household), rateOf = (k: CoverLine) => (void k, p.growth);
+  const rule = s.coverRule ?? null;
 
   // Where something can change: every whole year, the end, and where the children's costs change.
   const kidSegs = kidsOn ? kidStages(s.kids, KID_BASE, KID_BASE + Math.max(1, Math.round(T))).map((x) => ({ ...x, from: x.from - KID_BASE, to: x.to - KID_BASE })) : [];
@@ -106,14 +119,13 @@ export function compileChanges(s: AdvancedInputs, household: Household | null, f
 
   const slices: Slice[] = [];
   for (let i = 0; i < edges.length - 1; i++) {
-    const at = edges[i], yr = Math.floor(at), real = Math.pow(1 + infl, at);
+    const at = edges[i], yr = Math.floor(at);
     // Saving then, as a month in today's dollars.
-    const m: Monthly = ZERO();
-    for (const k of COVER_ORDER) m[k] = (today[k] * Math.pow(1 + rateOf(k), yr)) / real;
+    const m: Monthly = savingAt(at);
     const own = sum(m);
     const seg = kidSegs.find((x) => at >= x.from && at < x.to);
     const kid = seg && seg.change !== 0 ? seg.label : "";
-    const kidTyped = seg && a ? (s.kidCover ?? {})[stageKey({ from: seg.from + KID_BASE, to: seg.to + KID_BASE })] : undefined;
+    const kidCover = seg && seg.change !== 0 ? coverStage(seg.change, m, {}, freed, rule) : null;
     // The saving changes work on your own saving, before the children.
     const Y = yearChange(changes, yr, Math.ceil(T), own);
     let short = 0, cutShort = 0;
@@ -123,10 +135,9 @@ export function compileChanges(s: AdvancedInputs, household: Household | null, f
       // take-home pay, the amounts named for an account first, and a cut
       // from pre-tax saving made big enough to free its share after tax.
       const kidNeed = seg?.change ?? 0, need = kidNeed + Y.cut;
-      const typed: Partial<Monthly> = { ...(kidTyped ?? {}) };
-      if (a) for (const k of COVER_ORDER) if (Y.typed[k] != null) typed[k] = (typed[k] ?? 0) + Y.typed[k]!;
+      const typed: Partial<Monthly> = a ? { ...Y.typed } : {};
       if (Math.abs(need) >= 0.5) {
-        const c = coverStage(need, m, typed, freed);
+        const c = coverStage(need, m, typed, freed, rule);
         for (const k of COVER_ORDER) m[k] = Math.max(0, m[k] - c.take[k]);
         short = Math.min(c.short, Math.max(0, kidNeed));
         cutShort = Y.cut > 0 ? c.short - short : 0;
@@ -134,7 +145,7 @@ export function compileChanges(s: AdvancedInputs, household: Household | null, f
     } else {
       // The children first: what they cost beyond today comes out as "How will you cover this?" says.
       if (seg) {
-        const c = coverStage(seg.change, m, kidTyped);
+        const c = coverStage(seg.change, m, {}, undefined, rule);
         for (const k of COVER_ORDER) m[k] = Math.max(0, m[k] - c.take[k]);
         short = c.short;
       }
@@ -145,7 +156,7 @@ export function compileChanges(s: AdvancedInputs, household: Household | null, f
     const N = nominalAt(changes, yr, p.gross);
     const L = Number.isInteger(at) ? changes.filter((c) => c.kind === "lump" && c.from === at && c.amount !== 0) : [];
     const lump = L.length ? { amount: L.reduce((t, c) => t + c.amount, 0), to: a ? lumpAccount(L[0]) : ("b" as const) } : null;
-    slices.push({ a: at, b: edges[i + 1], monthly: m, nominal: N.nominal, tags: [...Y.tags, ...N.tags], kid, lump, short, lumpIds: L.map((c) => c.id), cutShort });
+    slices.push({ a: at, b: edges[i + 1], monthly: m, nominal: N.nominal, tags: [...Y.tags, ...N.tags], kid, lump, short, lumpIds: L.map((c) => c.id), cutShort, kidCover });
   }
 
   // Slices run together while nothing new happens and each account's saving
@@ -173,7 +184,7 @@ export function compileChanges(s: AdvancedInputs, household: Household | null, f
   }
   const shown: ShownStage[] = shownGroups.map((g) => {
     const t0 = sum(g.first.monthly), t1 = g.second ? sum(g.second.monthly) : t0;
-    return { from: g.from, to: g.to, monthly: g.first.monthly, monthlyEnd: g.last.monthly, rises: t0 > 0 ? t1 / t0 - 1 : 0, nominal: g.first.nominal, lump: g.first.lump, names: namesOf(g.first), short: g.first.short };
+    return { from: g.from, to: g.to, monthly: g.first.monthly, monthlyEnd: g.last.monthly, rises: t0 > 0 ? t1 / t0 - 1 : 0, nominal: g.first.nominal, lump: g.first.lump, names: namesOf(g.first), short: g.first.short, kidCover: g.first.kidCover };
   });
 
   // A stage from a group (or one year of one, inside a glide that has to be split).
@@ -224,7 +235,7 @@ export function compileChanges(s: AdvancedInputs, household: Household | null, f
   const firstShort = slices.find((x) => x.cutShort > 0.5);
   const cutShort = firstShort ? { from: firstShort.a, most: Math.max(...slices.map((x) => x.cutShort)) } : null;
   const perYear = slices.filter((x) => Number.isInteger(x.a)).map((x) => sum(x.monthly));
-  return { inputs: { ...next, stages, kids: null, kidCover: {} }, shown, starts, glideAt, cutShort, perYear };
+  return { inputs: { ...next, stages, kids: null }, shown, starts, glideAt, cutShort, perYear };
 }
 
 /** The plan's results under the changes: the Stages engine's. */

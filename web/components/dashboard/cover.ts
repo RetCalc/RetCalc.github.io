@@ -1,8 +1,10 @@
-/* Where the children's costs (and college's) come out of saving. A stage's
-   amounts typed in "How will you cover it?" stand, account by account; the
-   rest comes out in the dashboard's order, which keeps the most valuable
-   saving longest: the brokerage, the 401(k) beyond the match, the IRA,
-   the HSA, and the 401(k) up to the match last. A cut from pre-tax saving
+/* Where the children's costs (and college's) come out of saving: as the
+   profile's rule says ("How will you cover it?"), worked out each year on
+   that year's saving. Unset, in the dashboard's order, which keeps the most
+   valuable saving longest: the brokerage, the 401(k) beyond the match, the
+   IRA, the HSA, and the 401(k) up to the match last; in an order of
+   accounts, or in proportion to each one's saving, the 401(k) up to the
+   match still last. A cut from pre-tax saving
    is taxed as pay again, so it's cut far enough to free what's needed.
    What saving can't cover comes out of spending.
 
@@ -16,8 +18,8 @@
    every tab follows the same choices. No React. */
 
 import { paycheckRun, pcCap, type PcInput } from "@/tools/budget/paycheck-math";
-import { paycheckFreed, kidStages, stageKey, type Cover, type Freed, type Monthly } from "@/tools/plan/kids";
-import { COVER_ORDER, type CoverLine } from "@/tools/plan/model";
+import { paycheckFreed, shareOut, type Cover, type Freed, type Monthly } from "@/tools/plan/kids";
+import { COVER_ORDER, type CoverLine, type CoverRule } from "@/tools/plan/model";
 import { childCost, children } from "@/tools/guide/schedule";
 import type { Answers, YearSaving } from "@/tools/guide/store";
 import type { Flow } from "./flows";
@@ -27,7 +29,6 @@ import { OUTSIDE_US, type Profile, type YearEdit } from "./store";
 type Line = "brok" | "k401max" | "rothIra" | "hsa" | "match";
 /** The order saving is given up in when nothing's typed. */
 export const DASH_ORDER: readonly Line[] = ["brok", "k401max", "rothIra", "hsa", "match"];
-export const DASH_ORDER_TEXT = "the brokerage first, then the 401(k) beyond the match, the IRA and the HSA, and the 401(k) up to the match last";
 
 /** Which account a paycheck line is, by how it's taxed. */
 const kindOf = (pi: PcInput, l: Line): CoverLine => (l === "brok" ? "brok" : l === "hsa" ? "hsa" : pi.roth[l] ? "roth" : "trad");
@@ -45,10 +46,29 @@ export function byKind(pi: PcInput, lines: Record<Line, number>): Monthly {
 
 const NONE = (): Monthly => ({ brok: 0, roth: 0, trad: 0, hsa: 0 });
 
-/** coverStage (tools/plan/kids.ts) in the dashboard's order: the typed
-    amounts first, then line by line, each cut by the fewest whole dollars
-    that free the rest. Costs lower than today add to the brokerage. */
-export function coverDash(change: number, pi: PcInput, typed: Partial<Monthly> = {}, lines = linesOf(pi), F: Freed = freedFor(pi, lines)): Cover {
+/** The lines in the order a rule takes them: unset, the dashboard's own;
+    with an order, its accounts in turn (each one's lines in the
+    dashboard's order), and the 401(k) up to the match always last. */
+export function linesInOrder(pi: PcInput, rule: CoverRule | null | undefined): Line[] {
+  const order = rule?.order;
+  if (!order) return [...DASH_ORDER];
+  const rank = (l: Line) => (l === "match" ? order.length : order.indexOf(kindOf(pi, l)));
+  return [...DASH_ORDER].sort((x, y) => rank(x) - rank(y));
+}
+
+/** The accounts in the order the dashboard takes them when nothing's set:
+    each account where its first line comes, the match left out. */
+export function dashKindOrder(pi: PcInput): CoverLine[] {
+  const out: CoverLine[] = [];
+  for (const l of DASH_ORDER) { const k = kindOf(pi, l); if (l !== "match" && !out.includes(k)) out.push(k); }
+  return [...out, ...COVER_ORDER.filter((k) => !out.includes(k))];
+}
+
+/** coverStage (tools/plan/kids.ts) on the dashboard's lines: the typed
+    amounts first, then as the rule says, each cut by the fewest whole
+    dollars that free the rest; the 401(k) up to the match last either way.
+    Costs lower than today add to the brokerage. */
+export function coverDash(change: number, pi: PcInput, typed: Partial<Monthly> = {}, lines = linesOf(pi), F: Freed = freedFor(pi, lines), rule: CoverRule | null = null): Cover {
   const need = Math.round(change), today = byKind(pi, lines);
   const take = NONE();
   const done = (): Cover => {
@@ -69,24 +89,38 @@ export function coverDash(change: number, pi: PcInput, typed: Partial<Monthly> =
     return done();
   }
   for (const k of COVER_ORDER) if (typed[k] != null) take[k] = Math.max(0, Math.min(Math.floor(today[k] + 0.005), Math.round(typed[k]!)));
-  // How much of each account the lines before this one have already offered.
-  const offered = NONE();
-  for (const l of DASH_ORDER) {
-    const k = kindOf(pi, l);
-    if (typed[k] != null) continue;
-    const upTo = offered[k] + lines[l];
-    offered[k] = upTo;
-    if (F(take).freed >= need - 0.005) break;
+  const covered = () => F(take).freed >= need - 0.005;
+  // A line's account given up to `upTo`, by the fewest whole dollars that
+  // free the rest.
+  const upTo = (k: CoverLine, to: number) => {
     const from = take[k];
-    take[k] = upTo;
-    if (F(take).freed <= need) continue;
-    let lo = from, hi = Math.ceil(upTo);
+    take[k] = to;
+    if (F(take).freed <= need) return;
+    let lo = from, hi = Math.ceil(to);
     while (hi - lo > 1) {
       const mid = Math.floor((lo + hi) / 2);
       take[k] = mid;
-      if (F(take).freed >= need - 0.005) hi = mid; else lo = mid;
+      if (covered()) hi = mid; else lo = mid;
     }
-    take[k] = Math.min(hi, upTo);
+    take[k] = Math.min(hi, to);
+  };
+  if (rule?.by === "share") {
+    // Every account by the same share of its saving beyond the match line;
+    // that line only once the rest is all given up.
+    const free = COVER_ORDER.filter((k) => typed[k] == null), m = kindOf(pi, "match");
+    const beyond = { ...today, [m]: today[m] - lines.match };
+    shareOut(take, free, beyond, covered);
+    if (!covered() && typed[m] == null && lines.match > 0) upTo(m, today[m]);
+    return done();
+  }
+  // How much of each account the lines before this one have already offered.
+  const offered = NONE();
+  for (const l of linesInOrder(pi, rule)) {
+    const k = kindOf(pi, l);
+    if (typed[k] != null) continue;
+    offered[k] += lines[l];
+    if (covered()) break;
+    upTo(k, offered[k]);
   }
   return done();
 }
@@ -131,7 +165,10 @@ export function yearlySaving(pr: Profile, F: Flow, a: Answers, opts: { college: 
   CACHE.set(key, out);
   return out;
 }
-type YearsOut = { rows: YearSaving[]; base: number[]; years: CashYear[] };
+/** `pre`: each year's paycheck and saving by line before the children's
+    costs, college and the changes come out ("How will you cover it?"
+    works each stage out on its first year's). */
+type YearsOut = { rows: YearSaving[]; base: number[]; years: CashYear[]; pre: { pk: PcInput; lines: Record<Line, number> }[] };
 const CACHE = new Map<string, YearsOut>();
 
 const shift = (x: number | null, k: number) => (x == null ? null : x + k);
@@ -139,10 +176,10 @@ const total = (m: Record<string, number>) => Object.values(m).reduce((s, v) => s
 
 function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }): YearsOut {
   const age = Math.round(a.age ?? 0), end = Math.round(a.retire ?? 0), pi = F.pi;
-  if (!(end > age)) return { rows: [], base: [], years: [] };
+  if (!(end > age)) return { rows: [], base: [], years: [], pre: [] };
   const kids = children(a), scen = pr.scenarios ?? [];
   const costNow = kids.filter((c) => !c.planned).reduce((s, c) => s + childCost(c, age), 0);
-  const segs = kidStages(kidsOf(a), age, end), cover = pr.kidCover ?? {};
+  const rule = pr.coverRule ?? null;
   const abroad = pr.state === OUTSIDE_US, Yr = pr.yearly ?? { raise: [0, 0], keep: null };
   const other = pr.other.reduce((s, o) => s + (o.amount ?? 0), 0), ef = F.ef;
   // Today's saving by line, and what it's a share of: take-home pay.
@@ -197,7 +234,7 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
   // When your partner stops work, if before you: the calendar year.
   const r2 = pr.who === "couple" && pr.p2.by != null && pr.p2.retire != null ? pr.p2.by + pr.p2.retire : null;
   const year0 = new Date().getFullYear();
-  const rows: YearSaving[] = [], base: number[] = [], years: CashYear[] = [];
+  const rows: YearSaving[] = [], base: number[] = [], years: CashYear[] = [], pre: YearsOut["pre"] = [];
   for (let t = age; t < end; t++) {
     const k = t - age, year = year0 + k;
     const works: [boolean, boolean] = [true, pi.gross2 > 0 && (r2 == null || year < r2)];
@@ -228,16 +265,16 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
       tx = taxOf(pk, lines);
     }
     const match = (tx.run.match * pk.p) / 12;
+    pre.push({ pk, lines });
     // The Calculator's scenarios this year: saving given up (covered like
     // the children's costs, from the accounts they name first), and saving
     // added to an account.
     const own = byKind(pk, lines), Y = yearChange(scen, t, end, own.brok + own.roth + own.trad + own.hsa, { lines: true });
     const kidsCost = kids.reduce((s, c) => s + childCost(c, t), 0) - costNow, college = opts.college[k] ?? 0;
     const need = kidsCost + college + Y.cut;
-    const seg = segs.find((s) => s.from <= t && t < s.to);
-    const typedKids = seg ? cover[stageKey(seg)] : undefined;
-    const typed = Y.cut > 0 ? Object.fromEntries(COVER_ORDER.filter((a) => typedKids?.[a] != null || Y.typed[a] != null).map((a) => [a, (typedKids?.[a] ?? 0) + (Y.typed[a] ?? 0)])) as Partial<Monthly> : typedKids;
-    const coverFor = (n: number) => (Math.abs(n) < 0.5 ? null : coverDash(n, pk, typed, lines));
+    // What a Save less change names an account for stands; the rest as the rule says.
+    const typed = Y.cut > 0 ? Y.typed : {};
+    const coverFor = (n: number) => (Math.abs(n) < 0.5 ? null : coverDash(n, pk, typed, lines, undefined, rule));
     const keptOf = (cv: ReturnType<typeof coverFor>) => {
       const m = { ...own };
       if (cv) for (const kk of COVER_ORDER) m[kk] = Math.max(0, m[kk] - cv.take[kk]);
@@ -267,30 +304,22 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
       saved: { ...left }, match: emp, ef, kids: kidsCost, college, change: Y.cut - total(Y.add), short: c?.short ?? 0, tags: [...P1.tags, ...P2.tags, ...Y.tags], works,
       edits: edits.filter((e) => e.year === year && (e.what !== "pay1" || works[1])) });
   }
-  return { rows, base, years };
-}
-
-/** The children as kidStages takes them, from the answers. */
-function kidsOf(a: Answers) {
-  return {
-    now: a.kidsNow ?? [], planned: a.kidsPlanned ?? 0, firstIn: a.firstIn ?? 2, spacing: a.spacing ?? 3, childcare: a.childcare !== false,
-    early: a.childEarly != null ? String(a.childEarly) : "", school: a.childSchool != null ? String(a.childSchool) : "", teen: a.childTeen != null ? String(a.childTeen) : "",
-    area: a.careArea ?? "suburb", ...(a.childLater != null ? { later: String(a.childLater * 100) } : {}), gaps: a.kidGaps ?? null,
-  };
+  return { rows, base, years, pre };
 }
 
 /** "How will you cover it?" in the dashboard: today's saving by account,
-    and each stage's cover in the dashboard's order. */
-export function coverScope(F: Flow) {
-  const lines = linesOf(F.pi), Fr = freedFor(F.pi, lines);
-  return { today: byKind(F.pi, lines), fn: (change: number, typed?: Partial<Monthly>) => coverDash(change, F.pi, typed, lines, Fr), order: DASH_ORDER_TEXT };
-}
-
-/** A cover's stages moved by `d` years: the Calculator counts them from
-    year 0, the profile by your age. */
-export function shiftCover(c: Record<string, Partial<Monthly>>, d: number): Record<string, Partial<Monthly>> {
-  return Object.fromEntries(Object.entries(c).map(([k, v]) => {
-    const [a, b] = k.split("-").map(Number);
-    return [`${a + d}-${b + d}`, v];
-  }));
+    the order nothing set means, and each stage worked out on its first
+    year's saving (by your age), as the plan runs it. */
+export function coverScope(pr: Profile, F: Flow, a: Answers) {
+  const Y = yearlySaving(pr, F, a), age = Math.round(a.age ?? 0);
+  const today = byKind(F.pi, linesOf(F.pi));
+  const at = (from: number) => Y.pre[Math.max(0, Math.min(Y.pre.length - 1, Math.round(from) - age))];
+  return {
+    today, usual: dashKindOrder(F.pi), freesLess: true, matchLast: true,
+    stage: (from: number, change: number, rule: CoverRule | null) => {
+      const y = at(from);
+      if (!y) return { room: today, cover: coverDash(change, F.pi, {}, undefined, undefined, rule) };
+      return { room: byKind(y.pk, y.lines), cover: coverDash(change, y.pk, {}, y.lines, freedFor(y.pk, y.lines), rule) };
+    },
+  };
 }

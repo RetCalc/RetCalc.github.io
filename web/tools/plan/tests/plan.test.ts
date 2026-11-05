@@ -113,6 +113,21 @@ test("covering a stage: the brokerage first, typed amounts stand, the rest from 
   assert.deepEqual(coverStage(-300, today).take, { brok: -300, roth: 0, trad: 0, hsa: 0 });
 });
 
+test("covering a stage by a rule: an order of accounts, or a share of each", () => {
+  const today = { brok: 500, roth: 300, trad: 600, hsa: 200 };
+  // The Roth first, then traditional: the brokerage keeps its saving.
+  const order = coverStage(700, today, {}, undefined, { by: "order", order: ["roth", "trad", "brok", "hsa"] });
+  assert.deepEqual(order.take, { brok: 0, roth: 300, trad: 400, hsa: 0 });
+  // A share of each: 700 of 1,600 is 43.75% of every account, in whole dollars, covering the cost exactly.
+  const share = coverStage(700, today, {}, undefined, { by: "share" });
+  assert.deepEqual(share.take, { brok: 219, roth: 131, trad: 263, hsa: 88 });
+  assert.equal(share.short, 0);
+  // More than all of it: everything, the rest from spending.
+  assert.equal(coverStage(2000, today, {}, undefined, { by: "share" }).short, 400);
+  // A larger saving later on (the same rule on that year's figures) covers more from the first account.
+  assert.deepEqual(coverStage(700, { ...today, brok: 800 }).take, { brok: 700, roth: 0, trad: 0, hsa: 0 });
+});
+
 test("covering a stage from pre-tax accounts: a cut frees less than itself, and can cost the match", () => {
   const p = seedAdvanced(plan(), null), F = freedOf(p), pc = paycheckOf(p)!;
   const today = monthlyByAccount(advancedPlan(toolOf(p, "advanced"), null), "Bi-Weekly");

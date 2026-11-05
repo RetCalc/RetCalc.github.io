@@ -14,11 +14,10 @@ import { annualize, budgetCompute } from "@/tools/budget/model";
 import { PC_LINES, PC_STEPS, rowRole, type PcStep } from "@/tools/budget/paycheck-math";
 import { CHILD_SOURCE, childCost } from "@/tools/guide/schedule";
 import { stageSplit } from "@/tools/stages/model";
-import { KID_BASE } from "@/tools/stages/kids";
 import { changesCompute, changesOn, liveChanges, withChange } from "@/tools/advanced/changes";
 import { CHILDREN_ID } from "@/components/dashboard/scenarios";
 import { freedOf, paycheckOf, planAges, toolOf } from "./flow";
-import { STEP, coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
+import { STEP, kidCostAt, kidList, kidStages, monthlyByAccount, type KidStage, type Monthly } from "./kids";
 import type { PlanState } from "./model";
 
 export type Acct = "trad" | "roth" | "brok" | "hsa";
@@ -139,11 +138,9 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
     // The stages as Advanced lists them: what's going on, by age, and for the
     // children's, their cost then and how it's covered.
     const ks = kidsP ? kidStages(kidsP, ages.age, ages.age + Math.max(1, Math.round(years))) : [];
-    const AP = advancedPlan(adv, household), today = monthlyByAccount(AP, AP.p.period);
     stages = C.shown.map((x) => {
       const from = ages.age + x.from, to = ages.age + x.to, seg = ks.find((k) => from >= k.from && from < k.to);
-      const change = seg?.change ?? 0, key = seg ? stageKey({ from: seg.from - ages.age + KID_BASE, to: seg.to - ages.age + KID_BASE }) : "";
-      const c = seg && change !== 0 ? coverStage(change, today, adv.acOn ? (adv.kidCover ?? {})[key] : undefined, freedOf(p)) : null;
+      const change = seg?.change ?? 0, c = x.kidCover;
       return { name: x.names.join(", ") || "Saving", from, to, monthly: x.monthly.brok + x.monthly.roth + x.monthly.trad + x.monthly.hsa,
         kidCost: seg?.cost ?? 0, change, take: c ? c.take : null, short: c?.short ?? 0, taxUp: c?.taxUp ?? 0, matchLost: c?.matchLost ?? 0 };
     });

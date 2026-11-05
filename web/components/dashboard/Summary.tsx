@@ -110,7 +110,7 @@ export function Summary() {
       ...PLAN_DEFAULTS, step: "summary" as PlanState["step"], reached: "summary" as PlanState["reached"],
       age: String(age), retire: String(pr.p1.retire), freq: F.b.pcFreq,
       tools: { budget: { ...budgetFor(pr), view: "paycheck" } as unknown as ToolInputs, advanced: advancedFor(pr, data.entries) as unknown as ToolInputs, stages: calcInputs(pr, data.entries) as unknown as ToolInputs },
-      stagesOn: true, kids: planKidsOf(pr), cover: (pr.kidCover ?? {}) as PlanState["cover"],
+      stagesOn: true, kids: planKidsOf(pr), cover: {},
     };
     const out = planSummary(plan, null);
     return out ? withPlanChildren(out, pr, data.entries) : null;

@@ -30,14 +30,12 @@ import { kidStages } from "@/tools/plan/kids";
 import { Frame } from "./Frame";
 import { CALC_LOCKED, CALC_LOCKED_KEYS, calcInputs, calcOwnOf, lumpShortfalls, planKidsOf } from "./calc";
 import { ChildCostsDialog, childrenSentence } from "./children";
-import { coverScope, shiftCover } from "./cover";
 import { budgetFor, flow, taxFor } from "./flows";
 import { ageOf, answers, holdings, nameOf, realGrowth } from "./model";
 import { money } from "./format";
 import { PlanFacts, TipLabel, To } from "./ui";
 import { STATE_OPTIONS } from "@/lib/states";
 import { parseNum } from "@/lib/format";
-import { KID_BASE } from "@/tools/stages/kids";
 import { Hosted } from "./host";
 import { newId, useDashboard, type Entry, type Profile } from "./store";
 import { CHILDREN_ID, acctWord, newScenario, scenarioName, scenarioSentence, type Scenario, type ScenarioKind } from "./scenarios";
@@ -45,9 +43,8 @@ import { ChangeDialog, ChangesDialog, INCOME_KIND, LUMP_KIND, SAVE_LESS_KIND, SP
 
 const Advanced = dynamic(() => import("@/tools/advanced/Advanced").then((m) => m.Advanced), { ssr: false });
 
-/** What the profile keeps from the calculator: historical mode's mix, the
-    children's costs, and how they're covered (by your age, where the
-    calculator counts years). Everything else changed here is kept too
+/** What the profile keeps from the calculator: historical mode's mix and
+    the children's costs. Everything else changed here is kept too
     (calcOwn), and the Calculator's result is then the plan's savings at
     retirement (calc.ts). */
 function fromStages(p0: Profile, s: StagesInputs): Profile {
@@ -57,11 +54,10 @@ function fromStages(p0: Profile, s: StagesInputs): Profile {
   if (!k) return p;
   const next = {
     childcare: k.childcare, careArea: k.area ?? p.careArea, childCosts: { early: k.early, school: k.school, teen: k.teen ?? "", later: k.later ?? p.childCosts.later },
-    kidCover: shiftCover((s.kidCover ?? {}) as Profile["kidCover"], (ageOf(p.p1) ?? KID_BASE) - KID_BASE) as Profile["kidCover"],
   };
   return costsKey(next) === costsKey(p) ? p : { ...p, ...next };
 }
-const costsKey = (p: Pick<Profile, "childcare" | "careArea" | "childCosts" | "kidCover">) => JSON.stringify([p.childcare, p.careArea, p.childCosts, p.kidCover ?? {}]);
+const costsKey = (p: Pick<Profile, "childcare" | "careArea" | "childCosts" | "coverRule">) => JSON.stringify([p.childcare, p.careArea, p.childCosts, p.coverRule ?? null]);
 
 /** Your age now and at retirement, as the scenarios count. */
 function agesOf(pr: Profile): { age: number; retire: number } {
@@ -348,7 +344,7 @@ export function Calculator() {
       ) : null}
       {/* New child costs or changes build the stages again, from the plan,
           with the tool open where it is (the page keeps its place). */}
-      <Hosted key={rev} seedKey={costsKey(pr) + "|" + JSON.stringify(pr.scenarios ?? [])} household={null} cover={coverScope(flow(pr))} seed={seed} keep={keep}
+      <Hosted key={rev} seedKey={costsKey(pr) + "|" + JSON.stringify(pr.scenarios ?? [])} household={null} seed={seed} keep={keep}
         locked={CALC_LOCKED} slots={{ plan: true, facts: <CalcFacts pr={pr} entries={entries} />, scenarios: panel, marks: onCount ? marks : undefined, stagesAge: age, chart: chartHold, reach }}>
         <Advanced />
       </Hosted>

@@ -20,12 +20,12 @@ import { CHILDREN_ID, acctWord, newScenario, scenarioName, scenarioSentence, typ
 import { DASH, fmtNum, money, parseNum, pctStr } from "@/lib/format";
 import { PER_YEAR } from "@/lib/engine/typed";
 import type { Household } from "@/lib/household";
-import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
-import { kidStages, type Freed, type Monthly } from "@/tools/plan/kids";
+import { NO_KIDS, type CoverRule, type PlanKids } from "@/tools/plan/model";
+import { coverStage, kidStages, type Freed, type Monthly } from "@/tools/plan/kids";
 import { CoverStagesDialog, KidsDialog, kidsLine } from "@/tools/plan/KidsDialog";
 import { KID_BASE } from "@/tools/stages/kids";
 import { advancedCompute, advancedPlan, type AdvancedInputs } from "./model";
-import { COAST_ID, changesCompute, changesOn, coastAnswer, coastChange, compileChanges, lumpShorts, retireAnswer, withChange, withoutChange, yearsTo, type CoastAnswer, type RetireAnswer, type ShownStage } from "./changes";
+import { COAST_ID, changesCompute, changesOn, coastAnswer, coastChange, compileChanges, lumpShorts, retireAnswer, savingOver, withChange, withoutChange, yearsTo, type CoastAnswer, type RetireAnswer, type ShownStage } from "./changes";
 
 type SetState = (f: (c: AdvancedInputs) => AdvancedInputs) => void;
 
@@ -127,7 +127,7 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
   };
 
   const toggle = (r: Scenario) => setState((c) => withChange(c, { ...r, on: !r.on }));
-  const remove = (id: string) => setState((c) => ({ ...withoutChange(c, id), ...(id === CHILDREN_ID ? { kids: null, kidCover: {} } : {}) }));
+  const remove = (id: string) => setState((c) => ({ ...withoutChange(c, id), ...(id === CHILDREN_ID ? { kids: null, coverRule: null } : {}) }));
   const edit = (r: Scenario, back = false) => setDlg(r.kind === "children" ? { at: "kids", back } : { at: "edit", c: shown(r, Y), fresh: false, back });
   const pick = (k: Kind, back = false) => {
     if (k.kind === "children") { setDlg({ at: "kids", back }); return; }
@@ -136,16 +136,16 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
     setDlg({ at: "edit", c, fresh: true, back });
   };
   // The children: saved with their row switched on.
-  const keepKids = (k: PlanKids, cover: Record<string, Partial<Monthly>>) => {
+  const keepKids = (k: PlanKids, rule?: CoverRule | null) => {
     done();
     const empty = !k.now.length && !k.planned;
-    setState((c) => empty ? { ...withoutChange(c, CHILDREN_ID), kids: null, kidCover: {} }
-      : { ...withChange(c, { ...newScenario(CHILDREN_ID, "children", 0, 0), on: true }), kids: k, kidCover: cover });
+    setState((c) => empty ? { ...withoutChange(c, CHILDREN_ID), kids: null, coverRule: null }
+      : { ...withChange(c, { ...newScenario(CHILDREN_ID, "children", 0, 0), on: true }), kids: k, ...(rule !== undefined ? { coverRule: rule } : {}) });
   };
   const savedKids = (k: PlanKids) => {
     const costly = kidStages(k, KID_BASE, KID_BASE + (Y.end - Y.base)).some((x) => x.change > 0);
     if (acOn && costly && (k.now.length || k.planned)) setDlg((d) => ({ at: "cover", k, back: !!(d && "back" in d && d.back) }));
-    else keepKids(k, {});
+    else keepKids(k);
   };
 
   // A change's effect in its form: the plan with it against without it.
@@ -214,8 +214,9 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
         <KidsDialog kids={s.kids ?? NO_KIDS} age={KID_BASE} retire={KID_BASE + (Y.end - Y.base)} base={KID_BASE} cover={acOn} close={done} save={savedKids} saveLabel={acOn ? undefined : s.kids ? "Save" : "Add them"} />
       ) : null}
       {dlg?.at === "cover" ? (
-        <CoverStagesDialog segs={kidStages(dlg.k, KID_BASE, KID_BASE + (Y.end - Y.base)).filter((x) => x.change !== 0)} today={todayMonthly(s, household)} ppy={12}
-          initial={s.kidCover ?? {}} base={KID_BASE} close={done} save={(cover) => keepKids(dlg.k, cover)} saveLabel={s.kids ? "Save" : "Add them"} />
+        <CoverStagesDialog segs={kidStages(dlg.k, KID_BASE, KID_BASE + (Y.end - Y.base)).filter((x) => x.change !== 0)} today={todayMonthly(s, household)}
+          initial={s.coverRule ?? null} base={KID_BASE} freesLess={!!freed} close={done} save={(rule) => keepKids(dlg.k, rule)} saveLabel={s.kids ? "Save" : "Add them"}
+          stage={(x, rule) => { const room = savingOver(s, household)(x.from - KID_BASE); return { room, cover: coverStage(x.change, room, {}, freed, rule) }; }} />
       ) : null}
       {dlg?.at === "stages" && C ? (
         <Modal size="table" onClose={() => setDlg(null)}>

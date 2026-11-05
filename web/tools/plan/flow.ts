@@ -21,7 +21,6 @@ import { intoAdvanced, paycheckCopy, taxFromPaycheck } from "@/tools/budget/to-c
 import { STAGES_DEFAULTS, type StagesInputs } from "@/tools/stages/model";
 import { TAX_DEFAULTS, itemized, preBuckets, type TaxInputs } from "@/tools/tax/model";
 import { ONE_FOR_ONE, paycheckFreed, type Freed } from "./kids";
-import { KID_BASE } from "@/tools/stages/kids";
 import { CHILDREN_ID, newScenario } from "@/components/dashboard/scenarios";
 import { stepIndex, type PlanState, type PlanTool } from "./model";
 
@@ -130,20 +129,15 @@ export function freedOf(p: PlanState): Freed {
 /* ---- Changes ahead ---- */
 /** The children the walkthrough asked before Changes ahead was a step on
     Advanced (its Life stages step built Stages from them), carried into
-    Advanced once as its Children change, their cover amounts with them. */
+    Advanced once as its Children change (amounts typed for how they were
+    covered are dropped: Advanced covers them by its rule). */
 export function seedChanges(p: PlanState): PlanState {
   const ages = planAges(p), k = p.kids;
   if (!p.tools.advanced || !ages || !k || (!k.now.length && !k.planned)) return p;
   const adv = toolOf(p, "advanced");
   if (adv.kids) return { ...p, kids: null, cover: {} };
-  // Advanced counts the children from KID_BASE, the walkthrough from your age.
-  const shift = KID_BASE - ages.age, kidCover: AdvancedInputs["kidCover"] = {};
-  for (const [key, v] of Object.entries(p.cover)) {
-    const [f, t] = key.split("-").map(Number);
-    if (isFinite(f) && isFinite(t)) kidCover[(f + shift) + "-" + (t + shift)] = v;
-  }
   const row = { ...newScenario(CHILDREN_ID, "children", 0, 0), on: true };
-  return { ...withTool(p, "advanced", { ...adv, kids: k, kidCover, changes: [row, ...(adv.changes ?? []).filter((c) => c.kind !== "children")] }), kids: null, cover: {} };
+  return { ...withTool(p, "advanced", { ...adv, kids: k, changes: [row, ...(adv.changes ?? []).filter((c) => c.kind !== "children")] }), kids: null, cover: {} };
 }
 
 /* ---- the running figures under the step rail ---- */

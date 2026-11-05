@@ -10,7 +10,6 @@ import { groupDigits, oneOf, parseNum } from "@/lib/format";
 import type { Household } from "@/lib/household";
 import { PERIODS, pctField } from "@/tools/advanced/model";
 import type { PlanKids } from "@/tools/plan/model";
-import type { Monthly } from "@/tools/plan/kids";
 
 /** One stage card, as typed. `sTrad`, `sRoth` and `sHsa` split its
     contribution across accounts (the brokerage takes the rest);
@@ -62,9 +61,8 @@ export const STAGES_DEFAULTS = {
   /** Historical mode's fuller mix (the Dashboard's Calculator): small-cap
       value and cash, in percent, beside histMix's US stocks; bonds are the rest. */
   histSv: "0", histCash: "0",
-  /** "Planning for kids?": the children the stages were last built around,
-      and the amounts typed in "How will you cover this?" (tools/stages/kids.ts). */
-  kids: null as PlanKids | null, kidCover: {} as Record<string, Partial<Monthly>>,
+  /** "Planning for kids?": the children the stages were last built around. */
+  kids: null as PlanKids | null,
 };
 export type StagesInputs = typeof STAGES_DEFAULTS;
 

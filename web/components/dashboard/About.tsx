@@ -290,10 +290,10 @@ export function About() {
                     <li><b>Everything is in today&apos;s dollars.</b></li>
                     <li><b>Children</b> cost what families typically spend on a child at each age,
                     plus childcare where you live. A second or later child costs a share of the
-                    first. These costs come out of saving in the years they run, from the
-                    accounts you choose in <b>How you cover it</b> (in Profile, or the
-                    Calculator&apos;s children row). Where you haven&apos;t chosen, they come
-                    out of the brokerage first, then the 401(k) beyond the match, the IRA and
+                    first. These costs come out of saving in the years they run, as you choose
+                    in <b>How you cover it</b> in Profile: one account at a time in an order
+                    you set, or the same share of each, worked out on each year&apos;s saving.
+                    Where you haven&apos;t chosen, they come out of the brokerage first, then the 401(k) beyond the match, the IRA and
                     the HSA, and the 401(k) up to the match last, so the match is kept as long
                     as it can be. A cut from pre-tax saving is taxed as pay again, so it&apos;s
                     cut far enough to cover the cost after that tax.</li>

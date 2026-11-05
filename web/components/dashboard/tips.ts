@@ -32,7 +32,7 @@ export const TIPS = {
   payTaxed: "Before taxes is your gross pay, as on an offer letter or at the top of a pay stub. After taxes is what reaches your bank account; we work back from it.",
   childcare: "Paid care such as daycare or a nanny before a child starts school, usually the most expensive years of raising one. It's added to each child's costs from birth to 5.",
   college: "How much of each child's college you plan to pay. It comes out of what you save in their four college years, unless you save for it ahead in your budget on Spending.",
-  cover: "Children's costs come out of what you save. This says which accounts give up that money: unless you choose, the brokerage first and the 401(k) up to the match last, so the most valuable saving is kept longest.",
+  cover: "Children's costs come out of what you save. This says how: one account at a time in an order you choose, or the same share of each. Unless you choose, the brokerage goes first and the 401(k) up to the match last, so the most valuable saving is kept longest.",
 
   /* Net worth and Home */
   assetType: "Each kind is treated its own way: retirement accounts and brokerage pay for retirement, each taxed differently; checking and savings are your emergency fund; your home counts toward net worth but isn't spent in retirement.",

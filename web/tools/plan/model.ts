@@ -54,6 +54,12 @@ export const NO_KIDS: PlanKids = { now: [], planned: 0, firstIn: 2, spacing: 3, 
 export const COVER_ORDER = ["brok", "roth", "trad", "hsa"] as const;
 export type CoverLine = (typeof COVER_ORDER)[number];
 
+/** How the children's costs come out of saving, for every stage: one
+    account at a time in `order` (unset: the calculator's usual order), or
+    from every account in proportion to what goes into it. Each year works
+    it out on that year's saving. */
+export interface CoverRule { by: "order" | "share"; order?: CoverLine[] }
+
 export interface PlanState {
   step: StepId;
   /** The furthest step reached, so the rail can jump back to any before it. */

@@ -11,7 +11,6 @@
    saved, shared and restored is exactly what was on screen. */
 
 import type { Freed } from "@/tools/plan/kids";
-import type { Cover, Monthly } from "@/tools/plan/kids";
 import type { SavedHousehold } from "@/lib/household";
 import type { BrBudget } from "@/lib/engine/types";
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
@@ -277,10 +276,6 @@ export interface ToolScope {
       the Drawdown's Social Security), which the tool leaves out: the
       scope's `facts` say them. The Dashboard's figures from its plan. */
   locked?: string[];
-  /** How the scope covers children's costs from saving, when it has its
-      own order (the Dashboard's): today's saving by account, what a stage
-      takes, and the order in words, for "How will you cover this?". */
-  cover?: { today: Monthly; fn: (change: number, typed?: Partial<Monthly>) => Cover; order: string };
   /** The Early Retirement Bridge's withdrawals, when the scope's plan has a
       withdrawal strategy (the Dashboard's): each bridge year takes out what
       the strategy does, in place of the spending field. */

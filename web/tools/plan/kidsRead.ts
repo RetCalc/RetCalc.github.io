@@ -1,8 +1,7 @@
-/* Saved children and their cover amounts, read back keeping only sound
+/* Saved children and how their costs are covered, read back keeping only sound
    values (the Stages and Advanced calculators keep them). No React. */
 import { MAX_KIDS } from "@/tools/guide/schedule";
-import { COVER_ORDER, type CoverLine, type PlanKids } from "./model";
-import type { Monthly } from "./kids";
+import { COVER_ORDER, type CoverLine, type CoverRule, type PlanKids } from "./model";
 
 /** A saved PlanKids, or null when it isn't one (an old or damaged copy). */
 export function readKids(v: unknown): PlanKids | null {
@@ -20,15 +19,11 @@ export function readKids(v: unknown): PlanKids | null {
   };
 }
 
-/** The typed cover amounts as saved, keeping only numbers. */
-export function readCover(v: unknown): Record<string, Partial<Monthly>> {
-  if (!v || typeof v !== "object" || Array.isArray(v)) return {};
-  const out: Record<string, Partial<Monthly>> = {};
-  for (const [key, row] of Object.entries(v as Record<string, unknown>)) {
-    if (!row || typeof row !== "object") continue;
-    const r: Partial<Monthly> = {};
-    for (const a of COVER_ORDER as readonly CoverLine[]) { const x = (row as Record<string, unknown>)[a]; if (typeof x === "number" && isFinite(x)) r[a] = x; }
-    out[key] = r;
-  }
-  return out;
+/** A saved CoverRule, or null (the usual order) when it isn't one. */
+export function readRule(v: unknown): CoverRule | null {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return null;
+  const o = v as Record<string, unknown>;
+  if (o.by !== "order" && o.by !== "share") return null;
+  const order = Array.isArray(o.order) ? [...new Set(o.order.filter((x): x is CoverLine => (COVER_ORDER as readonly unknown[]).includes(x)))] : [];
+  return { by: o.by, ...(order.length ? { order: [...order, ...COVER_ORDER.filter((k) => !order.includes(k))] } : {}) };
 }

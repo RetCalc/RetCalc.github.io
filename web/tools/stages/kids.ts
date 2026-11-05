@@ -6,4 +6,4 @@
     shown (Years 0 to 2), so any adult age gives the same stages. */
 export const KID_BASE = 40;
 
-export { readCover, readKids } from "@/tools/plan/kidsRead";
+export { readKids } from "@/tools/plan/kidsRead";

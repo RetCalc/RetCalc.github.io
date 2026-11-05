@@ -9,9 +9,8 @@ import { ADVANCED_DEF, type AdvancedInputs } from "@/tools/advanced/model";
 import { STAGES_DEF, readStage, stageFields, stagesCompute, type LumpAccount, type StageInputs, type StagesInputs } from "@/tools/stages/model";
 import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
 import { flow, taxState } from "./flows";
-import { shiftCover, yearlySaving } from "./cover";
+import { yearlySaving } from "./cover";
 import { lumpAccount, lumpsOn, nominalAt, ownOn, payAt, scenarioName, withoutOwn, yearChange, type Scenario } from "./scenarios";
-import { KID_BASE } from "@/tools/stages/kids";
 import { ageOf, answers, couple, holdings, realGrowth, results, spendMonth, type Results } from "./model";
 import { OUTSIDE_US, sum, type Entry, type Profile } from "./store";
 
@@ -180,7 +179,7 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
   // The children, and how their costs are covered, counted from year 0 as the Calculator counts.
   // Historical mode's mix as last set in the Calculator.
   const M = pr.calcMix, withMix = (s: StagesInputs): StagesInputs => (M ? { ...s, histMix: M.stock, histSv: M.sv, histCash: M.cash, histMixEnd: M.end } : s);
-  const kids = planKidsOf(pr), withKids = (s: StagesInputs) => (kids ? { ...s, kids, kidCover: shiftCover(pr.kidCover ?? {}, KID_BASE - (ageOf(pr.p1) ?? KID_BASE)) } : s);
+  const kids = planKidsOf(pr), withKids = (s: StagesInputs) => (kids ? { ...s, kids } : s);
   const years = planYears(R, scen, A.nominal);
   if (!years.length) return withMix(withKids(base));
   const groups = planGroups(years);
@@ -225,7 +224,7 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
 /** Stages inputs the profile keeps elsewhere (the children's costs and how
     they're covered, historical mode's mix), so never kept as the
     Calculator's own. */
-const PROFILE_KEYS = new Set(["kids", "kidCover", "histMix", "histSv", "histCash", "histMixEnd"]);
+const PROFILE_KEYS = new Set(["kids", "histMix", "histSv", "histCash", "histMixEnd"]);
 /** The stages themselves are built from the plan and its scenarios, never
     kept by hand (any kept before are let go of). */
 const BUILT_KEYS = new Set(["stages"]);

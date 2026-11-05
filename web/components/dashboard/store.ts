@@ -10,6 +10,8 @@ import { readStored, writeStored } from "@/lib/storage";
 import { SYNCED_EVENT } from "@/lib/sync/engine";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { readScenarios, type Scenario } from "./scenarios";
+import { readRule } from "@/tools/plan/kidsRead";
+import type { CoverRule } from "@/tools/plan/model";
 
 export type Per = "week" | "2weeks" | "twice" | "month" | "year";
 export const PER_LABEL: Record<Per, string> = { week: "per week", "2weeks": "every two weeks", twice: "twice a month", month: "per month", year: "per year" };
@@ -144,9 +146,9 @@ export interface Profile {
       typical): birth to 5, 6 to 12, 13 to 18; and a later child's share of
       the first's, in percent. */
   childCosts: { early: string; school: string; teen: string; later: string };
-  /** In the Calculator, which accounts give up saving for each stage's
-      children's costs ("How will you cover it?"), by stage. */
-  kidCover: Record<string, Record<string, number>>;
+  /** How the children's costs come out of saving ("How will you cover
+      it?"), every stage alike. Unset: the dashboard's usual order. */
+  coverRule?: CoverRule | null;
   /** The Calculator's scenarios (scenarios.ts): changes in saving, a lump
       sum, a different return from an age on, and the children's row,
       switched on or off. They change the plan's saving year by year, so
@@ -196,7 +198,7 @@ export const EMPTY_PROFILE: Profile = {
   tools: {}, raise: 0, growth: {}, yearly: { raise: [0, 0], keep: null },
   planned: { count: 0, firstIn: 2, spacing: 3 }, childcare: true, careArea: "suburb",
   college: { help: "none", cost: 26000 },
-  childCosts: { early: "", school: "", teen: "", later: "80" }, kidCover: {},
+  childCosts: { early: "", school: "", teen: "", later: "80" },
 };
 export const EMPTY: DashData = { profile: EMPTY_PROFILE, entries: [], step: 0, skipped: [], done: false };
 
@@ -234,6 +236,9 @@ function load(): DashData {
   p.college = { ...EMPTY_PROFILE.college, ...v.profile?.college };
   p.childCosts = { ...EMPTY_PROFILE.childCosts, ...v.profile?.childCosts };
   if (v.profile?.scenarios != null) p.scenarios = readScenarios(v.profile.scenarios, { dashboard: true });
+  // The rule for the children's costs; amounts typed by stage before it are dropped.
+  p.coverRule = readRule(v.profile?.coverRule);
+  delete (p as { kidCover?: unknown }).kidCover;
   // Years until the first planned child, from the age you'll be then.
   const age = ageNow(p.p1);
   if (p.planned.bornAge != null && age != null) p.planned = { ...p.planned, firstIn: Math.max(0, Math.round((p.planned.bornAge - age) * 2) / 2) };

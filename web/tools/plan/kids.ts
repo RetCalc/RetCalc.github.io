@@ -11,7 +11,7 @@ import { CHILD_COST, MAX_KIDS, childCost, children, earlyCost, labelAt, type Chi
 import type { Answers } from "@/tools/guide/store";
 import { paycheckRun, type PcInput, type PcStep } from "@/tools/budget/paycheck-math";
 import { stageFields, type StageInputs, type StagesInputs } from "@/tools/stages/model";
-import { COVER_ORDER, type CoverLine, type PlanKids } from "./model";
+import { COVER_ORDER, type CoverLine, type CoverRule, type PlanKids } from "./model";
 
 const pos = (v: number) => isFinite(v) && v > 0;
 
@@ -136,13 +136,15 @@ export interface Cover {
   matchLost: number; taxUp: number;
 }
 
-/** How a stage pays for `change` more a month than today, in whole dollars:
-    the amounts typed for an account stand; the rest comes out of the others
-    in COVER_ORDER, each cut by the fewest whole dollars that free the rest
-    in take-home pay (a pre-tax cut frees less than itself), and as far as
-    each goes. Costs lower than today add to the brokerage unless typed
-    otherwise. */
-export function coverStage(change: number, today: Monthly, typed: Partial<Monthly> = {}, F: Freed = ONE_FOR_ONE): Cover {
+/** How a stage pays for `change` more a month than its saving `today`
+    (that year's, by account), in whole dollars: the amounts typed for an
+    account stand; the rest comes out of the others as `rule` says, each cut
+    by the fewest whole dollars that free the rest in take-home pay (a
+    pre-tax cut frees less than itself), and as far as each goes. In order,
+    one account at a time (unset: COVER_ORDER); in proportion, every account
+    by the same share of what goes into it. Costs lower than today add to
+    the brokerage unless typed otherwise. */
+export function coverStage(change: number, today: Monthly, typed: Partial<Monthly> = {}, F: Freed = ONE_FOR_ONE, rule: CoverRule | null = null): Cover {
   const need = Math.round(change);
   const take: Monthly = { brok: 0, roth: 0, trad: 0, hsa: 0 };
   const cap = (k: CoverLine) => Math.max(0, Math.floor(today[k] + 0.005));
@@ -166,8 +168,14 @@ export function coverStage(change: number, today: Monthly, typed: Partial<Monthl
     return done();
   }
   for (const k of COVER_ORDER) if (typed[k] != null) take[k] = Math.max(0, Math.min(cap(k), Math.round(typed[k]!)));
-  for (const k of COVER_ORDER) {
-    if (typed[k] != null || F(take).freed >= need - 0.005) continue;
+  const covered = () => F(take).freed >= need - 0.005;
+  const free = COVER_ORDER.filter((k) => typed[k] == null);
+  if (rule?.by === "share") {
+    shareOut(take, free, today, covered);
+    return done();
+  }
+  for (const k of rule?.order ?? COVER_ORDER) {
+    if (typed[k] != null || covered()) continue;
     // All of it (to the cent, so nothing is left behind), or the fewest
     // whole dollars that free the rest.
     take[k] = Math.max(0, today[k]);
@@ -176,11 +184,27 @@ export function coverStage(change: number, today: Monthly, typed: Partial<Monthl
     while (hi - lo > 1) {
       const mid = Math.floor((lo + hi) / 2);
       take[k] = mid;
-      if (F(take).freed >= need - 0.005) hi = mid; else lo = mid;
+      if (covered()) hi = mid; else lo = mid;
     }
     take[k] = Math.min(hi, today[k]);
   }
   return done();
+}
+
+/** In proportion: the same share of each of `keys`' saving, the smallest
+    that's `covered`, in whole dollars (all of it when even that falls
+    short). */
+export function shareOut<K extends string>(take: Record<K, number>, keys: readonly K[], today: Record<K, number>, covered: () => boolean): void {
+  const set = (r: number) => { for (const k of keys) take[k] = r >= 1 ? Math.max(0, today[k]) : Math.min(Math.max(0, today[k]), Math.round(Math.max(0, today[k]) * r)); };
+  set(1);
+  if (!covered()) return;
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; set(mid); if (covered()) hi = mid; else lo = mid; }
+  set(hi);
+  // Rounding can leave a dollar short: made up a dollar at a time on the
+  // one that saves most and still has room.
+  const big = [...keys].sort((x, y) => today[y] - today[x]);
+  for (let i = 0; i < 20 && !covered(); i++) { const k = big.find((x) => take[x] + 1 <= today[x] + 0.005); if (!k) break; take[k] += 1; }
 }
 
 const cents = (v: number) => Math.round(v * 100) / 100;
