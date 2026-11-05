@@ -30,7 +30,7 @@ import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { useShareKit } from "@/components/shell/share";
 import { projectionShare } from "./share";
-import { ADVANCED_DEF, ADVANCED_DEFAULTS, advancedCompute, advancedPlan, glideNote, glideYearsFor, type AdvancedInputs } from "./model";
+import { ADVANCED_DEF, advancedCompute, advancedPlan, glideNote, glideYearsFor, type AdvancedInputs } from "./model";
 import { changesCompute, changesOn, liveChanges } from "./changes";
 import { scenarioName } from "@/components/dashboard/scenarios";
 import { ChangesAhead, ReachCard, ageOf } from "./ChangesAhead";
@@ -242,7 +242,6 @@ function SiteAdvanced() {
   const already = !CH && C.state === "already";
   // The target as it comes, before anyone has set one: no verdict on a
   // goal you didn't choose.
-  const exampleTarget = s.target === ADVANCED_DEFAULTS.target && s.solveFor === ADVANCED_DEFAULTS.solveFor;
   const VerdictIcon = onTrack ? CircleCheckIcon : CircleXIcon;
   // An after-tax income target can't be met by a portfolio that pays
   // nothing after tax: no contribution or timeline reaches it.
@@ -370,8 +369,7 @@ function SiteAdvanced() {
             <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-note">
               <span className="text-muted-foreground">Your target</span>
               <span className="font-medium whitespace-nowrap tabular-nums">{money(target) + (income ? " per year, after tax" : " portfolio, in today's dollars")}</span>
-              {exampleTarget ? <span className="text-muted-foreground">an example: set your own under Your goal to see if you&apos;re on track</span>
-                : <Badge variant={onTrack ? "positive" : "destructive"}><VerdictIcon aria-hidden="true" />{already ? "Already there" : onTrack ? "On track" : "Not on track"}</Badge>}
+              <Badge variant={onTrack ? "positive" : "destructive"}><VerdictIcon aria-hidden="true" />{already ? "Already there" : onTrack ? "On track" : "Not on track"}</Badge>
             </div>
           ) : null}
         </ProjectionReading>
