@@ -178,7 +178,15 @@ svg{display:block;width:100%;height:auto}
      too much dead space, down. */
   html.pwa{--navh:0px;--sb-clear:calc(env(safe-area-inset-top,0px) * 1.55)}
   html.pwa main{padding-top:calc(var(--sb-clear) + 14px)}
-  html.pwa .sbcover{height:var(--sb-clear);background:var(--bg);opacity:1}
+  /* iOS 26+ draws its own top-edge blur over a home-screen app unless the
+     top edge hit-tests to an opaque, full-width fixed box. With
+     pointer-events:none WebKit's hit test passes through the strip to the
+     scrolling page and blurs it anyway, so here the strip takes hits. It's
+     always visible here (no opacity toggle), so it can't be the invisible
+     tap-eater the base rule warns about; it only covers the status bar.
+     No transition, backdrop-filter or mask: those mark the edge as glass. */
+  html.pwa .sbcover{height:max(1px,var(--sb-clear));background:var(--bg);opacity:1;
+    pointer-events:auto;transition:none}
 }
 /* The same status-bar blur covers the top of a pop-up tall enough to reach
    it (the strategy guide), hiding its first lines and close button. Start
