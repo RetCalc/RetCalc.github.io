@@ -75,7 +75,13 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
-  appleWebApp: { capable: true, title: "RetCalc", statusBarStyle: "black-translucent" },
+  /* "default", not "black-translucent": with a translucent status bar the
+     page runs under it and iOS 26+ draws its top-edge blur over whatever is
+     there, whatever the CSS does. A solid bar starts the page below it, so
+     there's nothing to blur (and safe-area-inset-top, so --sb-clear, is 0).
+     Installed apps pick this up only when re-added to the Home Screen. The
+     bar takes its colour from theme-color below. */
+  appleWebApp: { capable: true, title: "RetCalc", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -83,7 +89,11 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   colorScheme: "dark light",
-  themeColor: "#0e1116",
+  /* Matches --ds-ground for each theme; lib/theme.ts swaps it for a picked theme. */
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf9f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1116" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
