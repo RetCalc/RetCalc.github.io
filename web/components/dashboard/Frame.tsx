@@ -7,6 +7,7 @@
    rail, its labels always showing. */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   BanknoteIcon, CalculatorIcon, MenuIcon, MonitorIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, PiggyBankIcon, ChevronLeftIcon, ChevronRightIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
@@ -24,7 +25,7 @@ import { HelpButton } from "@/tools/help/ToolHelp";
 import { Landing } from "./Landing";
 import { MailMe } from "./MailMe";
 import { TAB_TOURS } from "./tours";
-import { OUTSIDE_US, hasAccounts, unstarted, useDashboard } from "./store";
+import { OUTSIDE_US, hasAccounts, unstarted, useDashboard, useProfiles } from "./store";
 
 import { SECTION_NAMES, type Section } from "./sections";
 
@@ -153,12 +154,21 @@ function TabBar({ current, dots }: { current: Section; dots: Partial<Record<Sect
 
 /** Renders `children` for a signed-in person who has started setup;
     otherwise the Dashboard's front page, with an account as the way in when
-    signed out and setup when signed in. Setup itself passes `setup`. */
+    signed out and setup when signed in. Setup itself passes `setup`. A
+    profile added from scratch, beside others, goes to setup instead of
+    the front page. */
 export function SignedIn({ children, setup }: { children: ReactNode; setup?: boolean }) {
   const { ready, account } = useAccount();
   const { data } = useDashboard();
+  const { list } = useProfiles();
+  const router = useRouter();
+  const toSetup = ready && !!account && !setup && unstarted(data) && list.length > 1;
+  // Once: each new call would cancel the navigation already under way.
+  const sent = useRef(false);
+  useEffect(() => { if (toSetup && !sent.current) { sent.current = true; router.replace("/dashboard/setup"); } }, [toSetup, router]);
   if (!ready) return <div className="dsh" />;
   if (!account) return <Landing signedIn={false} />;
+  if (toSetup) return <div className="dsh" />;
   if (!setup && unstarted(data)) return <Landing signedIn />;
   return <div className="dsh">{children}</div>;
 }

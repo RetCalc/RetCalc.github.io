@@ -1,7 +1,7 @@
 /* The merge rules of account sync (ACCOUNTS_PLAN.md, "How syncing works"). */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dropTwinCopies, fingerprint, mergeItem, mergeScenarios, same } from "../merge";
+import { PROFILES_KEY, dropTwinCopies, fingerprint, mergeItem, mergeScenarios, profileKey, profileOfKey, readProfileList, same } from "../merge";
 
 const c = (value: unknown, at = 0, version = 1) => ({ value, at, version });
 
@@ -218,4 +218,38 @@ test("Learn on two devices: lessons read on either stay read, each with its earl
   const base = fingerprint(laptop);
   const u = mergeItem("learn", c({ read: { "four-percent-rule": "2026-10-22" } }, 400), c(laptop, 300), base)!;
   assert.deepEqual(u.value, { read: { "four-percent-rule": "2026-10-22" } });
+});
+
+test("Dashboard profiles: both sides' new profiles are kept, this device's first", () => {
+  const local = { list: [{ id: "main", name: "Joint" }, { id: "a", name: "Solo" }], gone: [] };
+  const account = { list: [{ id: "main", name: "Joint" }, { id: "b", name: "Demo" }], gone: [] };
+  const m = mergeItem(PROFILES_KEY, c(local, 1), c(account, 2))!;
+  assert.deepEqual((m.value as { list: { id: string }[] }).list.map((p) => p.id), ["main", "a", "b"]);
+  assert.equal(m.toLocal, true);
+  assert.equal(m.toAccount, true);
+});
+
+test("Dashboard profiles: a delete on either side stays deleted", () => {
+  const local = { list: [{ id: "main", name: "" }, { id: "a", name: "Solo" }], gone: [] };
+  const account = { list: [{ id: "main", name: "" }, { id: "c", name: "New" }], gone: ["a"] };
+  const m = mergeItem(PROFILES_KEY, c(local, 1), c(account, 2))!;
+  assert.deepEqual(m.value, { list: [{ id: "main", name: "" }, { id: "c", name: "New" }], gone: ["a"] });
+});
+
+test("Dashboard profiles: only one side changed since they agreed, that side wins", () => {
+  const was = { list: [{ id: "main", name: "" }], gone: [] };
+  const renamed = { list: [{ id: "main", name: "Joint" }], gone: [] };
+  const m = mergeItem(PROFILES_KEY, c(was, 1), c(renamed, 2), fingerprint(was))!;
+  assert.deepEqual(m.value, renamed);
+  assert.equal(m.toLocal, true);
+});
+
+test("Dashboard profiles: stored keys and a bad list read safely", () => {
+  assert.equal(profileKey("main"), "dashboard");
+  assert.equal(profileKey("x1"), "dashboard-p-x1");
+  assert.equal(profileOfKey("dashboard-p-x1"), "x1");
+  assert.equal(profileOfKey("dashboard"), "main");
+  assert.equal(profileOfKey(PROFILES_KEY), null);
+  assert.deepEqual(readProfileList({ list: [{ id: "a" }, { id: "a" }, null, { id: "b", name: 3 }], gone: ["b", 4] }), { list: [{ id: "a", name: "" }], gone: ["b"] });
+  assert.deepEqual(readProfileList(null), { list: [], gone: [] });
 });

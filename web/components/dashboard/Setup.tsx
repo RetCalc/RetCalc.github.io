@@ -17,7 +17,7 @@ import { Note } from "./ui";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, txt, type PKey } from "./fields";
 import { money, pctDown, shortMoney } from "./format";
 import { ageOf, couple, nowYear, payYear, people, results } from "./model";
-import { OUTSIDE_US, entryFrom, hasAccounts, useDashboard, withEntry, type DashData, type Person, type Profile } from "./store";
+import { OUTSIDE_US, entryFrom, hasAccounts, profileLabel, useDashboard, useProfiles, withEntry, type DashData, type Person, type Profile } from "./store";
 
 
 interface Ctx { pr: Profile; set: (f: (p: Profile) => Profile) => void; setP: (k: PKey, f: Partial<Person>) => void }
@@ -218,8 +218,11 @@ function Summary({ pr, done }: { pr: Profile; done: (id: string) => boolean }) {
 
 export function Setup() {
   const { data, update } = useDashboard();
+  const profiles = useProfiles();
   const router = useRouter();
   const pr = data.profile, list = shown(pr);
+  // With more than one profile, which one this is.
+  const which = profiles.list.length > 1 ? profiles.list.find((p) => p.id === profiles.open) : undefined;
   // The step reached, among those that apply now (a step can drop out,
   // as Children does with no children).
   const at = Math.min(list.length, Math.max(0, list.findIndex((s) => STEPS.indexOf(s) >= data.step) === -1 ? list.length : list.findIndex((s) => STEPS.indexOf(s) >= data.step)));
@@ -289,7 +292,7 @@ export function Setup() {
     <div className="dsh-setup">
       <header className="dsh-setup-top">
         <Link href="/" className="dsh-brand" aria-label="RetCalc home"><Brandmark /><span>RetCalc</span></Link>
-        <span className="dsh-cap">Set up your Dashboard</span>
+        <span className="dsh-cap">{which ? <>Set up <b>{profileLabel(which, data)}</b></> : "Set up your Dashboard"}</span>
         <div className="dsh-r"><Button variant="link" onClick={later}>Save and finish later</Button></div>
       </header>
       <div className="dsh-prog" aria-hidden="true">

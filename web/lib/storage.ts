@@ -55,9 +55,10 @@ export function writeSession(key: string, version: number, value: unknown): void
    nothing below does anything visible: writes go to this browser alone. */
 
 /** The keys synced to an account: the household, the Guide, Paycheck to
-    Retirement, saved scenarios, the Dashboard, the lessons read. */
+    Retirement, saved scenarios, the Dashboard's profiles and their list,
+    the lessons read. Which profile is open stays on each device. */
 export function isSynced(key: string): boolean {
-  return key === "household" || key === "guide" || key === "paycheck-plan" || key === "dashboard" || key === "learn" || key.startsWith("scenarios-");
+  return key === "household" || key === "guide" || key === "paycheck-plan" || key === "dashboard" || key === "dashboard-profiles" || key.startsWith("dashboard-p-") || key === "learn" || key.startsWith("scenarios-");
 }
 
 type WriteListener = (key: string, version: number, value: unknown) => void;
@@ -129,6 +130,19 @@ export function writeBase(key: string, fingerprint: string): void {
     localStorage.setItem(BASES, JSON.stringify(all));
   } catch {
     /* not remembered: the next sync merges both ways instead */
+  }
+}
+
+/** Removes an item from this browser without telling the account (a
+    profile deleted on another device). */
+export function dropLocal(key: string, version: number): void {
+  try {
+    localStorage.removeItem(`${PREFIX}${key}.v${version}`);
+    const all = readStamps();
+    delete all[`${key}.v${version}`];
+    localStorage.setItem(STAMPS, JSON.stringify(all));
+  } catch {
+    /* storage blocked: nothing was kept */
   }
 }
 

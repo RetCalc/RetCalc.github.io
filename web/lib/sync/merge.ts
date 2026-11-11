@@ -184,6 +184,44 @@ function mergeLearn(l: unknown, a: unknown): LearnLike {
   return { read };
 }
 
+/* ---------- Dashboard profiles ----------
+   Each profile is its own synced item: the first is "dashboard" (as it
+   always was), each one added after is "dashboard-p-<id>". The list of
+   them, their names and order, is "dashboard-profiles", which also keeps
+   the ids of deleted ones so another device's copy isn't sent back. */
+
+export const PROFILES_KEY = "dashboard-profiles";
+/** The first profile, stored where the Dashboard always was. */
+export const MAIN_PROFILE = "main";
+export const profileKey = (id: string) => (id === MAIN_PROFILE ? "dashboard" : "dashboard-p-" + id);
+/** The profile a stored key holds, or null for any other key. */
+export const profileOfKey = (key: string) => (key === "dashboard" ? MAIN_PROFILE : key.startsWith("dashboard-p-") ? key.slice(12) : null);
+
+export interface ProfileRef { id: string; name: string }
+export interface ProfileList { list: ProfileRef[]; gone: string[] }
+
+/** A stored profile list, read safely: deleted ids never in the list. */
+export function readProfileList(v: unknown): ProfileList {
+  const o = (v ?? {}) as { list?: unknown; gone?: unknown };
+  const gone = Array.isArray(o.gone) ? [...new Set(o.gone.filter((g): g is string => typeof g === "string"))] : [];
+  const list: ProfileRef[] = [];
+  for (const r of Array.isArray(o.list) ? o.list : []) {
+    const id = (r as ProfileRef | null)?.id, name = (r as ProfileRef | null)?.name;
+    if (typeof id === "string" && id && !gone.includes(id) && !list.some((x) => x.id === id)) list.push({ id, name: typeof name === "string" ? name : "" });
+  }
+  return { list, gone };
+}
+
+/** Both devices changed the list: every profile either side has, in this
+    device's order with the account's others after; a delete on either side
+    stays deleted; a name changed on both keeps this device's. */
+function mergeProfiles(l: unknown, a: unknown): ProfileList {
+  const L = readProfileList(l), A = readProfileList(a);
+  const gone = [...new Set([...L.gone, ...A.gone])];
+  const list = [...L.list, ...A.list.filter((r) => !L.list.some((x) => x.id === r.id))].filter((r) => !gone.includes(r.id));
+  return { list, gone };
+}
+
 /** One side wins outright. A saved-scenario list also sheds copies an
     earlier version made, which may mean both sides need the cleaned list. */
 function take(key: string, win: Copy, from: "local" | "account"): Merged {
@@ -218,6 +256,10 @@ export function mergeItem(key: string, local: Copy | null, account: Copy | null,
   }
   if (key === "learn" && local.version === account.version) {
     const value = mergeLearn(local.value, account.value);
+    return { version: local.version, value, toLocal: !same(value, local.value), toAccount: !same(value, account.value) };
+  }
+  if (key === PROFILES_KEY && local.version === account.version) {
+    const value = mergeProfiles(local.value, account.value);
     return { version: local.version, value, toLocal: !same(value, local.value), toAccount: !same(value, account.value) };
   }
   if (key === "paycheck-plan" && local.version === account.version) {

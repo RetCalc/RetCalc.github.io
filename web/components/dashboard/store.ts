@@ -3,11 +3,16 @@
 /* What the Dashboard keeps: the profile (setup's answers and everything the
    sections add), and dated entries of what the household has and owes.
    Stored under retcalc.dashboard.v1 and synced to the account
-   (lib/storage.ts), separate from Your household, the Guide and the tools. */
+   (lib/storage.ts), separate from Your household, the Guide and the tools.
+   A person can keep more than one profile (Profiles on the Profile tab):
+   each added one is its own item, dashboard-p-<id>, listed with its name
+   in dashboard-profiles (lib/sync/merge.ts). Which is open stays on this
+   device; everything below reads and writes the open one. */
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { readStored, writeStored } from "@/lib/storage";
 import { SYNCED_EVENT } from "@/lib/sync/engine";
+import { MAIN_PROFILE, PROFILES_KEY, profileKey, readProfileList, type ProfileList, type ProfileRef } from "@/lib/sync/merge";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { readScenarios, type Scenario } from "./scenarios";
 import { readRule } from "@/tools/plan/kidsRead";
@@ -185,7 +190,7 @@ export interface DashData {
   step: number; skipped: string[]; done: boolean;
 }
 
-const KEY = "dashboard", VERSION = 1;
+const VERSION = 1;
 
 const person = (): Person => ({ name: "", bm: null, by: null, retire: null, pay: null, per: "year", taxed: "before" });
 export const EMPTY_PROFILE: Profile = {
@@ -225,8 +230,9 @@ function ageNow(p: Pick<Person, "bm" | "by">, d = new Date()): number | null {
    with whatever the account sync brings in. */
 let current: DashData | null = null;
 const listeners = new Set<() => void>();
-function load(): DashData {
-  const v = readStored<DashData>(KEY, VERSION);
+const notify = () => listeners.forEach((l) => l());
+function load(key = profileKey(openId())): DashData {
+  const v = readStored<DashData>(key, VERSION);
   if (!v) return EMPTY;
   const p = { ...EMPTY_PROFILE, ...v.profile };
   p.assume = { ...DEFAULT_ASSUMPTIONS, ...v.profile?.assume };
@@ -271,8 +277,105 @@ function save(next: DashData) {
   const p = next.profile, age = ageNow(p.p1);
   if (p.planned.count > 0 && age != null && p.planned.bornAge !== age + p.planned.firstIn) next = { ...next, profile: { ...p, planned: { ...p.planned, bornAge: age + p.planned.firstIn } } };
   current = next;
-  writeStored(KEY, VERSION, next);
-  listeners.forEach((l) => l());
+  writeStored(profileKey(openId()), VERSION, next);
+  notify();
+}
+
+/* ---------- Profiles ---------- */
+
+const OPEN = "dashboard-open";
+let index: ProfileList | null = null, open: string | null = null;
+
+/** The profiles, in order: never empty (the first is there before it's named). */
+function profiles(): ProfileList {
+  if (index) return index;
+  const v = readProfileList(readStored(PROFILES_KEY, 1));
+  if (!v.list.length) v.list = [{ id: MAIN_PROFILE, name: "" }];
+  return (index = v);
+}
+/** The open profile: this device's choice while it still exists, else the first. */
+function openId(): string {
+  if (open && profiles().list.some((p) => p.id === open)) return open;
+  const mine = readStored<string>(OPEN, 1);
+  return (open = profiles().list.some((p) => p.id === mine) ? mine! : profiles().list[0].id);
+}
+function saveList(next: ProfileList) {
+  index = next;
+  writeStored(PROFILES_KEY, 1, next);
+}
+/** Re-reads everything after the account sent something new. */
+function reread() {
+  index = null; open = null; current = load();
+  notify();
+}
+
+/** A profile's name as shown: its own, else the people in it, else a default. */
+export function profileLabel(ref: ProfileRef, d: DashData = readProfile(ref.id)): string {
+  if (ref.name.trim()) return ref.name.trim();
+  const a = d.profile.p1.name.trim(), b = d.profile.who === "couple" ? d.profile.p2.name.trim() : "";
+  return a && b ? `${a} and ${b}` : a || b || "My profile";
+}
+/** A profile's saved data (not only the open one's). */
+export const readProfile = (id: string) => (id === openId() ? get() : load(profileKey(id)));
+
+/** Opens a profile on this device. */
+export function openProfile(id: string) {
+  if (!profiles().list.some((p) => p.id === id)) return;
+  open = id;
+  writeStored(OPEN, 1, id);
+  current = load();
+  notify();
+}
+/** Adds a profile, empty or a copy of another's, and opens it. */
+export function addProfile(name: string, copyOf?: string): string {
+  const id = newId();
+  const data: DashData = copyOf ? JSON.parse(JSON.stringify(readProfile(copyOf))) : EMPTY;
+  writeStored(profileKey(id), VERSION, data);
+  saveList({ ...profiles(), list: [...profiles().list, { id, name: name.trim() }] });
+  openProfile(id);
+  return id;
+}
+export function renameProfile(id: string, name: string) {
+  saveList({ ...profiles(), list: profiles().list.map((p) => (p.id === id ? { ...p, name: name.trim() } : p)) });
+  notify();
+}
+/** Deletes a profile, here and in the account (never the last one). The
+    first in the list opens if it was the open one. */
+export function deleteProfile(id: string) {
+  const L = profiles();
+  if (L.list.length < 2 || !L.list.some((p) => p.id === id)) return;
+  const wasOpen = openId() === id;
+  saveList({ list: L.list.filter((p) => p.id !== id), gone: [...new Set([...L.gone, id])] });
+  writeStored(profileKey(id), VERSION, null);
+  if (wasOpen) openProfile(profiles().list[0].id);
+  else notify();
+}
+
+interface ProfilesView { list: ProfileRef[]; open: string }
+let view: ProfilesView | null = null;
+function getView(): ProfilesView {
+  const list = profiles().list, o = openId();
+  if (!view || view.list !== list || view.open !== o) view = { list, open: o };
+  return view;
+}
+const SERVER_VIEW: ProfilesView = { list: [{ id: MAIN_PROFILE, name: "" }], open: MAIN_PROFILE };
+/** The profiles and which is open, kept current. */
+export function useProfiles(): ProfilesView {
+  useSyncedReload();
+  return useSyncExternalStore(subscribe, getView, () => SERVER_VIEW);
+}
+
+/** Items arriving from the account replace what's shown: the open profile,
+    or the list (a profile renamed, added or deleted elsewhere). */
+function useSyncedReload() {
+  useEffect(() => {
+    const on = (e: Event) => {
+      const keys = (e as CustomEvent<string[]>).detail ?? [];
+      if (keys.includes(PROFILES_KEY) || keys.includes(profileKey(openId()))) reread();
+    };
+    window.addEventListener(SYNCED_EVENT, on);
+    return () => window.removeEventListener(SYNCED_EVENT, on);
+  }, []);
 }
 
 /** Today, as YYYY-MM-DD in the person's own time zone. */
@@ -320,14 +423,7 @@ export const unstarted = (d: DashData) => !d.done && d.step === 0 && d.profile.w
 
 export function useDashboard() {
   const data = useSyncExternalStore(subscribe, get, () => EMPTY);
-  // Items arriving from the account replace what's shown.
-  useEffect(() => {
-    const on = (e: Event) => {
-      if ((e as CustomEvent<string[]>).detail?.includes(KEY)) { current = load(); listeners.forEach((l) => l()); }
-    };
-    window.addEventListener(SYNCED_EVENT, on);
-    return () => window.removeEventListener(SYNCED_EVENT, on);
-  }, []);
+  useSyncedReload();
   const update = useCallback((f: (d: DashData) => DashData) => save(f(get())), []);
   const setProfile = useCallback((f: (p: Profile) => Profile) => save({ ...get(), profile: f(get().profile) }), []);
   return { data, update, setProfile };

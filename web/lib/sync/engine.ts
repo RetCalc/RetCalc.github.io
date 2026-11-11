@@ -10,9 +10,9 @@
 
    Nothing calls these yet: the sign-in UI does (ACCOUNTS_PLAN.md, step 3). */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { localSyncedItems, onSyncedWrite, readBase, readStored, writeBase, writeFromAccount } from "@/lib/storage";
+import { dropLocal, localSyncedItems, onSyncedWrite, readBase, readStored, writeBase, writeFromAccount } from "@/lib/storage";
 import { pullAll, push, signedInUser } from "./account";
-import { fingerprint, mergeItem, mergeScenarios, type Copy, type Scenario } from "./merge";
+import { PROFILES_KEY, fingerprint, mergeItem, mergeScenarios, profileOfKey, readProfileList, type Copy, type Scenario } from "./merge";
 
 /** Sent on window when items arrive from the account; detail: their keys. */
 export const SYNCED_EVENT = "retcalc:synced";
@@ -39,8 +39,17 @@ export async function syncNow(c: SupabaseClient): Promise<SyncResult> {
     const changed: string[] = [];
     // Copies a merge set aside rather than lose, by the tool whose list they join.
     const kept: Record<string, Scenario[]> = {};
+    // Dashboard profiles deleted on either side: gone from both, never
+    // sent back by a device that still had a copy.
+    const gone = new Set([...readProfileList(local.get(PROFILES_KEY)?.value).gone, ...readProfileList(account.get(PROFILES_KEY)?.value).gone]);
     for (const key of new Set([...local.keys(), ...account.keys()])) {
       const l = local.get(key), a = account.get(key);
+      const profile = profileOfKey(key);
+      if (profile && gone.has(profile)) {
+        if (l) { dropLocal(key, l.version); changed.push(key); }
+        if (a) { await push(c, key, a.version, null); pushed++; }
+        continue;
+      }
       const m = mergeItem(key, l ? (l as Copy) : null, a ? (a as Copy) : null, readBase(key));
       if (!m) continue;
       if (m.toLocal) { writeFromAccount(key, m.version, m.value, Date.now()); pulled++; changed.push(key); }

@@ -27,7 +27,8 @@ import { MONTHS, money, pctDown } from "./format";
 import { flow, mixWords, retireMix } from "./flows";
 import { couple, holdings, mortgage, nameOf, nowYear, realGrowth, results, spendMonth } from "./model";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
-import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, readDashboard, useDashboard, withHome, type DashData, type Person, type Profile as P } from "./store";
+import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, profileLabel, readDashboard, useDashboard, useProfiles, withHome, type DashData, type Person, type Profile as P } from "./store";
+import { Profiles } from "./Profiles";
 import { Note, Tile, Tip, TipLabel, To } from "./ui";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
@@ -200,7 +201,14 @@ function ChangeBar() {
   );
 }
 
+/** The page starts over on a switch of profile: its Undo and typed
+    figures belong to the profile they were made in. */
 export function Profile() {
+  const { open } = useProfiles();
+  return <ProfilePage key={open} />;
+}
+
+function ProfilePage() {
   const { data, setProfile: set, update } = useDashboard();
   const pr = data.profile, two = couple(pr), H = holdings(data.entries, pr), F = flow(pr);
   const setP = (k: PKey, v: Partial<Person>) => set((p) => ({ ...p, [k]: { ...p[k], ...v } }));
@@ -210,7 +218,8 @@ export function Profile() {
   return (
     <Frame current="profile" title="Profile">
       <ChangeBar />
-      <div className="dsh-grid dsh-two dsh-flush">
+      <Profiles />
+      <div className="dsh-grid dsh-two dsh-r4">
         <Tile id="household" icon={two ? UsersRoundIcon : UserRoundIcon} title="Household">
           <div className="dsh-fields dsh-fields-sm">
             <div className="dsh-choices">
@@ -335,20 +344,22 @@ function CheckinEmail() {
     Asked twice, since it can't be undone. */
 function StartOver() {
   const { update } = useDashboard();
+  const { list, open } = useProfiles();
+  const one = list.length > 1 ? profileLabel(list.find((p) => p.id === open)!) : null;
   const router = useRouter();
   const [ask, setAsk] = useState<0 | 1 | 2>(0);
   const reset = () => { update(() => EMPTY); setAsk(0); router.replace("/dashboard/setup"); };
   return (
-    <Tile id="reset" icon={RotateCcwIcon} title="Reset your Dashboard">
+    <Tile id="reset" icon={RotateCcwIcon} title={one ? "Reset this profile" : "Reset your Dashboard"}>
       <div className="dsh-inline dsh-mt dsh-reset">
-        <p className="dsh-cap dsh-flush">Clears your profile, your net worth entries and every choice on your Dashboard, and takes you back to setup with nothing filled in. The rest of RetCalc isn&apos;t affected.</p>
-        <Button variant="destructive" onClick={() => setAsk(1)}>Reset Dashboard</Button>
+        <p className="dsh-cap dsh-flush">{one ? <>Clears {one}&apos;s answers, net worth entries and every choice on its tabs, and takes you back to setup with nothing filled in. Your other profiles and the rest of RetCalc aren&apos;t affected.</> : <>Clears your profile, your net worth entries and every choice on your Dashboard, and takes you back to setup with nothing filled in. The rest of RetCalc isn&apos;t affected.</>}</p>
+        <Button variant="destructive" onClick={() => setAsk(1)}>{one ? "Reset profile" : "Reset Dashboard"}</Button>
       </div>
       <Dialog open={ask > 0} onOpenChange={(o) => { if (!o) setAsk(0); }}>
         <DialogContent aria-labelledby="dshResetTitle">
           {ask === 1 ? (
             <>
-              <h2 id="dshResetTitle" className="dsh-dlg-h">Reset your Dashboard?</h2>
+              <h2 id="dshResetTitle" className="dsh-dlg-h">{one ? `Reset ${one}?` : "Reset your Dashboard?"}</h2>
               <p className="dsh-cap">Your profile, your net worth history and everything you&apos;ve set on each tab will be cleared, here and in your account.</p>
               <div className="dsh-navbtns dsh-wrapbtns">
                 <Button variant="outline" onClick={() => setAsk(0)}>Cancel</Button>
