@@ -62,6 +62,12 @@
 </figure>
 
 <p>They come out even at about 7.5% per year, which is the loan's 7.25% once monthly compounding is counted (interest charged at 7.25% ÷ 12 each month adds up to 7.5% over a year). Earn less than the loan's rate and paying it down wins; earn more and investing wins. So the decision comes down to what you can reasonably expect to earn, and how much risk you're willing to take to earn it.</p>
+<p>Change the loan's rate, the return and the extra amount to see where they cross.</p>
+
+<!-- data: components/learn/widgets/PayoffOrInvest.tsx: $360,000 for 30 years. Pay down first: mortgage() in lib/engine/math.js with extraMonthly, then payment + extra invested each month after the payoff month. Invest: extra invested each month from month 1. End-of-month deposits, monthly growth (1 + return)^(1/12), no taxes. Defaults (7.25%, 6%, $500) give 585,350 and 487,256, as the table; the even point shown is (1 + rate ÷ 12)^12 − 1. -->
+<figure data-widget="payoff-or-invest">
+  <figcaption>The investment account over the loan's thirty years under each choice. A hypothetical example with steady returns and no taxes, not a forecast.</figcaption>
+</figure>
 <p>That comparison still tilts toward investing. Paying down the loan is risk-free, so the honest comparison is with other risk-free investments, like Treasury bonds and high-yield savings, not with stocks. When those pay less than your mortgage rate, prepaying is the better safe investment. Investing the money instead means taking stock market risk with it. That may be perfectly reasonable, as long as it's a choice you make on purpose.</p>
 <p>The rate is what matters most. In 2020 and 2021 many people locked in 30-year mortgages below 3%. On a loan like that, safe investments can pay more than the loan costs, and paying it down early gives up return for very little in exchange. On a 7% loan, few safe investments beat prepaying.</p>
 

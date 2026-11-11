@@ -83,6 +83,12 @@
 </figure>
 
 <p>At $84,000 this couple pays $8,366 per year for the benchmark plan. At $85,000 they pay $34,854. That's $26,487 more for $1,000 more income, a cliff no tax bracket comes close to. Below the line, the 2026 rules cost this couple about $1,100 to $2,500 more per year than the enhanced ones did. Above it, the enhanced rules capped the cost at 8.5% of income and the 2026 rules give no help at all.</p>
+<p>Where the line falls, and how far the price drops past it, depends on your age and state. Move the income across it for your own.</p>
+
+<!-- data: components/learn/widgets/AcaPremium.tsx: list price hcGrossPremium(state, age, 0) × people (KFF 2026 premium40 by state, federal age curve, flat in NY and VT); per-year premium and credit from hcCoverage(income, people, state, list price) × 12 in lib/engine/math.js (Medicaid under 138% of the 2026 poverty line in expansion states, the coverage gap under 100% elsewhere, else hcCalcACA with the 2026 scale and the 400% cliff at 4 × hcFPL(people)). Defaults (a couple, both 62, Illinois, $84,000) give $8,366 against a $34,854 list price, with the line at $84,600, as the chart above. -->
+<figure data-widget="aca-premium">
+  <figcaption>What one person or a couple of the same age pays per year for the benchmark silver plan under the 2026 rules, at each income, using the state's average price. A hypothetical example, not a quote.</figcaption>
+</figure>
 <p>The cliff is still in place for 2027 coverage, which went on sale when open enrollment began on November 1, 2026. Three figures move. The IRS has raised the contribution scale for 2027, so it runs from 2.15% of income to 10.22% at the top, up from 2.10% and 9.96%. The poverty line used for 2027 is the 2026 guideline, $15,960 for one person and $21,640 for two, which puts the 400% line at $63,840 and $86,560. And list prices are up: KFF puts the average benchmark plan for 2027 at $703 per month for a 40-year-old, about 13% more than in 2026. If Congress changes the rules again, HealthCare.gov will show the new prices. The <a href="/healthcare">Healthcare</a> tool shows both the current rules and what you'd pay if the enhanced credits came back.</p>
 
 <h3>Other 2026 changes worth knowing</h3>

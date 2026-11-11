@@ -68,6 +68,12 @@
 
 <p>The solo 401(k) holds the most at every income, and the gap is widest at the bottom: at $25,000 of profit it can take nearly all of it. The SEP IRA holds less than a SIMPLE until profit passes roughly $115,000, and it only catches the solo 401(k) at about $375,000 of profit, where both reach the $72,000 ceiling. Below about $40,000 of profit, a SEP allows less than a plain IRA does.</p>
 <p>Few people can afford to save the maximum, so the chart is about room, and room matters most in an unusually good year or when one spouse's income covers the bills.</p>
+<p>Set your own profit to see each account's room, split into the employee and employer halves. A deferral at a day job comes off the employee half only, as the section on side income below explains.</p>
+
+<!-- data: components/learn/widgets/SoloLimits.tsx: the worksheet in the chart comment above, for a sole proprietor with no employees, 2026. SE tax from lib/engine/data/2026.js fica (ssRate, medRate, ssCap); 401(k) and IRA limits and catch-ups from limits.k401 and limits.ira. The $72,000 annual additions limit and the SIMPLE limits ($18,100, catch-up $3,850) are from IRS Notice 2025-67 and set in the widget. Day-job deferrals share the employee limit with the solo 401(k) and SIMPLE deferrals. Defaults reproduce the $100K bars: 43,087; 18,587; 20,871; 7,500 -->
+<figure data-widget="solo-limits">
+  <figcaption>The most each account takes for 2026 at one level of net profit, for a sole proprietor with no employees. A hypothetical example, not a forecast.</figcaption>
+</figure>
 
 <h2 id="sep-simple">Where the SEP and the SIMPLE fit</h2>
 <h3>SEP IRA</h3>

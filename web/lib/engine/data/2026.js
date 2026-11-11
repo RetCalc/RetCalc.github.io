@@ -34,13 +34,22 @@ export var YEAR_2026 = {
      iraPhase: the traditional IRA deduction phases out across these MAGI
      ranges when you're covered by a plan at work (cov), or on a joint
      return when only your spouse is (spouse). rothPhase: direct Roth IRA
-     contributions phase out across these MAGI ranges (the same notice). */
+     contributions phase out across these MAGI ranges (the same notice).
+     additions: the most that can go into one employer's plan from the
+     worker and the employer together (section 415(c)), before catch-ups.
+     simple: a SIMPLE plan's deferral limit at an employer with 25 or fewer
+     workers, and its catch-up from 50 (the same notice).
+     cashGift: the deduction for cash given to charity by people who take
+     the standard deduction, new for 2026 (section 170(p), Pub. L. 119-21). */
   limits: {
     k401: {base:24500, catch50:8000, catch60:11250},
     ira: {base:7500, catch50:1100},
     hsa: {self:4400, family:8750, catch55:1000},
     iraPhase: {cov:{s:[81000, 91000], m:[129000, 149000]}, spouse:[242000, 252000]},
-    rothPhase: {s:[153000, 168000], m:[242000, 252000]}
+    rothPhase: {s:[153000, 168000], m:[242000, 252000]},
+    additions: 72000,
+    simple: {base:18100, catch50:3850},
+    cashGift: {s:1000, m:2000}
   },
 
   /* ---------- retirement-specific 2026 data ----------

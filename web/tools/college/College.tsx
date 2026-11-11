@@ -179,7 +179,7 @@ export function College() {
                   const costWarn = "clCostWarn" + i, yearsWarn = "clYearsWarn" + i;
                   // The select says Custom once a typed cost no longer matches
                   // its preset; what's kept (and calculated from) is unchanged.
-                  const presetShown = parseFloat(k.preset) > 0 && parseNum(k.cost) !== parseFloat(k.preset) ? "0" : k.preset;
+                  const presetShown = (parseFloat(k.preset) > 0 && parseNum(k.cost) !== parseFloat(k.preset)) || !CL_PRESETS.some(([v]) => v === k.preset) ? "0" : k.preset;
                   return (
                     <div key={i} className={multi ? "stagecard clkid m-0 rounded-none border-x-0 border-t border-b-0 border-border bg-transparent px-0 pt-3.5 pb-1 first:border-t-0 first:pt-0" : "clkid"}>
                       {multi ? (

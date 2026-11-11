@@ -121,6 +121,13 @@
   <figcaption>Where each year's money comes from at the four spending levels. Social Security is the same in every bar, so all of the extra spending, and the tax on it, falls on savings.</figcaption>
 </figure>
 
+<p>Change the spending, the Social Security and the withdrawal rate to see how the target moves:</p>
+
+<!-- data: components/learn/widgets/Target.tsx: the same computeRetireTax run as the table (2026 rules, married filing jointly, both 65 or older, no state income tax, all traditional), withdrawal solved so that withdrawal + Social Security − federal tax = spending, rounded to the dollar; target = withdrawal ÷ withdrawal rate. With $56,301 of Social Security it reproduces the table's four rows; the slider moves in $100 steps, so it starts at $56,300 and a $72,000 target of $392,500. -->
+<figure data-widget="target">
+  <figcaption>The savings target at each level of spending for the example couple, with and without the federal tax on the withdrawal. Today's dollars, 2026 federal rules, no state income tax, all savings in traditional accounts.</figcaption>
+</figure>
+
 <p>Each step up in spending raises the target by more than 25 times the step, because the tax grows too. And the target is very sensitive to spending: going from $72,000 to $90,000 per year, 25% more, more than doubles it, because Social Security covers the first $56,300 either way. Your own figure will differ with your state's tax and how much you hold in Roth or taxable accounts. <a href="/learn/retirement-income-taxes">How retirement income is taxed</a> covers the rules.</p>
 
 <h2 id="gaps">Years before Social Security starts</h2>

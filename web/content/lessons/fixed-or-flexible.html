@@ -15,7 +15,17 @@
 </figure>
 
 <p>The fixed withdrawal, the <a href="/learn/four-percent-rule">4% rule</a>, pays $40,000 every year for 26 years and then stops. Taking 4% of whatever the balance is each year never runs out, but by year 17 it's paying $16,718. Guardrails, a rule that starts higher and cuts 10% at a time when withdrawals grow too large against the balance, start at $50,000, cut ten times, and bottom at $17,434.</p>
-<p>That was the worst stretch in the record. Across all 70 thirty-year retirements that began in a January from 1927 to 1996, the trade looks like this:</p>
+
+<p>Guardrails and a fixed amount can also start from the same figure. Pick a starting year, a starting rate and the size of each cut or raise to see how the two compare.</p>
+
+<!-- data: components/learn/widgets/Guardrails.tsx (guardrailsVsFixed in history-data.ts): runDrawdown() on one January start's years (ddWindows), options
+     ddOptsFromState({initial: 1000000, years: 30, stock: 60, rate, strategy, guardBand: 20, adjust: step}); strategy "guardrails" and "fixed" at the same rate.
+     realSpend per year, in today's dollars; cuts counted by ddCuts. Defaults: 1966, 5%, 10% steps, which gives the guardrails line in the chart above
+     (low $17,434, 10 cuts); fixed $50,000 from 1966 runs out in year 19. -->
+<figure data-widget="guardrails">
+  <figcaption>Spending each year, in today's dollars, from $1,000,000 in 60% US stocks and 40% 10-year Treasuries: guardrails (20% bands) against the same first-year amount held fixed and raised with inflation, for the starting year you choose.</figcaption>
+</figure>
+<p>1966 was the worst stretch in the record. Across all 70 thirty-year retirements that began in a January from 1927 to 1996, the trade looks like this:</p>
 
 <!-- data: historicalBacktest() on each strategy, $1,000,000, 60/40, 30 years, starts 1927–1996. Lifetime spending: each start's 30 years of realSpend summed, median across starts. Left at the end: median endReal. Lowest year: minimum realSpend across all starts. -->
 <figure>

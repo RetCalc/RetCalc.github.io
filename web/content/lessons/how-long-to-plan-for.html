@@ -60,6 +60,13 @@
   <figcaption>SSA 2023 period life table, the US population as a whole. People in good health, or with higher incomes, tend to do better than these figures.</figcaption>
 </figure>
 
+<p>The odds change as you age, because each year survived removes a year of risk. Pick an age reached and a planning age:</p>
+
+<!-- data: components/learn/widgets/Longevity.tsx: the lesson's SSA 2023 period life table figures (lives at 65, 70 … 100, men and women). Chance of reaching x from the age now = lives at x ÷ lives at the age now; a couple is a man and a woman the same age, at least one = 1 − (1 − man) × (1 − woman), both = man × woman. From 65 to 95: man 8.0%, woman 14.4%, at least one of a couple 21.3%, both 1.2%. -->
+<figure data-widget="longevity">
+  <figcaption>The chance of being alive at each later age, from the age reached now, at the SSA's 2023 period death rates for the whole US population. For a couple, the chance at least one is alive.</figcaption>
+</figure>
+
 <p>Two things in the table matter for planning. A 65-year-old woman has better than a one-in-three chance of reaching 90. And for a couple, the chance that at least one of them reaches 90 is about even, and about one in five that one reaches 95.</p>
 <p>You can check the couple column by hand. At 90, the man has a 24.1% chance of being alive and the woman 34.9%, so the chance that he has died is 75.9% and that she has is 65.1%. The chance that both have died is 0.759 × 0.651, or 49.4%, which leaves 50.6% that at least one is living. That multiplication treats the two lives as unrelated. Spouses share habits, income and health care, and to the extent their lifespans move together, the true chance that at least one is alive is a little lower than the table shows and the chance that both are is a little higher.</p>
 

@@ -30,15 +30,18 @@
 <p>After five years the balance looks almost unchanged at $936,882, but prices had risen 25%, so it bought what $748,564 did in 1966, and the withdrawal had grown to $47,421 and was still climbing. The test carries on like this for thirty years, or until the balance reaches zero. For this start it reached zero in year 27.</p>
 <p>Across all 70 tests, the money lasted thirty years in 66, a success rate of 94.3%. The four that ran out started in 1965, 1966, 1968 and 1969, and ran out in years 27 to 30. Starting a retirement every month instead of every January gives 835 tests and 94.0%, nearly the same answer.</p>
 
-<!-- data: historicalBacktest() in lib/engine/drawdown.js, options ddOptsFromState({initial: 1000000, years: 30, stock: 60, rate: 4, strategy: "fixed"}).
-     January starts 1927–1996: 70 retirements, 66 lasted (94.3%); failures 1965 (year 29), 1966 (year 27), 1968 (year 30), 1969 (year 28).
-     Value left after 30 years in today's dollars (endReal), rounded to the nearest $1,000; median $1,616,000; 48 of 70 above $1,000,000. Matches the 4% rule article. -->
-<figure data-chart='{"type":"bar","x":[1927,1928,1929,1930,1931,1932,1933,1934,1935,1936,1937,1938,1939,1940,1941,1942,1943,1944,1945,1946,1947,1948,1949,1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996],"xLabel":"Year retired","y":"money","series":[{"name":"Left after 30 years","tone":"accent","values":[2590000,1464000,843000,1068000,1616000,3339000,2972000,1749000,2178000,1190000,448000,1677000,1075000,942000,1292000,2399000,2738000,1864000,1194000,856000,1861000,2015000,1956000,1604000,1447000,1174000,1203000,1362000,750000,497000,689000,909000,524000,536000,509000,146000,413000,148000,0,0,184000,0,0,975000,1005000,668000,294000,1438000,3751000,2913000,2400000,3433000,3399000,4227000,4589000,5648000,4802000,4820000,5311000,3875000,2894000,3899000,3383000,2967000,3945000,3417000,2412000,2379000,3256000,2227000]}]}'>
-  <figcaption>What was left after thirty years, in today's dollars, for each January retirement from 1927 to 1996: $1,000,000 in 60% stocks and 40% bonds, spending $40,000 per year raised with inflation. The four gaps ran out of money.</figcaption>
+<p>The chart shows all 70 at 4%. Raise or lower the first-year withdrawal to see which starts run out.</p>
+
+<!-- data: components/learn/widgets/SuccessRate.tsx (successRun in history-data.ts): historicalBacktest() in lib/engine/drawdown.js, options ddOptsFromState({initial: 1000000, years: 30, stock: 60, rate, strategy: "fixed"}),
+     rate 3.0% to 6.0%, default 4. January starts 1927–1996. At 4%: 70 retirements, 66 lasted (94.3%); failures 1965 (year 29), 1966 (year 27), 1968 (year 30), 1969 (year 28).
+     Each bar: value left after 30 years in today's dollars (endReal), 0 where the money ran out; median $1,616,000; 48 of 70 above $1,000,000. Matches the 4% rule article.
+     At 4.6%: 59 of 70 (84.3%). -->
+<figure data-widget="success-rate">
+  <figcaption>What was left after thirty years, in today's dollars, for each January retirement from 1927 to 1996: $1,000,000 in 60% stocks and 40% bonds, spending the chosen first-year amount raised with inflation. Each gap is a retirement that ran out of money.</figcaption>
 </figure>
 
 <p>Each bar is a sequence of returns that someone lived through, which is the test's great strength. Nobody had to assume how often crashes happen, how long inflation lasts or how stocks and bonds move together. The 1929 crash, the inflation of the 1970s and the two falls of the 2000s are all in there, in the order they came.</p>
-<p>The chart also shows how wide the outcomes are. The middle retirement finished with about $1.6 million after inflation, and 48 of the 70 finished with more than the $1,000,000 they started with. The retiree of 1982 finished with $5.6 million. Same plan, same spending; the only difference was the year.</p>
+<p>The chart also shows how wide the outcomes are. At 4%, the middle retirement finished with about $1.6 million after inflation, and 48 of the 70 finished with more than the $1,000,000 they started with. The retiree of 1982 finished with $5.6 million. Same plan, same spending; the only difference was the year.</p>
 
 <h2 id="overlap">Why 70 tests aren't 70 separate chances</h2>
 <p>Seventy tests sound like a lot of evidence, but they overlap. A retirement that starts in 1966 and one that starts in 1967 share 29 of their 30 years. They aren't two separate looks at what markets can do; they're nearly the same look twice. That's why the failures arrive in a cluster: 1965, 1966, 1968 and 1969 are really one bad episode, the high inflation and flat stock prices that began in the late 1960s, seen from four starting points.</p>

@@ -87,6 +87,13 @@
   <figcaption>The same $75,000 salary, in today's dollars, over careers of different lengths. Each five years short of 35 costs about $286 per month, and years past 35 at the same pay add nothing.</figcaption>
 </figure>
 
+<p>Move the pay and the years to see which part of the formula the missing years come out of.</p>
+
+<!-- data: components/learn/widgets/SsCareer.tsx: ssPiaFromEarnings(Array(years).fill(pay)) in lib/engine/math.js, newest year's bend points (lib/engine/data/2026.js); each bar split into 0.90 × min(AIME, 1,286), 0.32 × (min(AIME, 7,749) − 1,286) and 0.15 × (AIME − 7,749). At $75,000 it gives the chart above: 1,317 at 10 years to 2,746 at 35. -->
+<figure data-widget="ss-career">
+  <figcaption>The monthly benefit at full retirement age for level pay in today's dollars, by years worked, split into the formula's three parts, with 2026 bend points. A hypothetical career, not an estimate of your own.</figcaption>
+</figure>
+
 <p>The loss per missing year is smaller than you might expect, because the zeros come off the top of the average, where each dollar is replaced at 32% or 15%, while the 90% part stays whole. Ten years of work is 29% of a 35-year career and still earns 48% of the full-career benefit.</p>
 <p>That has two practical results. First, if you have fewer than 35 years, each extra year of work replaces a zero, and even part-time pay adds something. Ten years at $30,000 on top of Dana's 25 years at $75,000 would lift the benefit from about $2,174 to $2,403. Second, once you have 35 good years, another year only helps if it beats your lowest one. A year of part-time work at 64 doesn't push out a strong year from your forties. A year at full salary might push out a weak one from your early twenties, but the gain is small.</p>
 <p>Social Security recomputes your benefit each year you keep working, even after you've claimed, and raises it automatically if the new year makes the top 35.</p>

@@ -115,6 +115,13 @@
   <figcaption>Yearly spending the same couple's savings support, in today's dollars, by the age they retire, and where each extra dollar comes from. Growth is assumed at 4.5% per year after inflation; a real year can be far better or worse.</figcaption>
 </figure>
 
+<p>The split depends on the balance and the saving. Try your own:</p>
+
+<!-- data: components/learn/widgets/OneMoreYear.tsx: balance each later year = last year × 1.045 + saving; rate for the years to 95 = the lowest of ddSafeByStart(ddOptsFromState({initial:1000000, years, stock:60, strategy:"fixed"})), lib/engine/drawdown.js, rounded to 0.01% (25 years 4.10% to 35 years 3.64%; 33 years 3.68%, 30 years 3.79%). Saving and growth priced at the first age's rate; fewer years = balance × (rate − first rate). $1,200,000, $30,000, from 62 gives the chart above: 44,160; 47,636; 51,442; 55,467. -->
+<figure data-widget="one-more-year">
+  <figcaption>Yearly spending the savings support, to age 95, for each of four retirement ages, and where each extra dollar comes from. Growth is assumed at 4.5% per year after inflation; a hypothetical example in today's dollars.</figcaption>
+</figure>
+
 <p>The chart shows two things. In this example growth is the biggest part, because $1,200,000 earning 4.5% adds more in a year than the couple can save. For someone with a smaller balance and a high savings rate, the saving would lead. And the shorter retirement is the smallest part by this measure, since the worst stretches in the record did most of their damage in the first decade, so a 32-year plan is only a little easier to fund than a 33-year one.</p>
 <p>The example leaves out some of what a year of work does. It's a year of employer health cover instead of a marketplace premium, and a year closer to Medicare. It's a year you aren't drawing on savings while waiting to claim Social Security, and if it replaces a low-paid year among your best 35, it raises the benefit a little. A 2018 study by Gila Bronshtein, Jason Scott, John Shoven and Sita Slavov, which assumed people claim Social Security when they stop work, found that working three to six months longer raised a household's sustainable retirement income as much as saving one more percentage point of pay for 30 years.</p>
 <p>The growth isn't guaranteed. If markets fall during the extra year, the balance can end lower than it began, and the year's value is then that you didn't make withdrawals during the fall. What you give up is a year of retirement in good health, which the arithmetic leaves out. Past the point where the plan works with a margin you're comfortable with, each additional year buys less that you need.</p>

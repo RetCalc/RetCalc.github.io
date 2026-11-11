@@ -50,6 +50,13 @@
 </figure>
 
 <p>A married couple under 65 with no other income can convert $133,000 in 2026 and pay $11,600 of federal tax, an average of 8.7%. Converting $243,600 costs $35,932, an average of 14.8%, but every dollar above $133,000 pays 22%. The marginal rate is what to compare with the rate you expect later, since it's the rate on the last dollars you convert.</p>
+<p>Set a conversion and the income it lands on to see which brackets it fills.</p>
+
+<!-- data: components/learn/widgets/ConversionBrackets.tsx: newest tax year, under 65, standard deduction, ordinary income only. Slice of each bracket = bracketTax(other + conversion − standard deduction) less bracketTax(other − standard deduction), band by band (lib/engine);
+     the part the deduction still covers is the 0% bar. Default (married, 133,000, no other income): 32,200 at 0%, 24,800 at 10%, 76,000 at 12%; tax 11,600, average 8.7%, last dollar 12%. Every row of the table above checks. -->
+<figure data-widget="conversion-brackets">
+  <figcaption>A Roth conversion split across the 2026 federal brackets, on top of the other taxable income you choose, for someone under 65 taking the standard deduction. Each pair of bars is one rate: the amount converted at it, and the tax on that amount.</figcaption>
+</figure>
 
 <!-- data: 2026 brackets and standard deduction, lib/engine/data/2026.js; no other income, under 65. The federal rate on the next dollar converted changes where conversion = standard deduction + the start of each bracket.
      Married: 0% to 32,200; 10% to 57,000; 12% to 133,000; 22% to 243,600; 24% beyond (to 435,750).

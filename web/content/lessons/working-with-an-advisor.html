@@ -106,6 +106,13 @@
   <figcaption>One year of advice at the 2024 median rates: 1% of the portfolio against a $4,500 retainer. Fund costs are extra in both cases.</figcaption>
 </figure>
 
+<p>Over many years the gap grows, because a percentage fee rises with the balance it's charged on. Try your own portfolio and fees.</p>
+
+<!-- data: components/learn/widgets/AdvisorCost.tsx: the portfolio grows 5% per year after inflation before costs for 30 years, nothing added or withdrawn, monthly growth (1 + return)^(1/12). Percentage fee: taken from the return, as feePath() in Fees.tsx (monthly rate (1 + 5% − fee)^(1/12) − 1). Flat fee: one twelfth taken each month, the same in today's dollars every year. Defaults ($1,000,000, 1%, $4,500) give a first-year $10,000 against $4,500 and 3,243,398 against 4,016,176 after 30 years. -->
+<figure data-widget="advisor-cost">
+  <figcaption>A portfolio left to grow for 30 years, paying a percentage of assets or a flat fee per year for advice, in today's dollars. A hypothetical example with steady returns, not a forecast.</figcaption>
+</figure>
+
 <p>The advisor's fee is one layer of cost. The funds in the portfolio charge their own expense ratios, and some platforms add a fee. In the same survey a client with $1,000,000 at an independent adviser paid about 1.20% in all: 1.00% to the adviser and 0.20% for funds and platform. <a href="/learn/fees-and-index-funds">Fees and index funds</a> covers how to add the layers up.</p>
 
 <h2 id="cost">What 1% costs over a lifetime</h2>

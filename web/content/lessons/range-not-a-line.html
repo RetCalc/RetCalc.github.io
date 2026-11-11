@@ -13,16 +13,20 @@
 <h2 id="band">Reading the band</h2>
 <p>A band condenses all those results into a few lines. At each year, the tool sorts every market's balance from lowest to highest and marks a few points along the way, called percentiles. The 10th percentile is the balance that 1 in 10 markets fell below. The 50th, the median, is the middle one: half did worse, half did better. The 90th is the balance only 1 in 10 beat.</p>
 
-<!-- data: engine historicalRuns() (lib/engine/math.js): initial $100,000, $1,000 per month raised 3% per year, 25 years, 80% stocks / 20% 10-year Treasuries,
-     rebalanced monthly to the mix, no fee; 901 monthly starts, January 1926 to January 2001; bands p10, p50, p90 at each year end, in today's dollars, rounded to $1,000.
-     Steady line: $100,000 growing at 6.52% per year after inflation (backtest() realCagr for 80/20, 1926–2025), compounded monthly, plus $1,000 per month. -->
-<figure data-chart='{"type":"line","x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],"xLabel":"Years from now","y":"money","series":[{"name":"90th percentile","tone":"good","values":[100000,143000,179000,216000,254000,291000,334000,377000,426000,476000,534000,585000,657000,724000,817000,890000,944000,1058000,1102000,1218000,1276000,1369000,1452000,1540000,1622000,1701000]},{"name":"Median","tone":"accent","values":[100000,120000,141000,161000,182000,205000,229000,251000,291000,327000,352000,392000,426000,456000,484000,527000,550000,613000,670000,727000,780000,844000,913000,999000,1099000,1187000]},{"name":"10th percentile","tone":"bad","values":[100000,98000,105000,115000,128000,141000,152000,171000,169000,179000,191000,205000,225000,247000,271000,284000,296000,327000,343000,362000,412000,438000,465000,525000,600000,657000]},{"name":"Steady 6.5% after inflation","tone":"muted","dash":true,"values":[100000,119000,139000,160000,183000,208000,233000,261000,290000,322000,355000,390000,428000,469000,511000,557000,606000,658000,713000,772000,834000,901000,972000,1048000,1129000,1215000]}]}'>
-  <figcaption>Jordan's savings in today's dollars: $100,000 plus $1,000 per month (raised 3% per year, about the pace of inflation), 80% US stocks and 20% 10-year Treasuries, run through 901 starting months from 1926 to 2001. The dotted line grows at a steady 6.5% per year after inflation.</figcaption>
+<p>The chart opens on Jordan's plan. Change the stock share or the number of years and watch how far apart the lines spread.</p>
+
+<!-- data: components/learn/widgets/OutcomeRange.tsx (outcomeRange in history-data.ts): engine historicalRuns() (lib/engine/math.js): initial $100,000, $1,000 per month raised 3% per year,
+     the chosen years (default 25) and stock share (default 80%, the rest 10-year Treasuries), rebalanced monthly to the mix, no fee; every monthly start from January 1926
+     (901 for 25 years); bands p10, p50, p90 at each year end, in today's dollars. Steady line: $100,000 growing at the mix's backtest() realCagr for 1926–2025
+     (6.52% for 80/20), compounded monthly, plus $1,000 per month. At the defaults it gives the figures quoted here: p10/p50/p90 at year 25 657,000 / 1,187,000 / 1,701,000;
+     steady 1,215,000; 477 of 901 below it; year 5 band 141,000 to 291,000. -->
+<figure data-widget="outcome-range">
+  <figcaption>Jordan's savings in today's dollars: $100,000 plus $1,000 per month (raised 3% per year, about the pace of inflation), run through every starting month since 1926 at the stock share and length you choose, the rest in 10-year Treasuries. The dotted line grows at that mix's steady average after inflation. A hypothetical example, not a forecast.</figcaption>
 </figure>
 
 <p>The space between the 10th and 90th percentiles is where 8 in 10 of the past markets landed. When a RetCalc chart labels a shaded band "8 in 10 markets", that's what it means. After 25 years, Jordan's band runs from $657,000 to $1,701,000, with the median at $1,187,000.</p>
 
-<!-- data: as the chart above, final year (year 25) of bands: p10 657,000, p25 855,000, p50 1,187,000, p75 1,534,000, p90 1,701,000;
+<!-- data: as the chart above at its defaults (80% stocks, 25 years), final year (year 25) of bands: p10 657,000, p25 855,000, p50 1,187,000, p75 1,534,000, p90 1,701,000;
      worst and best of the 901 windows: 414,000 (start July 1957), 2,327,000 (start January 1975). -->
 <figure>
   <table>
@@ -49,7 +53,7 @@
 
 <!-- data: historicalRuns() traces (January starts only, 76 of them, 1926–2001), Jordan's plan as above. 1929: year 4 $110,000, lower than 99% of January starts at year 4;
      year 25 $1,158,000, 43rd percentile. 1973: year 2 $73,000, lowest of all January starts at year 2; year 25 $1,344,000, 63rd percentile (median $1,187,000).
-     Chart: those two traces, year by year, over the p10 and p50 bands of the chart above (all 901 starts), rounded to $1,000. -->
+     Chart: those two traces, year by year, over the p10 and p50 bands of the chart above at its defaults (all 901 starts), rounded to $1,000. -->
 <figure data-chart='{"type":"line","x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],"xLabel":"Years from the start","y":"money","series":[{"name":"Median","tone":"muted","dash":true,"values":[100000,120000,141000,161000,182000,205000,229000,251000,291000,327000,352000,392000,426000,456000,484000,527000,550000,613000,670000,727000,780000,844000,913000,999000,1099000,1187000]},{"name":"10th percentile","tone":"bad","dash":true,"values":[100000,98000,105000,115000,128000,141000,152000,171000,169000,179000,191000,205000,225000,247000,271000,284000,296000,327000,343000,362000,412000,438000,465000,525000,600000,657000]},{"name":"Started January 1929","tone":"accent","values":[100000,109000,105000,87000,110000,177000,190000,276000,370000,282000,367000,397000,388000,339000,375000,462000,545000,717000,581000,569000,603000,716000,842000,980000,1130000,1158000]},{"name":"Started January 1973","tone":"good","values":[100000,90000,73000,99000,125000,120000,126000,136000,157000,151000,187000,221000,234000,302000,379000,367000,417000,517000,491000,583000,654000,712000,692000,921000,1068000,1344000]}]}'>
   <figcaption>Two real markets against the band, for Jordan's plan in today's dollars. The 1929 start dips below the 10th percentile line in years 3 and 4, and the 1973 start stays below it for ten years. Both end close to the median or above it.</figcaption>
 </figure>

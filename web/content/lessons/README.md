@@ -145,10 +145,15 @@ Every lesson has at least one picture; most have two or three.
   Pointing at a chart (or touching it) reads off every series at that
   point, so a chart can carry more exact figures than its axis shows; the
   caption doesn't need to repeat them.
-- **Widgets**: a few lessons have an interactive picture built for them
-  (`<figure data-widget="...">`): `sequence` (sequence-risk), `compound`
-  (compound-growth), `fees` (fees-and-index-funds), `claim-age`
-  (when-to-claim). Use the one your lesson has, with a caption.
+- **Widgets**: many lessons have an interactive picture built for them
+  (`<figure data-widget="...">` with a caption): the reader moves a slider
+  and the chart and a one-paragraph readout follow. Each is a component in
+  `components/learn/widgets/`, registered by name in `widgets/index.tsx`
+  (loaded on its own, so a lesson fetches only the one it shows). A widget
+  uses the engine, exports its calculation as a plain function, and its
+  default state reproduces the lesson's worked example, so text and
+  picture agree. Add one only where moving the inputs shows the lesson's
+  point; a lesson's figures changing means checking its widget too.
 
 Before every table or chart, an HTML comment says how its figures were
 worked out: the formula, the engine function and inputs, or the source.

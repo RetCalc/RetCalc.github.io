@@ -23,7 +23,7 @@ export function fmt(v: number, y: ChartSpec["y"], short = true): string {
     const a = Math.abs(v), s = v < 0 ? "−" : "";
     if (!short) return s + "$" + Math.round(a).toLocaleString("en-US");
     if (a >= 1e6) return s + "$" + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M";
-    if (a >= 1e3) return s + "$" + Math.round(a / 1e3) + "K";
+    if (a >= 1e3) return s + "$" + (a / 1e3).toFixed(a >= 1e4 ? 0 : 1).replace(/\.0$/, "") + "K";
     return s + "$" + Math.round(a);
   }
   return Math.abs(v) >= 1000 ? Math.round(v).toLocaleString("en-US") : String(+v.toFixed(2));

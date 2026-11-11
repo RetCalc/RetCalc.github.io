@@ -66,6 +66,14 @@
 </figure>
 
 <p>Stacking has a side effect that catches people out. Once a gain straddles the line, every extra dollar of ordinary income pushes a dollar of gain from 0% up to 15%. If Sam and Jordan took another $1,000 from the IRA that year, they'd pay 12% on the withdrawal and 15% on the $1,000 of gain it lifted over the line: $270 on $1,000, in what looks like the 12% bracket.</p>
+<p>Try your own figures: where a gain lands, what it costs, and what the next $1,000 of ordinary income would cost on top of it.</p>
+
+<!-- data: components/learn/widgets/GainsStack.tsx: computeRetireTax({status, ages 60, trad: ordinary income, brok: gain, gainPct: 1, state:"TX"}), newest tax year, standard deduction.
+     Gain at each rate = ltcgBands (any gain the deduction covers counts at 0%); tax on the gain = federal tax with the gain less without it (3.8% surtax included where it applies);
+     next $1,000 = federal tax with ordinary income + 1,000 less without. Default (married, 100,000 and 50,000): 31,100 at 0%, 18,900 at 15%, tax 2,835; next $1,000 costs 270 (120 + 150). -->
+<figure data-widget="gains-stack">
+  <figcaption>How much of a long-term gain is taxed at 0%, 15% and 20% in 2026, stacked on the ordinary income you choose, for someone under 65 taking the standard deduction. Each pair of bars is one rate: the gain taxed at it, and the tax on that gain.</figcaption>
+</figure>
 <h3>The 3.8% tax on top</h3>
 <p>Above $200,000 of modified AGI for a single filer or $250,000 for a couple, the net investment income tax adds 3.8% to gains, dividends and interest, so the top federal rate on a long-term gain is 23.8%. One large sale can put a household over the threshold for a single year. <a href="/learn/retirement-income-taxes#niit">How retirement income is taxed</a> has a worked example.</p>
 

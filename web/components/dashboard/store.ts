@@ -197,7 +197,7 @@ export const EMPTY_PROFILE: Profile = {
   ss: { checked: false, own1: null, own2: null, claim: null, claim2: null }, strategy: null,
   tools: {}, raise: 0, growth: {}, yearly: { raise: [0, 0], keep: null },
   planned: { count: 0, firstIn: 2, spacing: 3 }, childcare: true, careArea: "suburb",
-  college: { help: "none", cost: 26000 },
+  college: { help: "none", cost: 27000 },
   childCosts: { early: "", school: "", teen: "", later: "80" },
 };
 export const EMPTY: DashData = { profile: EMPTY_PROFILE, entries: [], step: 0, skipped: [], done: false };
@@ -234,6 +234,8 @@ function load(): DashData {
   p.tools = { ...v.profile?.tools };
   p.planned = { ...EMPTY_PROFILE.planned, ...v.profile?.planned };
   p.college = { ...EMPTY_PROFILE.college, ...v.profile?.college };
+  // The school choices follow the College Board's yearly figures: a plan saved with last year's takes this year's.
+  p.college.cost = ({ 26000: 27000, 61000: 63000 } as Record<number, number>)[p.college.cost] ?? p.college.cost;
   p.childCosts = { ...EMPTY_PROFILE.childCosts, ...v.profile?.childCosts };
   if (v.profile?.scenarios != null) p.scenarios = readScenarios(v.profile.scenarios, { dashboard: true });
   // The rule for the children's costs; amounts typed by stage before it are dropped.

@@ -108,6 +108,16 @@
 <p>By the end of 1999 it was 75% stocks, just in time for three falling years. The 2008 crash knocked it down to 52%, which meant it held fewer stocks than planned for the rebound. By the end of 2025 it was 90% stocks. If 2008's returns came again, that portfolio would lose about 33%, where the 60/40 its owner picked would lose about 16%. Started in 1926, the same untouched portfolio was 92% stocks by 1955 and above 99% by 2025.</p>
 <p>Rebalancing means selling some of what has grown and buying what has lagged to get back to the target. Its purpose is to keep the risk you chose. It is not a way to earn more: when stocks outgrow bonds for decades, trimming them costs return.</p>
 
+<p>Try it from other starting years, with and without a rule.</p>
+
+<!-- data: components/learn/widgets/Rebalance.tsx (drift in history-data.ts): engine backtest() (lib/engine/math.js), stockPct 60, the rest 10-year Treasuries, initial $100,000, no fee,
+     from the start of the chosen year (1926–2016, default 1996) to the end of 2025. Rules: every year (rebal "every", rebalN 1, the same returns as "year" with the holdings tracked),
+     a 5-point band checked each January (rebal "band", rebalBand 5), never. Stock share at each year end: endMix[0] of the same backtest run to that year, before the next
+     January's rebalance. Never from 1996 gives the chart above (89.6% at the end of 2025). Balance, return per year and deepest fall (year ends) from the full run, before inflation. -->
+<figure data-widget="rebalance">
+  <figcaption>The stock share at each year end of a portfolio that began at 60% US stocks and 40% 10-year Treasuries in the year you choose, under each rebalancing rule, with the never-rebalanced share beside it. Before inflation, fees and taxes.</figcaption>
+</figure>
+
 <!-- data: engine backtest() (lib/engine/math.js), stockPct 60, 1926–2025, no fee. rebal "year"; "never"; "band" with rebalBand 5 and 10
      (checked at the start of each year; rebalance when either holding is more than that many points off target).
      year: cagr 8.67%, vol 11.84, maxDD −37.4% (1928–32), worst year −24.7% (1931), rebalanced in each of the 99 later years.

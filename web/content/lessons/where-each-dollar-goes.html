@@ -36,6 +36,13 @@
 
 <p>At $300 per month Jordan doesn't reach the full match, so every dollar goes there and the employer adds $1,800 for the year. At $600 the match is collected and the HSA starts. The match, the HSA and the IRA together take $17,300 per year, so the second round of 401(k) contributions begins only above about $1,440 per month. All four steps hold $36,400, and nothing needs a taxable account until saving passes about $3,030 per month.</p>
 
+<p>Try your own monthly amount and salary.</p>
+
+<!-- data: components/learn/widgets/DollarOrder.tsx: each step filled to its 2026 limit in turn (lib/engine/data/2026.js limits: k401 base, hsa self, ira base). Match step = 6% of salary at a 50% match; rest of the 401(k) = the limit less the match step; taxable takes what is left. Defaults reproduce the $1,000 bar of the chart above -->
+<figure data-widget="dollar-order">
+  <figcaption>How a year of saving fills each step in the usual order, and how much room each step has left, for someone under 50 with a 50% match on the first 6% of pay. A hypothetical example, not a forecast.</figcaption>
+</figure>
+
 <h2 id="why">Why the order runs this way</h2>
 <p>The quickest way to see the logic is to follow the same amount of take-home pay into different accounts. Take someone in the 22% federal bracket who can give up $3,000 of take-home pay per year, every year, for 25 years. The money earns 5% per year after inflation wherever it sits, and we'll assume their tax rate in retirement is also 22%, so no account gets an edge from a guess about future rates.</p>
 <ul>

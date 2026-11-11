@@ -1631,13 +1631,13 @@ group("Articles: Mortgage and rent vs. buy");
 
 group("Articles: College, budget and debt");
 (function () {
-  function cs(o) { return collegeSavingsCalc(Object.assign({ yearsUntil: 18, annualCost: 26000, tuitionInfl: .04, investRet: .06, saved: 0, collegeYrs: 4 }, o)); }
+  function cs(o) { return collegeSavingsCalc(Object.assign({ yearsUntil: 18, annualCost: 27000, tuitionInfl: .04, investRet: .06, saved: 0, collegeYrs: 4 }, o)); }
   var C = cs({});
   says("college", "make the first year " + dollars(C.yearCosts[0]));
   says("college", dollars(C.monthly) + " per month from birth covers all four years");
   says("college", "hold " + dollars(C.targetAtStart) + " on the first day");
   says("college", "it's " + dollars(cs({ yearsUntil: 10 }).monthly) + " per month for the same school");
-  says("college", "would take " + dollars(cs({ annualCost: 61000 }).monthly) + " per month from birth");
+  says("college", "would take " + dollars(cs({ annualCost: 63000 }).monthly) + " per month from birth");
   says("college", "about $" + Math.round(C.monthly / 10) * 10 + " per month from birth");
   says("college", "closer to $" + Math.round(cs({ yearsUntil: 10 }).monthly / 10) * 10);
 

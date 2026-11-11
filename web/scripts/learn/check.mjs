@@ -10,7 +10,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const dir = join(root, "content", "lessons");
 const all = readdirSync(dir).filter((f) => f.endsWith(".html")).map((f) => f.slice(0, -5));
 const slugs = process.argv.slice(2).length ? process.argv.slice(2) : all;
-const widgetNames = new Set([...readFileSync(join(root, "components/learn/widgets/index.tsx"), "utf8").match(/Element> = \{([\s\S]*?)\};/)[1].matchAll(/"?([\w-]+)"?\s*:/g)].map((m) => m[1]));
+const widgetNames = new Set([...readFileSync(join(root, "components/learn/widgets/index.tsx"), "utf8").matchAll(/^\s+"([\w-]+)": dynamic/gm)].map((m) => m[1]));
 const catalog = readFileSync(join(root, "lib/learn/catalog.ts"), "utf8");
 const yoursBlock = catalog.slice(catalog.indexOf("export const YOURS"));
 const pageExists = (p) => existsSync(join(root, "app", p)) || existsSync(join(root, "app", "(tools)", p)) || existsSync(join(root, "content", "articles", p + ".html"));

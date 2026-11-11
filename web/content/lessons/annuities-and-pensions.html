@@ -121,7 +121,17 @@
   <figcaption>Where the first year's $42,000 comes from in each plan. The annuity's part arrives whatever markets do; the rest depends on the portfolio lasting.</figcaption>
 </figure>
 
-<p>Moving part of the savings into lifetime income made the plan last in more of history's bad periods, and the annuity keeps paying after 30 or 35 years, which the success rate doesn't count. What it costs shows in the last column: in a typical market, there's less left at the end, since the money used to buy the annuity is gone. Planners call this mix a floor-and-upside approach: guaranteed income covers the essentials, and the invested money pays for everything else and anything left to heirs.</p>
+<p>Change the share used to buy the annuity and the payout rate to see how the chance of lasting moves.</p>
+
+<!-- data: components/learn/widgets/AnnuityShare.tsx (annuityPlan and annuityCurve in history-data.ts): the table's run, ddQuick() (lib/engine/drawdown.js) via ddOptsFromState({initial: 1000000,
+     years: 30 or 35, stock: 60, strategy: "fixed", rate, gShare: share, gType: "annuity", gPayout: payout, gInflate: true}), January starts (70 for 30 years, 65 for 35).
+     rate = ($42,000 − share × $1,000,000 × payout) ÷ (what stays invested). Share 0–50% in steps of 5, payout 3–8% (default 25% and 5%, the table's middle row:
+     95.7%, 93.8%, median left $1,256,086). -->
+<figure data-widget="annuity-share">
+  <figcaption>The share of historical retirements that lasted 30 and 35 years, spending $42,000 per year from $1,000,000 in 60% stocks, as more of the savings buys an inflation-adjusted annuity at the payout rate you choose. An assumed rate, not a quote.</figcaption>
+</figure>
+
+<p>Moving part of the savings into lifetime income made the plan last in more of history's bad periods, and the annuity keeps paying after 30 or 35 years, which the success rate doesn't count. What it costs shows in the table's last column: in a typical market, there's less left at the end, since the money used to buy the annuity is gone. Planners call this mix a floor-and-upside approach: guaranteed income covers the essentials, and the invested money pays for everything else and anything left to heirs.</p>
 
 <h2 id="when">When lifetime income makes sense</h2>
 <p>Annuities and pensions tend to fit people who:</p>

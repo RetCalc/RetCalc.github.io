@@ -21,7 +21,7 @@
       "name": "Retirement and HSA contribution limits, and the IRA deduction and Roth IRA phase-outs",
       "what": "401(k)/403(b)/457 deferral limit and catch-ups (50+ and 60 to 63), the IRA limit and catch-up, HSA self-only and family limits and the 55+ catch-up, and the MAGI ranges over which a traditional IRA deduction phases out with a plan at work, and the MAGI ranges over which direct Roth IRA contributions phase out. Income Tax's pre-tax deductions pop-up warns against them and the engine applies the phase-out; the Budget tool's Paycheck tab points to a backdoor Roth past the Roth range (it never caps the line).",
       "where": ["web/lib/engine/data/<year>.js: limits (k401, ira, hsa, iraPhase, rothPhase)",
-        "web/content/lessons/contribution-limits.html (the reference tables) and the other Saving and accounts lessons (where-each-dollar-goes, employer-match, traditional-or-roth, iras, hsa): 2026 limits, phase-outs and HDHP figures, some of them (SIMPLE, the total limit, pay cap, Roth catch-up wage line, HDHP figures) not in the data file"],
+        "web/content/lessons/contribution-limits.html (the reference tables) and the other Saving and accounts lessons (where-each-dollar-goes, employer-match, traditional-or-roth, iras, hsa): 2026 limits, phase-outs and HDHP figures, some of them (pay cap, Roth catch-up wage line, HDHP figures) not in the data file; the total limit (limits.additions), the SIMPLE limits (limits.simple) and the cash-gift deduction for non-itemizers (limits.cashGift) are in the data file and feed the solo-limits and qcd lesson widgets"],
       "source": "IRS notice on retirement plan limits (Notice 2025-67 gave 2026), usually out in late October or November; IRS revenue procedure on HSA limits (Rev. Proc. 2025-19 gave 2026), usually out in May",
       "cadence": "Yearly, with the new tax year",
       "last_updated": "2026-10-18",
@@ -235,14 +235,14 @@
       "area": "Other defaults",
       "name": "College cost presets",
       "what": "The yearly cost of a public in-state and a private school (tuition, room and board) the College Savings tool offers.",
-      "where": ["web/tools/college/model.ts: the presets and default kid", "web/content/articles/college.html: the worked example", "web/components/dashboard/Profile.tsx and college.ts: the Dashboard's school choices (public, private, elite) repeat the presets"],
+      "where": ["web/tools/college/model.ts: the presets and default kid", "web/content/articles/college.html: the worked example", "web/content/lessons/saving-for-college.html: the How much to save table", "web/components/dashboard/store.ts: the default and the old-to-new map", "web/components/dashboard/Profile.tsx and college.ts: the Dashboard's school choices (public, private, elite) repeat the presets"],
       "source": "College Board, Trends in College Pricing (published in late October)",
       "cadence": "Yearly, after College Board publishes",
-      "last_updated": "2026-10-26",
-      "data_for": "College Board Trends in College Pricing 2025 (2025-26): $25,850 public in-state and $60,920 private non-profit for tuition, fees, housing and food, rounded to $26,000 and $61,000",
+      "last_updated": "2026-11-11",
+      "data_for": "College Board Trends in College Pricing 2026 (2026-27): $26,720 public in-state and $62,920 private non-profit for tuition, fees, housing and food, rounded to $27,000 and $63,000",
       "next_due": "2027-11-30",
       "priority": "medium",
-      "notes": "The article quotes $26,000 and monthly saving figures the tests check. The elite preset ($82,000) has no College Board figure behind it."
+      "notes": "The article quotes $27,000 and monthly saving figures the tests check; the saving-for-college lesson repeats them in a table. Changing the presets: store.ts maps last year's saved Dashboard choice to this year's (add the new pair there). The elite preset ($82,000) has no College Board figure behind it."
     },
     {
       "id": "child-costs",

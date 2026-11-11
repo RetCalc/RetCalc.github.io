@@ -121,6 +121,13 @@
 
 <p>At a 2% yield, sheltering the stocks left about $99,000 more. The two arrangements cross at a yield of about 5%, and above it sheltering the bonds wins. In early November 2026 the 10-year Treasury yielded about 4.9%, which is close to a tie on these assumptions. The crossing point moves with the inputs. At a 32% tax rate on interest it drops to about 4.4%. If the taxable stocks are never sold, because they go to heirs or charity, it drops to about 3%. A shorter horizon or lower stock returns move it down too.</p>
 
+<p>Move the yield, the tax rate and the number of years to see where the crossing point goes.</p>
+
+<!-- data: components/learn/widgets/Location.tsx: the same arithmetic as the chart above ($100,000 Roth, $100,000 taxable, stocks 5.5% price growth + 1.5% dividends taxed each year and reinvested, gain taxed at sale; taxable bonds 100,000 x (1 + y(1 - t))^n). The ordinary rate steps through the 2026 federal brackets (lib/engine/data/2026.js fed.s); dividends and gains are taxed 0% in the 10% and 12% brackets, 20% in the 37% bracket and 15% otherwise. Crossing point by bisection. Defaults reproduce the 2% bars: 820,931 and 920,329 -->
+<figure data-widget="location">
+  <figcaption>After-tax value of the two arrangements of $100,000 in a Roth and $100,000 in a taxable account, half in stocks and half in bonds. Hypothetical, not adjusted for inflation.</figcaption>
+</figure>
+
 <h3>What the research found it's worth</h3>
 <ul>
   <li>Gobind Daryanani and Chris Cordaro, in the Journal of Financial Planning in January 2005, measured an average gain of 0.20% per year in after-tax return from locating assets well, compared with holding the same mix in every account.</li>

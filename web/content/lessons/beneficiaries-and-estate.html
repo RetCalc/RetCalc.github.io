@@ -85,6 +85,13 @@
      Taxable income before the IRA: 110,000 − 16,100 = 93,900. Extra tax on 60,000: 11,800 × 22% + 48,200 × 24% = 14,164; × 10 = 141,640.
      Extra tax on 600,000 in one year: 11,800 × 22% + 96,075 × 24% + 54,450 × 32% + 384,375 × 35% + 53,300 × 37% = 197,330. Difference 55,690. -->
 
+<p>Change the account, the salary or the timing to see what each costs.</p>
+
+<!-- data: components/learn/widgets/InheritedIra.tsx: single filer, 2026 brackets and standard deduction (bracketTax, lib/engine/data/2026.js) held for ten years, no growth, federal tax only. Each year's tax = tax on (salary − standard deduction + withdrawal) − tax on (salary − standard deduction). Patterns: a tenth each year; a fifth in each of years six to ten; all in year ten. Defaults ($600,000, $110,000, even) give 141,640; all in year ten 197,330; last five years 147,670. -->
+<figure data-widget="inherited-ira">
+  <figcaption>The federal tax an heir earning a salary pays on an inherited traditional IRA, by when the money comes out over the ten years. A hypothetical example under the 2026 rules, not a forecast.</figcaption>
+</figure>
+
 <p>An inherited Roth IRA must also be emptied within ten years, but with no yearly minimum and, generally, no tax. That difference is one argument for <a href="/learn/roth-conversions">Roth conversions</a> if leaving money to children is part of the plan.</p>
 <h3>Everything else</h3>
 <p>Stocks, funds and a home you own when you die get a <b>step-up in basis</b>: their cost for tax purposes resets to their value on the date of death, so the gain during your lifetime is never taxed. If you paid $40,000 for shares that are worth $200,000 when you die, your heir's cost becomes $200,000. Selling them the next month for $200,000 produces no taxable gain; had you sold them yourself the day before, $160,000 of gain would have been taxed. It works in the other direction too: an investment worth less than you paid steps down, and the loss disappears. When a married couple owns something jointly, half of it steps up at the first death; in community property states, both halves usually do. Retirement accounts get no step-up, since their tax was only ever deferred. <a href="/learn/taxable-account">The taxable account</a> explains how this shapes which accounts to spend first.</p>

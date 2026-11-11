@@ -80,6 +80,14 @@
 </figure>
 
 <p>Oregon's line starts almost at once and climbs at close to 8.75 cents on the dollar. New York's $20,000 per person, with its standard deduction, covers the first $50,000 or so and then the tax rises steadily. Georgia's $65,000 per person covers $130,000, and the couple pays nothing until their withdrawals pass $160,000. Minnesota's line bends upward between $60,000 and $100,000: over that stretch each extra dollar of withdrawals is taxed and also pushes the couple's income past the line where their Social Security stops being exempt.</p>
+<p>Pick any state to see its line, and how much of the income it leaves untaxed.</p>
+
+<!-- data: components/learn/widgets/StateRetirementTax.tsx: computeRetireTax({status, ages 67, ss, trad, state}) with 2026 state rules (lib/engine/data/2026.js states.tax and states.retire), standard deduction, no local tax; the line runs trad from 0 to 200,000 in steps of 10,000.
+     Untaxed = income − state taxable income: Social Security the state leaves out, its retirement income exclusion (stateExcluded), and the rest covered by deductions and exemptions.
+     Default (New York, married, 120,000 and 50,000): 3,121, as on the chart above; 106,050 untaxed (50,000 of Social Security, 40,000 excluded, 16,050 of deductions). -->
+<figure data-widget="state-retirement-tax">
+  <figcaption>2026 state income tax on IRA withdrawals and Social Security for a hypothetical household aged 67, in the state you choose. On a joint return the withdrawals are split evenly between the spouses. Local income taxes are not included.</figcaption>
+</figure>
 
 <p>Some exclusions come with conditions that are easy to miss. Maryland's $40,600 pension exclusion at 65 covers employer plans but not IRAs, and is reduced by the Social Security you receive. Maine's deduction is also cut dollar for dollar by Social Security. Several apply per person, so a couple gets twice the amount only if both spouses have retirement income of their own. In New York, a couple where one spouse withdraws $40,000 from an IRA and the other has no retirement income excludes $20,000, not $40,000. And many states treat a public pension, from a state, city or the federal government, more generously than a private one.</p>
 <h3>Roth money and capital gains</h3>

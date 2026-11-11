@@ -42,6 +42,13 @@
 </figure>
 
 <p>The size of the step matters more than the rate. Suppose a couple's other income comes to $200,000 and they're deciding how much to convert to a Roth. Converting $18,000 leaves them at $218,000 and costs nothing extra at Medicare. Converting $19,000 puts them $1,000 over, and that last $1,000 costs $2,296.80 in premiums two years later (on the 2026 figures), on top of the income tax on it. Converting $74,000, which takes them to the top of the same tier at $274,000, costs the same $2,296.80. Once you're over a line, the rest of that tier is free as far as Medicare is concerned.</p>
+<p>Set an income to see the surcharge and how far the next line is.</p>
+
+<!-- data: components/learn/widgets/IrmaaSteps.tsx: irmaaAnnual(magi, status, people) and irmaaTier (lib/engine), newest year's tiers (yearData().medicare.irmaa): (tier Part B premium − standard premium + Part D add-on) × 12 × people.
+     Default (married, both on Medicare, 219,000): 2,296.80 per year, 1,000 over the 218,000 line; next line 274,000, crossing it adds 3,472.80. The example above. -->
+<figure data-widget="irmaa-steps">
+  <figcaption>The yearly Medicare Part B and Part D surcharge in 2026 by modified AGI from two years earlier, for one person or a couple. Each step is a cliff: a dollar over a line costs the whole step.</figcaption>
+</figure>
 
 <h2 id="lookback">The two-year lookback</h2>
 <p>SSA uses the most recent tax return the IRS has, which for a premium year is usually the return from two years before. So 2026 premiums are based on 2024 income. If the 2024 return isn't available, SSA uses 2023 instead, and you can supply the newer one once it is.</p>
