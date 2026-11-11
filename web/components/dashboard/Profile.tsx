@@ -28,7 +28,7 @@ import { flow, mixWords, retireMix } from "./flows";
 import { couple, holdings, mortgage, nameOf, nowYear, realGrowth, results, spendMonth } from "./model";
 import { collegeChildren, collegeKid, collegeYears } from "./college";
 import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, profileLabel, readDashboard, useDashboard, useProfiles, withHome, type DashData, type Person, type Profile as P } from "./store";
-import { Profiles } from "./Profiles";
+import { NewProfileButton, Profiles } from "./Profiles";
 import { Note, Tile, Tip, TipLabel, To } from "./ui";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
@@ -214,13 +214,16 @@ function ProfilePage() {
   const setP = (k: PKey, v: Partial<Person>) => set((p) => ({ ...p, [k]: { ...p[k], ...v } }));
   const keys: PKey[] = two ? ["p1", "p2"] : ["p1"];
   const accounts = hasAccounts(data.entries);
+  // With one profile, adding another is a button in Household's header.
+  const single = useProfiles().list.length < 2;
   const [rateTxt, setRateTxt] = useTyped(pctTxt(mortgage(pr, data.entries).rate));
   return (
     <Frame current="profile" title="Profile">
       <ChangeBar />
-      <Profiles />
-      <div className="dsh-grid dsh-two dsh-r4">
-        <Tile id="household" icon={two ? UsersRoundIcon : UserRoundIcon} title="Household">
+      <div className="dsh-grid dsh-two dsh-flush">
+        <div className="dsh-side">
+        <Profiles />
+        <Tile id="household" icon={two ? UsersRoundIcon : UserRoundIcon} title="Household" right={single ? <NewProfileButton /> : null}>
           <div className="dsh-fields dsh-fields-sm">
             <div className="dsh-choices">
               <Choice on={pr.who === "single"} icon={<UserRoundIcon aria-hidden="true" />} title="Just me" sub="One income, one retirement" onClick={() => set((p) => ({ ...p, who: "single" }))} />
@@ -249,6 +252,7 @@ function ProfilePage() {
             })}
           </div>
         </Tile>
+        </div>
 
         <div className="dsh-side">
           <Tile id="plan-retirement" icon={SunsetIcon} title="Retirement">

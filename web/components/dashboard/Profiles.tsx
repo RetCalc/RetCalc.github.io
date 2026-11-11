@@ -1,10 +1,12 @@
 "use client";
 
-/* Profiles, at the top of the Profile tab: the Dashboards this account
-   keeps (a couple's and one person's, or someone being shown how it
-   works), which is open, and adding, renaming and deleting them. A new
-   profile starts fresh, through setup, or as a copy of one already there.
-   Each is its own synced item (store.ts, lib/sync/merge.ts). */
+/* Profiles, on the Profile tab: the Dashboards this account keeps (a
+   couple's and one person's, or someone being shown how it works), which
+   is open, and adding, renaming and deleting them. With only one, it's
+   just a New profile button in Household's header; with more, a box
+   above Household. A new profile starts fresh, through setup, or as a
+   copy of one already there. Each is its own synced item (store.ts,
+   lib/sync/merge.ts). */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,17 +29,31 @@ function aboutOf(id: string, named: boolean): string {
   return parts.join(" · ") || "Nothing filled in yet";
 }
 
-type Ask = { at: "new" } | { at: "rename"; id: string } | { at: "delete"; id: string } | null;
+type Ask = { at: "rename"; id: string } | { at: "delete"; id: string } | null;
 
+/** Adds a profile: the button and its dialog. */
+export function NewProfileButton() {
+  const [on, setOn] = useState(false);
+  return (
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOn(true)}><PlusIcon aria-hidden="true" />New profile</Button>
+      <Dialog open={on} onOpenChange={setOn}>
+        <DialogContent aria-labelledby="dshProfTitle">{on ? <NewProfile close={() => setOn(false)} /> : null}</DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+/** The profiles, once there's more than one (nothing before that). */
 export function Profiles() {
   useDashboard(); // re-render as the open profile's names change
   const { list, open } = useProfiles();
   const [ask, setAsk] = useState<Ask>(null);
   const close = () => setAsk(null);
   const label = (id: string) => profileLabel(list.find((p) => p.id === id)!);
+  if (list.length < 2) return null;
   return (
-    <Tile id="profiles" icon={ContactRoundIcon} title="Profiles"
-      right={<Button variant="outline" size="sm" onClick={() => setAsk({ at: "new" })}><PlusIcon aria-hidden="true" />New profile</Button>}>
+    <Tile id="profiles" icon={ContactRoundIcon} title="Profiles" right={<NewProfileButton />}>
       <ul className="dsh-profiles" aria-label="Your profiles">
         {list.map((p) => {
           const on = p.id === open;
@@ -48,14 +64,14 @@ export function Profiles() {
                 <span className="dsh-cap">{aboutOf(p.id, !!p.name.trim())}</span>
               </div>
               <span className="dsh-inline dsh-profile-b">
-                {on ? <Badge variant="outline">Open</Badge> : <Button variant="outline" size="sm" onClick={() => { openProfile(p.id); window.scrollTo({ top: 0 }); }}>Open</Button>}
+                {on ? <Badge variant="outline">Current</Badge> : <Button variant="outline" size="sm" onClick={() => { openProfile(p.id); window.scrollTo({ top: 0 }); }}>Open</Button>}
                 <DropdownMenu>
                   <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`More for ${profileLabel(p)}`} />}>
                     <EllipsisIcon aria-hidden="true" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => setAsk({ at: "rename", id: p.id })}><PencilIcon />Rename</DropdownMenuItem>
-                    <DropdownMenuItem variant="destructive" disabled={list.length < 2} onClick={() => setAsk({ at: "delete", id: p.id })}><Trash2Icon />Delete</DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive" onClick={() => setAsk({ at: "delete", id: p.id })}><Trash2Icon />Delete</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </span>
@@ -65,8 +81,7 @@ export function Profiles() {
       </ul>
       <Dialog open={ask != null} onOpenChange={(o) => { if (!o) close(); }}>
         <DialogContent aria-labelledby="dshProfTitle">
-          {ask?.at === "new" ? <NewProfile close={close} />
-            : ask?.at === "rename" ? <Rename id={ask.id} name={label(ask.id)} close={close} />
+          {ask?.at === "rename" ? <Rename id={ask.id} name={label(ask.id)} close={close} />
             : ask?.at === "delete" ? <Delete id={ask.id} name={label(ask.id)} close={close} />
             : null}
         </DialogContent>
