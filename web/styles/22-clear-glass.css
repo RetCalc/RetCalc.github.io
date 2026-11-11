@@ -440,8 +440,9 @@ aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > [dat
 .dsh .dsh-embed aside .dsh-sc-rows { border-top: 0; display: grid; gap: 6px; }
 .dsh .dsh-embed aside .dsh-sc-row { border-bottom: 0; padding: 0; }
 .dsh .dsh-embed aside .dsh-sc-btns [data-slot="button"] { height: 44px; border-radius: 14px; background: var(--ds-surface); color: var(--ds-amber); font-weight: 600; }
-/* An input on its own: label left, box right */
-aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 46%); align-items: center; column-gap: 14px; }
+/* An input on its own: label left, box right, its box exactly the right
+   half of a pair above or below (.two: two equal columns, 10px apart) */
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; column-gap: 10px; }
 aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field > :first-child { margin: 0; }
 aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field > :nth-child(n + 3) { grid-column: 1 / -1; margin-top: 6px; }
 /* A long choice takes the column's whole width, under its label */

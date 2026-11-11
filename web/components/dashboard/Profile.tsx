@@ -41,8 +41,14 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
   const [growthTxt, setGrowthTxt] = useTyped(pctTxt(A.growth)), [inflTxt, setInflTxt] = useTyped(pctTxt(A.inflation));
   return (
     <Tile id="assumptions" icon={SlidersHorizontalIcon} title="Assumptions" right={<span className="dsh-cap">Used by every figure on your Dashboard</span>}>
-      <div className="dsh-stats">
-        <div className="dsh-stat"><div className="dsh-label">Savings grow, after inflation</div><div className="dsh-fig">{pct(real)}<small data-u="/yr">per year</small></div></div>
+      {/* The figure across three of the presets' columns, its two inputs
+          under the last two, so they line up with the cards below. */}
+      <div className="dsh-presets dsh-presets-fields dsh-fields-sm">
+        <div className="dsh-stats">
+          <div className="dsh-stat"><div className="dsh-label">Savings grow, after inflation</div><div className="dsh-fig">{pct(real)}<small data-u="/yr">per year</small></div></div>
+        </div>
+        <NumberField id="dshGrowth" label={<TipLabel text="Growth per year, before inflation" id="growth" />} unit="%" step={0.25} max={20} value={growthTxt} onValueChange={(v) => { setGrowthTxt(v); put({ growth: (num(v) ?? 0) / 100 }); }} />
+        <NumberField id="dshInfl" label={<TipLabel text="Inflation per year" id="inflation" />} unit="%" step={0.25} max={15} value={inflTxt} onValueChange={(v) => { setInflTxt(v); put({ inflation: (num(v) ?? 0) / 100 }); }} />
       </div>
       <div className="dsh-label dsh-mt">Help me choose: how your savings are invested until you retire</div>
       <div className="dsh-presets">
@@ -52,10 +58,6 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
             <b>{r.label}</b><span>{r.sub}</span><em>{pct(r.real)} after inflation</em>
           </button>
         ))}
-      </div>
-      <div className="dsh-row3 dsh-pair dsh-mt dsh-fields-sm">
-        <NumberField id="dshGrowth" label={<TipLabel text="Growth per year, before inflation" id="growth" />} unit="%" step={0.25} max={20} value={growthTxt} onValueChange={(v) => { setGrowthTxt(v); put({ growth: (num(v) ?? 0) / 100 }); }} />
-        <NumberField id="dshInfl" label={<TipLabel text="Inflation per year" id="inflation" />} unit="%" step={0.25} max={15} value={inflTxt} onValueChange={(v) => { setInflTxt(v); put({ inflation: (num(v) ?? 0) / 100 }); }} />
       </div>
       <div className="dsh-mt"><Note>
         Until you retire, savings grow at a steady <b>{pct(real)}</b> per year after inflation ({pct(A.growth)} growth less {pct(A.inflation)} inflation). Once retired, the plan runs through <b>every market since 1926</b> instead of a steady rate, invested in your retirement mix: {mixWords(retireMix(pr))}. That mix is set in the <To href="/dashboard/retirement">Retirement</To> simulator. Every figure is in today&apos;s dollars.
@@ -76,37 +78,37 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
   return (
     <Tile id="children" icon={BabyIcon} title="Children ahead" right={<span className="dsh-cap">Their costs come out of what you save</span>}>
       <div className="dsh-fields dsh-fields-sm">
-        <div className="dsh-row3 dsh-pair">
+        {/* Six even columns: the short answers one each, the long ones two. */}
+        <div className="dsh-g6">
           <SelectField id="dshPPlanned" label="Children planned" value={String(pr.planned.count)} onChange={(v) => put({ count: Number(v) })}>
             {[0, 1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}</option>)}
           </SelectField>
-          {pr.planned.count > 0 ? <NumberField id="dshPFirstIn" label="The first in" unit="years" max={20} value={String(pr.planned.firstIn)} onValueChange={(v) => put({ firstIn: Math.max(0, Math.min(20, num(v) ?? 0)) })} /> : <div />}
-          {pr.planned.count > 1 ? <NumberField id="dshPSpacing" label="Years apart" unit="years" max={10} value={String(pr.planned.spacing)} onValueChange={(v) => put({ spacing: Math.max(1, Math.min(10, num(v) ?? 1)) })} /> : <div />}
-        </div>
-        {any ? (
-          <>
-            <div className="dsh-row3">
-              <SelectField id="dshPCare" label={<TipLabel text="Paid childcare before school" id="childcare" />} value={pr.childcare ? "yes" : "no"} onChange={(v) => set((p) => ({ ...p, childcare: v === "yes" }))}>
+          {pr.planned.count > 0 ? <NumberField id="dshPFirstIn" label="The first in" unit="years" max={20} value={String(pr.planned.firstIn)} onValueChange={(v) => put({ firstIn: Math.max(0, Math.min(20, num(v) ?? 0)) })} /> : null}
+          {pr.planned.count > 1 ? <NumberField id="dshPSpacing" label="Years apart" unit="years" max={10} value={String(pr.planned.spacing)} onValueChange={(v) => put({ spacing: Math.max(1, Math.min(10, num(v) ?? 1)) })} /> : null}
+          {any ? (
+            <>
+              <SelectField id="dshPCare" label={<TipLabel text="Paid childcare" id="childcare" />} value={pr.childcare ? "yes" : "no"} onChange={(v) => set((p) => ({ ...p, childcare: v === "yes" }))}>
                 <option value="yes">Yes</option><option value="no">No</option>
               </SelectField>
               {pr.childcare ? (
-                <SelectField id="dshPArea" className="dsh-wide-sm" label="Where you'd use childcare" value={pr.careArea} onChange={(v) => set((p) => ({ ...p, careArea: v as P["careArea"] }))}>
+                <SelectField id="dshPArea" className="dsh-s2" label="Where you'd use childcare" value={pr.careArea} onChange={(v) => set((p) => ({ ...p, careArea: v as P["careArea"] }))}>
                   <option value="city">A big city</option><option value="suburb">A suburb or small city</option><option value="rural">A rural area or small town</option>
                 </SelectField>
-              ) : <div />}
-              <div />
-            </div>
-            <div className="dsh-row3">
-              <SelectField id="dshPCollege" label={<TipLabel text="Helping with college" id="college" />} value={pr.college.help} onChange={(v) => set((p) => ({ ...p, college: { help: v as P["college"]["help"], cost: p.college.cost } }))}>
+              ) : null}
+              <SelectField id="dshPCollege" className="dsh-s2 dsh-g-new" label={<TipLabel text="Helping with college" id="college" />} value={pr.college.help} onChange={(v) => set((p) => ({ ...p, college: { help: v as P["college"]["help"], cost: p.college.cost } }))}>
                 <option value="none">No</option><option value="part">Some of it (about half)</option><option value="all">All of it</option>
               </SelectField>
               {pr.college.help !== "none" ? (
-                <SelectField id="dshPSchool" className="dsh-wide-sm" label="The kind of school" value={String(pr.college.cost)} onChange={(v) => set((p) => ({ ...p, college: { help: p.college.help, cost: Number(v) } }))}>
+                <SelectField id="dshPSchool" className="dsh-s2" label="The kind of school" value={String(pr.college.cost)} onChange={(v) => set((p) => ({ ...p, college: { help: p.college.help, cost: Number(v) } }))}>
                   <option value="27000">Public, in state ($27,000 per year)</option><option value="63000">Private ($63,000 per year)</option><option value="82000">Elite ($82,000 per year)</option>
                 </SelectField>
-              ) : <div />}
-              <div className="dsh-self-end">{pr.college.help !== "none" ? <Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("college", "/dashboard/profile")} />}>{pr.college.plan ? "Change it in College Savings" : "Plan it in College Savings"}</Button> : null}</div>
-            </div>
+              ) : null}
+              {pr.college.help !== "none" ? <div className="dsh-s2 dsh-self-end"><Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("college", "/dashboard/profile")} />}>{pr.college.plan ? "Change it in College Savings" : "Plan it in College Savings"}</Button></div> : null}
+            </>
+          ) : null}
+        </div>
+        {any ? (
+          <>
             {pr.college.help !== "none" && pr.college.plan ? <CollegeApplied pr={pr} /> : null}
             <div className="dsh-readonly">
               <p className="dsh-cap dsh-flush">Each child costs about <b>{money(early)}</b> per month to age 5, <b>{money(school)}</b> to 12 and <b>{money(teen)}</b> to 18{pr.kids + pr.planned.count > 1 ? <>, and each later one <b>{pr.childCosts.later || "80"}%</b> of that</> : null}, in today&apos;s dollars.{pr.college.help !== "none" ? (pr.college.plan ? " College comes out of saving in the years set in College Savings, unless you save ahead for it in Spending." : " College comes out of saving for four years from 18, unless you save ahead for it in Spending.") : ""}</p>
