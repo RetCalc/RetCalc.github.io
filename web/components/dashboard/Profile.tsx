@@ -89,7 +89,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
                 <option value="yes">Yes</option><option value="no">No</option>
               </SelectField>
               {pr.childcare ? (
-                <SelectField id="dshPArea" label="Where you'd use childcare" value={pr.careArea} onChange={(v) => set((p) => ({ ...p, careArea: v as P["careArea"] }))}>
+                <SelectField id="dshPArea" className="dsh-wide-sm" label="Where you'd use childcare" value={pr.careArea} onChange={(v) => set((p) => ({ ...p, careArea: v as P["careArea"] }))}>
                   <option value="city">A big city</option><option value="suburb">A suburb or small city</option><option value="rural">A rural area or small town</option>
                 </SelectField>
               ) : <div />}
@@ -100,7 +100,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
                 <option value="none">No</option><option value="part">Some of it (about half)</option><option value="all">All of it</option>
               </SelectField>
               {pr.college.help !== "none" ? (
-                <SelectField id="dshPSchool" label="The kind of school" value={String(pr.college.cost)} onChange={(v) => set((p) => ({ ...p, college: { help: p.college.help, cost: Number(v) } }))}>
+                <SelectField id="dshPSchool" className="dsh-wide-sm" label="The kind of school" value={String(pr.college.cost)} onChange={(v) => set((p) => ({ ...p, college: { help: p.college.help, cost: Number(v) } }))}>
                   <option value="26000">Public, in state ($26,000 per year)</option><option value="61000">Private ($61,000 per year)</option><option value="82000">Elite ($82,000 per year)</option>
                 </SelectField>
               ) : <div />}

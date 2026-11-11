@@ -438,7 +438,7 @@ function Lifespan({ S, setThrough }: { S: SocialFigures; setThrough: (v: string)
       <CardContent>
         {/* A phone keeps the bar at a readable width and scrolls it sideways. */}
         <div className="swipehint px-0!">Swipe the bar sideways to see every age.</div>
-        <div className="max-sm:-mx-1 max-sm:overflow-x-auto max-sm:px-1 max-sm:pb-1"><div className="relative max-sm:min-w-150">
+        <div className="max-sm:-mx-1 max-sm:overflow-x-auto max-sm:px-1 max-sm:pb-1"><div className="relative flow-root max-sm:min-w-150">
           <div className="mt-6 flex h-10 gap-0.5 overflow-hidden rounded-lg" role="img" aria-label={"Best claiming age by lifespan: " + S.wins.map((w) => `live to ${w.from} to ${w.to}, claim at ${w.claim}`).join("; ")}>
             {S.wins.map((w) => (
               // The shade deepens with the claiming age but stops at half

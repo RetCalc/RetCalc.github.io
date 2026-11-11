@@ -295,7 +295,7 @@ export function Mortgage() {
                   <NumberField id="moExtraWhen" label="In month" value={s.extraWhen} onValueChange={set("extraWhen")} />
                 </div>
                 <SelectField id="moRecast" wrapId="moRecastWrap" label={<Tipped text="After that payment" k="recast" />} value={s.recast} onChange={set("recast")}>
-                  <option value="0">Keep the same payment, finish early</option>
+                  <option value="0">Same payment, finish early</option>
                   <option value="1">Recast: lower the payment instead</option>
                 </SelectField>
               </div>

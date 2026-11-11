@@ -50,7 +50,7 @@ export function KidsDialog({ kids, age, retire, base, cover = true, close, save,
   /** The Dashboard's way in: the children are set elsewhere, so this
       sentence says who they are and only their costs are changed here. */
   costsOnly?: React.ReactNode;
-  /** The Dashboard's: a later child's share of the first's cost can be set. */
+  /** A later child's share of the first's cost can be set. */
   withLater?: boolean;
   /** The save button's words, in place of the usual next step. */
   saveLabel?: string;

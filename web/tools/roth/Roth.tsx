@@ -212,7 +212,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
                 <MoneyField id="rcBrok" label="Brokerage" value={s.brok} onValueChange={set("brok")} />
               </div>
               <div className={two}>
-                <NumberField id="rcBasis" label={<Tipped text="Cost basis" k="rcbasis" />} unit="% of balance" step={5} max={100} value={s.basis} onValueChange={set("basis")} />
+                <NumberField id="rcBasis" label={<Tipped text="Cost basis" k="rcbasis" />} unit="% of it" step={5} max={100} value={s.basis} onValueChange={set("basis")} />
                 <NumberField id="rcReturn" label={<Tipped text="Real return" k="realreturn" />} unit="%/yr" step={0.5} value={s.ret} onValueChange={set("ret")} />
               </div>
 
@@ -230,10 +230,10 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
                 <MoneyField id="rcOther" label={<Tipped text="Other income" k="rcother" />} unit="/yr" value={s.other} onValueChange={set("other")} />
                 <NumberField id="rcOtherStart" label="Starting at" unit="yrs old" max={100} value={s.otherStart} onValueChange={set("otherStart")} />
               </div>
-              <NumberField id="rcDeath" wrapId="rcDeathWrap" hidden={!married} label={<Tipped text="Survivor transition" k="rcwidow" />} unit="yrs from now" max={45} value={s.death} onValueChange={set("death")} />
+              <NumberField id="rcDeath" wrapId="rcDeathWrap" hidden={!married} label={<Tipped text="Survivor transition" k="rcwidow" />} unit="yrs away" max={45} value={s.death} onValueChange={set("death")} />
 
               <GroupHead>How to score it</GroupHead>
-              <SelectField id="rcIrmaaOn" label={<Tipped text="Medicare IRMAA" k="irmaa" />} value={s.irmaaOn} onChange={set("irmaaOn")}>
+              <SelectField id="rcIrmaaOn" className="field-stacked" label={<Tipped text="Medicare IRMAA" k="irmaa" />} value={s.irmaaOn} onChange={set("irmaaOn")}>
                 <option value="1">Include the surcharge</option>
                 <option value="0">Ignore it</option>
               </SelectField>

@@ -110,7 +110,9 @@ body { font-family: var(--sans); -webkit-font-smoothing: antialiased; }
 a.dsh-crumb:hover { color: var(--ds-amber); }
 .dsh-top h1 { font: 700 30px/1.1 var(--dsh-display); letter-spacing: -0.022em; }
 .dsh .dsh-meta { display: flex; align-self: flex-end; margin-bottom: 6px; }
-.dsh-top .dsh-r { align-self: center; }
+.dsh-top .dsh-r { align-self: center; flex-wrap: wrap; justify-content: flex-end; row-gap: 8px; min-width: 0; }
+.dsh-acts { flex-wrap: wrap; justify-content: flex-end; row-gap: 8px; min-width: 0; }
+.dsh-self-end [data-slot="button"] { max-width: 100%; height: auto; min-height: 36px; white-space: normal; }
 .dsh-page { padding: 22px 36px 110px; }
 
 /* The slim bar that takes over once the large title scrolls away: the
@@ -251,7 +253,10 @@ a.dsh-crumb:hover { color: var(--ds-amber); }
 /* ---------- Floating things: dialogs, menus, sheets ---------- */
 [data-slot="dialog-content"] { border-color: transparent; border-radius: 22px; box-shadow: var(--ds-float); }
 [data-slot="dropdown-menu-content"] { border-color: transparent; border-radius: 14px; box-shadow: var(--ds-float); }
-.selmenu { border-radius: 22px 22px 0 0; border-color: transparent; }
+/* A list is square on the side that meets its field, round on the far side. */
+.selmenu { border-radius: 0 0 14px 14px; border-color: transparent; }
+.selmenu.up { border-radius: 14px 14px 0 0; }
+.selmenu.sheet { border-radius: 22px 22px 0 0; }
 
 /* ---------- Lists of facts: grouped, label left, value right ---------- */
 .dsh .dsh-facts div { border-top-color: var(--ds-rule); padding: 9px 0; }
@@ -439,6 +444,23 @@ aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > [dat
 aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 46%); align-items: center; column-gap: 14px; }
 aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field > :first-child { margin: 0; }
 aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field > :nth-child(n + 3) { grid-column: 1 / -1; margin-top: 6px; }
+/* A long choice takes the column's whole width, under its label */
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field.field-stacked { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
+/* A switch with no label is only as wide as its options */
+aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field:has(> .seg:only-child) { display: block; }
+/* In the narrowest desktop column a dropdown's half is too small to read: under its label, full width */
+@media (min-width: 1024px) and (max-width: 1279.98px) {
+  aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field:has(> [data-slot="native-select-wrapper"]) { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
+  aside :is(.two, .grid-cols-2):has(select), .two:has(#ppFreq) { grid-template-columns: minmax(0, 1fr); }
+}
+/* The Dashboard's long dropdowns take the row until there's room for half */
+@media (max-width: 1279.98px) { .dsh-wide-sm { grid-column: 1 / -1; } .dsh-fields [data-slot="native-select"] { padding-left: 9px; padding-right: 26px; } }
+/* On a phone the scenario picker gets a row of its own, not what's left over */
+@media (max-width: 640px) { .dsh-acts > :has(#scenarioPick) { flex: 1 1 100%; } }
+/* Small phones: two dropdowns side by side don't fit either */
+@media (max-width: 400px) {
+  .two:has(select) { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 560px) {
   aside:not(#asideBudget) > [data-slot="card"] > [data-slot="card-content"] > .field { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
 }

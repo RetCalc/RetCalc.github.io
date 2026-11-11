@@ -15,9 +15,9 @@ tbody tr:hover{background:var(--panel-2)}
 .kv{display:flex;justify-content:space-between;gap:16px;padding:9px 0;
   border-bottom:1px solid var(--line-soft);font-size:13.5px;align-items:baseline}
 .kv:last-child{border-bottom:0}
-.kv .k{color:var(--dim);flex:1 1 auto;min-width:0}
-.kv .v{font-family:var(--mono);font-variant-numeric:tabular-nums;flex:0 0 auto;
-  white-space:nowrap;font-size:13px}
+.kv .k{color:var(--dim);flex:1 1 35%;min-width:0}
+.kv .v{font-family:var(--mono);font-variant-numeric:tabular-nums;flex:0 1 auto;
+  text-align:right;font-size:13px}
 .kv.total{font-weight:600;border-top:1px solid var(--line);border-bottom:0;padding-top:12px}
 .kv.total .k{color:var(--text)}
 .pos{color:var(--ds-gain)}.neg{color:var(--ds-loss)}

@@ -221,7 +221,7 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--ds-focus);outline
      app's bottom bar, below, sets its own.) */
   html:not(.pwa) .navbar.oneline nav[role=tablist]{justify-content:space-evenly;gap:0}
   html:not(.pwa) .navbar.oneline nav[role=tablist] button{margin-right:0;padding-inline:clamp(1px,.8vw,6px);font-size:clamp(13px,3.6vw,17.5px)}
-  @media (max-width:340px){ html:not(.pwa) .navbar.oneline nav[role=tablist] button{font-size:13px;padding-inline:1px} }
+  @media (max-width:340px){ html:not(.pwa) .navbar.oneline nav[role=tablist] button{font-size:12px;padding-inline:0} }
   /* The home-screen app docks the whole row at the bottom as a tab bar (see
      11-charts.css): the five tabs share the width, and the account button
      (or the theme button, with no accounts) closes the row. The logo has no

@@ -339,7 +339,7 @@ export const BASIC_DEFAULTS = {age:30, retire:65, saved:10000, contrib:500, peri
 /* Everything in Basic is modeled in real terms: the rate of return already
    has inflation taken out, so every figure is in today's dollars. */
 export const RISK_LEVELS = [
-  {label:"Very conservative", sub:"mostly cash and bonds",      real:.020},
+  {label:"Very conservative", sub:"cash and bonds",             real:.020},
   {label:"Conservative",      sub:"bond heavy",                 real:.030},
   {label:"Balanced",          sub:"a mix of stocks and bonds",  real:.045},
   {label:"Growth",            sub:"mostly stocks",              real:.0575},

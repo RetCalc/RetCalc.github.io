@@ -13,6 +13,7 @@ import { DndContext, KeyboardSensor, MouseSensor, TouchSensor, closestCenter, us
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVerticalIcon, PencilIcon, PlusIcon, Trash2Icon, WalletIcon, LandmarkIcon, CalendarDaysIcon, ChartBarIcon, XIcon, HourglassIcon, ReceiptIcon } from "lucide-react";
+import { CsvButton } from "@/components/common/CsvButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -229,6 +230,10 @@ export function Accounts() {
   const shown = draft ? items : view(items);
   const have = sum(shown, "asset"), owe = sum(shown, "debt");
   const prev = data.entries[data.entries.length - 2];
+  const entriesCsv = () => [["Date", "Assets", "Debts", "Net worth", "Change"], ...data.entries.slice().reverse().map((e, i, arr) => {
+    const ch = arr[i + 1] ? netWorth(e) - netWorth(arr[i + 1]) : null;
+    return [longDate(e.date), money(sum(e.items, "asset")), money(sum(e.items, "debt")), money(netWorth(e)), ch == null ? "First entry" : (ch >= 0 ? "+" : "-") + money(Math.abs(ch))];
+  })];
   const nwOf = (e: Entry) => sum(view(e.items), "asset") - sum(view(e.items), "debt");
   const actions = draft
     ? <><Button variant="outline" onClick={() => setDraft(null)}>Cancel</Button><Button onClick={saveEntry}>Save as new entry</Button></>
@@ -326,7 +331,7 @@ export function Accounts() {
       </Dialog>
 
       {data.entries.length ? (
-        <Tile id="entries" icon={CalendarDaysIcon} title="Your entries" className="dsh-r4" right={<span className="dsh-cap">{data.entries.length} so far</span>}>
+        <Tile id="entries" icon={CalendarDaysIcon} title="Your entries" className="dsh-r4" right={<><span className="dsh-cap">{data.entries.length} so far</span> <CsvButton label="Your entries" filename="retcalc-net-worth-entries.csv" rows={entriesCsv} /></>}>
           <div className="dsh-scrollx"><table className="dsh-tbl dsh-etbl">
             <thead><tr><th>Date</th><th>Assets</th><th>Debts</th><th>Net worth</th><th>Change</th><th><span className="sr-only">Delete</span></th></tr></thead>
             <tbody>

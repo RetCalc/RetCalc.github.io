@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { ADVANCED_DEFAULTS, advancedCompute, type AdvancedInputs } from "../model";
 import { changesCompute, changesOn, coastAnswer, coastChange, compileChanges, retireAnswer } from "../changes";
 import { newScenario, type Scenario } from "@/components/dashboard/scenarios";
+import { readKids } from "@/tools/plan/kidsRead";
 
 const SPLIT = { acOn: true, tradBal: "100,000", tradC: "800", rothBal: "20,000", rothC: "300", brokBal: "15,000", brokC: "200", hsaBal: "5,000", hsaC: "100", salary: "120,000", matchPct: "50", matchCap: "6", acState: "IL", acStatus: "m" };
 const CASES: [string, Partial<AdvancedInputs>][] = [
@@ -78,6 +79,17 @@ test("the children's costs come out of saving", () => {
   assert.ok(changesCompute(s, null).V.R.fv < advancedCompute(inputs({ contrib: "2,000" }), null).R.fv);
   // Switched off, they're not counted.
   assert.equal(changesOn({ ...s, changes: [{ ...row, on: false }] }), false);
+});
+
+test("a later child's share of the first's cost is kept and moves the plan", () => {
+  const row: Scenario = { ...newScenario("children", "children", 0, 0), on: true };
+  const kids = { now: [], planned: 2, firstIn: 2, spacing: 3, childcare: true, early: "", school: "" };
+  const run = (later?: string) => changesCompute({ ...inputs({ contrib: "4,000" }, [row]), kids: { ...kids, ...(later != null ? { later } : {}) } }, null).V.R.fvReal;
+  close(run("80"), run(), "80% is the usual");
+  assert.ok(run("50") > run("80"), "a cheaper second child leaves more saved");
+  assert.ok(run("100") < run("80"), "a dearer second child leaves less saved");
+  assert.equal(readKids({ ...kids, later: "65" })!.later, "65");
+  assert.equal(readKids(kids)!.later, undefined);
 });
 
 test("when you could stop saving: the earliest year that still gets there", () => {

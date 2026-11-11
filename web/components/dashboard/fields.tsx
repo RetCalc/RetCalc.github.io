@@ -46,12 +46,12 @@ export function Choice({ on, icon, title, sub, onClick }: { on: boolean; icon: R
 export function BirthFields({ id, label, bm, by, from, to, optional, onChange }: { id: string; label: string; bm: number | null; by: number | null; from: number; to: number; optional?: boolean; onChange: (v: { bm?: number | null; by?: number | null }) => void }) {
   return (
     <>
-      <SelectField id={id + "M"} label={label + " month"} value={String(bm ?? "")} onChange={(v) => onChange({ bm: v ? Number(v) : null })}>
-        <option value="">{optional ? "Month (optional)" : "Month"}</option>
+      <SelectField id={id + "M"} label={label + " month" + (optional ? " (optional)" : "")} value={String(bm ?? "")} onChange={(v) => onChange({ bm: v ? Number(v) : null })}>
+        <option value="">Month</option>
         {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
       </SelectField>
-      <SelectField id={id + "Y"} label={label + " year"} value={String(by ?? "")} onChange={(v) => onChange({ by: v ? Number(v) : null })}>
-        <option value="">{optional ? "Year (optional)" : "Year"}</option>
+      <SelectField id={id + "Y"} label={label + " year" + (optional ? " (optional)" : "")} value={String(by ?? "")} onChange={(v) => onChange({ by: v ? Number(v) : null })}>
+        <option value="">Year</option>
         {years(from, to).map((y) => <option key={y} value={y}>{y}</option>)}
       </SelectField>
     </>
@@ -84,7 +84,7 @@ export function PayFields({ pr, k, setP }: { pr: Profile; k: PKey; setP: (k: PKe
     <>
       <div className="dsh-row dsh-pair">
         <MoneyField id={"dshPay" + k} label={abroad ? "Pay after taxes" : "Pay"} value={txt(p.pay)} onValueChange={(v) => setP(k, { pay: num(v) })} />
-        <SelectField id={"dshPer" + k} label="How often" value={p.per} onChange={(v) => setP(k, { per: v as Per })}>
+        <SelectField id={"dshPer" + k} className="dsh-wide-sm" label="How often" value={p.per} onChange={(v) => setP(k, { per: v as Per })}>
           {Object.entries(PER_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </SelectField>
       </div>

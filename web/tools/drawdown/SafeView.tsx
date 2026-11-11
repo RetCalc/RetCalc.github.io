@@ -8,7 +8,8 @@
    src/js/app/15b-drawdown-views.js. */
 
 import { useFullScreen, type Px } from "@/components/charts/FullScreen";
-import { useState } from "react";
+import { useRef, useState, type RefObject } from "react";
+import { CsvButton } from "@/components/common/CsvButton";
 import { MultiChart } from "@/components/charts/MultiChart";
 import { Scatter } from "@/components/charts/Scatter";
 import { MON } from "@/components/charts/HistNotes";
@@ -83,13 +84,16 @@ function NoDial({ name, axis, setAxis }: { name: string; axis: "stock" | "years"
 }
 const SafeTitle = () => <CardHeader><CardTitle id="ddSafeTitle"><span><Tipped text="The most you could have started with" k="ddsafe" /></span></CardTitle></CardHeader>;
 const ValTitle = ({ action }: { action?: React.ReactNode }) => <CardHeader><CardTitle><span><Tipped text="Valuations at the start" k="ddvalue" /></span></CardTitle><CardDescription>Shiller CAPE</CardDescription>{action ? <CardAction>{action}</CardAction> : null}</CardHeader>;
-function HeatTitle({ axis, setAxis }: { axis: "stock" | "years"; setAxis: (a: "stock" | "years") => void }) {
+function HeatTitle({ axis, setAxis, table }: { axis: "stock" | "years"; setAxis: (a: "stock" | "years") => void; table?: RefObject<HTMLTableElement | null> }) {
   return (
     <CardHeader><CardTitle><span><Tipped text="Success grid" k="ddheat" /></span></CardTitle><CardAction>
-      <SegmentedGroup id="segDDHeat">
-        <SegmentedItem data-heat="stock" pressed={axis === "stock"} onClick={() => setAxis("stock")}>By stock share</SegmentedItem>
-        <SegmentedItem data-heat="years" pressed={axis === "years"} onClick={() => setAxis("years")}>By years</SegmentedItem>
-      </SegmentedGroup>
+      <div className="flex items-center gap-2">
+        <SegmentedGroup id="segDDHeat">
+          <SegmentedItem data-heat="stock" pressed={axis === "stock"} onClick={() => setAxis("stock")}>By stock share</SegmentedItem>
+          <SegmentedItem data-heat="years" pressed={axis === "years"} onClick={() => setAxis("years")}>By years</SegmentedItem>
+        </SegmentedGroup>
+        {table ? <CsvButton table={table} label="Success grid" /> : null}
+      </div>
     </CardAction></CardHeader>
   );
 }
@@ -116,7 +120,7 @@ function SolveFigure({ k, kId, v, vId, n, use, className }: { k: string; kId: st
   return (
     <div className={cn("flex min-w-0 flex-col border-border px-4 py-4", className)} data-pair>
       <div className="text-label text-muted-foreground" id={kId} data-k>{k}</div>
-      <div className="mt-1 text-3xl leading-tight font-medium whitespace-nowrap tabular-nums sm:text-display" id={vId}>{v}</div>
+      <div className="mt-1 text-3xl leading-tight font-medium tabular-nums sm:text-display" id={vId}>{v}</div>
       {n}
       {use}
     </div>
@@ -203,6 +207,7 @@ function SafePanel({ v, S, running }: { v: DDView; S: Safe; running: boolean }) 
 
 /* The success grid: each cell the share of starts meeting the target. */
 function HeatPanel({ v, Hm, running, axis, setAxis }: { v: DDView; Hm: { res: DdHeat; o: DdOpts; T: DdTarget } | null; running: boolean; axis: "stock" | "years"; setAxis: (a: "stock" | "years") => void }) {
+  const tableRef = useRef<HTMLTableElement>(null);
   let intro = running ? work("Working out the grid…") : "", note = "", table: React.ReactNode = null;
   if (Hm && !running) {
     const h = Hm.res, o = Hm.o, T = Hm.T, id = o.strategy, D = DD_STRAT[id].dial!;
@@ -257,9 +262,9 @@ function HeatPanel({ v, Hm, running, axis, setAxis }: { v: DDView; Hm: { res: Dd
   }
   return (
     <Card id="ddHeatPanel" data-ddtabs="safe">
-      <HeatTitle axis={axis} setAxis={setAxis} />
+      <HeatTitle axis={axis} setAxis={setAxis} table={tableRef} />
       <CardContent id="ddHeatIntro"><Html className="ddintro" html={intro} /></CardContent>
-      <div className="scroll ddheatwrap" tabIndex={0} role="region" aria-label="Success grid"><table id="ddHeat" className="ddheat">{table}</table></div>
+      <div className="scroll ddheatwrap" tabIndex={0} role="region" aria-label="Success grid"><table id="ddHeat" className="ddheat" ref={tableRef}>{table}</table></div>
       {table ? (
         <div className="legend">
           <span><i className="border border-border bg-gain/15"></i><CheckIcon className="mr-1 inline size-3" aria-hidden="true" />Meets the target</span>

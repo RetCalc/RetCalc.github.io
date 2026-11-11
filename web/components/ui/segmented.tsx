@@ -74,7 +74,7 @@ function SegmentedItem({
         "group-data-[size=tab]/seg:px-4 group-data-[size=tab]/seg:py-1.25 group-data-[size=tab]/seg:text-[13px] max-sm:group-data-[size=tab]/seg:flex-1 max-sm:group-data-[size=tab]/seg:px-1.5 max-sm:group-data-[size=tab]/seg:py-1.75",
         "group-data-[size=compact]/seg:rounded-[calc(var(--radius-md)-3px)] group-data-[size=compact]/seg:min-h-7.5 group-data-[size=compact]/seg:px-2.25 group-data-[size=compact]/seg:py-1 group-data-[size=compact]/seg:font-mono group-data-[size=compact]/seg:text-[11px] group-data-[size=compact]/seg:leading-none pointer-coarse:group-data-[size=compact]/seg:min-h-10 pointer-coarse:group-data-[size=compact]/seg:px-3 pointer-coarse:group-data-[size=compact]/seg:py-2 pointer-coarse:group-data-[size=compact]/seg:text-sm group-data-[size=compact]/seg:data-pressed:font-medium",
         "max-sm:group-data-[size=chart]/seg:min-h-9.5 max-sm:group-data-[size=chart]/seg:flex-1",
-        "group-data-[size=fill]/seg:flex-1 group-data-[size=fill]/seg:px-2.5 group-data-[size=fill]/seg:py-1 group-data-[size=fill]/seg:text-[12.5px]",
+        "group-data-[size=fill]/seg:flex-1 group-data-[size=fill]/seg:px-1.5 group-data-[size=fill]/seg:py-1 group-data-[size=fill]/seg:text-[12.5px]",
         pressed && "on",
         className
       )}

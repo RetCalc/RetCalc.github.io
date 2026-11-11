@@ -36,7 +36,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-prog-wrap{--gap:6px;--tail:30px;--goal:17px;--al:46px;--ah:12px;--gs:18px;--bow:21px;
   --fly:520ms;--ease:cubic-bezier(.2,.7,.3,1);
   position:relative;margin-top:14px;padding-left:var(--bow);padding-right:var(--tail)}
-.gd-prog{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--gap)}
+.gd-prog{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--gap);align-items:start}
 .gd-track{position:absolute;left:var(--bow);right:var(--tail);top:2.5px;height:0;pointer-events:none;
   container-type:inline-size;--nock:27px;
   --x:calc((100cqw - 6 * var(--gap)) / 7 * var(--pos,0) + var(--ci,0) * var(--gap))}
@@ -83,8 +83,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-seg i{display:block;height:5px;border-radius:3px;background:var(--ds-rule);overflow:hidden;position:relative}
 .gd-seg i b{position:absolute;inset:0;background:var(--ds-muted);transform-origin:0 50%;
   transform:scaleX(var(--f,0))}
-.gd-seg span{display:block;font-size:11px;color:var(--dimmer);margin-top:6px;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis}
+.gd-seg span{display:block;font-size:11px;line-height:1.25;color:var(--dimmer);margin-top:6px}
 .gd-seg.on span{color:var(--text);font-weight:600}
 .gd-seg:focus-visible{outline:2px solid var(--ds-focus);outline-offset:3px;border-radius:4px}
 /* Reduced motion: no flight, arc, twang or jolt. The arrow and fills jump

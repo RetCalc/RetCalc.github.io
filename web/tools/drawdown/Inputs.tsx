@@ -237,7 +237,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               <Button variant="outline" size="sm" className="mt-1.5" id="ddCopy" onClick={v.copyFromPlan}>Copy from the Calculator</Button>
             </Field>
           )}
-          <Field id="ddMixBtn" label={<Tipped text="Asset mix" k="ddstocks" />}>
+          <Field id="ddMixBtn" className="field-stacked" label={<Tipped text="Asset mix" k="ddstocks" />}>
             <Button variant="outline" size="lg" className="w-full justify-between" id="ddMixBtn" onClick={() => open({ kind: "mix" })}><span id="ddMixText" className="min-w-0 flex-1 truncate text-left">{mixText(o)}</span>
               <svg className="text-muted-foreground" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 3.5l4.5 4.5L5 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></Button>
             <input type="hidden" id="ddStock" value={str("stock")} /><input type="hidden" id="ddSV" value={str("sv")} />
@@ -293,7 +293,7 @@ export function Inputs({ v, fromNote, periods, open }: {
           <Html className="hint -mt-1.5 mx-0 mb-3" id="ddFromNote" html={fromNote} />
 
           <GroupHead>Withdrawals</GroupHead>
-          <Field id="ddStrategy" label={<Tipped text="Withdrawal strategy" k="strategy" />}>
+          <Field id="ddStrategy" className="field-stacked" label={<Tipped text="Withdrawal strategy" k="strategy" />}>
             <NativeSelect id="ddStrategy" value={str("strategy")} onChange={(e) => set("strategy")(e.target.value)}>
               <optgroup label="Steady income">
                 <option value="fixed">Fixed amount, rising with inflation</option>
@@ -302,9 +302,9 @@ export function Inputs({ v, fromNote, periods, open }: {
               <optgroup label="Share of the portfolio">
                 <option value="pct">Fixed % of portfolio each year</option>
                 <option value="clyatt">95% rule</option>
-                <option value="oneovern">1/N: the balance over the years left</option>
+                <option value="oneovern">1/N: balance over years left</option>
                 <option value="rmd">RMD method</option>
-                <option value="vpw">Variable percentage withdrawal (VPW)</option>
+                <option value="vpw">Variable percentage (VPW)</option>
               </optgroup>
               <optgroup label="Guardrails">
                 <option value="guardrails">Guyton-Klinger Guardrails</option>
@@ -331,7 +331,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               Reproduce a classic study
             </Button>
           </Field>
-          <Field id="ddRate" wrapId="ddRateWrap" hidden={!U.rate} label={<span className="tipglue"><span id="ddRateLabel">{U.rate || "Withdrawal rate"}</span><TipDot k="ddrate" /></span>}>
+          <Field id="ddRate" wrapId="ddRateWrap" hidden={!U.rate} label={<span id="ddRateLabel"><Tipped text={U.rate || "Withdrawal rate"} k="ddrate" /></span>}>
             <Affixed suffix="%"><NumberInput id="ddRate" nonNeg step={0.25} value={str("rate")} onValueChange={set("rate")} /></Affixed>
             <div className="hint" id="ddRateNote">{o.initial > 0 ? money(firstW) + " per year (" + money(firstW / 12) + " per month)" : "Enter your portfolio value above to see this in dollars."}</div>
           </Field>
@@ -372,7 +372,7 @@ export function Inputs({ v, fromNote, periods, open }: {
             </div>
             <NumberField id="ddKitGap" label="At most once every" unit="years" max={30} value={str("kitGap")} onValueChange={set("kitGap")} />
           </div>
-          <NumberField id="ddClyFloor" wrapId="ddClyWrap" className="ddadv" hidden={!shown("ddClyWrap")} label={<Tipped text="Never less than" k="clyatt" />} unit="% of last year's" max={100} value={str("clyFloor")} onValueChange={set("clyFloor")} />
+          <NumberField id="ddClyFloor" wrapId="ddClyWrap" className="ddadv field-stacked" hidden={!shown("ddClyWrap")} label={<Tipped text="Never less than" k="clyatt" />} unit="% of last year's" max={100} value={str("clyFloor")} onValueChange={set("clyFloor")} />
           <div className="two" id="ddHebWrap" hidden={!shown("ddHebWrap")}>
             <NumberField id="ddHebWeight" label={<Tipped text="Weight on last year" k="hebeler" />} unit="%" step={5} max={100} value={str("hebWeight")} onValueChange={set("hebWeight")} />
             <NumberField id="ddHebRate" label={<Tipped text="Expected return" k="vpwrate" />} unit="% real" step={0.25} negative value={str("hebRate")} onValueChange={set("hebRate")} />
@@ -487,7 +487,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               <div className="hint" id="ddSSEstNote">{ssEstNote}</div>
             </div>
             <div id="ddSSManual" hidden={ssMode !== "manual"}>
-              <MoneyField id="ddSSAmount" label={<span className="tipglue"><span id="ddSSAmountLabel">{ssCouple ? "Your annual benefit, today's dollars" : "Annual benefit, today's dollars"}</span><TipDot k="ssbenefit" /></span>} value={str("ssAmount")} onValueChange={set("ssAmount")} />
+              <MoneyField id="ddSSAmount" label={<span id="ddSSAmountLabel"><Tipped text={ssCouple ? "Your annual benefit, today's dollars" : "Annual benefit, today's dollars"} k="ssbenefit" /></span>} value={str("ssAmount")} onValueChange={set("ssAmount")} />
               <MoneyField id="ddSSAmount2" wrapId="ddSSAmount2Wrap" hidden={!(ssMode === "manual" && ssCouple)} label={<Tipped text="Spouse's annual benefit, today's dollars" k="ssbenefit" />} value={str("ssAmount2")} onValueChange={set("ssAmount2")} />
               {fromSocial ? (
                 <div className="hint" id="ddSSFromNote">
@@ -498,7 +498,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               ) : null}
             </div>
             <Field id="ddSSDelay" wrapId="ddSSDelayWrap" hidden={ssMode === "none" || (ssMode === "est" && age != null)}
-              label={<span className="tipglue"><span id="ddSSDelayLabel">{ssAgeMode ? "Starts at age" : "Starts after"}</span><TipDot k={ssAgeMode ? "ssdelayage" : "ssdelay"} /></span>}>
+              label={<span id="ddSSDelayLabel"><Tipped text={ssAgeMode ? "Starts at age" : "Starts after"} k={ssAgeMode ? "ssdelayage" : "ssdelay"} /></span>}>
               <Affixed suffix="yrs"><NumberInput id="ddSSDelay" nonNeg max={ssAgeMode ? 120 : 30} value={str("ssDelay")} onValueChange={set("ssDelay")}
                 onBlur={() => ssAgeMode && setState(clampSSAge)} /></Affixed>
             </Field>

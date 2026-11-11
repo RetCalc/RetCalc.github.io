@@ -686,12 +686,13 @@ function DetailTable({ run, age, items, tableRef }: { run: DdRun | null; age: nu
 
 /* ---- return sensitivity and claiming ages ---- */
 function Sensitivity({ rows, label }: { rows: { rate: number; median: number }[] | null; label: string }) {
+  const table = useRef<HTMLTableElement>(null);
   return (
     <Card id="ddSensPanel" className="min-w-0" data-ddtabs="plan" hidden={!rows}>
-      <CardHeader><CardTitle>Return sensitivity</CardTitle></CardHeader>
+      <CardHeader><CardTitle>Return sensitivity</CardTitle><CardAction><CsvButton table={table} label="Return sensitivity" /></CardAction></CardHeader>
       <div className="hint pt-0 px-4.5 pb-2.5">How your plan holds up if returns run higher or lower than history suggests.</div>
       <div id="ddSensTable">
-        {rows ? <table>
+        {rows ? <table ref={table}>
           <thead><tr><th>Return assumption</th><th>Success rate</th><th>Median ending balance</th></tr></thead>
           <tbody>
             {rows.map((r, i) => {
@@ -729,9 +730,13 @@ function SSCompare({ v, res }: { v: DDView; res: { rate: number; median: number 
       </tbody>
     </table>
   );
+  const csvLines = (who: string, rows: NonNullable<typeof ssx>["rows1"], off: number) =>
+    rows.map((r, i) => [who, "Age " + r.age, money(r.annual) + "/yr", pctStr(res![off + i].rate, 1), money(res![off + i].median)]);
+  const csv = () => on ? [["Whose age changes", "Claim age", "Annual benefit", "Success rate", "Median ending balance"],
+    ...csvLines("Yours", ssx!.rows1, 0), ...(ssx!.rows2 ? csvLines("Spouse's", ssx!.rows2, ssx!.rows1.length) : [])] : null;
   return (
     <Card id="ddSSBreakEvenPanel" className="min-w-0" data-ddtabs="plan" hidden={!on}>
-      <CardHeader><CardTitle>Social Security claiming age comparison</CardTitle></CardHeader>
+      <CardHeader><CardTitle>Social Security claiming age comparison</CardTitle><CardAction><CsvButton rows={csv} label="Social Security claiming age comparison" /></CardAction></CardHeader>
       <div className="hint pt-0 px-4.5 pb-2.5">How your claiming age affects success rate and ending balance. All other inputs held constant.</div>
       <div id="ddSSBreakEvenTable">
         {on ? ssx!.rows2 ? <>

@@ -7,7 +7,8 @@
    years are kept from now (changes.ts); here they read as ages when your
    age is in, years from now when it isn't. */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CsvButton } from "@/components/common/CsvButton";
 import { CheckIcon, PencilIcon, PlusIcon, Undo2Icon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
@@ -211,7 +212,7 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
           remove={() => { remove(dlg.c.id); done(); }} />
       ) : null}
       {dlg?.at === "kids" ? (
-        <KidsDialog kids={s.kids ?? NO_KIDS} age={KID_BASE} retire={KID_BASE + (Y.end - Y.base)} base={KID_BASE} cover={acOn} close={done} save={savedKids} saveLabel={acOn ? undefined : s.kids ? "Save" : "Add them"} />
+        <KidsDialog kids={s.kids ?? NO_KIDS} age={KID_BASE} retire={KID_BASE + (Y.end - Y.base)} base={KID_BASE} cover={acOn} close={done} save={savedKids} withLater saveLabel={acOn ? undefined : s.kids ? "Save" : "Add them"} />
       ) : null}
       {dlg?.at === "cover" ? (
         <CoverStagesDialog segs={kidStages(dlg.k, KID_BASE, KID_BASE + (Y.end - Y.base)).filter((x) => x.change !== 0)} today={todayMonthly(s, household)}
@@ -235,12 +236,14 @@ function StagesTable({ shown: list, Y, split }: { shown: ShownStage[]; Y: Years;
   const hsa = split && list.some((x) => x.monthly.hsa > 0), anyLump = list.some((x) => x.lump);
   const span = (x: ShownStage) => (Y.ages ? fmtNum(Y.base + x.from) + " to " + fmtNum(Y.base + x.to) : "Year " + fmtNum(x.from) + " to " + fmtNum(x.to));
   const total = (m: Monthly) => m.brok + m.roth + m.trad + m.hsa;
+  const table = useRef<HTMLTableElement>(null);
   return (
     <>
+      <div className="mb-2 flex justify-end"><CsvButton table={table} label="The stages behind this" /></div>
       <p className="hint mt-0 mb-3">Amounts are per month, in today&apos;s dollars: your own money{split ? ", before the match" : ""}. Per month is the first year&apos;s and, where it moves, the last year&apos;s. Rises is how much the first year&apos;s grows into the next, after inflation.{anyLump ? " On day one is a lump sum put in or taken out on the stage's first day." : ""}</p>
       <div className="swipehint">Swipe the table sideways to see every column.</div>
       <div className="scroll" tabIndex={0} role="region" aria-label="The stages behind your plan">
-        <table id="stagesBehindA">
+        <table id="stagesBehindA" ref={table}>
           <thead><tr><th>Stage</th><th>{Y.ages ? "Ages" : "When"}</th><th>Years</th><th>Per month</th>{split ? <><th>Traditional</th><th>Roth</th><th>Brokerage</th>{hsa ? <th>HSA</th> : null}</> : null}<th><Tipped text="Rises" k="advrises" /></th>{anyLump ? <th><Tipped text="On day one" k="advlump" /></th> : null}<th>Return</th><th className="text-center">What&apos;s going on</th></tr></thead>
           <tbody>
             {list.map((x, i) => (

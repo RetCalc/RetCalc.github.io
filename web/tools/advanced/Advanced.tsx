@@ -238,8 +238,13 @@ function SiteAdvanced() {
   // The portfolio the goal needs, and what it pays after tax.
   const need = CH ? CH.V.portToday : S.portToday;
   const pays = income ? (CH ? need * CH.V.P.g.withdrawal * (1 - CH.V.rate) : S.pays) : null;
-  const onTrack = CH ? R.fvReal >= need - 0.5 : C.state !== "never";
-  const already = !CH && C.state === "already";
+  // On track means the plan's own end balance reaches the goal. (Coast FIRE
+  // can't answer this: it asks whether saving could stop early, so a plan
+  // that gets there only with its last contribution would read as short.)
+  // Within half a dollar of the target counts, so a figure that shows the
+  // same as the target is on it.
+  const onTrack = R.fvReal >= need * (1 - 0.5 / target);
+  const already = onTrack && !CH && C.state === "already";
   // The target as it comes, before anyone has set one: no verdict on a
   // goal you didn't choose.
   const VerdictIcon = onTrack ? CircleCheckIcon : CircleXIcon;

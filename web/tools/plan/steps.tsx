@@ -101,7 +101,7 @@ export function StartStep({ plan }: { plan: PlanState }) {
                 <MoneyField id="ppGross" label="Your gross pay, per year" value={b.pcGross} onValueChange={(v) => setB({ pcGross: v })} />
                 <MoneyField id="ppGross2" label="Spouse's gross pay, per year" value={b.pcGross2} onValueChange={(v) => setB({ pcGross2: v })} />
               </div>
-              <div className="grid grid-cols-2 items-end gap-x-2.5">
+              <div className="two bottomalign">
                 <SelectField id="ppFreq" label="You're paid" value={b.pcFreq} onChange={(v) => { setB({ pcFreq: v }); setPlan((p) => ({ ...p, freq: v })); }}>
                   {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </SelectField>
@@ -111,7 +111,7 @@ export function StartStep({ plan }: { plan: PlanState }) {
               </div>
             </>
           ) : (
-            <div className="grid grid-cols-2 items-end gap-x-2.5">
+            <div className="two bottomalign">
               <MoneyField id="ppGross" label="Gross pay, per year" value={b.pcGross} onValueChange={(v) => setB({ pcGross: v })} />
               <SelectField id="ppFreq" label="You're paid" value={b.pcFreq} onChange={(v) => { setB({ pcFreq: v }); setPlan((p) => ({ ...p, freq: v })); }}>
                 {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}

@@ -210,7 +210,7 @@ export function Optimizer() {
           <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
-              <div className="field mb-4">
+              <div className="field field-stacked mb-4">
                 <Label className="mb-1.5"><span><Tipped text="Start from" k="opmode" /></span></Label>
                 <Segmented id="opModeSeg" size="fill" attr="data-opmode" options={[["ret", "Retirement day"], ["now", "Today"]] as const}
                   value={v.now ? "now" : "ret"} onChange={setMode} />
@@ -263,7 +263,7 @@ export function Optimizer() {
                   <MoneyField id="opSaveTrad" label={<Tipped text="Traditional" k="opsavetrad" />} unit="/mo" value={s.saveTrad} onValueChange={set("saveTrad")} />
                   <MoneyField id="opSaveRoth" label="Roth" unit="/mo" value={s.saveRoth} onValueChange={set("saveRoth")} />
                 </div>
-                <div className="two bottomalign max-sm:grid-cols-2">
+                <div className="two one bottomalign">
                   <MoneyField id="opSaveBrok" label="Brokerage" unit="/mo" value={s.saveBrok} onValueChange={set("saveBrok")} />
                   <SelectField id="opRisk" label="Invested" value={riskHit ? s.risk : String(risk)} onChange={(val) => setState((c) => ({ ...c, risk: val, riskFrom: "" }))}>
                     {RISKS.map((r) => <option key={r.real} value={String(r.real)}>{r.label + " · " + pctStr(r.real, 1) + " after inflation"}</option>)}
@@ -290,7 +290,7 @@ export function Optimizer() {
                 <MoneyField id="opSS2" label={"Spouse's benefit at " + fra2} unit="/mo" value={s.ss2} onValueChange={set("ss2")} />
                 <MoneyField id="opInc2" label="Or their salary" unit="/yr" value={s.inc2} onValueChange={set("inc2")} />
               </div>
-              <SelectField id="opClaim" label={<Tipped text="You'd claim it at" k="opclaim" />} value={s.claim} onChange={set("claim")}>
+              <SelectField id="opClaim" className="field-stacked" label={<Tipped text="You'd claim it at" k="opclaim" />} value={s.claim} onChange={set("claim")}>
                 <option value="">{fraChoice(F, v.married)}</option>
                 {CLAIMS.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
               </SelectField>
@@ -304,7 +304,7 @@ export function Optimizer() {
               </SelectField>
 
               <GroupHead>Health, heirs and safety</GroupHead>
-              <SelectField id="opAca" wrapId="opAcaWrap" label={<Tipped text="Health insurance" k="opaca" />} value={s.aca} onChange={set("aca")}>
+              <SelectField id="opAca" wrapId="opAcaWrap" className="field-stacked" label={<Tipped text="Health insurance" k="opaca" />} value={s.aca} onChange={set("aca")}>
                 <option value="1">{v.retire < 65 ? "Priced: ACA before 65, Medicare after" : "Priced: Medicare premiums from 65"}</option>
                 <option value="0">Already in my spending</option>
               </SelectField>

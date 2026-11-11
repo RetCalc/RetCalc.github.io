@@ -218,7 +218,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               </div>
               <div className={two}>
                 <MoneyField id="brBrok" label="Brokerage and cash" value={s.brok} onValueChange={set("brok")} />
-                <NumberField id="brBasis" label={<Tipped text="Cost basis" k="brbasis" />} unit="% of balance" step={5} max={100} value={s.basis} onValueChange={set("basis")} />
+                <NumberField id="brBasis" label={<Tipped text="Cost basis" k="brbasis" />} unit="% of it" step={5} max={100} value={s.basis} onValueChange={set("basis")} />
               </div>
               <div className={two}>
                 <MoneyField id="brG457" label={<Tipped text="Governmental 457(b)" k="br457" />} value={s.g457} onValueChange={set("g457")} />
@@ -233,8 +233,8 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               </div>
 
               <GroupHead>Health insurance</GroupHead>
-              <SelectField id="brAca" label={<Tipped text="Premiums" k="braca" />} value={s.aca} onChange={setAca}>
-                <option value="1">ACA plan, with the subsidy your income earns</option>
+              <SelectField id="brAca" className="field-stacked" label={<Tipped text="Premiums" k="braca" />} value={s.aca} onChange={setAca}>
+                <option value="1">ACA plan, with your income&apos;s subsidy</option>
                 <option value="0">Leave health insurance out</option>
               </SelectField>
               <div className={two} id="brAcaWrap" hidden={!aca}>
@@ -245,7 +245,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               </div>
 
               <GroupHead>How the plans work</GroupHead>
-              <SelectField id="brFill" label={<Tipped text="Blended plan converts" k="brfill" />} value={s.fill} onChange={set("fill")}>
+              <SelectField id="brFill" className="field-stacked" label={<Tipped text="Blended plan converts" k="brfill" />} value={s.fill} onChange={set("fill")}>
                 {FILLS.map(([v, label]) => <option key={v} value={v} disabled={v === "aca" && !aca}>{label}</option>)}
               </SelectField>
               {t72 ? null : sepp}

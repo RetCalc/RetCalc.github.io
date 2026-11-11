@@ -6,7 +6,7 @@
    draws it in panels; the readiness guide in sections of its card. From
    opResultHTML() and what it calls in src/js/app/31b-plan-optimizer.js. */
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
 import { GdChart } from "@/components/charts/GdChart";
 import { yearData } from "@/lib/engine/typed";
 import { PL_HEIR, plMix } from "@/lib/engine/typed-plan";
@@ -15,7 +15,8 @@ import { groupDigits, money, pctStr } from "@/lib/format";
 import { seen, type Host, type Result } from "./run";
 import { axisCompact, lowerFirst, opClaims, opCompact, opConvUntil, opFillName, opFillShort, opSigned, opTacticsLine, type PlanWho } from "./words";
 import { SERIES } from "@/lib/hues";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CsvButton } from "@/components/common/CsvButton";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { HeroReading } from "@/components/common/Reading";
@@ -333,11 +334,11 @@ function LinesChart({ host, kind, label, series }: { host: Host; kind: string; l
   );
 }
 
-function YearRows({ rows, id }: { rows: PlRow[]; id?: string }) {
+function YearRows({ rows, id, tableRef }: { rows: PlRow[]; id?: string; tableRef?: Ref<HTMLTableElement> }) {
   const m = (v: number) => (v > 1 ? money(v) : "—");
   const pension = rows.some((r) => r.pension > 1), health = rows.some((r) => r.health > 1 || r.irmaa > 1);
   return (
-    <table id={id}>
+    <table id={id} ref={tableRef}>
       <thead><tr><th>Age</th><th>Live on</th><th>Social Security</th>{pension ? <th>Pension</th> : null}<th>Traditional</th><th>Converted</th><th>Brokerage</th><th>Roth</th><th>Tax</th>
         {health ? <th>Health / IRMAA</th> : null}<th>Taxable income</th><th>Left, all accounts</th></tr></thead>
       <tbody>{rows.map((r) => (
@@ -351,6 +352,25 @@ function YearRows({ rows, id }: { rows: PlRow[]; id?: string }) {
 /* The guide's: folded under a line of text. */
 function YearTable({ rows }: { rows: PlRow[] }) {
   return <details className="op-table"><summary>Show every year</summary><div className="scroll" tabIndex={0} role="region" aria-label="Every year"><YearRows rows={rows} /></div></details>;
+}
+
+/* The tool page's: its own panel, folded, with the CSV in its heading (the
+   table stays mounted while folded, so the CSV works either way). */
+function YearCard({ rows }: { rows: PlRow[] }) {
+  const table = useRef<HTMLTableElement>(null);
+  return (
+    <Collapsible className="min-w-0" render={<Card />}>
+      <CardHeader>
+        <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
+        <CardDescription>average path, today&apos;s dollars</CardDescription>
+        <CardAction><CsvButton table={table} label="Year by year" /></CardAction>
+      </CardHeader>
+      <CollapsibleContent keepMounted>
+        <div className="swipehint">Swipe the table sideways to see every column.</div>
+        <div className="scroll op-table" tabIndex={0} role="region" aria-label="Year by year"><YearRows rows={rows} id="opYearTable" tableRef={table} /></div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
 }
 
 /* ---- the whole result ---- */
@@ -456,16 +476,7 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
       {dimmed(flow)}
       {taxChart ? dimmed(taxChart) : null}
       {dimmed(balChart)}
-      {dimmed(<Collapsible className="min-w-0" render={<Card />}>
-        <CardHeader>
-          <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
-          <CardDescription>average path, today&apos;s dollars</CardDescription>
-        </CardHeader>
-        <CollapsibleContent keepMounted>
-          <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll op-table" tabIndex={0} role="region" aria-label="Year by year"><YearRows rows={rb} id="opYearTable" /></div>
-        </CollapsibleContent>
-      </Collapsible>)}
+      {dimmed(<YearCard rows={rb} />)}
       {alts ? dimmed(alts) : null}
       {dimmed(fine)}
     </div>

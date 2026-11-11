@@ -133,7 +133,7 @@ export function Backtest() {
         <aside id="asideBT" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
             <CardContent>
-              <Field id="btMixBtn" label={<Tipped text="Asset mix" k="btmix" />}>
+              <Field id="btMixBtn" className="field-stacked" label={<Tipped text="Asset mix" k="btmix" />}>
                 <Button variant="outline" size="lg" className="w-full justify-between" id="btMixBtn" onClick={() => setMixOpen(true)}><span id="btMixText" className="min-w-0 flex-1 truncate text-left">{mixText(B)}</span>
                   <ChevronRightIcon className="text-muted-foreground" aria-hidden="true" /></Button>
                 <input type="hidden" id="btStock" value={s.stock} /><input type="hidden" id="btSV" value={s.sv} /><input type="hidden" id="btCash" value={s.cash} />
@@ -143,7 +143,7 @@ export function Backtest() {
                 </div>
                 <div className="hint" id="btMixNote">{mixNote(B, rb, from)}</div>
               </Field>
-              <SelectField id="btRebal" label={<Tipped text="Rebalancing" k="btrebal" />} value={s.rebal} onChange={set("rebal")}>
+              <SelectField id="btRebal" className="field-stacked" label={<Tipped text="Rebalancing" k="btrebal" />} value={s.rebal} onChange={set("rebal")}>
                 <option value="year">Every year</option>
                 <option value="every">Every few years</option>
                 <option value="band">When it drifts from the mix</option>
