@@ -4,6 +4,7 @@
    tab shows the same pages inside the Dashboard. */
 import type { Metadata } from "next";
 import { LearnHome } from "@/components/learn/LearnHome";
+import { LearnShelf } from "@/components/learn/LearnShelf";
 import { previews, summaries } from "@/lib/learn/lessons";
 import { SITE } from "@/lib/site";
 
@@ -18,11 +19,7 @@ export const metadata: Metadata = {
 export default function LearnPage() {
   return (
     <div className="lrn-site">
-      <header className="lrn-pagehead">
-        <span className="lrn-eyebrow">Learn</span>
-        <h1>Retirement planning, explained</h1>
-        <p>Lessons on the ideas behind your plan, from your first 401(k) to your first withdrawal. Each one goes into the details, then shows you where to try it.</p>
-      </header>
+      <LearnShelf lessons={summaries()} />
       <LearnHome lessons={summaries()} previews={previews()} mode="site" />
     </div>
   );

@@ -20,9 +20,51 @@
 
 /* ---------- The public pages: a header over the site's column ---------- */
 .lrn-site { grid-column: 1 / -1; width: 100%; min-width: 0; padding: 8px 0 72px; }
-.lrn-pagehead { padding: 18px 0 22px; max-width: 760px; }
-.lrn-pagehead h1 { margin: 6px 0 8px; font-size: 34px; font-weight: 600; letter-spacing: -.025em; line-height: 1.12; }
-.lrn-pagehead p { margin: 0; color: var(--ds-muted); font-size: 16px; line-height: 1.5; }
+/* The site's Learn home opens on a deep blue stage (components/learn/LearnShelf.tsx):
+   title, line and counts on the left, the eight tracks as book spines on the
+   right, each as tall as its number of lessons. Fixed colors: the stage is
+   dark in both themes, like the Guide landing's. */
+.lrn-shelf { position: relative; isolation: isolate; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: 40px;
+  margin: 10px 0 26px; padding: 34px 40px; border-radius: var(--r-panel); color: #fff;
+  background: linear-gradient(155deg, #1b3256 0%, #12223d 58%, #0c182c 100%); }
+.lrn-shelf::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(90% 120% at 0% 0%, color-mix(in srgb, var(--ds-brand-jade) 34%, transparent), transparent 60%), radial-gradient(70% 90% at 100% 100%, rgba(255, 179, 64, .18), transparent 60%); }
+.lrn-shelf-t { align-self: center; min-width: 0; }
+.lrn-shelf-kick { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .7); }
+.lrn-shelf-kick svg { width: 16px; height: 16px; }
+.lrn-shelf h1 { margin: 10px 0; font: 700 40px/1.08 var(--dsh-display); letter-spacing: -.03em; }
+.lrn-shelf p { margin: 0; max-width: 560px; font-size: 16px; line-height: 1.5; color: rgba(255, 255, 255, .78); }
+.lrn-shelf-stats { display: flex; gap: 30px; margin: 22px 0 0; }
+.lrn-shelf-stats div { display: flex; flex-direction: column-reverse; gap: 2px; }
+.lrn-shelf-stats dt { font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, .7); }
+.lrn-shelf-stats dd { margin: 0; font: 700 30px/1 var(--dsh-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.lrn-shelf-stats small { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .7); }
+.lrn-spines { display: flex; align-items: flex-end; gap: 8px; height: 230px; margin: 0; padding: 0 0 10px; list-style: none; border-bottom: 2px solid rgba(255, 255, 255, .22); }
+.lrn-spine { flex: 1; min-width: 0; height: var(--h); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 0 8px; border-radius: 7px 7px 3px 3px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 92%, #fff), color-mix(in srgb, var(--c) 70%, #000)); color: #0b1a2b;
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, .25), inset -3px 0 0 rgba(0, 0, 0, .15); transition: transform .18s; }
+.lrn-spine:hover { transform: translateY(-6px); }
+.lrn-spine:nth-child(1) { --c: #4fbf95; } .lrn-spine:nth-child(2) { --c: #7d9fd6; } .lrn-spine:nth-child(3) { --c: #e3a93b; } .lrn-spine:nth-child(4) { --c: #b48ee8; }
+.lrn-spine:nth-child(5) { --c: #f08a6c; } .lrn-spine:nth-child(6) { --c: #4cc2c4; } .lrn-spine:nth-child(7) { --c: #e88ab5; } .lrn-spine:nth-child(8) { --c: #a7c25a; }
+.lrn-spine b { font-size: 13px; font-weight: 700; }
+.lrn-spine span { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 12.5px; font-weight: 650; white-space: nowrap; }
+.lrn-spine i { font-style: normal; font-size: 12px; font-weight: 600; opacity: .75; }
+@media (prefers-reduced-motion: reduce) { .lrn-spine { transition: none; } }
+@media (max-width: 960px) { .lrn-shelf { grid-template-columns: 1fr; gap: 24px; } .lrn-spines { height: 170px; } }
+@media (max-width: 639px) {
+  .lrn-shelf { padding: 24px 20px; margin-top: 4px; }
+  .lrn-shelf h1 { font-size: 30px; }
+  .lrn-shelf-stats { gap: 22px; }
+  .lrn-shelf-stats dd { font-size: 24px; }
+  .lrn-spines { gap: 5px; height: 200px; }
+  .lrn-spine span { font-size: 11px; }
+}
+/* Under the stage, the search sits centered and wider; the header has the counts. */
+.lrn-site .lrn-homebar { justify-content: center; margin-bottom: 26px; }
+.lrn-site .lrn-homebar .lrn-cap { display: none; }
+.lrn-site .lrn-search { width: 560px; margin: 0 auto; }
+.lrn-site .lrn-search [data-slot="input-group"] { height: 44px; border-radius: 999px; padding-inline: 6px; }
+.lrn-site .lrn-search input { font-size: 15px; }
 .lrn-homebar { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
 .lrn-homebar .lrn-cap { margin: 0; }
 .lrn-search { width: 280px; max-width: 100%; margin-left: auto; }
@@ -247,7 +289,6 @@
   .lrn-lhead .lrn-title { font-size: 30px; }
   .lrn-prose { font-size: 16px; }
   .lrn-prose figure { padding: 12px; }
-  .lrn-pagehead h1 { font-size: 28px; }
 }
 
 /* ---------- Charts and widgets ---------- */
