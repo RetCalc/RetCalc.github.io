@@ -134,11 +134,11 @@ export function rateAssumptions(pr: Profile, entries: Entry[], R: Results): Rati
   /* Growth */
   const inflation = pr.assume.inflation, own = growth !== pr.assume.growth;
   add({ id: "growth", group: "growth", name: "Growth, before inflation", yours: pct(growth) + " per year" + (own ? ", with your Calculator changes" : ""),
-    balanced: pct(MID.growth), range: pct(MID.growth - STEP.growth) + " to " + pct(MID.growth + STEP.growth),
+    balanced: pct(MID.growth), range: pct(MID.growth - STEP.growth) + " – " + pct(MID.growth + STEP.growth),
     why: `What savings earn each year until you retire. Since 1926, US stocks have earned about 7% per year after inflation and bonds about 2%; stocks worldwide have earned about 5%. A mix of the two at about 4.5% after inflation (${pct(MID.growth)} at 3% inflation) is balanced. Stock prices are high today (a CAPE of ${CAPE_NOW}), which has usually meant lower returns in the decade after.`,
     z: stepsFrom(growth, MID.growth, STEP.growth), href: "/dashboard/profile#assumptions", where: "Profile" });
   add({ id: "inflation", group: "growth", name: "Inflation", yours: pct(inflation) + " per year",
-    balanced: pct(MID.inflation), range: pct(MID.inflation - STEP.inflation) + " to " + pct(MID.inflation + STEP.inflation),
+    balanced: pct(MID.inflation), range: pct(MID.inflation - STEP.inflation) + " – " + pct(MID.inflation + STEP.inflation),
     why: "How fast prices rise. US consumer prices have risen about 3% per year on average since 1926. The Federal Reserve aims for 2%, but on a measure that usually runs a few tenths below consumer prices, and prices have run above that for long stretches, so 2% here is on the hopeful side. Growth less inflation is what savings really gain, so with growth held where it is, lower inflation makes the plan look better.",
     z: stepsFrom(inflation, MID.inflation, STEP.inflation, false), href: "/dashboard/profile#assumptions", where: "Profile" });
 
@@ -151,14 +151,14 @@ export function rateAssumptions(pr: Profile, entries: Entry[], R: Results): Rati
   // Each of you by name, or once when you're the same.
   const both = (f: (w: (typeof who)[number]) => string) => (two && f(who[0]) !== f(who[1]) ? who.map((w) => `${nameOf(pr, w.i)} ${f(w)}`).join(", ") : f(who[0]));
   add({ id: "raise", group: "life", name: "Raises, beyond inflation", yours: both((w) => pct(w.mine, 2)) + " per year",
-    balanced: both((w) => "about " + pct(w.usual)), range: both((w) => pct(Math.max(0, w.usual - STEP.raise)) + " to " + pct(w.usual + STEP.raise)),
+    balanced: both((w) => pct(w.usual)), range: both((w) => pct(Math.max(0, w.usual - STEP.raise)) + " – " + pct(w.usual + STEP.raise)),
     why: "How fast pay grows beyond inflation. Pay usually climbs fastest early in a career and levels off in the 50s; the balanced figure is the typical raise from your age to retirement, on average (pay by age from Census and Social Security earnings records, with the economy's own growth in pay on top).",
     z: raiseZ, href: "/dashboard/years#drivers", where: "Year by year" });
   const kids = kidCount(pr);
   if (kids > 0 && !kidsOff(pr.scenarios)) {
     const ratio = kidsRatio(kidCosts(pr), kids, pr.childcare, pr.careArea);
     add({ id: "kids", group: "life", name: "What the children cost", yours: Math.abs(ratio - 1) < 0.005 ? "The typical costs" : pct(ratio, 0) + " of the typical costs",
-      balanced: "The typical costs", range: pct(1 - STEP.kids, 0) + " to " + pct(1 + STEP.kids, 0) + " of typical",
+      balanced: "The typical costs", range: pct(1 - STEP.kids, 0) + " – " + pct(1 + STEP.kids, 0) + " of typical",
       why: "What raising a child costs from birth to 18. The typical costs are what middle-income families spend on a child (the USDA's study, brought to today's prices), plus childcare where it's paid, with a second or later child costing 20% less. Today's spending already pays for the children you have, so what counts is how their costs change: lower costs here also mean less freed up for saving once they're grown.",
       z: stepsFrom(ratio, 1, STEP.kids, false), href: "/dashboard/profile#children", where: "Profile" });
   }
@@ -167,11 +167,11 @@ export function rateAssumptions(pr: Profile, entries: Entry[], R: Results): Rati
   const P = pr.college.help !== "none" ? pr.college.plan : undefined;
   if (P) {
     add({ id: "tuition", group: "college", name: "College prices rising", yours: P.infl + "% per year", balanced: MID.tuition + "%",
-      range: MID.tuition - STEP.tuition + "% to " + (MID.tuition + STEP.tuition) + "%",
+      range: MID.tuition - STEP.tuition + "% – " + (MID.tuition + STEP.tuition) + "%",
       why: "How fast college prices rise, before inflation. Over the last 30 years they rose faster than prices in general; recent years have been slower. 4% per year is the common planning figure.",
       z: stepsFrom(P.infl, MID.tuition, STEP.tuition, false), href: "/dashboard/profile#college", where: "Profile" });
     add({ id: "college529", group: "college", name: "College fund growth", yours: P.ret + "% per year", balanced: MID.college529 + "%",
-      range: MID.college529 - STEP.college529 + "% to " + (MID.college529 + STEP.college529) + "%",
+      range: MID.college529 - STEP.college529 + "% – " + (MID.college529 + STEP.college529) + "%",
       why: "What money saved for college earns, before inflation. A college fund usually moves from stocks toward bonds as college nears, so it earns less than retirement savings; 6% per year is the common planning figure.",
       z: stepsFrom(P.ret, MID.college529, STEP.college529), href: "/dashboard/profile#college", where: "Profile" });
   }
@@ -196,7 +196,7 @@ export function rateAssumptions(pr: Profile, entries: Entry[], R: Results): Rati
     const share = pr.ss.pct ?? 100, full = (R.ss * 12) / (share / 100);
     const from = Math.max(0, (R.claim1 ?? retire) - retire);
     add({ id: "ss", group: "retirement", name: "Social Security", yours: share + "% of the benefit", balanced: MID.ssPct + "%",
-      range: MID.ssPct - STEP.ssPct + "% to " + Math.min(100, MID.ssPct + STEP.ssPct) + "%",
+      range: MID.ssPct - STEP.ssPct + "% – " + Math.min(100, MID.ssPct + STEP.ssPct) + "%",
       why: "The trust fund that pays Social Security is projected to run short in 2034. After that, about 80% of benefits could be paid unless Congress acts. Anywhere from that to the full benefit is balanced.",
       z: stepsFrom(share, MID.ssPct, STEP.ssPct), dollars: atRetirement((full * (share - MID.ssPct)) / 100, from, Math.max(0, years - from)), worth: true,
       href: "/dashboard/income#social-security", where: "Income" });
@@ -208,7 +208,7 @@ export function rateAssumptions(pr: Profile, entries: Entry[], R: Results): Rati
     const d = MID.endAge - endAge;
     const dollars = d > 0 ? atRetirement(draw, years, d) : d < 0 ? -atRetirement(draw, years + d, -d) : 0;
     add({ id: "endAge", group: "retirement", name: "How long the plan runs", yours: "To age " + endAge + (two ? ", the younger of you" : ""),
-      balanced: "To age " + MID.endAge, range: "ages " + (MID.endAge - STEP.endAge) + " to " + (MID.endAge + STEP.endAge),
+      balanced: "To age " + MID.endAge, range: "ages " + (MID.endAge - STEP.endAge) + " – " + (MID.endAge + STEP.endAge),
       why: "How long savings have to last. Of people who reach 65, about 1 in 4 live past 90 and about 1 in 10 past 95. Planning to 95 covers most lifespans; planning to a younger age makes the plan look better than it may turn out.",
       z: stepsFrom(endAge, MID.endAge, STEP.endAge, false), dollars, worth: true, href: "/dashboard/retirement#drawdown", where: "Retirement" });
   }
