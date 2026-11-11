@@ -1,14 +1,14 @@
 /* How your assumptions compare: every guess about the future the plan
    makes (growth, inflation, raises, what the children and college cost,
-   Social Security, how long the plan runs), each against its usual figure,
+   Social Security, how long the plan runs), each against a balanced figure,
    and the plan as a whole on one scale from very conservative to very
    aggressive.
 
-   The plan is run again with each figure set to its usual one, the rest
+   The plan is run again with each figure set to its balanced one, the rest
    as they are: the difference in savings at retirement is that figure's
    effect, so a figure that barely moves the plan barely moves the rating.
    Those differences are shared out to add up to the whole difference
-   (the plan run with every figure at its usual one). Social Security and
+   (the plan run with every figure at its balanced one). Social Security and
    how long the plan runs don't change savings at retirement, so their
    effect is said as what it's worth then: the years it changes, each
    brought back to retirement.
@@ -38,14 +38,14 @@ export const SHORT: Record<RowId, string> = {
 
 export interface Row {
   id: RowId; group: GroupId; name: string;
-  /** Your figure, and the usual one with the balanced range, in words. */
-  yours: string; usual: string; range: string;
-  /** Where the usual figure comes from, for its "?". */
+  /** Your figure, and the balanced one with its range, in words. */
+  yours: string; balanced: string; range: string;
+  /** Where the balanced figure comes from, for its "?". */
   why: string;
-  /** Steps from the usual figure (positive: aggressive), its band, and
+  /** Steps from the balanced figure (positive: aggressive), its band, and
       where it sits on the scale (0 to 1); the balanced range's ends too. */
   z: number; band: Band; pos: number;
-  /** What it does to savings at retirement against the usual figure
+  /** What it does to savings at retirement against the balanced figure
       (positive: your figure adds), and whether that's savings themselves
       or what a change once retired is worth then. */
   dollars: number; worth: boolean;
@@ -56,8 +56,8 @@ export interface Row {
 export interface Rating {
   z: number; band: Band; pos: number;
   /** Savings at retirement as the plan has them, and with every figure at
-      its usual one; the whole difference, retirement's worth included. */
-  mine: number; usual: number; gap: number;
+      its balanced one; the whole difference, retirement's worth included. */
+  mine: number; balanced: number; gap: number;
   rows: Row[];
   /** The figure that moves the plan most toward its band, when it leans. */
   lead: Row | null;
@@ -99,7 +99,7 @@ function steadyGrowth(pr: Profile, core: Profile, entries: Entry[]): number {
 const kidCosts = (pr: Profile) => ({ early: n(pr.childCosts.early), school: n(pr.childCosts.school), teen: n(pr.childCosts.teen), later: n(pr.childCosts.later) == null ? null : n(pr.childCosts.later)! / 100 });
 const kidCount = (pr: Profile) => pr.kidList.slice(0, pr.kids).filter((k) => k.by && (ageOf(k) ?? 99) < 18).length + pr.planned.count;
 
-/** Each figure set to its usual one. */
+/** Each figure set to its balanced one. */
 const USUAL: Partial<Record<RowId, (p: Profile) => Profile>> = {
   growth: (p) => ({ ...p, assume: { ...p.assume, growth: MID.growth } }),
   inflation: (p) => ({ ...p, assume: { ...p.assume, inflation: MID.inflation } }),
@@ -134,12 +134,12 @@ export function rateAssumptions(pr: Profile, entries: Entry[], R: Results): Rati
   /* Growth */
   const inflation = pr.assume.inflation, own = growth !== pr.assume.growth;
   add({ id: "growth", group: "growth", name: "Growth, before inflation", yours: pct(growth) + " per year" + (own ? ", with your Calculator changes" : ""),
-    usual: pct(MID.growth), range: pct(MID.growth - STEP.growth) + " to " + pct(MID.growth + STEP.growth),
-    why: `What savings earn each year until you retire. Since 1926, US stocks have earned about 7% per year after inflation and bonds about 2%; stocks worldwide have earned about 5%. A mix of the two at about 4.5% after inflation (${pct(MID.growth)} at 3% inflation) is the usual figure. Stock prices are high today (a CAPE of ${CAPE_NOW}), which has usually meant lower returns in the decade after.`,
+    balanced: pct(MID.growth), range: pct(MID.growth - STEP.growth) + " to " + pct(MID.growth + STEP.growth),
+    why: `What savings earn each year until you retire. Since 1926, US stocks have earned about 7% per year after inflation and bonds about 2%; stocks worldwide have earned about 5%. A mix of the two at about 4.5% after inflation (${pct(MID.growth)} at 3% inflation) is balanced. Stock prices are high today (a CAPE of ${CAPE_NOW}), which has usually meant lower returns in the decade after.`,
     z: stepsFrom(growth, MID.growth, STEP.growth), href: "/dashboard/profile#assumptions", where: "Profile" });
   add({ id: "inflation", group: "growth", name: "Inflation", yours: pct(inflation) + " per year",
-    usual: pct(MID.inflation), range: pct(MID.inflation - STEP.inflation) + " to " + pct(MID.inflation + STEP.inflation),
-    why: "How fast prices rise. US prices have risen about 3% per year on average since 1926; the Federal Reserve aims for 2%. Growth less inflation is what savings really gain, so with growth held where it is, lower inflation makes the plan look better.",
+    balanced: pct(MID.inflation), range: pct(MID.inflation - STEP.inflation) + " to " + pct(MID.inflation + STEP.inflation),
+    why: "How fast prices rise. US consumer prices have risen about 3% per year on average since 1926. The Federal Reserve aims for 2%, but on a measure that usually runs a few tenths below consumer prices, and prices have run above that for long stretches, so 2% here is on the hopeful side. Growth less inflation is what savings really gain, so with growth held where it is, lower inflation makes the plan look better.",
     z: stepsFrom(inflation, MID.inflation, STEP.inflation, false), href: "/dashboard/profile#assumptions", where: "Profile" });
 
   /* Your life */
@@ -151,14 +151,14 @@ export function rateAssumptions(pr: Profile, entries: Entry[], R: Results): Rati
   // Each of you by name, or once when you're the same.
   const both = (f: (w: (typeof who)[number]) => string) => (two && f(who[0]) !== f(who[1]) ? who.map((w) => `${nameOf(pr, w.i)} ${f(w)}`).join(", ") : f(who[0]));
   add({ id: "raise", group: "life", name: "Raises, beyond inflation", yours: both((w) => pct(w.mine, 2)) + " per year",
-    usual: both((w) => "about " + pct(w.usual)), range: both((w) => pct(Math.max(0, w.usual - STEP.raise)) + " to " + pct(w.usual + STEP.raise)),
-    why: "How fast pay grows beyond inflation. Pay usually climbs fastest early in a career and levels off in the 50s; the usual figure is the typical raise from your age to retirement, on average (pay by age from Census and Social Security earnings records, with the economy's own growth in pay on top).",
+    balanced: both((w) => "about " + pct(w.usual)), range: both((w) => pct(Math.max(0, w.usual - STEP.raise)) + " to " + pct(w.usual + STEP.raise)),
+    why: "How fast pay grows beyond inflation. Pay usually climbs fastest early in a career and levels off in the 50s; the balanced figure is the typical raise from your age to retirement, on average (pay by age from Census and Social Security earnings records, with the economy's own growth in pay on top).",
     z: raiseZ, href: "/dashboard/years#drivers", where: "Year by year" });
   const kids = kidCount(pr);
   if (kids > 0 && !kidsOff(pr.scenarios)) {
     const ratio = kidsRatio(kidCosts(pr), kids, pr.childcare, pr.careArea);
     add({ id: "kids", group: "life", name: "What the children cost", yours: Math.abs(ratio - 1) < 0.005 ? "The typical costs" : pct(ratio, 0) + " of the typical costs",
-      usual: "The typical costs", range: pct(1 - STEP.kids, 0) + " to " + pct(1 + STEP.kids, 0) + " of typical",
+      balanced: "The typical costs", range: pct(1 - STEP.kids, 0) + " to " + pct(1 + STEP.kids, 0) + " of typical",
       why: "What raising a child costs from birth to 18. The typical costs are what middle-income families spend on a child (the USDA's study, brought to today's prices), plus childcare where it's paid, with a second or later child costing 20% less. Today's spending already pays for the children you have, so what counts is how their costs change: lower costs here also mean less freed up for saving once they're grown.",
       z: stepsFrom(ratio, 1, STEP.kids, false), href: "/dashboard/profile#children", where: "Profile" });
   }
@@ -166,13 +166,13 @@ export function rateAssumptions(pr: Profile, entries: Entry[], R: Results): Rati
   /* College, when College Savings' figures are in the plan */
   const P = pr.college.help !== "none" ? pr.college.plan : undefined;
   if (P) {
-    add({ id: "tuition", group: "college", name: "College prices rising", yours: P.infl + "% per year", usual: MID.tuition + "%",
+    add({ id: "tuition", group: "college", name: "College prices rising", yours: P.infl + "% per year", balanced: MID.tuition + "%",
       range: MID.tuition - STEP.tuition + "% to " + (MID.tuition + STEP.tuition) + "%",
-      why: "How fast college prices rise, before inflation. Over the last 30 years they rose faster than prices in general; recent years have been slower. 4% per year is the usual planning figure.",
+      why: "How fast college prices rise, before inflation. Over the last 30 years they rose faster than prices in general; recent years have been slower. 4% per year is the common planning figure.",
       z: stepsFrom(P.infl, MID.tuition, STEP.tuition, false), href: "/dashboard/profile#college", where: "Profile" });
-    add({ id: "college529", group: "college", name: "College fund growth", yours: P.ret + "% per year", usual: MID.college529 + "%",
+    add({ id: "college529", group: "college", name: "College fund growth", yours: P.ret + "% per year", balanced: MID.college529 + "%",
       range: MID.college529 - STEP.college529 + "% to " + (MID.college529 + STEP.college529) + "%",
-      why: "What money saved for college earns, before inflation. A college fund usually moves from stocks toward bonds as college nears, so it earns less than retirement savings; 6% per year is the usual planning figure.",
+      why: "What money saved for college earns, before inflation. A college fund usually moves from stocks toward bonds as college nears, so it earns less than retirement savings; 6% per year is the common planning figure.",
       z: stepsFrom(P.ret, MID.college529, STEP.college529), href: "/dashboard/profile#college", where: "Profile" });
   }
 
@@ -195,7 +195,7 @@ export function rateAssumptions(pr: Profile, entries: Entry[], R: Results): Rati
   if (!abroad && R.ss != null && R.ss > 0) {
     const share = pr.ss.pct ?? 100, full = (R.ss * 12) / (share / 100);
     const from = Math.max(0, (R.claim1 ?? retire) - retire);
-    add({ id: "ss", group: "retirement", name: "Social Security", yours: share + "% of the benefit", usual: MID.ssPct + "%",
+    add({ id: "ss", group: "retirement", name: "Social Security", yours: share + "% of the benefit", balanced: MID.ssPct + "%",
       range: MID.ssPct - STEP.ssPct + "% to " + Math.min(100, MID.ssPct + STEP.ssPct) + "%",
       why: "The trust fund that pays Social Security is projected to run short in 2034. After that, about 80% of benefits could be paid unless Congress acts. Anywhere from that to the full benefit is balanced.",
       z: stepsFrom(share, MID.ssPct, STEP.ssPct), dollars: atRetirement((full * (share - MID.ssPct)) / 100, from, Math.max(0, years - from)), worth: true,
@@ -208,17 +208,22 @@ export function rateAssumptions(pr: Profile, entries: Entry[], R: Results): Rati
     const d = MID.endAge - endAge;
     const dollars = d > 0 ? atRetirement(draw, years, d) : d < 0 ? -atRetirement(draw, years + d, -d) : 0;
     add({ id: "endAge", group: "retirement", name: "How long the plan runs", yours: "To age " + endAge + (two ? ", the younger of you" : ""),
-      usual: "To age " + MID.endAge, range: "ages " + (MID.endAge - STEP.endAge) + " to " + (MID.endAge + STEP.endAge),
+      balanced: "To age " + MID.endAge, range: "ages " + (MID.endAge - STEP.endAge) + " to " + (MID.endAge + STEP.endAge),
       why: "How long savings have to last. Of people who reach 65, about 1 in 4 live past 90 and about 1 in 10 past 95. Planning to 95 covers most lifespans; planning to a younger age makes the plan look better than it may turn out.",
       z: stepsFrom(endAge, MID.endAge, STEP.endAge, false), dollars, worth: true, href: "/dashboard/retirement#drawdown", where: "Retirement" });
   }
 
   const gap = (mine - fvUsual) + rows.filter((r) => r.worth).reduce((s, r) => s + r.dollars, 0);
-  const base = Math.max(1, fvUsual);
-  const z = gap / base / STEP.overall, band = bandOf(z);
+  // The whole gap in steps of growth: what one step more (or less) growth
+  // does to this same plan, every other guess balanced. So the plan as a
+  // whole reads on the same scale as its growth row, however many years
+  // there are to retirement.
+  const withGrowth = (g: number) => fvFor({ ...usualAll, assume: { ...usualAll.assume, growth: g } }, entries) ?? fvUsual;
+  const unit = gap >= 0 ? withGrowth(MID.growth + STEP.growth) - fvUsual : fvUsual - withGrowth(MID.growth - STEP.growth);
+  const z = unit > 0 ? gap / unit : 0, band = bandOf(z);
   rows.sort((a, b) => Math.abs(b.dollars) - Math.abs(a.dollars));
   const lead = band === "bal" ? null : rows.find((r) => Math.sign(r.dollars) === Math.sign(gap) && Math.abs(r.dollars) > 0) ?? null;
-  // Savings at retirement as the plan shows them; the usual figures' the
+  // Savings at retirement as the plan shows them; the balanced figures' the
   // same difference from it, so lump sums and the like count in both.
-  return { z, band, pos: scalePos(z), mine: R.atRetire, usual: R.atRetire - (mine - fvUsual), gap, rows, lead };
+  return { z, band, pos: scalePos(z), mine: R.atRetire, balanced: R.atRetire - (mine - fvUsual), gap, rows, lead };
 }

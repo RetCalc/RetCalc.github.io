@@ -33,7 +33,7 @@ import { AssumptionChip } from "./AssumptionCheck";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
 
-export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entries: DashData["entries"] }) {
+export function Readiness({ R, pr, entries, className }: { R: Results; pr: DashData["profile"]; entries: DashData["entries"]; className?: string }) {
   const pts = areaPoints(R.parts, R.score);
   const areas = FACTORS.map((f) => ({ name: f.name, w: f.w, p: R.parts[f.id]?.p ?? null, pts: pts[f.id] ?? null }));
   // With an area still unscored, the points scored out of the points scored
@@ -48,7 +48,7 @@ export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profil
   useLandedOn("readiness-*", useCallback((id: string) => setOpen(id.slice("readiness-".length) as FactorId), []));
   const why = useMemo(() => (open ? explain(open, pr, entries, R) : null), [open, pr, entries, R]);
   return (
-    <Tile id="readiness" icon={GaugeIcon} title="Readiness score" tip="readiness">
+    <Tile id="readiness" icon={GaugeIcon} title="Readiness score" tip="readiness" className={className}>
       <div className="dsh-inline dsh-mt">
         <span className="dsh-fig">{part ? got : R.score ?? "—"}<small>{part ? `of ${avail} so far` : "of 100"}</small></span>
         <span className={!R.partial && (R.score ?? 0) >= 70 ? "dsh-badge dsh-gain" : "dsh-badge"}>{word}</span>

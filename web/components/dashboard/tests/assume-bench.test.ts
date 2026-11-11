@@ -39,10 +39,12 @@ test("13% growth is very aggressive, 5% is very conservative", () => {
   assert.equal(bandOf(stepsFrom(0.045, MID.growth, STEP.growth)), "vcons");
 });
 
-test("less inflation leans aggressive", () => {
-  assert.equal(bandOf(stepsFrom(0.02, MID.inflation, STEP.inflation, false)), "bal");
-  assert.equal(bandOf(stepsFrom(0.015, MID.inflation, STEP.inflation, false)), "aggr");
-  assert.equal(bandOf(stepsFrom(0.045, MID.inflation, STEP.inflation, false)), "cons");
+test("less inflation leans aggressive: 2.4% to 3.6% is balanced, 2% aggressive", () => {
+  assert.equal(bandOf(stepsFrom(0.025, MID.inflation, STEP.inflation, false)), "bal");
+  assert.equal(bandOf(stepsFrom(0.035, MID.inflation, STEP.inflation, false)), "bal");
+  assert.equal(bandOf(stepsFrom(0.02, MID.inflation, STEP.inflation, false)), "aggr");
+  assert.equal(bandOf(stepsFrom(0.015, MID.inflation, STEP.inflation, false)), "vaggr");
+  assert.equal(bandOf(stepsFrom(0.04, MID.inflation, STEP.inflation, false)), "cons");
 });
 
 test("typical raises fall with age", () => {

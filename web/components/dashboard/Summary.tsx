@@ -174,13 +174,14 @@ export function Summary() {
       ) : null}
 
       <Fold icon={GaugeIcon} title="Readiness score" summary={readinessLine(R)}>
-        <Readiness R={R} pr={pr} entries={data.entries} />
+        <Readiness R={R} pr={pr} entries={data.entries} className="dsh-fold-same" />
       </Fold>
 
       {tl.lanes.length ? (
         <Fold icon={CalendarDaysIcon} title="Your timeline" summary={timelineLine(pr)}>
-          <Tile icon={CalendarDaysIcon} title="Your timeline" right={<span className="dsh-cap">Today is the dashed line</span>}>
-            <div className="dsh-mt"><Timeline lanes={tl.lanes} from={tl.from} to={tl.to} now={nowYear()} /></div>
+          <Tile icon={CalendarDaysIcon} title="Your timeline" className="dsh-fold-same">
+            <Timeline lanes={tl.lanes} from={tl.from} to={tl.to} now={nowYear()} />
+            <p className="dsh-cap dsh-mt6">Today is the dashed line.</p>
           </Tile>
         </Fold>
       ) : null}

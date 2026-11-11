@@ -682,23 +682,23 @@ function Assume({ M, p }: { M: M_; p: PageInfo }) {
   return (
     <Sheet M={M} p={p}>
       <Lead h={<>Your assumptions: {low(BAND_WORDS[A.band])}.</>}>
-        {A.band === "bal" ? "Your plan's guesses about the future are close to the usual figures." : <>Your plan assumes {more ? "a kinder" : "a tougher"} future than the usual figures{A.lead ? ", mostly from " + SHORT[A.lead.id] : ""}.</>}{" "}
-        Savings at retirement come to <b>{rounded(A.mine)}</b> with your figures and <b>{rounded(A.usual)}</b> with every guess at its usual figure. Each guess is also run at its usual figure alone; the difference is what it adds or takes away.
+        {A.band === "bal" ? "Your plan's guesses about the future are balanced." : <>Your plan assumes {more ? "a kinder" : "a tougher"} future than balanced assumptions{A.lead ? ", mostly from " + SHORT[A.lead.id] : ""}.</>}{" "}
+        Savings at retirement come to <b>{rounded(A.mine)}</b> with your figures and <b>{rounded(A.balanced)}</b> with every guess balanced. Each guess is also run balanced on its own; the difference is what it adds or takes away.
       </Lead>
       <AcScale pos={A.pos} band={A.band} words />
-      <table className="rp-t rp-act gap"><thead><tr><th>Assumption</th><th className="l">Yours</th><th className="l">Usual, and the balanced range</th><th className="l">Rating</th><th>Effect at retirement</th></tr></thead>
+      <table className="rp-t rp-act gap"><thead><tr><th>Assumption</th><th className="l">Yours</th><th className="l">Balanced, and its range</th><th className="l">Rating</th><th>Effect at retirement</th></tr></thead>
         {groups.map(({ g, rows }) => (
           <tbody key={g}>
             <tr className="rp-act-g"><td colSpan={5}>{GROUP_NAMES[g]}</td></tr>
             {rows.map((r) => (
-              <tr key={r.id}><td>{r.name}</td><td className="l">{r.yours}</td><td className="l">{r.usual}<span className="rp-act-r">{r.range}</span></td>
+              <tr key={r.id}><td>{r.name}</td><td className="l">{r.yours}</td><td className="l">{r.balanced}<span className="rp-act-r">{r.range}</span></td>
                 <td className="l"><span className="rp-act-b"><AcScale pos={r.pos} band={r.band} />{BAND_WORDS[r.band]}</span></td><td>{signed(r.dollars)}{r.worth && Math.abs(r.dollars) >= 500 ? "*" : ""}</td></tr>
             ))}
           </tbody>
         ))}
       </table>
       {A.rows.some((r) => r.worth && Math.abs(r.dollars) >= 500) ? <p className="rp-small">* Social Security and how long the plan runs don&apos;t change savings at retirement; these say what the difference in the years they change is worth then.</p> : null}
-      <Sec>Where the usual figures come from</Sec>
+      <Sec>Where the balanced figures come from</Sec>
       <div className="rp-cols2 rp-act-why">{A.rows.map((r) => <p key={r.id} className="rp-small"><b>{r.name}.</b> {r.why}</p>)}</div>
     </Sheet>
   );

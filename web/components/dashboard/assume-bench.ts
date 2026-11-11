@@ -2,8 +2,8 @@
    step, and the whole plan on the same five-band scale. Pure figures, so
    they can be tested on their own; assumptions.ts runs the plan with them.
 
-   Every middle value is the Dashboard's own usual figure, so a plan left
-   on the usual figures sits in the middle. One step either side of the
+   Every middle value is the Dashboard's own default, so a plan left on
+   the defaults sits in the middle. One step either side of the
    middle is still Balanced; past that a figure leans one way, and two
    steps out it's Very. A figure that makes the plan look better (more
    growth, less inflation, bigger raises, cheaper children) leans
@@ -42,7 +42,7 @@ export function scalePos(z: number): number {
   return seg(2, 3, 0.8);
 }
 
-/** The usual figures: the middle of each scale. */
+/** The balanced figures: the middle of each scale. */
 export const MID = {
   /** Growth before inflation: 4.5% after 3% inflation, the usual. */
   growth: 1.045 * 1.03 - 1,
@@ -52,22 +52,22 @@ export const MID = {
   ssPct: 90,
   /** The plan runs to this age (the younger of you's). */
   endAge: 95,
-  /** College Savings' usual figures, percent. */
+  /** College Savings' default figures, percent. */
   tuition: 4, college529: 6,
 };
 /** One step from the middle. */
 export const STEP = {
   /** 1.5 points after inflation, before inflation at 3%. */
   growth: 0.015 * 1.03,
-  inflation: 0.01,
+  /** 0.6 points: 2.4% to 3.6% is balanced. The Fed's 2% is on a measure
+      that runs a few tenths below consumer prices, so 2% here leans hopeful. */
+  inflation: 0.006,
   raise: 0.0075,
   ssPct: 10,
   endAge: 3,
   /** Children's costs: 15% from the typical. */
   kids: 0.15,
   tuition: 1, college529: 1.25,
-  /** The whole plan: 15% of savings at retirement. */
-  overall: 0.15,
 };
 
 /** Raises beyond inflation typical at each age: pay climbs fastest early

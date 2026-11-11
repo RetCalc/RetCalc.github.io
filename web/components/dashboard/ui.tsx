@@ -123,15 +123,16 @@ export function PlanFacts({ rows, note, id }: { rows: [ReactNode, ReactNode][]; 
 }
 
 /** A section folded to one line: its name and what it comes to, opened
-    for the whole of it. Closed until asked for; everything stays a click
-    away. */
-export function Fold({ icon: Icon, title, summary, id, className, children }: { icon: LucideIcon; title: string; summary: ReactNode; id?: string; className?: string; children: ReactNode }) {
+    in place to the whole of it, in the same box. `below` stays in view
+    under the header, open or closed (the assumptions' scale). Closed until
+    asked for; everything stays a click away. */
+export function Fold({ icon: Icon, title, summary, below, id, className, children }: { icon: LucideIcon; title: string; summary: ReactNode; below?: ReactNode; id?: string; className?: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   // A link to it ("/dashboard/summary#assumption-check") opens it.
   useLandedOn(id ?? "", useCallback(() => setOpen(true), []));
   return (
     <div className="dsh-fold" id={id}><Collapsible open={open} onOpenChange={setOpen}>
-      <section className="dsh-tile dsh-fold-h">
+      <section className="dsh-tile dsh-fold-h" data-open={open ? "" : undefined}>
         <h2>
           <CollapsibleTrigger variant="row">
             <span className="dsh-ti"><Icon aria-hidden="true" /></span>
@@ -140,8 +141,9 @@ export function Fold({ icon: Icon, title, summary, id, className, children }: { 
             <ChevronDownIcon aria-hidden="true" />
           </CollapsibleTrigger>
         </h2>
+        {below ? <div className="dsh-fold-below">{below}</div> : null}
+        <CollapsibleContent><div className={className ? "dsh-fold-b " + className : "dsh-fold-b"}>{children}</div></CollapsibleContent>
       </section>
-      <CollapsibleContent><div className={className ? "dsh-fold-b " + className : "dsh-fold-b"}>{children}</div></CollapsibleContent>
     </Collapsible></div>
   );
 }
