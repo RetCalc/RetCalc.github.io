@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="spending-with-age" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="spending-with-age" data-reviewed="2026-11-10"
   data-title="Spending changes with age"
   data-idea="Retirees tend to spend less each year, until health costs rise late"
   data-tool="drawdown" data-try="Set spending to follow the retirement spending smile, or your own stages, and see how long the money lasts, with your plan already filled in.">
@@ -11,14 +11,14 @@
 <p>The opposite mistake is just as easy. A plan that assumes a steep decline can leave you short in your late eighties, exactly when large medical or care bills are most likely and when you're least able to go back to work or cut back further.</p>
 
 <h2 id="smile">What the research found: the spending smile</h2>
-<p>The study planners cite most is David Blanchett's "Exploring the Retirement Consumption Puzzle," published in the Journal of Financial Planning in May 2014. Blanchett used the RAND version of the Health and Retirement Study, matched to its Consumption and Activities Mail Survey, which asked the same households about their spending every two years from 2001 to 2009. He kept 591 households that considered themselves retired and whose reported spending was consistent from survey to survey, and followed how their spending changed with age.</p>
+<p>The study planners cite most is David Blanchett's "Exploring the Retirement Consumption Puzzle," published in the Journal of Financial Planning in May 2014. Blanchett used the RAND version of the Health and Retirement Study, matched to its Consumption and Activities Mail Survey, which asked the same households about their spending every two years from 2001 to 2009. He kept 591 households that answered all five surveys, considered themselves retired, and whose reported spending was consistent from one survey to the next, and followed how their spending changed with age.</p>
 <p>He found three things:</p>
 <ul>
   <li>Real spending fell. From 60 to 90 the average change was −0.96% per year after inflation, roughly 1% per year.</li>
-  <li>The decline wasn't even. Spending fell least in the early and late years of retirement and fastest in between, around the late seventies. Plotted as the yearly change by age, that pattern looks like a smile, which gave the finding its name. Blanchett attributed the early pattern to younger retirees traveling and enjoying retirement, and the late one to rising medical costs.</li>
+  <li>The decline wasn't even. Spending fell least in the early and late years of retirement and fastest in between; in the formula he fitted, the low point of the curve is at about 78. Plotted as the yearly change by age, that pattern looks like a smile, which gave the finding its name. Blanchett attributed the early pattern to younger retirees traveling and enjoying retirement, and the late one to rising medical costs.</li>
   <li>How much you spend mattered. Households that spent more fell further. Households that were well funded but spending little tended to raise their spending from 65 to 75, while those spending more than their savings could support cut sharply.</li>
 </ul>
-<p>He turned the results into a formula for the yearly change in real spending, based on age and the level of spending. It's the formula behind the spending smile option in the Drawdown Simulator. The chart shows what it implies for three retirees who start at 65 with different budgets.</p>
+<p>He turned the results into a formula for the yearly change in real spending, based on age and the level of spending. It's the formula behind the spending smile option in the Drawdown Simulator. For a 70-year-old spending $60,000 it works out like this: 0.00008 × 70² is 0.392, 0.0125 × 70 is 0.875, and 0.0066 × the natural log of 60,000 is 0.073, so the change is 0.392 − 0.875 − 0.073 + 0.546 = −0.010, a 1% cut in real spending that year. Put in 91 and $46,700 and the answer is almost exactly zero, the bottom of the dip. The chart shows what it implies for three retirees who start at 65 with different budgets.</p>
 
 <!-- data: lib/engine/drawdown.js ddPath with path "smile", retireAge 65, 36 years, for first-year spending of $40,000, $60,000 and $100,000.
      Each year's change is Blanchett's 2014 equation 0.00008 × age² − 0.0125 × age − 0.0066 × ln(spending) + 0.546 (ddBlanchett), held within ±5%.
@@ -38,9 +38,20 @@
   <li>The no-go years: health limits what you do. Discretionary spending falls further, but health care, help at home and possibly long-term care can more than make up for it.</li>
 </ul>
 <p>The ages are rough, and they depend far more on health than on birthdays. Some people are still traveling hard at 85; others slow down at 70. The categories that change also matter as much as the totals. Housing costs tend to stay put, or fall when a mortgage is paid off. Transport falls as people drive less and replace cars less often. Health care rises steadily.</p>
+<p>The Bureau of Labor Statistics' Consumer Expenditure Survey shows the same shifts from a different angle. It doesn't follow households over time. It asks households of every age what they spent in one year, so the 75-year-olds and the 60-year-olds in it are different people, from different generations. Still, the categories move the way the phases suggest.</p>
+
+<!-- data: BLS Consumer Expenditure Survey, 2024, average annual expenditures by age of reference person, read from the BLS series on FRED
+     (CXUTOTALEXP, CXUHOUSING, CXUFOODTOTL, CXUTRANS, CXUHEALTH; LB0406M = 55 to 64, LB0408M = 65 to 74, LB0409M = 75 or over).
+     Totals $84,946, $65,354, $55,834. Everything else = total − the four categories shown: 84,946 − 59,029 = 25,917; 65,354 − 49,941 = 15,413; 55,834 − 43,940 = 11,894.
+     Health care share of the total: 6,711 ÷ 84,946 = 7.9%; 7,715 ÷ 65,354 = 11.8%; 7,918 ÷ 55,834 = 14.2%. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["55 to 64","65 to 74","75 and older"],"xLabel":"Age of the household","y":"money","series":[{"name":"Housing","tone":"neutral","values":[27019,22329,21999]},{"name":"Food","tone":"muted","values":[10214,8483,7168]},{"name":"Transportation","tone":"accent","values":[15085,11414,6855]},{"name":"Health care","tone":"bad","values":[6711,7715,7918]},{"name":"Everything else","tone":"good","values":[25917,15413,11894]}]}'>
+  <figcaption>Average household spending in 2024 by age group, from the Consumer Expenditure Survey. Everything else includes retirement contributions and Social Security tax, which mostly end with work.</figcaption>
+</figure>
+
+<p>Households 75 and older spent $55,834 on average in 2024, about 15% less than those 65 to 74. Housing was nearly the same in both groups, transportation was 40% lower, and health care was a little higher in dollars and a good deal higher as a share: 14.2% of the budget against 11.8%. The larger drop from the 55 to 64 group is partly an artifact, since much of their "everything else" is pension contributions and payroll tax, which mostly stop at retirement.</p>
 
 <h2 id="health">Health costs late in life</h2>
-<p>The upturn at the right of the smile comes mostly from health care. In Blanchett's data, medical care was about 10% of a household's spending at 65 and about 20% by 85. A 2016 study by Mariacristina De Nardi, Eric French, John Bailey Jones and Jeremy McCauley, using Medicare's own survey of beneficiaries, found that average medical spending more than doubles between 70 and 90, and that it's highly concentrated: in any year the top 10% of spenders account for 52% of the total. Government programs pay about 65% of older Americans' medical costs. The rest falls to private insurance and to households.</p>
+<p>The upturn at the right of the smile comes mostly from health care. In the 2011 Consumer Expenditure Survey figures Blanchett cites, medical care was about 10% of a household's spending at 65 and about 20% by 85. A 2016 study by Mariacristina De Nardi, Eric French, John Bailey Jones and Jeremy McCauley, using Medicare's own survey of beneficiaries, found that average medical spending more than doubles between 70 and 90, and that it's highly concentrated: in any year the top 10% of spenders account for 52% of the total. Government programs pay about 65% of older Americans' medical costs. The rest falls to private insurance and to households.</p>
 <p>Medical prices have also tended to rise faster than prices in general. The Bureau of Labor Statistics' experimental index for older Americans, CPI-E, which gives more weight to health care and housing, rose 3.07% per year from December 1982 to December 2012, against 2.92% for the regular CPI-U, according to Blanchett's paper. The gap is small in any one year but adds up over a long retirement.</p>
 <p>For a sense of the total, Fidelity's 2026 estimate is that a single person retiring at 65 in 2026 may need about $185,500 after tax to cover health care in retirement, counting Medicare premiums and out-of-pocket costs but not long-term care. Long-term care is a separate and much more uneven risk: many people need little or none, while a few need years of it. <a href="/learn/long-term-care">Long-term care</a> covers the odds, the costs and the ways to pay.</p>
 
@@ -124,6 +135,7 @@
   <ul class="deeper">
     <li><a href="https://www.financialplanningassociation.org/article/journal/MAY14-exploring-retirement-consumption-puzzle">Exploring the retirement consumption puzzle (Blanchett, 2014)</a> <span>Journal of Financial Planning</span></li>
     <li><a href="https://www.nber.org/papers/w21270">Medical spending of the US elderly (De Nardi, French, Jones and McCauley)</a> <span>NBER</span></li>
+    <li><a href="https://fred.stlouisfed.org/series/CXUTOTALEXPLB0409M">Consumer Expenditure Survey: average annual expenditures, age 75 or over</a> <span>Bureau of Labor Statistics, on FRED</span></li>
     <li><a href="https://www.fidelity.com/viewpoints/personal-finance/plan-for-rising-health-care-costs">How to plan for rising health care costs</a> <span>Fidelity</span></li>
   </ul>
 </footer>

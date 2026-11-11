@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="what-a-plan-answers" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="what-a-plan-answers" data-reviewed="2026-11-10"
   data-title="What a retirement plan answers"
   data-idea="Three questions, the few inputs that decide them, and where to start"
   data-tool="guide" data-try="Answer one question at a time and get your number, a readiness score and the changes that would help most, with your plan already filled in.">
@@ -21,7 +21,12 @@
 <p>Here's a made-up example you can check with a calculator. Maya is 40, earns $85,000 per year, and has $80,000 saved for retirement. She adds $700 per month, holds a balanced mix of stocks and bonds, and plans to retire at 67. In retirement she expects to spend $60,000 per year, taxes included, in today's dollars.</p>
 <p>Start with the first question, how much she'll need. Social Security, estimated from a steady career at her pay and claimed at 67, would pay her about $36,150 per year. That leaves about $23,850 per year for her savings to cover, and 25 times that is about $596,000. That's her target.</p>
 <p>Next, what she's on course for. At 4.5% per year after inflation, the return RetCalc's Calculator assumes for a balanced mix, her $80,000 plus $700 per month grows to about $690,000 by 67, in today's dollars. That's about 116% of her target, so on the middle path she's ahead.</p>
-<p>The other two questions are whether it lasts and how sure she can be. The 25 times rule comes from 30-year retirements, which would take Maya from 67 to 97, long enough for most people. The weaker point is the return. If her investments earn 3% per year after inflation instead of 4.5%, she reaches 67 with about $519,000, or 87% of her target. Her plan is on track in an average market and short in a poor one.</p>
+<p>The other two questions are whether it lasts and how sure she can be. The 25 times rule comes from 30-year retirements, which would take Maya from 67 to 97, long enough for most people. The weaker point is the return. If her investments earn 3% per year after inflation instead of 4.5%, she reaches 67 with about $519,000, or 87% of her target. If they earn 6%, she has about $927,000. Her plan is on track in an average market and short in a poor one, and nothing she does at 40 tells her which she'll get.</p>
+
+<!-- data: the Calculator's engine, projectBasic (lib/engine/calculators.js), $80,000 starting, $700 per month, 27 years from age 40, balance at the end of every third year. Real returns 4.5% (Balanced) and the Calculator's band of 1.5 points either side: 6% and 3%. Target = 25 × (60,000 − 36,151) = 596,236, flat because everything is in today's dollars. -->
+<figure data-chart='{"type":"line","x":[40,43,46,49,52,55,58,61,64,67],"xLabel":"Age","y":"money","series":[{"name":"Better markets, 6%","tone":"good","values":[80000,122320,172723,232754,304253,389408,490830,611625,755493,926843]},{"name":"Middle path, 4.5%","tone":"accent","values":[80000,117760,160851,210024,266140,330176,403253,486645,581810,690409]},{"name":"Poorer markets, 3%","tone":"bad","values":[80000,113322,149733,189521,232998,280506,332420,389148,451136,518872]},{"name":"Target","tone":"muted","dash":true,"values":[596236,596236,596236,596236,596236,596236,596236,596236,596236,596236]}]}'>
+  <figcaption>Maya's savings from 40 to 67 at three steady returns after inflation, against her target. The three paths are hard to tell apart for the first ten years and about $400,000 apart by the end.</figcaption>
+</figure>
 
 <!-- data: the Calculator's own engine, projectBasic (lib/engine/calculators.js), monthly contributions held level in today's dollars, from age 40 to 67 (27 years), $80,000 starting, $700 per month. Real returns 4.5% (Balanced), 3% (the Calculator's low band, 4.5% minus 1.5 points) and 5.75% (Growth). Social Security from ssEstimate(85000, 35, claim age) with the 2026 bend points: $36,151 at 67, $41,935 at 69, $31,330 at 65 (unrounded in the targets). Target = 25 × (spending − Social Security). Spending $60,000; 10% less is $54,000. Retiring at 65 or 69 moves the claim to that age too. Share covered = savings ÷ target. -->
 <figure>
@@ -41,6 +46,12 @@
 </figure>
 
 <p>Each row moves one input, and they don't move the answer equally. Two years of work, from 67 to 69, changes her position more than anything else on the list, because it does three things at once: two more years of saving and growth, a larger Social Security check for life, and two fewer years for the savings to fund. Spending 10% less does nearly as much, because spending sets the target itself. A poor market, which she can't control, can take her from comfortably ahead to short.</p>
+<p>The retirement age rows are the least obvious, because the target moves as well as the savings. Maya spends $60,000 per year whenever she retires, but Social Security pays more the later she claims it: about $31,330 per year at 65, $36,150 at 67 and $41,935 at 69. Her savings only have to cover what's left, and the target is 25 times that. Waiting from 65 to 69 cuts the yearly gap from $28,670 to $18,065, which lowers the target by about $265,000.</p>
+
+<!-- data: ssEstimate(85000, 35, claim age) with the 2026 bend points: $31,330 at 65, $36,151 at 67, $41,935 at 69. From savings = 60,000 − Social Security: 28,670, 23,849, 18,065. Targets at 25 times: 716,738, 596,236, 451,634. -->
+<figure data-chart='{"type":"bar","stack":true,"x":["Retire at 65","Retire at 67","Retire at 69"],"xLabel":"Age Maya stops work and claims Social Security","y":"money","series":[{"name":"Social Security","tone":"good","values":[31330,36151,41935]},{"name":"From savings","tone":"accent","values":[28670,23849,18065]}]}'>
+  <figcaption>Where Maya's $60,000 per year would come from, by the age she retires and claims. The later she claims, the less her savings have to supply each year.</figcaption>
+</figure>
 
 <p data-yours></p>
 
@@ -63,21 +74,21 @@
 <p>Before any of this works, a plan needs a floor: enough cash to absorb a car repair, a medical bill or a few months between jobs without borrowing at credit card rates or pulling money out of a retirement account, which can bring taxes and penalties. That's the job of an <a href="/learn/emergency-fund">emergency fund</a>, and it usually comes before investing for retirement beyond any employer match. Without one, an ordinary bad month can knock a plan off course.</p>
 
 <h2 id="tracks">How the rest of Learn fits together</h2>
-<p>The lessons are grouped into eight tracks. Each one answers part of the three questions, and you can take them in any order. If you're starting out, this track first, then whichever matches the decision in front of you.</p>
+<p>The lessons are grouped into eight tracks. Each one answers part of the three questions, and you can take them in any order. If you're starting out, read this track first, then whichever one matches the decision in front of you.</p>
 
 <!-- data: the eight tracks and their order from lib/learn/catalog.ts; the question each feeds is this lesson's own mapping. -->
 <figure>
   <table>
     <thead><tr><th>Track</th><th>What it covers</th><th>Which question it answers</th></tr></thead>
     <tbody>
-      <tr><td><a href="/learn/what-a-plan-answers">Foundations</a></td><td>Growth, inflation, savings rate, the target, the horizon and the cushion</td><td>All three, in outline</td></tr>
-      <tr><td><a href="/learn/where-each-dollar-goes">Saving and accounts</a></td><td>Which account each dollar goes to: 401(k), IRA, Roth, HSA, taxable</td><td>How much you'll have</td></tr>
-      <tr><td><a href="/learn/stocks-bonds-cash">Investing and risk</a></td><td>What you own, how much it swings, and how a plan measures risk</td><td>How sure you can be</td></tr>
-      <tr><td><a href="/learn/four-percent-rule">Withdrawing</a></td><td>Turning savings into income: withdrawal rates, strategies, account order, RMDs</td><td>Whether it lasts</td></tr>
-      <tr><td><a href="/learn/tax-brackets">Taxes</a></td><td>How income is taxed now and in retirement, Roth conversions, IRMAA, states</td><td>How much you'll need</td></tr>
+      <tr><td><a href="/learn/what-a-plan-answers">Foundations</a></td><td>Growth, inflation, your paycheck, savings rate, the target, the horizon, the cushion and net worth</td><td>All three, in outline</td></tr>
+      <tr><td><a href="/learn/where-each-dollar-goes">Saving and accounts</a></td><td>Which account each dollar goes to: 401(k), IRA, Roth, HSA, taxable, and what to do with an old plan</td><td>How much you'll have</td></tr>
+      <tr><td><a href="/learn/stocks-bonds-cash">Investing and risk</a></td><td>What you own, how to spread it and where to hold it, how much it swings, and how a plan measures risk</td><td>How sure you can be</td></tr>
+      <tr><td><a href="/learn/years-before-retiring">Withdrawing</a></td><td>The last years of work, then turning savings into income: withdrawal rates, strategies, account order, RMDs</td><td>Whether it lasts</td></tr>
+      <tr><td><a href="/learn/tax-brackets">Taxes</a></td><td>How income is taxed now and in retirement, capital gains, giving, Roth conversions, IRMAA, states</td><td>How much you'll need</td></tr>
       <tr><td><a href="/learn/social-security-benefit">Social Security and health care</a></td><td>Your benefit, when to claim, Medicare, and cover before 65</td><td>How much you'll need</td></tr>
       <tr><td><a href="/learn/fire">Retiring early</a></td><td>Leaving work before the usual ages and paying for the gap to 59½ and 65</td><td>Whether it lasts</td></tr>
-      <tr><td><a href="/learn/rent-or-buy">Big decisions</a></td><td>Homes, mortgages, debt, college and children</td><td>How much you'll have, and need</td></tr>
+      <tr><td><a href="/learn/rent-or-buy">Big decisions</a></td><td>Homes, mortgages, debt, college, children, insurance, what you leave behind and paying for advice</td><td>How much you'll have, and need</td></tr>
     </tbody>
   </table>
   <figcaption>Each track's name opens its first lesson.</figcaption>
@@ -114,6 +125,7 @@
   <ul class="deeper">
     <li><a href="https://www.ssa.gov/myaccount/">my Social Security</a> <span>Social Security Administration</span></li>
     <li><a href="https://www.investor.gov/financial-tools-calculators/financial-tools/ballpark-etimate">Ballpark E$timate</a> <span>Investor.gov (SEC)</span></li>
+    <li><a href="https://www.dol.gov/agencies/ebsa/about-ebsa/our-activities/resource-center/publications/top-10-ways-to-prepare-for-retirement">Top 10 ways to prepare for retirement</a> <span>US Department of Labor</span></li>
     <li><a href="https://www.investor.gov/introduction-investing/investing-basics/investment-accounts/tax-advantaged-accounts/retirement-savings">Retirement savings</a> <span>Investor.gov (SEC)</span></li>
   </ul>
 </footer>

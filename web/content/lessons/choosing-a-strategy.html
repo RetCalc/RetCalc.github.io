@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="choosing-a-strategy" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="choosing-a-strategy" data-reviewed="2026-11-10"
   data-title="Choosing a strategy"
   data-idea="Fifteen withdrawal rules compared, and how to match one to you"
   data-tool="drawdown" data-try="Set every withdrawal strategy to the same risk and compare them side by side, with your plan already filled in.">
@@ -35,7 +35,7 @@
       <tr><td>Smoothed</td><td>Vanguard dynamic spending</td><td>Floor and ceiling with Vanguard's limits: up 5% or down 2.5% at most per year, after inflation.</td></tr>
       <tr><td>Smoothed</td><td>Yale Endowment</td><td>70% of last year's spending raised for inflation, plus 30% of a target rate (5%) of today's balance.</td></tr>
       <tr><td>Smoothed</td><td>Hebeler Autopilot II</td><td>75% of last year's spending raised for inflation, plus 25% of a VPW-style payment on what's left.</td></tr>
-      <tr><td>Smoothed</td><td>Sensible withdrawals</td><td>A steady base, the starting rate raised with inflation, plus 10% of each year's real investment gains.</td></tr>
+      <tr><td>Smoothed</td><td>Sensible withdrawals</td><td>A steady base, the starting rate raised with inflation, plus 10% of the previous year's real investment gains, when there were any.</td></tr>
       <tr><td>Valuation</td><td>CAPE-based</td><td>A base rate (1.75%) plus half the stock market's earnings yield (1 ÷ CAPE), applied to the balance: more when stocks are cheap, less when they're dear.</td></tr>
     </tbody>
   </table>
@@ -81,6 +81,11 @@
   <figcaption>Each strategy set to spend as much as it could while never falling below $32,000 per year in any of the 70 historical starts, on $1,000,000 in a 60/40 mix over 30 years. Lifetime spending and what's left are the middle start's; a cut is any year spending fell from the year before, after inflation.</figcaption>
 </figure>
 
+<!-- data: the table above, columns Typical lifetime spending and Typically left at the end (ddShowdown life and end), for fixed, kitces, pct, guardrails, vanguard, rmd, vpw and riskgr. -->
+<figure data-chart='{"type":"bar","x":["Fixed","Ratchet","Fixed %","Guardrails","Vanguard","RMD","VPW","Risk-based"],"y":"money","labels":true,"series":[{"name":"Typical lifetime spending","tone":"accent","values":[1139009,1356800,1732168,1694284,1694887,1961096,2170479,2168898]},{"name":"Typically left at the end","tone":"neutral","values":[1794396,1608159,715517,913319,881121,910146,0,0]}]}'>
+  <figcaption>Eight of the fifteen rows as a picture: what the middle start spent over 30 years and what the middle start had left, in today's dollars. The two bars are separate medians, so they don't add up to one retiree's total.</figcaption>
+</figure>
+
 <p>Read the table by columns, since each strategy is strong in one and weak in another.</p>
 <ul>
   <li>The steady rules spend the least over a lifetime, $1.14 million for the fixed amount, but never cut and leave the most, $1.79 million. The ratchet keeps that steadiness and adds $220,000 of lifetime spending.</li>
@@ -100,7 +105,7 @@
   <figcaption>Spending each year, in today's dollars, retiring in January 1966 with $1,000,000 in a 60/40 mix, each strategy at the setting that never fell below $32,000 in any start. The fixed amount runs short in its final year.</figcaption>
 </figure>
 
-<p>All four come down to about $32,000, because 1966 is the start that sets the limit for each of them. The difference is the route. The fixed amount holds steady at $37,967 for 29 years. Guardrails spend more for the first decade and then sit on the floor for nearly 20 years. VPW swings from year to year on the way down. Vanguard's rule slides a little every year. Which of those you'd rather live through is a fair way to choose.</p>
+<p>All four come down to about $32,000, because 1966 is the start that sets the limit for each of them. The difference is the route. The fixed amount holds steady at $37,967 for 29 years and comes up short in the last, at $32,030, which still clears the line. That's why its setting here, 3.80%, is a hair above the 3.79% that never runs short at all. Guardrails spend more for the first decade and then sit on the floor for nearly 20 years. VPW swings from year to year on the way down. Vanguard's rule slides a little every year. Which of those you'd rather live through is a fair way to choose.</p>
 
 <h2 id="matching">Matching a strategy to your situation</h2>
 <p>With the trade-offs in view, a few common situations point toward particular families.</p>

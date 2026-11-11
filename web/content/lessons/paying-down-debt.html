@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="paying-down-debt" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="paying-down-debt" data-reviewed="2026-11-10"
   data-title="Paying down debt"
   data-idea="Which debt first, how much faster, and when to invest instead"
   data-tool="debt" data-try="List your debts and compare avalanche and snowball month by month, with your debt-free date and the interest each one costs.">
@@ -6,7 +6,7 @@
 <p class="lede">High-interest debt works like compound growth in reverse: the interest charges grow on themselves, month after month. Paying it off is one of the few guaranteed returns in personal finance, and with several debts, how much extra you put toward them matters more than which one you pay first.</p>
 
 <h2 id="rate">Why the interest rate matters so much</h2>
-<p>Credit cards are where most expensive debt lives. The Federal Reserve's figures put the average rate on cards that were charged interest at 22.15% in the second quarter of 2026. At that kind of rate, a balance that only gets the minimum payment shrinks slowly, and much of every payment goes to interest.</p>
+<p>Credit cards are where most expensive debt lives. The Federal Reserve's figures put the average rate on cards that were charged interest at 22.36% in August 2026, the latest reading. At that kind of rate, a balance that only gets the minimum payment shrinks slowly, and much of every payment goes to interest.</p>
 <p>Take a $9,800 card at 22.9%, the first debt in the Debt Payoff tool's starting list, with a fixed $245 payment every month. In the first month, $187 of that $245 is interest. Only $58 reduces the balance. Kept up, the payment clears the card in 77 months, a little over six years, and the interest comes to $8,878, nearly as much as the original balance.</p>
 
 <!-- data: debtRun (lib/engine/math.js) with one debt: balance 9,800, APR 22.9%, payment fixed at each amount, mode "min".
@@ -25,7 +25,17 @@
 </figure>
 
 <p>Adding $55 per month to the payment saves more than two years and about $3,200. Adding $300 cuts the interest by about three-quarters. The first extra dollars do the most, because at the start nearly all of the payment is interest.</p>
-<p>Real card minimums are usually smaller than a fixed $245. Issuers commonly set the minimum at a small percentage of the balance plus that month's interest, so the minimum falls as the balance falls, and paying only the minimum can stretch the debt out much longer than the table shows. Your statement has a box showing how long the minimum would take.</p>
+<h3>Why the card's own minimum takes so long</h3>
+<p>A real card minimum isn't a fixed amount. Issuers commonly set it at a small percentage of the balance plus that month's interest, with a dollar floor, so the minimum falls as the balance falls. Suppose this card asks for 1% of the balance plus interest, and never less than $35. The first minimum is $285, more than the fixed $245. But it shrinks every month, and the balance shrinks more slowly with it: paying only what's asked takes 266 months, a little over 22 years, and costs $17,178 in interest.</p>
+
+<!-- data: 9,800 at 22.9%. Fixed 245: debtRun balances at each year-end, rounded to $100; paid off in month 77.
+     Shrinking minimum (a hypothetical but common formula): each month pay max(35, 1% of balance + that month's interest); first payment 98 + 187.02 = 285.02;
+     paid off in month 266, total interest 17,178. Balances at each year-end, rounded to $100. -->
+<figure data-chart='{"type":"line","x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],"xLabel":"Years","y":"money","series":[{"name":"Card minimum, shrinking","tone":"bad","values":[9800,8700,7700,6800,6000,5400,4800,4200,3700,3300,2900,2600,2300,2000,1800,1600,1400,1300,1100,900,700,400,0,0]},{"name":"Fixed $245 every month","tone":"good","values":[9800,9000,8100,6800,5300,3400,1000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}]}'>
+  <figcaption>The $9,800 card at 22.9%, paid two ways. The shrinking minimum starts higher than $245 and pays more in the first couple of years, then falls away; holding the payment steady clears the card nearly 16 years sooner.</figcaption>
+</figure>
+
+<p>Keeping your payment at the first minimum, and not letting it fall with the balance, avoids most of that. Your statement has a box showing how long the minimum alone would take and what it would cost.</p>
 
 <h2 id="methods">Avalanche and snowball</h2>
 <p>With more than one debt, the question is where the extra money goes. Two methods are popular, and they share the part that does most of the work:</p>
@@ -55,9 +65,14 @@
 <p>The avalanche costs less, as it always will: money aimed at the highest rate saves the most interest. Here it saves $424 and finishes one month sooner. The snowball clears its first debt in month 6 instead of month 23. That early win is the snowball's whole case, and the research below suggests it's a real one.</p>
 <p>The bigger gap in the table is between either method and minimums only: more than six years and about $10,000 of interest. The rollover and the extra $300 do that, whichever order you pick.</p>
 
-<!-- data: debtRun months[].balance every 6 months, rounded to $100; minimums only vs avalanche with 300 extra. Minimums run to month 123. -->
-<figure data-chart='{"type":"line","x":[0,6,12,18,24,30,36,42,48,54,60,66,72,78,84,90,96,102,108,114,120,126],"xLabel":"Months","y":"money","series":[{"name":"Minimums only","tone":"bad","values":[49400,46200,42800,39200,35500,31600,27600,23600,19800,17900,15800,13700,11300,9200,8100,6900,5700,4500,3200,1900,500,0]},{"name":"Avalanche, $300 extra","tone":"good","values":[49400,44300,38800,32900,26500,19800,12900,5800,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}]}'>
-  <figcaption>What's owed on the four debts over time. With the rollover and $300 extra, the total falls faster every time a debt is cleared.</figcaption>
+<!-- data: the same three debtRun runs. Total paid = 49,400 borrowed + total interest: 67,721; 57,555; 57,978. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["Minimums only","Avalanche, $300 extra","Snowball, $300 extra"],"y":"money","series":[{"name":"What was owed","tone":"neutral","values":[49400,49400,49400]},{"name":"Interest","tone":"bad","values":[18321,8155,8578]}]}'>
+  <figcaption>Everything paid to clear the four debts. The two orders are $424 apart; either one is about $10,000 below minimums only.</figcaption>
+</figure>
+
+<!-- data: debtRun months[].balance every 6 months, rounded to $100; minimums only, avalanche and snowball with 300 extra. Minimums run to month 123, the snowball to month 48. -->
+<figure data-chart='{"type":"line","x":[0,6,12,18,24,30,36,42,48,54,60,66,72,78,84,90,96,102,108,114,120,126],"xLabel":"Months","y":"money","series":[{"name":"Minimums only","tone":"bad","values":[49400,46200,42800,39200,35500,31600,27600,23600,19800,17900,15800,13700,11300,9200,8100,6900,5700,4500,3200,1900,500,0]},{"name":"Avalanche, $300 extra","tone":"good","values":[49400,44300,38800,32900,26500,19800,12900,5800,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"name":"Snowball, $300 extra","tone":"accent","dash":true,"values":[49400,44300,38900,33100,26900,20200,13300,6200,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}]}'>
+  <figcaption>What's owed on the four debts over time. With the rollover and $300 extra, the total falls faster every time a debt is cleared. The avalanche and snowball lines stay within a few hundred dollars of each other the whole way.</figcaption>
 </figure>
 
 <h3>When the order costs more</h3>
@@ -108,17 +123,24 @@
 <p>Cutting the rate makes every payment go further. A few common ways, each with a catch:</p>
 <ul>
 <li>A balance transfer card offers 0% or a low rate for a set period, often 12 months or more. There's usually a fee of 3% to 5% of the amount moved, and the rate jumps when the promotion ends. It works if you can clear the balance before then and stop using the old card.</li>
-<li>A consolidation loan replaces several debts with one fixed-rate loan. The Federal Reserve's average for a 24-month personal loan was 11.86% in the second quarter of 2026, well under a typical card rate but far from free. It helps only if new charges don't refill the cards.</li>
+<li>A consolidation loan replaces several debts with one fixed-rate loan. The Federal Reserve's average for a 24-month personal loan was 11.90% in August 2026, well under a typical card rate but far from free. It helps only if new charges don't refill the cards.</li>
 <li>Asking your card issuer for a lower rate costs nothing, and sometimes works, especially with a good payment record.</li>
 <li>Nonprofit credit counseling can set up a debt management plan, often with lower rates negotiated with the card companies. Counselors usually don't reduce what you owe.</li>
-<li>Debt settlement companies are riskier. They often tell you to stop paying your creditors while they negotiate, which brings late fees, collections and possibly lawsuits. The CFPB warns that charging fees before settling any of your debts may be illegal.</li>
+<li>Debt settlement companies are riskier. They often tell you to stop paying your creditors while they negotiate, which brings late fees, collections and possibly lawsuits. The CFPB treats a company that charges fees before it has settled any of your debts as a warning sign; federal rules generally bar those advance fees.</li>
 </ul>
 <p>Borrowing from a 401(k) to pay off cards is sometimes suggested too. It lowers the rate, but the money is out of the market while it's repaid, and if you leave your job the loan can come due quickly or be taxed as a withdrawal.</p>
 
 <h2 id="students">Student loans, briefly</h2>
-<p>Federal student loans play by different rules from other debt. For loans first paid out from July 1, 2026 to June 30, 2027, the fixed rate is 6.52% for undergraduates and 9.07% for Parent PLUS loans. Federal loans come with protections private loans don't, such as income-driven repayment, deferment and forgiveness programs, including Public Service Loan Forgiveness for people working for government or nonprofit employers.</p>
-<p>The rules are changing. The 2025 law known as the One Big Beautiful Bill Act created a new income-driven plan, the Repayment Assistance Plan, starting July 1, 2026. Borrowers in most of the older income-driven plans have to move to it, or to the existing income-based plan, by July 1, 2028. Check studentaid.gov for the plans open to your loans before making any decision.</p>
-<p>Two points hold whatever the plan. If you're on track for forgiveness, extra payments may only lower the amount that would have been forgiven. And refinancing federal loans into a private loan for a lower rate gives up those federal protections for good. Up to $2,500 per year of student loan interest is also deductible, below an income limit.</p>
+<p>Federal student loans play by different rules from other debt. For loans first paid out from July 1, 2026 to June 30, 2027, the fixed rate is 6.52% for undergraduates, 8.07% for graduate students and 9.07% for PLUS loans. Federal loans come with protections private loans don't, such as payments tied to income, deferment and forgiveness programs, including Public Service Loan Forgiveness for people working for government or nonprofit employers.</p>
+<p>The repayment plans changed in 2026, and which ones you can use depends on when you borrowed:</p>
+<ul>
+<li>The SAVE plan is gone. A court-approved settlement ended it in March 2026, and the 7.5 million borrowers who were in it are being given at least 90 days from their loan servicer's notice to pick another plan. Anyone who doesn't choose is moved to a standard plan with fixed payments.</li>
+<li>The 2025 law known as the One Big Beautiful Bill Act created a new income-driven plan, the Repayment Assistance Plan (RAP), which opened July 1, 2026. Payments are based on income and the number of dependents.</li>
+<li>If all your loans were paid out before July 1, 2026, you can still use the older Income-Based Repayment plan, or RAP. The two other older plans, PAYE and Income-Contingent Repayment, close by July 1, 2028.</li>
+<li>If you take out any new federal loan on or after July 1, 2026, including a consolidation loan, all your loans are limited to RAP or the new Tiered Standard Plan, which sets a fixed payment over 10 to 25 years depending on how much you owe. New Parent PLUS loans can only use the Tiered Standard Plan.</li>
+</ul>
+<p>That last rule is easy to trip over: consolidating old loans now can close off the older plans. Check studentaid.gov for the plans open to your loans before making any change.</p>
+<p>A few points hold whatever the plan. If you're on track for forgiveness, extra payments may only lower the amount that would have been forgiven. Balances forgiven at the end of an income-driven plan count as taxable income again from 2026, after a temporary exemption ran out; Public Service Loan Forgiveness is still tax-free. Refinancing federal loans into a private loan for a lower rate gives up the federal protections for good. And up to $2,500 per year of student loan interest is deductible, below an income limit.</p>
 
 <h2 id="plan">Seeing it in your own numbers</h2>
 <p>List your debts in Debt Payoff with their balances, rates and minimums, then enter what you can add each month. It shows your debt-free date and total interest under the avalanche, the snowball and minimums alone, the order each method pays things off, and how much sooner another $100 per month would get you there.</p>
@@ -152,6 +174,9 @@
     <li><a href="https://ideas.repec.org/a/oup/jconrs/v43y2016i3p460-477..html">Repayment concentration and consumer motivation to get out of debt (Kettle, Trudel, Blanchard and Häubl)</a> <span>Journal of Consumer Research</span></li>
     <li><a href="https://doi.org/10.1509/jmkr.48.SPL.S38">Winning the battle but losing the war: the psychology of debt management (Amar, Ariely, Ayal, Cryder and Rick)</a> <span>Journal of Marketing Research</span></li>
     <li><a href="https://fsapartners.ed.gov/knowledge-center/library/electronic-announcements/2026-06-04/interest-rates-federal-direct-loans-first-disbursed-between-july-1-2026-and-june-30-2027">Interest rates for Direct Loans first disbursed July 1, 2026 to June 30, 2027</a> <span>Federal Student Aid</span></li>
+    <li><a href="https://studentaid.gov/announcements-events/big-updates">One Big Beautiful Bill Act updates (repayment plans and loan limits)</a> <span>Federal Student Aid</span></li>
+    <li><a href="https://www.ed.gov/about/news/press-release/us-department-of-education-announces-next-steps-borrowers-enrolled-unlawful-save-plan">Next steps for borrowers enrolled in the SAVE plan</a> <span>US Department of Education</span></li>
+    <li><a href="https://www.consumerfinance.gov/ask-cfpb/what-are-debt-settlement-debt-relief-services-and-should-i-use-them-en-1457/">What are debt settlement and debt relief services, and should I use them?</a> <span>Consumer Financial Protection Bureau</span></li>
   </ul>
 </footer>
 </article>

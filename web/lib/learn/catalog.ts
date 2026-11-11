@@ -9,22 +9,22 @@ export interface Track { id: TrackId; name: string; blurb: string; lessons: stri
 
 export const TRACKS: Track[] = [
   { id: "foundations", name: "Foundations", blurb: "What a plan answers, and the few ideas everything else rests on.", lessons: [
-    "what-a-plan-answers", "compound-growth", "todays-dollars", "savings-rate", "spending-target", "how-long-to-plan-for", "emergency-fund"] },
+    "what-a-plan-answers", "compound-growth", "todays-dollars", "your-paycheck", "savings-rate", "spending-target", "how-long-to-plan-for", "emergency-fund", "net-worth"] },
   { id: "saving", name: "Saving and accounts", blurb: "Which account each dollar should go to, and why.", lessons: [
-    "where-each-dollar-goes", "employer-match", "traditional-or-roth", "iras", "hsa", "taxable-account", "contribution-limits"] },
+    "where-each-dollar-goes", "employer-match", "traditional-or-roth", "iras", "old-401k-rollovers", "hsa", "taxable-account", "contribution-limits", "self-employed-accounts"] },
   { id: "investing", name: "Investing and risk", blurb: "What you own, how much it swings, and how a plan measures risk.", lessons: [
-    "stocks-bonds-cash", "how-much-in-stocks", "fees-and-index-funds", "range-not-a-line", "sequence-risk", "cape-valuations", "chance-of-success", "when-markets-fall"] },
+    "stocks-bonds-cash", "how-much-in-stocks", "fees-and-index-funds", "diversification-and-rebalancing", "asset-location", "range-not-a-line", "sequence-risk", "cape-valuations", "chance-of-success", "when-markets-fall"] },
   { id: "withdrawing", name: "Withdrawing", blurb: "Turning savings into a paycheck that lasts.", lessons: [
-    "four-percent-rule", "fixed-or-flexible", "guardrails", "spending-a-percentage", "choosing-a-strategy", "withdrawal-order", "rmds", "spending-with-age", "annuities-and-pensions"] },
+    "years-before-retiring", "four-percent-rule", "fixed-or-flexible", "guardrails", "spending-a-percentage", "choosing-a-strategy", "withdrawal-order", "rmds", "spending-with-age", "annuities-and-pensions"] },
   { id: "taxes", name: "Taxes", blurb: "How income is taxed now and in retirement.", lessons: [
-    "tax-brackets", "deductions", "retirement-income-taxes", "roth-conversions", "irmaa", "state-taxes"] },
+    "tax-brackets", "deductions", "retirement-income-taxes", "capital-gains", "charitable-giving", "roth-conversions", "irmaa", "state-taxes"] },
   { id: "social", name: "Social Security and health care", blurb: "Claiming, Medicare and covering the years before it.", lessons: [
     "social-security-benefit", "when-to-claim", "spouses-and-survivors", "social-security-future", "health-cover-before-65", "medicare", "long-term-care"] },
   { id: "early", name: "Retiring early", blurb: "Leaving work before the usual ages, and paying for the gap.", lessons: [
     "fire", "bridge-to-59", "rule-72t", "roth-conversion-ladder"] },
   { id: "decisions", name: "Big decisions", blurb: "Homes, debt, college, children and protecting it all, and how each fits the plan.", lessons: [
     "rent-or-buy", "mortgage-payoff", "paying-down-debt", "saving-for-college", "children-and-the-plan", "home-in-retirement",
-    "insurance", "beneficiaries-and-estate"] },
+    "insurance", "beneficiaries-and-estate", "working-with-an-advisor"] },
 ];
 
 export const LESSON_SLUGS: string[] = TRACKS.flatMap((t) => t.lessons);

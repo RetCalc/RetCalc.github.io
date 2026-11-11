@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="roth-conversions" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="roth-conversions" data-reviewed="2026-11-10"
   data-title="Roth conversions"
   data-idea="Pay the tax now, at a rate you choose, so the money is tax-free later"
   data-tool="roth" data-try="Compare converting each year with doing nothing, year by year to the end of your plan, with your plan already filled in.">
@@ -50,6 +50,13 @@
 </figure>
 
 <p>A married couple under 65 with no other income can convert $133,000 in 2026 and pay $11,600 of federal tax, an average of 8.7%. Converting $243,600 costs $35,932, an average of 14.8%, but every dollar above $133,000 pays 22%. The marginal rate is what to compare with the rate you expect later, since it's the rate on the last dollars you convert.</p>
+
+<!-- data: 2026 brackets and standard deduction, lib/engine/data/2026.js; no other income, under 65. The federal rate on the next dollar converted changes where conversion = standard deduction + the start of each bracket.
+     Married: 0% to 32,200; 10% to 57,000; 12% to 133,000; 22% to 243,600; 24% beyond (to 435,750).
+     Single: 0% to 16,100; 10% to 28,500; 12% to 66,500; 22% to 121,800; 24% to 217,875; 32% beyond (to 272,325). -->
+<figure data-chart='{"type":"line","x":[0,16100,28500,32200,57000,66500,121800,133000,217875,243600,270000],"xLabel":"Converted this year","xFormat":"money","y":"pct","series":[{"name":"Married filing jointly","tone":"accent","step":true,"values":[0,0,0,0.1,0.12,0.12,0.12,0.22,0.22,0.24,0.24]},{"name":"Single","tone":"neutral","step":true,"values":[0,0.1,0.12,0.12,0.12,0.22,0.24,0.24,0.32,0.32,0.32]}]}'>
+  <figcaption>The federal rate on the next dollar converted in 2026, for someone under 65 with no other income. Each flat stretch is a bracket to fill; the jump from 12% to 22% is the biggest step on the way up.</figcaption>
+</figure>
 <p>For a couple both 65 or older in 2026 the room is larger, by the $3,300 of extra standard deduction and up to $12,000 of senior deduction, so filling the 12% bracket takes $148,300. Past $150,000 of income the senior deduction starts to shrink, so each converted dollar in the 22% bracket there costs 24.64 cents rather than 22.</p>
 
 <h2 id="when">When converting tends to pay</h2>
@@ -60,11 +67,36 @@
 <li>The widow's penalty: when one spouse dies, the survivor usually files single from the year after, with brackets half as wide, while required distributions and the larger Social Security benefit continue. The same income can then be taxed at a higher rate.</li>
 <li>Heirs: most non-spouse heirs must empty an inherited IRA within ten years, often in their own peak earning years. An inherited Roth also has to be emptied, but the withdrawals are tax-free.</li>
 </ul>
+<h3>The widow's penalty in numbers</h3>
+<p>Take a hypothetical couple, both 78, in a state with no income tax. Required distributions force $100,000 per year out of their IRAs, and they collect $36,000 and $22,000 of Social Security. One of them dies. The survivor keeps the larger benefit and loses the smaller one, and inherits the IRAs, so the required distributions barely change.</p>
+
+<!-- data: computeRetireTax() (lib/engine/math.js), 2026 rules, state TX, standard deduction, ages 78.
+     Couple: trad 100,000, ss 58,000: taxable Social Security 49,300, AGI 149,300; deductions 32,200 + 3,300 + 12,000 = 47,500; taxable 101,800; tax 2,480 + 9,120 + 1,000 × 22% = 11,820.
+     Survivor: trad 100,000, ss 36,000: taxable Social Security 30,600, AGI 130,600; deductions 16,100 + 2,050 + senior deduction 6,000 − 6% × (130,600 − 75,000) = 2,664, total 20,814; taxable 109,786; tax 1,240 + 4,560 + 12,166 + 4,086 × 24% = 18,947.
+     IRMAA: irmaaAnnual(149,300, "m", 2) = 0; irmaaAnnual(130,600, "s", 1) = 1,148.40 (2026 tiers). -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>Both alive, filing jointly</th><th>Survivor, filing single</th></tr></thead>
+    <tbody>
+      <tr><td>IRA distributions</td><td>$100,000</td><td>$100,000</td></tr>
+      <tr><td>Social Security</td><td>$58,000</td><td>$36,000</td></tr>
+      <tr><td>Deductions at 65 and over</td><td>$47,500</td><td>$20,814</td></tr>
+      <tr><td>Taxable income</td><td>$101,800</td><td>$109,786</td></tr>
+      <tr><td>Federal income tax</td><td>$11,820</td><td>$18,947</td></tr>
+      <tr><td>Rate on the top dollars</td><td>22%</td><td>24%</td></tr>
+      <tr><td>Medicare surcharge per year</td><td>$0</td><td>$1,148.40</td></tr>
+    </tbody>
+  </table>
+  <figcaption>2026 federal rules for a hypothetical household, all 78. The survivor has $22,000 less income and pays $7,127 more income tax, and their income is now over the first Medicare surcharge line for a single person.</figcaption>
+</figure>
+
+<p>Money converted while both were alive would have been taxed at 12% or 22% on the joint brackets. Left in the IRA, it comes out of the survivor's account at 22% and 24%. A survivor can live this way for ten or twenty years, which is why couples with large IRAs often convert more than their own joint tax rate would suggest.</p>
+
 <p>Other things point the other way: a modest IRA that RMDs won't push into higher brackets, a planned move from a high-tax state to one with no income tax, heirs in low brackets, or a plan to leave the IRA to charity, which pays no tax on it at all. And a conversion paid for by withholding tax from the IRA itself gives up most of the advantage.</p>
 
 <h2 id="example">A worked example over a lifetime</h2>
 <p>Take a hypothetical couple, both 62 and retired in Illinois, with $1.5 million in traditional IRAs, $150,000 in Roth IRAs and $400,000 in a brokerage account. They spend $100,000 per year and will claim Social Security at 67, $36,000 and $22,000 per year. Their investments earn 5% per year after inflation, and one of them dies at 77, so the survivor files jointly that year and single from 78.</p>
-<p>The plan: each year from 62, convert enough to fill the 22% bracket, paying the tax from the brokerage account. The chart compares their federal and state income tax each year with doing nothing.</p>
+<p>The plan: each year from 62, convert enough to fill the 22% bracket, paying the tax from the brokerage account for as long as it lasts. Illinois doesn't tax IRA withdrawals or conversions, so nearly all the tax here is federal; the state only takes its 4.95% of the gains when they sell from the brokerage account. The chart compares their federal and state income tax each year with doing nothing.</p>
 
 <!-- data: runRoth() (lib/engine/math.js) with the Roth Conversions tool's starting inputs (tools/roth/model.ts ROTH_DEFAULTS): married, both 62, IL, plan through 92;
      trad 1,500,000, Roth 150,000, brokerage 400,000 with 60% basis, 5% real return, spend 100,000; Social Security 36,000 and 22,000 from 67; death in year 15, at age 77 (the survivor files jointly that year and single from 78);
@@ -76,7 +108,14 @@
   <figcaption>Income tax each year for the couple, in today's dollars. Converting pays a lot of tax early, at a known rate; not converting pays very little until required distributions start at 75, and more again once the survivor files single.</figcaption>
 </figure>
 
-<p>Converting empties their traditional IRAs by 70, $1,288,352 in all, so the required distributions that would have peaked at $169,099 per year never happen. Over their lifetimes they pay $305,186 of income tax instead of $494,485, and $13,836 of Medicare surcharges instead of $48,475. The conversions do push up Medicare premiums at 65 and 66, two years after the large conversions at 63 and 64, and again at 72, after the last one at 70.</p>
+<p>In the first two years they convert $243,600 each year, and their tax bill is about $50,000 each time. The brokerage account pays for that and for their spending, and it runs out during the third year. From then on they live on IRA withdrawals, which take up part of the 22% bracket themselves, so the conversions shrink to about $60,700 at 65 and 66.</p>
+
+<!-- data: the same two runRoth() runs. Traditional IRA balance at the start of each year (row.tradBegin), today's dollars. Without conversions it peaks at 2,300,498 at age 80. -->
+<figure data-chart='{"type":"line","x":[62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92],"xLabel":"Age","y":"money","series":[{"name":"Converting to the top of 22%","tone":"accent","values":[1500000,1319220,1129401,944114,794189,636768,495202,346557,190481,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},{"name":"Not converting","tone":"neutral","values":[1500000,1575000,1653750,1736438,1823259,1832056,1876432,1923027,1971952,2023322,2077262,2133898,2193366,2255808,2272314,2285257,2294738,2299953,2300498,2295942,2286475,2271025,2249855,2221732,2187017,2145291,2096128,2040282,1976227,1904953,1826270]}],"marks":[{"x":75,"label":"RMDs start"}]}'>
+  <figcaption>The couple's traditional IRA balance at the start of each year, in today's dollars. Left alone, it grows to about $2.3 million before required distributions begin to draw it down, and every dollar of it is still to be taxed.</figcaption>
+</figure>
+
+<p>Converting empties their traditional IRAs by 70, with $1,288,352 converted and the rest spent, so the required distributions that would have peaked at $169,099 per year never happen. Over their lifetimes they pay $305,186 of income tax instead of $494,485, and $13,836 of Medicare surcharges instead of $48,475. The conversions do push up Medicare premiums at 65 and 66, two years after the large conversions at 63 and 64, and again at 72, after the last one at 70.</p>
 <p>But most of the tax saved would have been paid decades later, and a dollar of tax at 85 costs less in today's terms than a dollar at 63. Discounted at 3% per year after inflation, converting comes out about even, costing $1,073 more in tax and surcharges. Measured by what's left at 92, the gap is $65,102 more after-tax wealth with conversions, counting each traditional dollar as worth 76 cents because tax is still owed on it. The two measures point different ways here, and that's typical. The lifetime tax saving looks small or even negative once it's discounted, while Roth money compounding with no tax on it leaves more behind.</p>
 
 <h2 id="side-effects">What a conversion touches besides the tax bracket</h2>
@@ -91,7 +130,7 @@
       <tr><td>Medicare premiums (IRMAA)</td><td>Raises the income Medicare looks at two years later</td><td>Conversions from the year you turn 63, near a tier line ($218,000 joint in 2026)</td></tr>
       <tr><td>ACA premium credit</td><td>Raises the income the credit is based on, before 65</td><td>The 2026 cliff at 400% of the poverty line: $84,600 for a couple</td></tr>
       <tr><td>The 0% capital gains band</td><td>Ordinary income stacks first, pushing gains up into the 15% band</td><td>A conversion dollar can cost 27% in the 12% bracket</td></tr>
-      <tr><td>The senior deduction</td><td>Phases out above $150,000 joint or $75,000 single, through 2028</td><td>An extra 6 cents per dollar per person 65 or older</td></tr>
+      <tr><td>The senior deduction</td><td>Phases out above $150,000 joint or $75,000 single, through 2028</td><td>Each dollar over the line takes away 6 cents of deduction per person 65 or older, which turns a 22% rate into 24.64% for a couple</td></tr>
       <tr><td>The 3.8% surtax</td><td>Raises modified AGI above $250,000 joint or $200,000 single</td><td>Dividends and gains then pay the 3.8%</td></tr>
       <tr><td>State income tax</td><td>Most states with an income tax count conversions as income</td><td>Converting before a move to a lower-tax state</td></tr>
     </tbody>
@@ -103,9 +142,24 @@
 
 <h2 id="five-years">The five-year rules</h2>
 <p>Two separate five-year clocks apply to Roth IRAs, and they're easy to confuse.</p>
-<p>The first is for earnings. To withdraw a Roth IRA's earnings tax-free, you need to be 59½ and it must be at least five years since January 1 of the year of your first contribution or conversion to any Roth IRA. One clock covers all your Roth IRAs, and once it's run, it's run.</p>
-<p>The second is for converted money before 59½. Each conversion has its own five-year clock, again starting on January 1 of the year you convert. Take the converted amount out before its clock has run and before you're 59½, and it's charged the 10% penalty (though not income tax, which you've already paid). After 59½ this clock no longer matters.</p>
-<p>Withdrawals come out in a fixed order: your contributions first, then conversions, oldest first, then earnings. Most retirees over 59½ only need the first clock. Early retirees who convert in order to spend the money five years later rely on the second; that's the subject of <a href="/learn/roth-conversion-ladder">The Roth conversion ladder</a>.</p>
+<p>The first is for earnings. To withdraw a Roth IRA's earnings tax-free, you need to be 59½, and it must be at least five years since January 1 of the first tax year you put money into any Roth IRA, by contribution or conversion. (Disability, death and up to $10,000 toward a first home stand in for the age test, but the five years still apply.) A contribution made in March 2027 for tax year 2026 starts the clock on January 1, 2026. One clock covers all your Roth IRAs, and once it's run, it's run.</p>
+<p>The second is for converted money before 59½. Each conversion has its own five-year clock, again starting on January 1 of the year you convert. Take the converted amount out before its clock has run and before you're 59½, and the part you paid tax on when you converted is charged the 10% penalty (though not income tax, which you've already paid). After 59½ this clock no longer matters. Because the clock starts in January, the wait is often shorter than five years: money converted in November 2026 can come out without penalty from January 1, 2031.</p>
+<p>Withdrawals come out in a fixed order: your contributions first, then conversions, oldest first, then earnings.</p>
+
+<!-- data: IRS Publication 590-B (2025), Roth IRAs: "What Are Qualified Distributions?", "Ordering Rules for Distributions" and "Distributions of conversion and certain rollover contributions within 5-year period". -->
+<figure>
+  <table>
+    <thead><tr><th>What comes out</th><th>Income tax</th><th>10% penalty</th></tr></thead>
+    <tbody>
+      <tr><td>First: your own contributions</td><td>Never</td><td>Never</td></tr>
+      <tr><td>Next: converted amounts, oldest conversion first</td><td>None; it was paid when you converted</td><td>Only before 59½, and only on a conversion less than five years old</td></tr>
+      <tr><td>Last: earnings</td><td>None once you're 59½ and the first clock has run; otherwise taxed</td><td>Before 59½, unless an exception applies</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The order money leaves a Roth IRA, and what each layer costs. All your Roth IRAs are counted together as one.</figcaption>
+</figure>
+
+<p>Most retirees over 59½ only need the first clock. Early retirees who convert in order to spend the money five years later rely on the second; that's the subject of <a href="/learn/roth-conversion-ladder">The Roth conversion ladder</a>.</p>
 
 <h2 id="paying">Paying the tax</h2>
 <p>How you pay the tax changes how much a conversion is worth.</p>

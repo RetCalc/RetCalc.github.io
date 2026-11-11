@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="children-and-the-plan" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="children-and-the-plan" data-reviewed="2026-11-10"
   data-title="Children and the plan"
   data-idea="What children cost, year by year, and how to keep saving through it"
   data-tool="guide" data-try="Add the children you have or plan, with childcare where you live, and see how your saving changes year by year, with your plan already filled in.">
@@ -38,15 +38,35 @@
 </figure>
 
 <h2 id="taxbreaks">Tax breaks that help</h2>
-<p>Several federal tax rules cut the cost of children, and the 2025 law known as the One Big Beautiful Bill Act changed several of them.</p>
-<ul>
-<li>The child tax credit is $2,200 per child under 17 for 2026, with up to $1,700 of it refundable for families who owe less tax than the credit. It phases out above $200,000 of income for a single filer and $400,000 on a joint return. Each child needs a Social Security number.</li>
-<li>A dependent care FSA through your employer lets you pay for childcare with pre-tax money. The limit rose from $5,000 to $7,500 per household from 2026, or $3,750 if married filing separately, though each employer decides whether its plan allows the higher amount. At a 22% tax bracket plus payroll tax, that saves more than $2,000 per year.</li>
-<li>The child and dependent care credit covers part of up to $3,000 of care costs for one child or $6,000 for two or more. From 2026 the credit is 50% of those costs at the lowest incomes, 35% for most families, and falls to 20% at higher incomes, beginning above $75,000 for a single filer and $150,000 on a joint return. Costs paid through an FSA can't also count toward the credit.</li>
-<li>Trump accounts, created by the same law, are tax-deferred accounts for children under 18 that work much like an IRA. Contributions can be made from July 4, 2026, up to $5,000 per year, and the Treasury puts in $1,000 for children who are US citizens born from 2025 through 2028, if a parent elects it. The money can't come out before the year the child turns 18.</li>
-</ul>
+<p>Several federal tax rules cut the cost of children, and the 2025 law known as the One Big Beautiful Bill Act changed most of them.</p>
+<h3>The child tax credit</h3>
+<p>The child tax credit is $2,200 per child under 17 for 2026. A credit comes straight off the tax you owe, so two children cut a family's federal income tax by $4,400. Families who owe less tax than the credit can get up to $1,700 per child of it paid to them as a refund; that refundable part builds up at 15 cents for each dollar earned above $2,500. The credit shrinks by $50 for every $1,000 of income above $200,000 for a single filer and $400,000 on a joint return. The child needs a Social Security number, and so does the parent claiming the credit (one parent, on a joint return). The amounts now rise with inflation: for 2027 the IRS has set the credit at $2,300, with up to $1,800 refundable.</p>
+<h3>Two breaks for childcare, and how they interact</h3>
+<p>A <b>dependent care FSA</b> through your employer lets you pay for childcare with pre-tax money. The limit rose from $5,000 to $7,500 per household from 2026, or $3,750 if married filing separately, though each employer decides whether its plan allows the higher amount. The money escapes federal income tax and payroll tax, so at a 22% tax bracket it saves more than $2,000 per year. You choose the amount once per year at enrollment, and money you don't spend on care is generally lost.</p>
+<p>The <b>child and dependent care credit</b> covers part of up to $3,000 of care costs for one child or $6,000 for two or more. The care has to be for a child under 13 so that you can work, or both of you on a joint return. From 2026 the credit is 50% of those costs at the lowest incomes. It falls to 35% once income passes $43,000 and stays there for most families, then falls again above $75,000 for a single filer and $150,000 on a joint return, reaching 20% above $103,000 and $206,000.</p>
+<p>The same dollar of care can't get both breaks. Every dollar that goes through the FSA comes off the $3,000 or $6,000 the credit can count, so a family that puts $7,500 through an FSA has nothing left for the credit. Which one is worth more depends on your tax bracket:</p>
 
-<!-- data: dependent care FSA saving at 7,500: 22% income tax + 7.65% payroll tax = 29.65% × 7,500 = 2,224. -->
+<!-- data: two children, at least $7,500 of care costs, 2026 rules, federal tax only.
+     FSA saving = 7,500 × (bracket + 7.65% payroll tax): 12% → 7,500 × 19.65% = 1,474; 22% → 7,500 × 29.65% = 2,224.
+     Credit rate, 26 U.S.C. 21(a)(2): 50%, less 1 point per $2,000 (or part) of AGI over $15,000, not below 35%; less 1 point per $4,000 (or part) over $150,000 on a joint return, not below 20%.
+     Joint AGI 90,000: 35% × 6,000 = 2,100. Joint AGI 165,000: 15,000 over → 4 points → 31% × 6,000 = 1,860.
+     Brackets (lib/engine/data/2026.js): 90,000 − 32,200 standard deduction = 57,800, in the 12% bracket; 165,000 − 32,200 = 132,800, in the 22% bracket. -->
+<figure>
+  <table>
+    <thead><tr><th>Married couple, two children in paid care</th><th>Tax bracket</th><th>$7,500 through the FSA saves</th><th>The credit alone is worth</th></tr></thead>
+    <tbody>
+      <tr><td>Income of $90,000</td><td>12%</td><td>$1,474</td><td><b>$2,100</b> (35% of $6,000)</td></tr>
+      <tr><td>Income of $165,000</td><td>22%</td><td><b>$2,224</b></td><td>$1,860 (31% of $6,000)</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Hypothetical families under the 2026 federal rules. The FSA figure counts federal income tax and the 7.65% payroll tax; most states' income tax would add to it. The credit can only reduce tax you owe.</figcaption>
+</figure>
+
+<p>Roughly, the credit wins in the 12% bracket and the FSA wins from the 22% bracket up. A family with one child has only $3,000 of costs the credit can count, which tips things further toward the FSA. One side effect is worth knowing: pay that goes into the FSA isn't counted as Social Security earnings, which trims a future benefit very slightly.</p>
+<h3>Trump accounts</h3>
+<p>The same law created a new account for children, the Trump account. It's a kind of IRA opened for a child under 18 who has a Social Security number. For children who are US citizens born from 2025 through 2028, the Treasury puts in $1,000 if a parent or guardian asks for it on IRS Form 4547. Since July 4, 2026, parents, relatives and others can add up to $5,000 per year between them. An employer can put in up to $2,500 per year for each employee (that's per employee, however many children they have), and it counts toward the $5,000.</p>
+<p>The money has to be invested in low-cost funds that track an index of US stocks, and it can't be taken out before the year the child turns 18. After that the account follows the rules of a traditional IRA. Family contributions aren't deductible, so they come back out tax-free, but the growth, the Treasury's $1,000 and any employer money are taxed as ordinary income when withdrawn, with the usual 10% penalty before 59½ unless an exception applies.</p>
+<p>The free $1,000 is worth claiming for any child who qualifies. Whether to add your own money is a closer call. For college, a 529 plan's growth comes out tax-free, which a Trump account's doesn't. And for a teenager with a job, a Roth IRA's growth is tax-free in retirement. The <a href="/learn/saving-for-college">saving for college lesson</a> compares the college accounts.</p>
 
 <h2 id="plan-effect">What children do to a retirement plan</h2>
 <p>Their timing makes child costs harder still. They peak when parents are in their late twenties to early forties, which is when retirement saving has the longest to grow. A dollar saved at 32 has 33 years to compound before 65; a dollar saved at 52 has 13.</p>
@@ -68,6 +88,11 @@
   <figcaption>A hypothetical couple saving $1,500 per month from 32 to 65 at 4.5% per year after inflation. The same six-year pause costs more than twice as much at 32 as at 52.</figcaption>
 </figure>
 
+<!-- data: the same sums as the table, balance at the end of each year of age (deposit at the end of each month, monthly growth 1.045^(1/12)), rounded to 1,000. Scratch script c2.mjs. -->
+<figure data-chart='{"type":"line","x":[32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65],"xLabel":"Age","y":"money","series":[{"name":"$1,500 per month throughout","tone":"good","values":[0,18000,38000,58000,79000,100000,123000,147000,172000,198000,226000,254000,284000,315000,348000,382000,417000,454000,493000,534000,576000,621000,667000,715000,766000,819000,874000,931000,992000,1055000,1121000,1189000,1261000,1336000]},{"name":"$500 per month until 38","tone":"accent","values":[0,6000,13000,19000,26000,33000,41000,61000,82000,105000,128000,152000,177000,203000,231000,260000,290000,321000,354000,388000,424000,461000,500000,541000,584000,629000,675000,724000,775000,828000,884000,942000,1003000,1066000]},{"name":"Nothing until 38","tone":"bad","values":[0,0,0,0,0,0,0,18000,38000,58000,79000,100000,123000,147000,172000,198000,226000,254000,284000,315000,348000,382000,417000,454000,493000,534000,576000,621000,667000,715000,766000,819000,874000,931000]}],"band":{"from":32,"to":38,"label":"Childcare years"}}'>
+  <figcaption>The couple's savings under three of the choices, in today's dollars. At 38 the lines are about $123,000 apart at most. By 65 that gap has grown to $405,000, because the missing money would have had 27 more years to grow.</figcaption>
+</figure>
+
 <p>Six years without saving at the start cost about $405,000 at 65, nearly a third of the total, even though those years supplied only 18% of the deposits. To make it up, they'd need to save about $650 per month more, on top of the $1,500, every month from 38 to 65. Keeping even $500 per month going cuts the damage by a third, and if that $500 is what it takes to get an employer match, the real saving is larger still.</p>
 <p>Parents shouldn't skimp on childcare to protect a retirement account. But early saving is unusually valuable, so it's worth looking hard for ways to keep some of it going, and worth deciding now when it will go back up.</p>
 
@@ -76,6 +101,9 @@
 <h2 id="options">Ways to keep saving through it</h2>
 <h3>Protect the match first</h3>
 <p>If your employer matches contributions, saving at least enough to get the full match is the highest-return dollar you have. Dropping below it gives away part of your pay. The <a href="/learn/employer-match">employer match lesson</a> explains how matches work.</p>
+<h3>Decide which saving gives way first</h3>
+<p>If saving has to drop, it matters which saving. Not every dollar you put away is worth the same. Money going into an ordinary brokerage account gets no tax break on the way in, so it's the cheapest to pause. 401(k) contributions above the match, IRA contributions and HSA contributions each give up a tax break when they stop. The part of your 401(k) contribution that earns the match is the last to touch. Working down that order, and stopping as soon as the child's costs are covered, keeps the most valuable saving going for longest.</p>
+<p>The other common approach is to trim a share from every account. It keeps the habit alive everywhere and can feel simpler, but it usually gives up some tax break or match that cutting in order would have kept. Whichever rule you pick, it's easier to choose it once than to renegotiate every time a daycare bill rises.</p>
 <h3>Count what a child replaces</h3>
 <p>Not every dollar of a child's cost is new money. Some replaces spending that stops: fewer restaurant meals, less travel, a commute that changes during parental leave. Building a new budget from your actual spending after the child arrives, rather than adding the full average on top of the old one, usually shows a smaller gap. Budget is built for this.</p>
 <h3>Plan the step back up</h3>
@@ -90,7 +118,7 @@
 <p>Support often doesn't end at 18 or 22. Many parents help grown children with rent, phone plans, a car or a wedding. If you expect to, it's worth putting a figure in the plan, even a rough one, so it comes out of a budget instead of out of retirement savings later.</p>
 
 <h2 id="tool">Seeing it in your own plan</h2>
-<p>The Guide lets you add the children you have, by age, and any you're planning, with when the first might arrive and how far apart. You choose whether you'll pay for childcare and what kind of place you live in, and it uses the costs above, lowering saving in the years they apply. Then it shows how your saving runs year by year and what that does to the balance at retirement.</p>
+<p>The Guide lets you add the children you have, by age, and any you're planning, with when the first might arrive and how far apart. You choose whether you'll pay for childcare and what kind of place you live in, and it uses the costs above, lowering saving in the years they apply. You can say how that cut is shared between your accounts: ordinary investment saving first, a share from each, or an order of your own. Then it shows how your saving runs year by year and what that does to the balance at retirement.</p>
 <p>Try it two ways: once with saving paused during the childcare years, and once with a smaller amount kept going. Then look at the year childcare ends and see what raising saving at that point does to the result.</p>
 
 <h2 id="questions">Common questions</h2>
@@ -102,7 +130,7 @@
 <section class="insum"><h2 id="short">In short</h2><ul>
 <li>The USDA's last study puts a child's cost from birth through 17 at $233,610 in 2015 dollars, about $332,000 at today's prices, before college.</li>
 <li>Paid childcare in the first five or six years is usually the most expensive stretch.</li>
-<li>The 2025 tax law raised the child tax credit, the dependent care FSA limit and the care credit.</li>
+<li>The 2025 tax law raised the child tax credit, the dependent care FSA limit and the care credit. The FSA and the credit can't cover the same dollar of care, so compare them.</li>
 <li>Saving paused early costs far more at retirement than the same pause later, so keep the match and some saving going if you can.</li>
 <li>Plan the step back up when childcare ends, and protect the plan with insurance while children depend on you.</li>
 </ul></section>
@@ -118,6 +146,9 @@
     <li><a href="https://fns-prod.azureedge.us/sites/default/files/crc2015_March2017.pdf">Expenditures on Children by Families, 2015</a> <span>US Department of Agriculture</span></li>
     <li><a href="https://www.dol.gov/agencies/wb/topics/featured-childcare">National Database of Childcare Prices</a> <span>US Department of Labor, Women's Bureau</span></li>
     <li><a href="https://www.irs.gov/publications/p503">Publication 503, Child and dependent care expenses</a> <span>IRS</span></li>
+    <li><a href="https://www.law.cornell.edu/uscode/text/26/21">26 U.S. Code § 21, the care credit's rates from 2026</a> <span>Legal Information Institute, Cornell Law School</span></li>
+    <li><a href="https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2027-taxpayers-continue-to-benefit-from-the-working-families-tax-cuts">Tax inflation adjustments for tax year 2027</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/pub/irs-drop/n-25-68.pdf">Notice 2025-68, Trump accounts</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/newsroom/4-million-children-have-been-signed-up-for-trump-accounts-with-1-million-claiming-the-1000-pilot-program-contribution">Trump Accounts and the $1,000 pilot contribution</a> <span>IRS</span></li>
   </ul>
 </footer>

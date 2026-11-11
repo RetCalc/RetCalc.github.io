@@ -86,7 +86,7 @@ const PAGES: { icon: LucideIcon; name: string; what: string }[] = [
   { icon: SunsetIcon, name: "Retirement", what: "Withdrawal strategies, early retirement and health cover" },
   { icon: WrenchIcon, name: "Tools", what: "All 14, opened with your numbers" },
   { icon: ListChecksIcon, name: "Next steps", what: "Changes ranked by how much they help" },
-  { icon: GraduationCapIcon, name: "Learn", what: "56 lessons on the ideas behind your plan" },
+  { icon: GraduationCapIcon, name: "Learn", what: "66 lessons on the ideas behind your plan" },
 ];
 
 /** Who's looking: signed out, signed in with setup still to do, or set up. */
@@ -201,7 +201,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
       <Feature flip kicker="Next steps" title="Know what to work on next." sub="A short list of changes, ranked by how much each one improves your plan, with a link to make each one.">
         <Shot name="next" w={1707} h={806} sizes="(max-width: 900px) 100vw, 760px" alt="What to do next: four changes, ranked" />
       </Feature>
-      <Feature kicker="Learn" title="Learn the ideas behind your plan." sub="56 short lessons in 8 tracks, from saving and taxes to Social Security and drawing your savings down."
+      <Feature kicker="Learn" title="Learn the ideas behind your plan." sub="66 lessons in 8 tracks, from saving and taxes to Social Security and drawing your savings down."
         points={["A lesson picked for what your plan needs next", "Lessons that show the idea with your own numbers", "Each one links to the page or tool where you act on it"]}>
         <Shot name="learn" w={1720} h={570} sizes="(max-width: 900px) 100vw, 760px" alt="Next for you: a lesson on the emergency fund, picked because cash covers 2.9 months of spending" />
       </Feature>

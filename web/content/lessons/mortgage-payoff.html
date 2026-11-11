@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="mortgage-payoff" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="mortgage-payoff" data-reviewed="2026-11-10"
   data-title="Pay off the mortgage early?"
   data-idea="A sure return at your loan's rate, against what investing might earn"
   data-tool="mortgage" data-try="See what extra payments, a lump sum, a recast or a refinance would do to your loan and the interest you pay.">
@@ -7,10 +7,11 @@
 
 <h2 id="extra">What extra payments do</h2>
 <p>Take the loan Mortgage opens with: $360,000 borrowed for 30 years at 7.25%, a payment of $2,456 per month for principal and interest. Paid as scheduled, it costs $524,100 in interest over the thirty years, more than the amount borrowed.</p>
+<p>The first payment shows why. One month's interest on $360,000 at 7.25% is $2,175 ($360,000 × 7.25% ÷ 12), so only $281 of the $2,456 pays down the loan. Add $500 and the first month's principal nearly triples, to $781.</p>
 <p>An extra payment goes straight to principal. The required payment doesn't change, but every month after that the interest is figured on a smaller balance, so more of each regular payment goes to principal too. The effect compounds, which is why modest amounts cut years off the loan.</p>
 
 <!-- data: mortgage() in lib/engine/math.js with the Mortgage defaults (price 450,000, down 90,000, rate 7.25%, 30 years)
-     and extraMonthly set to each amount. Base total interest 524,100. payoffMonth: 317, 284, 221, 165.
+     and extraMonthly set to each amount. First month: interest 360,000 × 0.0725 / 12 = 2,175; principal 2,455.83 − 2,175 = 280.83. Base total interest 524,100. payoffMonth: 317, 284, 221, 165.
      Interest saved = base totalInterest − totalInterest: 76,309; 130,583; 230,870; 314,645. -->
 <figure>
   <table>
@@ -33,6 +34,12 @@
   <figcaption>The balance on the $360,000 loan, as scheduled and with $500 extra each month. Early on, most of each scheduled payment is interest and the balance barely moves; the extra payments are what bend the line.</figcaption>
 </figure>
 
+<h3>If you're paying mortgage insurance</h3>
+<p>Extra payments do one more thing for a buyer who put down less than 20%. Private mortgage insurance, PMI, comes off automatically when the scheduled balance reaches 78% of the home's original value, and you can ask in writing to drop it at 80%, including when extra payments get you there early. Say the same $450,000 home was bought with 10% down: a $405,000 loan, a payment of $2,763, and PMI of about $203 per month at 0.6% of the loan per year. On schedule, the balance reaches $360,000, 80% of the price, in month 104. With $300 extra per month it gets there in month 61, 43 months sooner, which saves about $8,700 of premiums on top of the interest. The lender can ask for a good payment record and proof the home hasn't lost value.</p>
+
+<!-- data: 405,000 at 7.25% for 30 years: payment 2,762.81. Months until the balance is at or under 360,000 (80% of 450,000):
+     104 as scheduled, 61 with 300 extra per month. PMI 405,000 × 0.6% / 12 = 202.50 (PMI_DEFAULT in lib/engine/calculators.js); 43 months × 202.50 = 8,708. -->
+
 <h2 id="return">A sure return at the loan's rate</h2>
 <p>Paying $500 extra on a 7.25% mortgage is like buying an investment that pays 7.25% with no risk at all. The return is certain because the interest you'd otherwise owe is certain. Investing the same $500 in a stock-heavy portfolio might earn more over long periods, but it might not, and it can fall sharply along the way.</p>
 <p>To see where the two cross, compare two households with the same loan and the same $500 per month to spare. One puts it on the mortgage until the loan is gone in month 221, then invests the full $2,956 it was paying each month for the rest of the thirty years. The other invests the $500 from the start and pays the mortgage as scheduled. After thirty years, neither has a mortgage, and the only difference is the size of the investment account.</p>
@@ -54,7 +61,7 @@
   <figcaption>The investment account after 30 years, with the $360,000 loan at 7.25% and $500 per month to spare. Before any tax on investment gains.</figcaption>
 </figure>
 
-<p>They come out even at about 7.5% per year, which is the loan's 7.25% once monthly compounding is counted. Earn less than the loan's rate and paying it down wins; earn more and investing wins. So the decision comes down to what you can reasonably expect to earn, and how much risk you're willing to take to earn it.</p>
+<p>They come out even at about 7.5% per year, which is the loan's 7.25% once monthly compounding is counted (interest charged at 7.25% ÷ 12 each month adds up to 7.5% over a year). Earn less than the loan's rate and paying it down wins; earn more and investing wins. So the decision comes down to what you can reasonably expect to earn, and how much risk you're willing to take to earn it.</p>
 <p>That comparison still tilts toward investing. Paying down the loan is risk-free, so the honest comparison is with other risk-free investments, like Treasury bonds and high-yield savings, not with stocks. When those pay less than your mortgage rate, prepaying is the better safe investment. Investing the money instead means taking stock market risk with it. That may be perfectly reasonable, as long as it's a choice you make on purpose.</p>
 <p>The rate is what matters most. In 2020 and 2021 many people locked in 30-year mortgages below 3%. On a loan like that, safe investments can pay more than the loan costs, and paying it down early gives up return for very little in exchange. On a 7% loan, few safe investments beat prepaying.</p>
 
@@ -102,18 +109,31 @@
   <figcaption>A couple at 63 with $150,000 left at 7.25% and $60,000 of other taxable income, using 2026 federal brackets and Medicare surcharges. The money left in the IRA keeps growing in the second column. State tax not included.</figcaption>
 </figure>
 
-<p>The big withdrawal pushes most of it into the 22% and 24% brackets, and it lifts their income above the line where Medicare premiums rise. Medicare looks back two years, so income at 63 sets premiums at 65. The <a href="/learn/irmaa">IRMAA lesson</a> explains those surcharges. Neither column is simply right: paying monthly costs $61,322 in interest but keeps money invested. Spreading the payoff over two or three tax years, or paying from a taxable account or Roth, usually beats one large traditional withdrawal.</p>
+<!-- data: the table above. At once: 150,000 to the lender + 38,016 tax = 188,016. Over ten years: 150,000 principal + 61,322 interest
+     + 28,817 tax = 240,139 (24,014 × 10, rounding). -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["Pay it off at once","Keep paying for ten years"],"y":"money","series":[{"name":"Loan balance","tone":"neutral","values":[150000,150000]},{"name":"Mortgage interest","tone":"muted","values":[0,61322]},{"name":"Federal income tax","tone":"bad","values":[38016,28817]}]}'>
+  <figcaption>Everything that leaves the IRA under each choice. The ten-year column is larger in total, but it's spread over ten years, and whatever stays in the IRA meanwhile keeps earning.</figcaption>
+</figure>
+
+<p>The big withdrawal pushes most of it into the 22% and 24% brackets, and it lifts their income above the line where Medicare premiums rise. Medicare looks back two years, so income at 63 sets premiums at 65. The <a href="/learn/irmaa">IRMAA lesson</a> explains those surcharges. Neither column is simply right: paying monthly costs $61,322 in interest but keeps money invested. It's the same trade as before, now with a tax bill attached: the $150,000 left in the IRA would have to earn more than the loan's rate to come out ahead. Spreading the payoff over two or three tax years, or paying from a taxable account or Roth, usually beats one large traditional withdrawal.</p>
 
 <h3>Why some retirees want it gone anyway</h3>
 <p>A paid-off home lowers your fixed costs for the rest of your life. Lower fixed costs mean smaller withdrawals, and smaller withdrawals make a plan less sensitive to a bad run of markets early in retirement, the risk explained in the <a href="/learn/sequence-risk">sequence-risk lesson</a>. Without a mortgage, a retiree in a down market has more room to cut back.</p>
-<p>The other side is that paying off the loan usually means a smaller portfolio on day one, and a fixed-rate payment gets easier to carry each year as inflation erodes it. At 3% inflation, a $2,456 payment twenty years from now is worth about $1,360 in today's dollars. With a low rate and a solid portfolio, carrying the mortgage can work well. With a high rate, little cushion, or a strong wish to sleep easily, paying it off is a perfectly reasonable use of money.</p>
+<p>The other side is that paying off the loan usually means a smaller portfolio on day one, and a fixed-rate payment gets easier to carry each year as inflation erodes it. At 3% inflation, a $2,456 payment twenty years from now is worth about $1,360 in today's dollars.</p>
+
+<!-- data: 2,455.83 / 1.03^years, at years 0, 5, 10, 15, 20, 25, 30: 2,456; 2,118; 1,827; 1,576; 1,360; 1,173; 1,012. -->
+<figure data-chart='{"type":"line","x":[0,5,10,15,20,25,30],"xLabel":"Year of the loan","y":"money","series":[{"name":"Payment in dollars","tone":"neutral","dash":true,"values":[2456,2456,2456,2456,2456,2456,2456]},{"name":"What it buys, in dollars of the first year","tone":"accent","values":[2456,2118,1827,1576,1360,1173,1012]}]}'>
+  <figcaption>A fixed $2,456 payment with prices rising 3% per year. The bill never changes, but by the last year it takes about as much out of a budget as $1,012 did at the start. Property tax and insurance aren't fixed and keep rising.</figcaption>
+</figure>
+
+<p>With a low rate and a solid portfolio, carrying the mortgage can work well. With a high rate, little cushion, or a strong wish to sleep easily, paying it off is a perfectly reasonable use of money.</p>
 
 <p data-yours></p>
 
 <h2 id="options">Ways to go about it</h2>
 <ul>
 <li>Pay a set extra amount each month. It's simple, and you can stop any time. In the example, $390 per month extra pays off the 30-year loan in 20 years, which can line a payoff up with a retirement date.</li>
-<li>Make a lump-sum payment and ask for a recast. After a large extra payment, many lenders will re-figure your required payment on the lower balance for a small fee, keeping the rate and end date. Without a recast, the payment stays the same and the loan ends sooner. A recast gives you lower bills instead.</li>
+<li>Make a lump-sum payment and ask for a recast. After a large extra payment, many lenders will re-figure your required payment on the lower balance for a small fee, keeping the rate and end date. Without a recast, the payment stays the same and the loan ends sooner. A recast gives you lower bills instead. Lenders usually set a minimum lump sum, and loans backed by the FHA or VA generally can't be recast, so ask your servicer first.</li>
 <li>Refinance to a shorter loan. A 15-year loan usually carries a lower rate than a 30-year one, so more of every payment goes to principal. The required payment is higher, though, and it can't be paused in a hard year.</li>
 <li>Build a side fund, as above, and decide later.</li>
 <li>Pay nothing extra. If your rate is low and you're investing steadily, keeping the scheduled payment is a sound choice too.</li>
@@ -148,6 +168,7 @@
     <li><a href="https://www.jchs.harvard.edu/housing-americas-older-adults-2023">Housing America's Older Adults 2023</a> <span>Harvard Joint Center for Housing Studies</span></li>
     <li><a href="https://www.consumerfinance.gov/owning-a-home/">Buying a house</a> <span>Consumer Financial Protection Bureau</span></li>
     <li><a href="https://www.irs.gov/publications/p936">Publication 936, Home mortgage interest deduction</a> <span>IRS</span></li>
+    <li><a href="https://www.consumerfinance.gov/ask-cfpb/when-can-i-remove-private-mortgage-insurance-pmi-from-my-loan-en-202/">When can I remove private mortgage insurance (PMI) from my loan?</a> <span>Consumer Financial Protection Bureau</span></li>
     <li><a href="https://www.freddiemac.com/pmms">Primary Mortgage Market Survey (30-year rates since 1971)</a> <span>Freddie Mac</span></li>
     <li><a href="https://www.consumercomplianceoutlook.org/articles/2008/third-issue-2008/helocs-consumer-compliance-implications">HELOCs: consumer compliance implications (lines frozen or cut in 2008)</a> <span>Federal Reserve, Consumer Compliance Outlook</span></li>
   </ul>

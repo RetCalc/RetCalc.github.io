@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="state-taxes" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="state-taxes" data-reviewed="2026-11-10"
   data-title="State taxes in retirement"
   data-idea="Where you live can matter more than your bracket"
   data-tool="incometax" data-try="Pick a state and see how it taxes each source of retirement income, with your plan already filled in.">
@@ -7,7 +7,7 @@
 
 <h2 id="none">The states without an income tax</h2>
 <p>Nine states have no tax on wages or retirement income: Alaska, Florida, Nevada, New Hampshire, South Dakota, Tennessee, Texas, Washington and Wyoming. Two of them had narrower taxes until recently. Tennessee's tax on interest and dividends ended in 2021, and New Hampshire's ended from 2025.</p>
-<p>Washington is the partial exception. It taxes long-term capital gains above a large annual deduction ($278,000 for 2025), at 7%, and at 9.9% on the part above $1 million. In 2026 the state also passed a 9.9% tax on income above $1 million, set to begin in 2028, which is being challenged in court. Neither touches a typical retiree's pension or IRA withdrawals.</p>
+<p>Washington is the partial exception. It taxes long-term capital gains above a large annual deduction ($278,000 for 2025), at 7%, and at 9.9% on the part above $1 million. In 2026 the state also passed a 9.9% tax on income above $1 million, set to begin in 2028. Voters turned down an initiative to repeal it in November 2026, and it is still being challenged in court. Neither touches a typical retiree's pension or IRA withdrawals.</p>
 <p>These states still have to raise money, and they lean harder on sales and property taxes, which fall on retirees as much as on workers.</p>
 
 <h2 id="how">What decides a retiree's state bill</h2>
@@ -21,13 +21,13 @@
 
 <!-- data: computeRetireTax() (lib/engine/math.js) with 2026 state rules (lib/engine/data/2026.js states.tax and states.retire), status "m", seniors 2, standard deduction, no local tax.
      Couple A: trad 40,000, pension 20,000 (private), ss 45,000. Couple B: trad 120,000, ss 55,000.
-     State tax A / B: OR 3,416 / 8,666; MN 1,573 / 8,552; VT 2,424 / 6,615; MT 2,559 / 6,044; VA 2,036 / 5,529; NC 1,377 / 3,771; NY 154 / 3,121; CA 145 / 2,993; GA 0 / 0; IL 0 / 0; PA 0 / 0; TX 0 / 0 (NV, not charted, 0 / 0).
+     State tax A / B (run 2026-11-10): OR 3,416 / 8,666; MN 1,402 / 8,334; VT 2,424 / 6,615; MT 2,572 / 6,060; VA 622 / 5,437; NC 1,377 / 3,771; NY 154 / 3,121; CA 103 / 2,830; GA 0 / 0; IL 0 / 0; PA 0 / 0; TX 0 / 0 (NV, not charted, 0 / 0).
      Federal: A 5,594, B 16,101. Ten years of Oregon's 8,666 for couple B: 86,660, about 87,000 in today's dollars. -->
-<figure data-chart='{"type":"bar","x":["OR","MN","VT","MT","VA","NC","NY","CA","GA","IL","PA","TX"],"xLabel":"State","y":"money","series":[{"name":"$60,000 from IRA and pension, $45,000 Social Security","tone":"neutral","values":[3416,1573,2424,2559,2036,1377,154,145,0,0,0,0]},{"name":"$120,000 from IRA, $55,000 Social Security","tone":"accent","values":[8666,8552,6615,6044,5529,3771,3121,2993,0,0,0,0]}]}'>
+<figure data-chart='{"type":"bar","x":["OR","MN","VT","MT","VA","NC","NY","CA","GA","IL","PA","TX"],"xLabel":"State","y":"money","series":[{"name":"$60,000 from IRA and pension, $45,000 Social Security","tone":"neutral","values":[3416,1402,2424,2572,622,1377,154,103,0,0,0,0]},{"name":"$120,000 from IRA, $55,000 Social Security","tone":"accent","values":[8666,8334,6615,6060,5437,3771,3121,2830,0,0,0,0]}]}'>
   <figcaption>2026 state income tax for two hypothetical married couples, both 67, by state: Oregon, Minnesota, Vermont, Montana, Virginia, North Carolina, New York, California, Georgia, Illinois, Pennsylvania and Texas. Local income taxes are not included.</figcaption>
 </figure>
 
-<p>Some of the results run against reputation. California, with the highest top rate in the country, takes only $145 from the first couple: it doesn't tax Social Security, and its rates on the first tens of thousands of income are low. Oregon takes $3,416 from the same couple, because it taxes pensions and IRA withdrawals at rates that start at 4.75% and reach 8.75% quickly. Georgia, Illinois and Pennsylvania all have income taxes and take nothing from either couple, because they exclude this kind of income. Minnesota exempts the first couple's Social Security but not the second's, which is why its bill jumps.</p>
+<p>Some of the results run against reputation. California, with the highest top rate in the country, takes only $103 from the first couple: it doesn't tax Social Security, and its rates on the first tens of thousands of income are low. Oregon takes $3,416 from the same couple, because it taxes pensions and IRA withdrawals at rates that start at 4.75% and reach 8.75% quickly. Georgia, Illinois and Pennsylvania all have income taxes and take nothing from either couple, because they exclude this kind of income. Minnesota exempts the first couple's Social Security but not the second's, which is why its bill jumps. Virginia's jumps for a different reason. Its age deduction of $12,000 per person is taken away dollar for dollar once a couple's income, not counting Social Security, passes $75,000. The first couple, at $60,000, keeps all $24,000 of it and pays $622; the second, at $120,000, loses it all and pays $5,437.</p>
 
 <h2 id="social-security">Social Security</h2>
 <p>Forty-two states and the District of Columbia don't tax Social Security at all for 2026: the nine without an income tax plus every other state but eight. West Virginia finished phasing out its tax this year, after Kansas, Missouri and Nebraska dropped theirs in the years before. Most of the eight that still tax some benefits exempt them below an income line or offset the tax some other way:</p>
@@ -70,7 +70,18 @@
   <figcaption>A sample of how states treat pension and retirement-account income. Many states also exempt government or military pensions that they otherwise tax; the rules turn on the details.</figcaption>
 </figure>
 
-<p>Some exclusions come with conditions that are easy to miss. Maryland's $40,600 pension exclusion at 65 covers employer plans but not IRAs, and is reduced by the Social Security you receive. Maine's deduction is also cut dollar for dollar by Social Security. Several apply per person, so a couple gets twice the amount only if both spouses have retirement income of their own. And many states treat a public pension, from a state, city or the federal government, more generously than a private one.</p>
+<p>The chart below shows what the groups mean in dollars. It takes one hypothetical couple, both 67, with $50,000 of Social Security, and raises their IRA withdrawals from nothing to $200,000 per year in four states.</p>
+
+<!-- data: computeRetireTax() (lib/engine/math.js), 2026 state rules, status "m", ages 67 and 67, ss 50,000, trad from 0 to 200,000 in steps of 20,000, standard deduction, no local tax (run 2026-11-10).
+     OR 0, 128, 1,666, 3,416, 5,166, 6,916, 8,666, 10,416, 12,166, 13,916, 15,666; MN 0, 0, 332, 1,402, 3,302, 6,107, 8,045, 9,405, 10,765, 12,125, 13,645;
+     NY 0, 0, 0, 154, 971, 2,041, 3,121, 4,201, 5,281, 6,361, 7,441; GA 0 to 160,000, then 998 and 1,996 ((180,000 − 130,000 excluded − 30,000 standard deduction) × 4.99% = 998). -->
+<figure data-chart='{"type":"line","x":[0,20000,40000,60000,80000,100000,120000,140000,160000,180000,200000],"xLabel":"IRA withdrawals per year","xFormat":"money","y":"money","series":[{"name":"Oregon","tone":"bad","values":[0,128,1666,3416,5166,6916,8666,10416,12166,13916,15666]},{"name":"Minnesota","tone":"accent","values":[0,0,332,1402,3302,6107,8045,9405,10765,12125,13645]},{"name":"New York","tone":"neutral","values":[0,0,0,154,971,2041,3121,4201,5281,6361,7441]},{"name":"Georgia","tone":"good","values":[0,0,0,0,0,0,0,0,0,998,1996]}]}'>
+  <figcaption>2026 state income tax for a hypothetical married couple, both 67, with $50,000 of Social Security, by the size of their IRA withdrawals. The withdrawals are split evenly between the spouses. Local income taxes are not included.</figcaption>
+</figure>
+
+<p>Oregon's line starts almost at once and climbs at close to 8.75 cents on the dollar. New York's $20,000 per person, with its standard deduction, covers the first $50,000 or so and then the tax rises steadily. Georgia's $65,000 per person covers $130,000, and the couple pays nothing until their withdrawals pass $160,000. Minnesota's line bends upward between $60,000 and $100,000: over that stretch each extra dollar of withdrawals is taxed and also pushes the couple's income past the line where their Social Security stops being exempt.</p>
+
+<p>Some exclusions come with conditions that are easy to miss. Maryland's $40,600 pension exclusion at 65 covers employer plans but not IRAs, and is reduced by the Social Security you receive. Maine's deduction is also cut dollar for dollar by Social Security. Several apply per person, so a couple gets twice the amount only if both spouses have retirement income of their own. In New York, a couple where one spouse withdraws $40,000 from an IRA and the other has no retirement income excludes $20,000, not $40,000. And many states treat a public pension, from a state, city or the federal government, more generously than a private one.</p>
 <h3>Roth money and capital gains</h3>
 <p>Qualified Roth withdrawals are tax-free in practically every state, since most states start from federal income and Roth money isn't in it. A Roth conversion, on the other hand, is income in the year you convert, and states that tax IRA withdrawals generally tax conversions too.</p>
 <p>Most states tax capital gains as ordinary income, with no special rate. A few give a break: Arkansas excludes 50% of long-term gains, South Carolina 44%, North Dakota 40%, Wisconsin 30%, New Mexico the first $2,500, and Hawaii caps the rate at 7.25%. Pennsylvania, which exempts retirement income, still taxes interest, dividends and gains at its flat 3.07%.</p>

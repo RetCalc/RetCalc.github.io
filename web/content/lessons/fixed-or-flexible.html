@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="fixed-or-flexible" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="fixed-or-flexible" data-reviewed="2026-11-10"
   data-title="Fixed or flexible spending"
   data-idea="Steady income or money that lasts, and what flexibility is worth"
   data-tool="drawdown" data-try="Compare fixed spending with flexible strategies over every past retirement, with your plan already filled in.">
@@ -14,7 +14,7 @@
   <figcaption>Spending each year, in today's dollars, for a retirement that began in January 1966 with $1,000,000 in 60% US stocks and 40% 10-year Treasuries. The fixed amount holds until the money runs out in year 27; the flexible approaches never run out but fall to less than half their starting level.</figcaption>
 </figure>
 
-<p>The fixed withdrawal, the 4% rule, pays $40,000 every year for 26 years and then stops. Taking 4% of whatever the balance is each year never runs out, but by year 17 it's paying $16,718. Guardrails, a rule that starts higher and cuts 10% at a time when withdrawals grow too large against the balance, start at $50,000, cut ten times, and bottom at $17,434.</p>
+<p>The fixed withdrawal, the <a href="/learn/four-percent-rule">4% rule</a>, pays $40,000 every year for 26 years and then stops. Taking 4% of whatever the balance is each year never runs out, but by year 17 it's paying $16,718. Guardrails, a rule that starts higher and cuts 10% at a time when withdrawals grow too large against the balance, start at $50,000, cut ten times, and bottom at $17,434.</p>
 <p>That was the worst stretch in the record. Across all 70 thirty-year retirements that began in a January from 1927 to 1996, the trade looks like this:</p>
 
 <!-- data: historicalBacktest() on each strategy, $1,000,000, 60/40, 30 years, starts 1927–1996. Lifetime spending: each start's 30 years of realSpend summed, median across starts. Left at the end: median endReal. Lowest year: minimum realSpend across all starts. -->
@@ -57,6 +57,11 @@
   <figcaption>Guardrails on $1,000,000 in a 60/40 mix over 30 years, holding the chosen lowest level as a minimum. Each starting amount is the most that never fell below that level and never ran out in any of the 70 historical starts. All in today's dollars.</figcaption>
 </figure>
 
+<!-- data: the table above. Year one: its second column. Average year, typical start: typical lifetime spending (ddScorecard lifeMed) ÷ 30: $1,137,000, $1,623,572, $1,694,284, $1,686,703, $1,738,129, $1,735,788. -->
+<figure data-chart='{"type":"bar","x":["No cuts","$35,000","$32,000","$30,000","$25,000","$20,000"],"xLabel":"Lowest spending you would accept","y":"money","labels":true,"series":[{"name":"Year one","tone":"accent","values":[37900,48461,54240,57229,66030,72476]},{"name":"Average year, typical start","tone":"neutral","values":[37900,54119,56476,56223,57938,57860]}]}'>
+  <figcaption>The same six rows as a picture. Year one keeps climbing as the lowest acceptable level drops. The average year in the typical start, lifetime spending divided by 30, stops rising after the first two steps.</figcaption>
+</figure>
+
 <p>Reading down the table:</p>
 <ul>
   <li>The first bit of flexibility buys the most. Agreeing that spending might drop to $35,000, about 8% under the fixed amount, raises the safe start from $37,900 to $48,461, more than a quarter higher, and lifetime spending in the typical start rises by about 40%.</li>
@@ -75,6 +80,11 @@
 <p>Retirement income planners often describe two schools of thought on this. The probability-based school spends from a diversified portfolio at a rate that history or simulations say is very likely to last, and adjusts if things go badly. The safety-first school covers essential spending with income that can't fall with markets, such as Social Security, a pension, an annuity or a ladder of inflation-protected Treasury bonds, and lets the portfolio pay for everything else. In practice most plans mix the two.</p>
 <p>Guaranteed income makes flexibility much easier to live with. Suppose Sam and Jordan spend $80,000 per year, Social Security pays them $40,000, and the other $40,000 comes from a $1,000,000 portfolio. If a guardrail cuts the portfolio withdrawal by 10%, that's $4,000, which is 5% of what they actually spend. Two cuts in a row take about $7,600 out of an $80,000 budget, under 10%. The bigger the share of spending covered by income that doesn't move with markets, the smaller each cut feels.</p>
 
+<!-- data: hypothetical. Social Security $40,000; portfolio withdrawal $40,000, × 0.9 = $36,000, × 0.9 = $32,400. Totals $80,000, $76,000, $72,400; $7,600 ÷ $80,000 = 9.5%. -->
+<figure data-chart='{"type":"bar","x":["Before any cut","After one cut","After two cuts"],"y":"money","stack":true,"labels":true,"series":[{"name":"Social Security","tone":"neutral","values":[40000,40000,40000]},{"name":"From the portfolio","tone":"accent","values":[40000,36000,32400]}]}'>
+  <figcaption>Sam and Jordan's yearly spending, a hypothetical. Two 10% guardrail cuts take 19% off the portfolio withdrawal but 9.5% off what they spend, because Social Security doesn't move.</figcaption>
+</figure>
+
 <h2 id="budget">Which spending can flex</h2>
 <p>A flexible plan only works if you can make the cuts it asks for. That depends less on your total budget than on how much of it is optional.</p>
 <p>Split your spending into essentials and wants. Essentials are the bills that come whatever happens. Wants are travel, dining out, gifts, hobbies, a newer car, help for grown children. If you spend $80,000 per year and $56,000 of it is essential, the $24,000 of wants is your room to cut. A 10% cut in total spending, $8,000, means giving up a third of the wants. A 20% cut takes two thirds of them. The table above showed guardrails reaching cuts far deeper than that in the worst starts, which is why a floor matters.</p>
@@ -88,7 +98,7 @@
 
 <h2 id="research">What researchers have found</h2>
 <p>Bengen's 1994 study, the source of the 4% rule, assumed spending never adjusts. The flexible rules that followed were built to relax that. In 2006 the planner Jonathan Guyton and William Klinger published decision rules, now called guardrails, and found that with them a retiree with at least 65% in stocks could start at 5.2% to 5.6% and keep the money for 40 years in 99% of simulated cases. The catch, which their paper says plainly, is that the higher start is paid for with cuts. <a href="/learn/guardrails">Guardrails</a> goes through the rules in detail.</p>
-<p>Later work looked hard at the size of those cuts. Karsten Jeske of the Early Retirement Now blog showed in 2017 that guardrail rules can force cuts much deeper than people expect, more than half from the starting level in the worst historical starts. In 2024 Derek Tharp and Justin Fitzpatrick, writing on Kitces.com, made a similar case and argued for guardrails set by the odds of the plan lasting, which in their tests called for much smaller cuts in the same bad periods.</p>
+<p>Later work looked hard at the size of those cuts. Karsten Jeske of the Early Retirement Now blog showed in 2017 that guardrail rules can force cuts much deeper than people expect, more than half from their peak in the worst historical starts. In 2024 Derek Tharp and Justin Fitzpatrick, writing on Kitces.com, made a similar case and argued for guardrails set by the odds of the plan lasting, which in their tests called for much smaller cuts in the same bad periods.</p>
 <p>Taken together, the research says flexibility raises what you can spend, and the gain is largest for the first few percent of give. Flexibility without a floor can mean a long, deep cut in the worst decades, and a plan should be judged by the worst path you'd be willing to live through.</p>
 
 <h2 id="choose">Choosing where you sit</h2>

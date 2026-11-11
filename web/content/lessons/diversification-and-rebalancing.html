@@ -1,0 +1,193 @@
+<article class="lesson" data-slug="diversification-and-rebalancing" data-reviewed="2026-11-10"
+  data-title="Diversifying and rebalancing"
+  data-idea="Owning many things, and keeping the mix you chose"
+  data-tool="backtest" data-try="Compare a mix rebalanced every year, inside a band, or never, in every year since 1926.">
+
+<p class="lede">Diversifying means owning many investments that don't all move together. It lowers how far a portfolio swings by more than it lowers what the portfolio is expected to earn, which is about as close to a free benefit as investing offers. Rebalancing is the upkeep: left alone, a mix drifts toward whatever has grown fastest, and after a long rise in stocks you can be holding far more risk than you chose.</p>
+
+<h2 id="why">Why a mix swings less than its parts</h2>
+<p>Take two made-up investments, A and B. Each gains 30% in a good year and loses 10% in a bad one, and good and bad years are equally likely, so each averages 10% per year. You put half your money in each. What you get depends on how the two move in relation to each other.</p>
+
+<!-- data: hypothetical. A and B each return +30% or −10% with equal chance (average 10%). 50/50 mix return = (A + B) / 2.
+     Together: +30 or −10. Independent: four equally likely pairs (30,30), (30,−10), (−10,30), (−10,−10) give +30, +10, +10, −10; average 10, a loss in 1 of 4.
+     Opposite: (30,−10) or (−10,30), both give +10. -->
+<figure>
+  <table>
+    <thead><tr><th>How A and B move</th><th>What the 50/50 mix can return in a year</th><th>Average</th><th>Chance of a losing year</th></tr></thead>
+    <tbody>
+      <tr><td>Always together</td><td>+30% or −10%</td><td>10%</td><td>1 in 2</td></tr>
+      <tr><td>Independently</td><td>+30%, +10%, +10% or −10%</td><td>10%</td><td>1 in 4</td></tr>
+      <tr><td>Always opposite</td><td>+10% every year</td><td>10%</td><td>None</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Two hypothetical investments, each returning +30% or −10% with equal chance, held half and half. The mix's return each year is the average of the two.</figcaption>
+</figure>
+
+<p>The average is 10% in every row. A mix always earns the weighted average of what its parts earn, so spreading money around can't raise the average. What changes is the spread around it. If A and B rise and fall together, owning both is no different from owning one. If they move independently, half the years have one up and one down, and the mix loses money in one year out of four where each alone loses in two. If they always move opposite, the swings cancel completely.</p>
+<p>How closely two investments move together is their correlation, a number from +1 (always together) through 0 (unrelated) to −1 (always opposite). The three rows are +1, 0 and −1. Real investments fall in between, and anything below +1 takes some of the swing away.</p>
+<p>The economist Harry Markowitz set this out in "Portfolio Selection", published in the Journal of Finance in March 1952, and shared the 1990 Nobel prize in economics for it. His point was that an investment's risk can't be judged alone. What counts is what it adds to the swings of everything else you hold, and that depends on correlation as much as on how jumpy the investment is.</p>
+<p>Smaller swings also help growth. Over one good year and one bad one, A alone turns $100 into $117 ($100 × 1.30 × 0.90). The always-opposite mix turns it into $121 ($100 × 1.10 × 1.10). Both averaged 10% per year, but a loss takes a bigger gain to undo, so the steadier of two portfolios with the same average ends with more.</p>
+
+<h3>The same thing in US stocks and bonds</h3>
+<p>The site's record of US stocks and 10-year Treasuries from 1926 through 2025 shows the effect with real returns. A common measure of swing is the standard deviation: roughly, how far a typical year's return lands from the average. For stocks it was 18.9 points, for bonds 7.7. Over the century the correlation between the two was 0.03, close to none.</p>
+
+<!-- data: calendar-year returns HIST_STOCK and HIST_BOND (lib/engine/math.js, from lib/engine/data/history.js), 1926–2025, 100 years.
+     Mix return each year = w × stock + (1 − w) × bond (rebalanced yearly). Sample standard deviation of the 100 yearly returns:
+     0% 7.66, 20% 7.28, 40% 8.96, 60% 11.84, 80% 15.26, 100% 18.93 (matches backtest().vol).
+     "If swings simply averaged" = w × 18.93 + (1 − w) × 7.66: 7.66, 9.91, 12.17, 14.42, 16.68, 18.93.
+     Average (arithmetic) yearly return: 5.05, 6.48, 7.91, 9.33, 10.76, 12.19. Correlation of stock and bond yearly returns: 0.03
+     (1926–65 −0.17, 1966–99 +0.36, 2000–21 −0.66, 2000–25 −0.40). -->
+<figure data-chart='{"type":"bar","x":["0%","20%","40%","60%","80%","100%"],"xLabel":"Share in stocks","y":"pct","series":[{"name":"If swings simply averaged","tone":"muted","values":[0.0766,0.0991,0.1217,0.1442,0.1668,0.1893]},{"name":"Actual swing","tone":"accent","values":[0.0766,0.0728,0.0896,0.1184,0.1526,0.1893]}]}'>
+  <figcaption>Standard deviation of yearly returns for mixes of US stocks and 10-year Treasuries, 1926–2025, rebalanced yearly, next to the weighted average of the two assets' own standard deviations.</figcaption>
+</figure>
+
+<p>A 60/40 mix averaged 9.3% per year, exactly 60% of the stock average (12.2%) plus 40% of the bond average (5.0%). Its swing was 11.8 points, where the same weighting of the two swings gives 14.4. The 20% bar is odder still: a portfolio with a fifth in stocks swung less than one holding only bonds (7.3 against 7.7) and earned more. (These are simple averages of yearly returns. Compound growth is lower, 8.7% per year for 60/40, as in <a href="/learn/how-much-in-stocks">How much in stocks</a>.)</p>
+
+<h2 id="fund">What one index fund already holds</h2>
+<p>Much of this is done for you the moment you buy a broad index fund. An S&amp;P 500 fund owns about 500 of the largest US companies, and a total US market fund adds thousands of mid-sized and small ones. One company failing barely registers. The risk that's left is the risk of the whole market falling, which owning more US companies can't remove. <a href="/learn/fees-and-index-funds">Fees and index funds</a> covers what these funds cost.</p>
+<p>Past that, spreading further means reaching into markets that the fund doesn't hold: other countries, other kinds of stock, and bonds.</p>
+
+<h2 id="world">US and international stocks</h2>
+<p>US companies make up a little under two-thirds of the world's stock market by value. The rest is spread across dozens of countries.</p>
+
+<!-- data: MSCI ACWI Index (USD) factsheet dated October 30, 2026, country weights: United States 64.63%, Japan 5.08%, Taiwan 3.23%,
+     United Kingdom 3.12%, Canada 3.06%, other 20.88%. 2,413 constituents in 23 developed and 24 emerging markets, about 85% of the investable market. -->
+<figure data-chart='{"type":"bar","labels":true,"x":["United States","Japan","Taiwan","United Kingdom","Canada","All others"],"xLabel":"Country","y":"pct","series":[{"name":"Share of world stock market value","tone":"accent","values":[0.6463,0.0508,0.0323,0.0312,0.0306,0.2088]}]}'>
+  <figcaption>Country weights in the MSCI ACWI index on October 30, 2026. The index holds 2,413 large and mid-sized companies in 47 countries.</figcaption>
+</figure>
+
+<p>Most American investors hold much less outside the US than those weights, a habit called home bias. Vanguard's target-date funds, by contrast, keep about 40% of their stocks outside the US, close to the world's weights. An international index fund is the usual way to add the rest: it holds thousands of companies in Europe, Japan, China, India and elsewhere. Its returns to a US investor include the movement of those currencies against the dollar, which adds to the swings and is also part of why it doesn't move in step with US stocks.</p>
+<p>Leadership between the two has changed hands in long stretches. International stocks did better through much of the 1970s and 1980s. The US led in the 1990s. From 2000 through 2009 US stocks lost 0.7% per year before inflation in the site's record while stocks elsewhere came out ahead. Then the US ran far in front: over the ten years to the end of 2024, Vanguard put US stocks at 13% per year and stocks outside the US at 5%. In 2025 the order flipped again: after what Hartford Funds counts as the better part of 15 years behind, international stocks finished the year well ahead.</p>
+<p>A decade and a half of one side winning is long enough to make the other look pointless, and that's when people drop it. Nobody has shown they can call these turns. Holding both means you own some of whichever is leading and never have everything in the one that is having its bad decade. <a href="/learn/stocks-bonds-cash">Stocks, bonds and cash</a> tells the story of Japan, whose main index took 34 years to regain its 1989 peak.</p>
+
+<h3>Small and value stocks</h3>
+<p>Some investors tilt their stocks toward small companies and toward "value" companies, those priced low against their assets or profits. Over the long record both have earned more than the broad market, with bigger falls and stretches of a decade or more spent behind it, including most of the years since 2007. A tilt is a bet that the pattern continues and that you'll hold through the dry spells. A total-market fund already owns these companies at their market weight, so skipping the tilt leaves no hole in the portfolio. The figures are in <a href="/learn/stocks-bonds-cash">Stocks, bonds and cash</a>.</p>
+
+<h2 id="bonds">Bonds as the other half</h2>
+<p>For most people the biggest diversifier is the bond share, because bonds often rise or hold steady when stocks fall. Different bonds do that job differently.</p>
+<ul>
+  <li>Treasuries have cushioned stock crashes best. Investors move into them when the economy looks shaky.</li>
+  <li>Corporate bonds pay more interest and tend to slip when stocks do, since the same bad news hurts a company's ability to repay. High-yield ("junk") bonds behave a good deal like stocks.</li>
+  <li>Short-term bonds move little when interest rates change. Long-term bonds move a lot, in both directions.</li>
+  <li>TIPS rise with consumer prices, which protects against the one thing ordinary bonds handle worst.</li>
+</ul>
+<p>A total bond market fund holds a blend of Treasuries, government-backed mortgage bonds and high-quality corporate bonds across many maturities, which is diversification within bonds in one holding.</p>
+
+<h3>2022, when both fell</h3>
+<!-- data: HIST_STOCK and HIST_BOND calendar-year returns, before inflation. 2008: stocks −39.23, bonds +19.33, 60/40 = 0.6 × −39.23 + 0.4 × 19.33 = −15.81.
+     2022: stocks −14.98, bonds −14.94, 60/40 −14.97; inflation 6.46%. Years stocks fell: 26 of 100; bonds rose in 21 of those.
+     Years both fell: 1941, 1969, 1987, 2018, 2022. -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>US stocks</th><th>10-year Treasuries</th><th>60/40 mix</th></tr></thead>
+    <tbody>
+      <tr><td>2008</td><td class="neg">−39.2%</td><td>+19.3%</td><td class="neg">−15.8%</td></tr>
+      <tr><td>2022</td><td class="neg">−15.0%</td><td class="neg">−14.9%</td><td class="neg">−15.0%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Calendar-year returns before inflation in the site's record. The 60/40 mix lost about the same in both years, for opposite reasons.</figcaption>
+</figure>
+<p>In 2008 bonds did what they're held for: they gained 19% and cut the mix's loss to well under half of what stocks lost. In 2022 they gave no shelter at all. Inflation was above 6%, the Federal Reserve raised rates quickly, and bond prices fell about as far as stock prices did. In the 26 calendar years since 1926 when stocks lost money, bonds gained in 21. The five exceptions were 1941, 1969, 1987, 2018 and 2022, and 2022 was by far the worst of them.</p>
+<p>The link between the two isn't fixed, either. From 2000 through 2021 their yearly returns had a correlation of −0.66, about as helpful as it gets. From 1966 through 1999, years that include the 1970s inflation, it was +0.36. Bonds have been a good cushion against recessions and a poor one against inflation.</p>
+
+<h2 id="limits">What diversification can't do</h2>
+<p>It doesn't stop losses. A 60/40 mix lost 16% in 2008 and 37% from the end of 1928 to the end of 1932. Stock markets around the world fell together in 2008 (MSCI's all-country world index lost 58% from its 2007 high to its 2009 low), so owning more countries didn't help much that year.</p>
+<p>It also guarantees that something you own is doing badly. A diversified investor always holds the decade's loser alongside its winner, and will trail whoever happened to own only the winner. What you get in exchange is a narrower range of outcomes, and no chance that the one thing you bet on is the thing that fails. Owning five funds that all hold large US companies gives you none of this, however many funds it is.</p>
+
+<h2 id="drift">Rebalancing: what drift does</h2>
+<p>A mix doesn't stay where you set it. Whatever grows faster becomes a bigger share, and over long periods that's nearly always stocks. The chart follows a 60/40 portfolio started at the beginning of 1996 and never touched.</p>
+
+<!-- data: 60% in US stocks and 40% in 10-year Treasuries at the start of 1996, each left to grow at its own calendar-year return (HIST_STOCK, HIST_BOND), nothing added or sold.
+     Stock share at each year end = stock value / total. 1995 is the starting 60%. End of 2025: 89.6% (backtest({stockPct:60, startYear:1996, rebal:"never"}).endMix).
+     At 89.6% stocks, 2008's returns give 0.896 × −39.23 + 0.104 × 19.33 = −33.1%, against −15.8% at 60/40.
+     From 1926: 48% at the end of 1932, 75% in 1945, 92% in 1955, 99.7% in 2025. -->
+<figure data-chart='{"type":"line","x":[1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025],"xLabel":"Year end","y":"pct","levels":[{"y":0.6,"label":"60% target"}],"series":[{"name":"Share in stocks, never rebalanced","tone":"accent","values":[0.6,0.645,0.684,0.702,0.755,0.716,0.675,0.592,0.635,0.653,0.663,0.683,0.679,0.518,0.6,0.618,0.589,0.616,0.693,0.706,0.707,0.73,0.76,0.758,0.781,0.793,0.836,0.836,0.861,0.888,0.896]}]}'>
+  <figcaption>The stock share of a portfolio that began 1996 at 60% US stocks and 40% 10-year Treasuries and was never rebalanced.</figcaption>
+</figure>
+
+<p>By the end of 1999 it was 75% stocks, just in time for three falling years. The 2008 crash knocked it down to 52%, which meant it held fewer stocks than planned for the rebound. By the end of 2025 it was 90% stocks. If 2008's returns came again, that portfolio would lose about 33%, where the 60/40 its owner picked would lose about 16%. Started in 1926, the same untouched portfolio was 92% stocks by 1955 and above 99% by 2025.</p>
+<p>Rebalancing means selling some of what has grown and buying what has lagged to get back to the target. Its purpose is to keep the risk you chose. It is not a way to earn more: when stocks outgrow bonds for decades, trimming them costs return.</p>
+
+<!-- data: engine backtest() (lib/engine/math.js), stockPct 60, 1926–2025, no fee. rebal "year"; "never"; "band" with rebalBand 5 and 10
+     (checked at the start of each year; rebalance when either holding is more than that many points off target).
+     year: cagr 8.67%, vol 11.84, maxDD −37.4% (1928–32), worst year −24.7% (1931), rebalanced in each of the 99 later years.
+     never: 9.89%, 15.96, −41.8% (1928–32), worst year −38.4% (2008), end mix 99.7% stocks.
+     band 5: 8.72%, 11.97, −36.9%, −24.7% (1931), 33 rebalances. band 10: 8.80%, 11.99, −33.4%, −20.4% (1931), 14 rebalances. -->
+<figure>
+  <table>
+    <thead><tr><th>Rule</th><th>Return per year</th><th>Typical yearly swing</th><th>Worst year</th><th>Deepest fall</th><th>Times rebalanced</th></tr></thead>
+    <tbody>
+      <tr><td>Every year</td><td>8.7%</td><td>11.8 points</td><td class="neg">−24.7%</td><td class="neg">−37%</td><td>99</td></tr>
+      <tr><td>When 5 points off target</td><td>8.7%</td><td>12.0 points</td><td class="neg">−24.7%</td><td class="neg">−37%</td><td>33</td></tr>
+      <tr><td>When 10 points off target</td><td>8.8%</td><td>12.0 points</td><td class="neg">−20.4%</td><td class="neg">−33%</td><td>14</td></tr>
+      <tr><td>Never</td><td>9.9%</td><td>16.0 points</td><td class="neg">−38.4%</td><td class="neg">−42%</td><td>0</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A 60/40 portfolio of US stocks and 10-year Treasuries, 1926–2025, before inflation, fees and taxes. The band rules look once per year and rebalance only if a holding is that far from its target. Deepest fall is measured at year ends.</figcaption>
+</figure>
+
+<p>The three rebalanced rows are nearly the same portfolio. The untouched one earned 1.2 points more per year, swung a third more, and lost 38% in 2008, by which time it was almost entirely stocks. Anyone who wanted that could have chosen a high stock share on purpose.</p>
+
+<h2 id="when">When to rebalance</h2>
+<p>There are two usual triggers. Calendar rebalancing picks a date, most often once per year, and resets the mix then. Threshold rebalancing sets a band around each target and acts only when a holding leaves it: with a 5-point band on a 60% stock target, you'd rebalance below 55% or above 65%. Many people combine them, looking on a schedule and trading only if a band is broken.</p>
+<p>Vanguard's researchers Colleen Jaconetti, Francis Kinniry and Yan Zilbering tested these rules on US stocks and bonds from 1926 through 2009. They found no best frequency and no best threshold. Monthly, quarterly and yearly checks gave returns between 8.5% and 8.9% per year with almost identical risk, and what differed was the amount of trading: more than 1,000 rebalances for monthly, 28 for a yearly look with a 5-point band. Their never-rebalanced portfolio averaged 84% in stocks. They concluded that looking once or twice per year and rebalancing at a 5-point band was a reasonable balance of risk control and cost for most investors. A 2022 Vanguard paper by Yu Zhang and colleagues, which counted trading costs directly, likewise found that monthly and quarterly rebalancing was more than needed and that waiting two years was too long.</p>
+<p>Gobind Daryanani came at it from the other side in "Opportunistic Rebalancing", published in the Journal of Financial Planning in January 2008. Using daily prices for a five-asset portfolio from 1992 through 2004, he tested how wide the band should be and how often to look. Wide bands did best, set at 20% of each holding's target (so a 20% holding is left alone between 16% and 24%), checked every week or two, with trades only in the holdings that had strayed. Narrow bands and fixed dates traded too early, before a trend had run. His period is short and his method needs frequent checking, which is easy for software and tedious by hand.</p>
+<p>The studies agree on more than they differ. Rebalancing very often adds cost without lowering risk. Some rule, followed consistently, matters more than which rule. And a rule set in advance is worth most in a crash, when it tells you to buy stocks while every instinct says to sell them; <a href="/learn/when-markets-fall">When markets fall</a> walks through 2008 that way.</p>
+
+<h3>The "rebalancing bonus"</h3>
+<p>In a 1996 essay, William Bernstein pointed out that a rebalanced portfolio usually earns more than the weighted average of its parts' compound returns, and called the difference the rebalancing bonus. It shows up in the site's record: stocks compounded at 10.45% per year and bonds at 4.78%, a 60/40 weighting of which is 8.18%, yet the rebalanced 60/40 portfolio compounded at 8.67%. The extra half point comes from the lower swings described at the top of this lesson, plus the habit of selling a little high and buying a little low.</p>
+<p>The bonus has limits. It is largest between holdings with similar long-run returns, big swings and low correlation, such as stock markets of different regions. Between stocks and bonds, whose returns are far apart, the untouched portfolio in the table above still won on return, as it did in Bernstein's own test over 1926–1994. Rebalancing there buys lower risk and pays for it.</p>
+
+<h2 id="how">Rebalancing without a tax bill</h2>
+<p>Selling a holding that has grown, in a taxable account, means paying capital gains tax on it. There are ways to rebalance that sell little or nothing taxable.</p>
+<ul>
+  <li>Use new money. Point contributions at whatever is below target. Take a hypothetical $500,000 portfolio that has drifted to 66% stocks: $330,000 in stocks and $170,000 in bonds. Putting a year's $20,000 of saving entirely into bonds makes it $330,000 and $190,000, or 63.5% stocks, with nothing sold. For savers whose contributions are large next to their balance, this can be all the rebalancing they need.</li>
+  <li>Use withdrawals. In retirement, take spending from whatever is above target. After a good year for stocks that means selling stocks; after a crash it means living on bonds and leaving stocks to recover.</li>
+  <li>Trade inside tax-advantaged accounts. Moving money between funds within a 401(k) or an IRA isn't a taxable event. Since what counts is the mix across all your accounts together, you can usually fix the whole household's mix with trades in those accounts and leave the taxable account alone. <a href="/learn/asset-location">Asset location</a> covers which holdings go in which account.</li>
+  <li>Have dividends and interest paid in cash in a taxable account, and put them toward whatever is low.</li>
+</ul>
+<p>Or hold a fund that does it. Target-date funds and balanced funds keep their own mix inside the fund, where their trades create no tax bill for you in a retirement account. <a href="/learn/how-much-in-stocks">How much in stocks</a> describes how their mix changes with age.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The <a href="/backtest">Backtest</a> runs any mix of US stocks, small-cap value, bonds and cash through every year since 1926. Set a mix, then switch the rebalancing between every year, every few years, a band of your choosing, and never. Compare the return with the deepest fall and the worst year, and look at the mix the untouched version ends with. Try a start year of 1996 or 2000 to see drift go both ways. The site's market history is US only, so it can't show what an international share would have done.</p>
+<p>The <a href="/drawdown">Drawdown Simulator</a> has the same rebalancing choices with withdrawals coming out, which is where holding the planned mix through a crash matters most.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>How many funds do I need to be diversified?</summary><p>Fewer than most people hold. A total US stock fund, a total international stock fund and a total bond fund cover thousands of companies and bonds across the world. A single target-date fund holds all three. More funds only add diversification if they hold something the others don't.</p></details>
+<details><summary>How much should I hold outside the US?</summary><p>There's no agreed figure. The world's market weights put a little over a third of stocks outside the US, and some large target-date funds hold about that. Many investors hold less, and some hold none. Any steady share gives you part of the benefit; the mistake that costs most is moving in and out based on which side won the last ten years.</p></details>
+<details><summary>Is rebalancing just selling winners?</summary><p>It is, in small amounts, and after long rallies it costs some return. What it protects against is arriving at retirement, or at the next crash, holding 85% or 90% in stocks when you planned on 60%.</p></details>
+<details><summary>Should I rebalance in the middle of a crash?</summary><p>If your rule says so, yes. Buying stocks after a large fall has paid well historically, and it's the hardest time to do it, which is the reason to decide the rule beforehand. A band rule will tell you on its own when the fall has been big enough to act.</p></details>
+<details><summary>Does my 401(k) rebalance for me?</summary><p>Only if you hold a target-date or balanced fund, or have switched on an automatic rebalancing feature, which many plans offer. A set of separate funds you picked yourself will drift until you move the money.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>A mix earns the weighted average of its parts but swings less than the weighted average of their swings, as long as they don't move in step.</li>
+  <li>From 1926 through 2025 a 60/40 mix of US stocks and Treasuries swung 11.8 points per year where simple averaging gives 14.4.</li>
+  <li>US companies are about 65% of the world's stock market; the US and the rest have each led for a decade or more at a time.</li>
+  <li>Diversification narrows outcomes but doesn't prevent losses, and in 2022 stocks and bonds fell about 15% together.</li>
+  <li>Left alone, a 60/40 portfolio from 1996 was 90% stocks by 2025. Rebalancing yearly or at a band keeps the risk you chose, and how often matters little.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>Why a mix swings less than the things in it</li>
+    <li>What US, international and bond holdings each add</li>
+    <li>How drift changes your risk, and ways to rebalance</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Correlation">How closely two investments move together, from +1 (always together) to −1 (always opposite). Below +1, holding both lowers the swings.</li>
+    <li data-term="Home bias">Holding far more of your own country's stocks than its share of the world market.</li>
+    <li data-term="Drift">The change in a portfolio's mix as its holdings grow at different rates.</li>
+    <li data-term="Rebalancing band">A range around a target share. You rebalance only when a holding moves outside it.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://doi.org/10.1111/j.1540-6261.1952.tb01525.x">Portfolio selection (Markowitz, 1952)</a> <span>Journal of Finance</span></li>
+    <li><a href="https://www.aaii.com/journal/article/best-practices-for-portfolio-rebalancing">Best practices for portfolio rebalancing (Jaconetti, Kinniry and Zilbering)</a> <span>Vanguard research, in the AAII Journal</span></li>
+    <li><a href="https://www.vanguard.co.uk/professional/vanguard-365/investment-knowledge/portfolio-construction/when-multi-asset-investors-should-rebalance">Why, how and when multi-asset investors should rebalance (on Zhang and others, 2022)</a> <span>Vanguard</span></li>
+    <li><a href="https://www.financialplanningassociation.org/article/journal/JAN08-opportunistic-rebalancing-new-paradigm-wealth-managers">Opportunistic rebalancing: a new paradigm for wealth managers (Daryanani, 2008)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="http://www.efficientfrontier.com/ef/996/rebal.htm">The rebalancing bonus (Bernstein, 1996)</a> <span>Efficient Frontier</span></li>
+    <li><a href="https://www.msci.com/documents/10199/255599/msci-acwi-net.pdf">MSCI ACWI index factsheet: country weights</a> <span>MSCI</span></li>
+    <li><a href="https://workplace.vanguard.com/insights-and-research/perspective/the-case-for-international-equities-in-target-date-funds.html">The case for international equities in target-date funds</a> <span>Vanguard</span></li>
+    <li><a href="https://www.hartfordfunds.com/practice-management/client-conversations/investing-for-growth/could-international-markets-be-gaining-momentum.html">Could international markets be gaining momentum?</a> <span>Hartford Funds</span></li>
+  </ul>
+</footer>
+</article>

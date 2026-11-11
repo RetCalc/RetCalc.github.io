@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="rent-or-buy" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="rent-or-buy" data-reviewed="2026-11-10"
   data-title="Rent or buy"
   data-idea="What owning really costs, and when buying pulls ahead"
   data-tool="rentbuy" data-try="Race renting against buying on your own home, rent and timeline, after selling costs and taxes.">
@@ -6,7 +6,7 @@
 <p class="lede">Most people weigh their rent against a mortgage payment. That leaves out most of what owning costs, and the money a renter keeps free to invest. Which one comes out ahead depends on a handful of numbers you can look up and one you can't: how long you'll stay.</p>
 
 <h2 id="costs">What owning costs beyond the payment</h2>
-<p>Take a $450,000 home bought with 20% down, $90,000, and a 30-year loan of $360,000 at 7.25%. These are the numbers Rent vs. Buy opens with. The loan payment, principal and interest, is $2,456 per month. That's the figure a lender quotes and the one people hold up against their rent, but it's only part of the bill.</p>
+<p>Take a $450,000 home bought with 20% down, $90,000, and a 30-year loan of $360,000 at 7.25%. These are the numbers Rent vs. Buy opens with; Freddie Mac's weekly survey put the average 30-year rate at 7.18% in early November 2026. The loan payment, principal and interest, is $2,456 per month. That's the figure a lender quotes and the one people hold up against their rent, but it's only part of the bill.</p>
 
 <!-- data: Rent vs. Buy defaults (tools/rentbuy/model.ts, MORT_RATE_30 = 7.25).
      Principal and interest: 360,000 × r / (1 − (1 + r)^−360), r = 0.0725/12 → 2,455.83.
@@ -31,7 +31,7 @@
 <p>With less than 20% down, lenders add private mortgage insurance, PMI, until the loan falls to 80% of the price, when you can ask to drop it (it ends on its own at 78%). Rent vs. Buy assumes 0.6% of the loan per year when it applies. And there's the cash at closing: $103,500 that a renter would still have, invested.</p>
 
 <h2 id="unrecoverable">The costs you don't get back</h2>
-<p>Comparing rent with the full cost of owning isn't quite fair either, because part of each mortgage payment is principal. That part isn't spent. It moves from your bank account into your home equity, and you get it back when you sell. The fair comparison sets rent, which is all spent, against the parts of owning that are also gone for good.</p>
+<p>Comparing rent with the full cost of owning isn't quite fair either, because part of each mortgage payment is principal. That part isn't spent. It moves from your bank account into your home equity, the share of the home's value that's yours and not the lender's, and you get it back when you sell. The fair comparison sets rent, which is all spent, against the parts of owning that are also gone for good.</p>
 
 <!-- data: year one of the loan from mortgage() in lib/engine/math.js: interest 25,986, principal 3,484.
      Tax 4,950, insurance 1,800, upkeep 4,500 (flat first-year figures).
@@ -57,6 +57,14 @@
 </figure>
 
 <p>Before price growth, owning this home throws away about $3,700 per month in its first year, double the $1,800 rent. After 4% growth on the home's value, it's about $2,200 per month. So at $1,800 rent, renting is cheaper even if the house appreciates as hoped; at $2,400, owning is cheaper from year one, and it gets more so over time, because rent rises every year while most of the mortgage payment stays fixed and slowly turns from interest into principal.</p>
+<p>The split between interest and principal doesn't stay where it starts. The payment is the same $29,470 every year, but each year a little more of it is principal:</p>
+
+<!-- data: mortgage() in lib/engine/math.js, 360,000 at 7.25% for 30 years: years[].interest and years[].principal, rounded to $100.
+     Each year's two parts sum to 29,470. Principal first exceeds interest in year 21 (14,789 against 14,681). -->
+<figure data-chart='{"type":"area","stack":true,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],"xLabel":"Year of the loan","y":"money","series":[{"name":"Interest, gone for good","tone":"bad","values":[26000,25700,25400,25100,24800,24500,24100,23700,23300,22800,22300,21800,21200,20600,19900,19200,18400,17600,16700,15700,14700,13600,12400,11100,9700,8200,6700,4900,3100,1100]},{"name":"Principal, kept as equity","tone":"accent","values":[3500,3700,4000,4300,4700,5000,5400,5800,6200,6700,7200,7700,8300,8900,9600,10300,11100,11900,12800,13800,14800,15900,17100,18400,19700,21200,22800,24500,26400,28300]}]}'>
+  <figcaption>Where each year's $29,470 of loan payments goes on the $360,000 loan at 7.25%. Interest takes 88% of the first year's payments and less than half only from year 21.</figcaption>
+</figure>
+
 <p>Two one-time costs sit on top. Closing costs when you buy, $13,500 here at 3% of the price, are gone the day you sign. Selling costs, mostly agent commissions, often run 3% to 6% of the sale price. Spread over thirty years they hardly matter; spread over three, they can wipe out everything else. So how long you stay often decides the answer.</p>
 
 <h2 id="breakeven">Price-to-rent and the break-even year</h2>
@@ -123,19 +131,27 @@
 
 <h2 id="taxes">Taxes on both sides</h2>
 <h3>Mortgage interest and property tax</h3>
-<p>Mortgage interest and property tax are deductible, but only if you itemize, and only the part of your itemized total above the standard deduction actually saves anything. For 2026 the standard deduction is $32,200 for a married couple and $16,100 for a single filer. Interest is deductible on up to $750,000 of mortgage debt, and state and local taxes, property tax included, are capped at $40,400 for 2026, lower for incomes above $505,000.</p>
-<p>In the example, the first year's interest of about $26,000 plus $4,950 of property tax comes to about $31,000, still under the $32,200 standard deduction for a couple. Unless they pay a lot of state income tax or give a lot to charity, the deduction saves them nothing. A single buyer would get more from it. Rent vs. Buy leaves the deduction out; if you itemize, buying looks a little better than it shows.</p>
+<p>Mortgage interest and property tax are deductible, but only if you itemize, and only the part of your itemized total above the standard deduction actually saves anything. For 2026 the standard deduction is $32,200 for a married couple and $16,100 for a single filer. Interest is deductible on up to $750,000 of mortgage debt, a limit the 2025 tax law made permanent. The same law made mortgage insurance premiums deductible as interest again from 2026, though that deduction shrinks once income passes $100,000. State and local taxes, property tax included, are capped at $40,400 for 2026, lower for incomes above $505,000. The higher cap runs through 2029 and is set to drop back to $10,000 in 2030.</p>
+<p>In the example, the first year's interest of about $26,000 plus $4,950 of property tax comes to about $31,000, still under the $32,200 standard deduction for a couple. Unless they pay a lot of state income tax or give a lot to charity, the deduction saves them nothing.</p>
+<p>Suppose they also pay $6,000 of state income tax. Their itemized total is now $36,936, which is $4,736 more than the standard deduction they'd have taken anyway. In the 22% bracket that extra $4,736 saves about $1,040 of tax, on nearly $31,000 of interest and property tax. A single buyer with the same house gets more: $30,936 is $14,836 over the single standard deduction, worth about $3,260 at 22%. The saving also shrinks every year as the interest does. Rent vs. Buy leaves the deduction out; if you itemize, buying looks a little better than it shows.</p>
 <h3>When you sell</h3>
-<p>Gains on a main home are largely tax-free. You can exclude up to $250,000 of gain, or $500,000 on a joint return, if you owned the home and lived in it as your main home for at least two of the five years before the sale. You can generally use the exclusion once every two years. The renter's investments get no such break; their gains are taxed when sold, which Rent vs. Buy counts at 15%.</p>
+<p>Gains on a main home are largely tax-free. You can exclude up to $250,000 of gain, or $500,000 on a joint return, if you owned the home and lived in it as your main home for at least two of the five years before the sale. You can generally use the exclusion once every two years, and people who have to sell sooner because of a job move, a health problem or an event they couldn't have foreseen can get part of it; IRS Publication 523 has the details. The $250,000 and $500,000 limits aren't indexed to inflation and haven't changed since 1997, so a long-held home in an expensive market can outgrow them. The renter's investments get no such break; their gains are taxed when sold, which Rent vs. Buy counts at 15%.</p>
 
 <h2 id="history">What history says about home prices</h2>
 <p>In dollars, home prices have mostly gone up over long stretches. After inflation they've risen much more slowly. From January 1987 to July 2026, the S&amp;P CoreLogic Case-Shiller national index rose about 4.3% per year while consumer prices rose about 2.8%. That's around 1.4% per year faster than inflation. Rent vs. Buy's default of 4% per year, against inflation of about 3%, assumes a little less than that.</p>
+<!-- data: FRED series CSUSHPINSA (S&P CoreLogic Case-Shiller U.S. National Home Price Index, not seasonally adjusted) and CPIAUCNS (CPI-U),
+     annual averages 1987 to 2025, downloaded 2026-11-10. Home prices: index / 66.257 × 100 (1987 average = 100); 2025 average 328.497 → 496.
+     After inflation: the same divided by CPI / 113.625 (2025 average 321.943) → 175. Real series: 2006 156, 2012 105. -->
+<figure data-chart='{"type":"line","x":[1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025],"xLabel":"Year","y":"num","series":[{"name":"Home prices","tone":"accent","values":[100,107,114,116,115,115,117,120,122,125,129,136,145,158,171,185,202,227,259,277,272,248,224,218,210,213,233,249,260,273,289,306,316,335,392,450,461,485,496]},{"name":"Home prices after inflation","tone":"neutral","values":[100,103,104,101,96,93,92,92,91,91,91,95,99,104,110,117,125,137,151,156,149,131,119,114,106,105,114,119,125,129,134,138,140,147,165,175,172,176,175]}],"band":{"from":2006,"to":2012,"label":"2006 to 2012 fall"}}'>
+  <figcaption>US home prices, yearly averages of the Case-Shiller national index, with 1987 set to 100. In dollars they're about five times higher; after inflation, about 75% higher. After inflation, prices in 1997 were still below where they stood in 1989, and the 2006 level wasn't seen again until 2021.</figcaption>
+</figure>
+
 <p>The drops can be large and long. From its peak in July 2006 to its low in February 2012, the same index fell 27%, and 35% after inflation. Owners who had to sell in those years, for a job or a divorce, often sold at a loss, and many with small down payments owed more than the home was worth.</p>
 <p>Leverage works in both directions. With 20% down, a 10% rise in the home's price is a 50% gain on your down payment, and a 10% fall is a 50% loss. Most households hold no other investment with that much borrowed money behind it, in one asset, in one town.</p>
 
-<!-- data: FRED series CSUSHPINSA (S&P CoreLogic Case-Shiller U.S. National Home Price Index, not seasonally adjusted) and CPIAUCNS (CPI-U),
-     downloaded 2026-10-26. Jan 1987 63.732 → Jul 2026 337.306: (337.306/63.732)^(1/39.5) − 1 = 4.3% per year.
-     CPI Jan 1987 111.2 → Jul 2026 333.918: 2.8% per year. Real: (5.293/3.003)^(1/39.5) − 1 = 1.4% per year.
+<!-- data for the growth rates and the 2006 to 2012 fall quoted in this section: FRED series CSUSHPINSA and CPIAUCNS, monthly,
+     downloaded 2026-11-10. Jan 1987 63.732 → Jul 2026 337.262: (337.262/63.732)^(1/39.5) − 1 = 4.3% per year.
+     CPI Jan 1987 111.2 → Jul 2026 333.918: 2.8% per year. Real: (5.292/3.003)^(1/39.5) − 1 = 1.4% per year.
      Jul 2006 184.608 → Feb 2012 133.987: −27.4%; CPI 203.5 → 227.663, real −35.1%. -->
 
 <h2 id="beyond">What the numbers leave out</h2>
@@ -183,6 +199,8 @@
     <li><a href="https://fred.stlouisfed.org/series/CSUSHPINSA">S&amp;P CoreLogic Case-Shiller U.S. National Home Price Index</a> <span>Federal Reserve Bank of St. Louis (FRED)</span></li>
     <li><a href="https://www.freddiemac.com/pmms">Primary Mortgage Market Survey</a> <span>Freddie Mac</span></li>
     <li><a href="https://www.irs.gov/publications/p936">Publication 936, Home mortgage interest deduction</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p523">Publication 523, Selling your home</a> <span>IRS</span></li>
+    <li><a href="https://www.consumerfinance.gov/ask-cfpb/when-can-i-remove-private-mortgage-insurance-pmi-from-my-loan-en-202/">When can I remove private mortgage insurance (PMI) from my loan?</a> <span>Consumer Financial Protection Bureau</span></li>
   </ul>
 </footer>
 </article>

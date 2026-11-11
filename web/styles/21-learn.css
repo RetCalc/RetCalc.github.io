@@ -260,6 +260,25 @@
 .lrn-bandl { fill: var(--ds-loss) !important; }
 .lrn-mark line { stroke: var(--ds-rule-strong); stroke-dasharray: 3 3; }
 .lrn-mark text { fill: var(--ds-text) !important; font-size: 12px !important; }
+.lrn-chart { position: relative; }
+.lrn-chart svg { touch-action: pan-y; }
+.lrn-level line { stroke: var(--ds-text); stroke-width: 1.5; stroke-dasharray: 5 4; opacity: .8; }
+.lrn-level text { fill: var(--ds-text) !important; font-size: 12px !important; }
+.lrn-barl { fill: var(--ds-text) !important; font-size: 11px !important; }
+.lrn-hov line { stroke: var(--ds-rule-strong); }
+.lrn-hov circle { stroke: var(--ds-surface, #fff); stroke-width: 2; }
+.lrn-hovslot { fill: var(--ds-text); opacity: .05; }
+.lrn-tip { position: absolute; top: 34px; z-index: 2; pointer-events: none; display: grid; gap: 3px; min-width: 150px; max-width: 260px; padding: 8px 10px;
+  border-radius: 10px; border: 1px solid var(--ds-rule); background: var(--ds-surface, #fff); box-shadow: 0 6px 20px rgb(0 0 0 / .12);
+  font-size: 12.5px; line-height: 1.35; color: var(--ds-muted); font-variant-numeric: tabular-nums; }
+.lrn-tip[data-side="left"] { left: var(--at); }
+.lrn-tip[data-side="right"] { right: var(--at); }
+.lrn-tip b { color: var(--ds-text); font-weight: 600; }
+.lrn-tip span { display: flex; align-items: baseline; gap: 6px; }
+.lrn-tip i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.lrn-tip em { margin-left: auto; padding-left: 12px; font-style: normal; font-weight: 500; color: var(--ds-text); white-space: nowrap; }
+.lrn-tip .tot { border-top: 1px solid var(--ds-rule); padding-top: 3px; }
+.lrn-prev .lrn-tip { display: none; }
 .lrn-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--ds-muted); margin-bottom: 8px; }
 .lrn-legend i { display: inline-block; width: 16px; height: 0; border-top: 2.5px solid var(--c); margin-right: 6px; vertical-align: 3px; border-radius: 2px; }
 .lrn-legend i.dash { border-top-style: dotted; }
@@ -268,6 +287,7 @@
 .lrn-mover label { color: var(--ds-muted); white-space: nowrap; }
 .lrn-mover [data-slot="native-range"] { flex: 1; }
 .lrn-mover output { min-width: 140px; text-align: right; font-weight: 500; }
+.lrn-movers { display: grid; gap: 2px; }
 .lrn-mixes { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; overflow-x: auto; }
 .lrn-mixes .lrn-cap { white-space: nowrap; }
 .lrn-readout { margin: 10px 0 0 !important; font-size: 13.5px; color: var(--ds-muted); line-height: 1.5; }

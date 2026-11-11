@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="compound-growth" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="compound-growth" data-reviewed="2026-11-10"
   data-title="Time does most of the work"
   data-idea="Compounding, the rule of 72, and why the early years count most"
   data-tool="calculator" data-try="See what your savings grow to by the age you retire, and how much of it is growth, with your plan already filled in.">
@@ -27,6 +27,12 @@
 </figure>
 
 <p>Look at the growth column. In year 1 it's $700. In year 40 it's $9,796, nearly the whole original deposit, earned in a single year without adding a dollar. The balance doubles roughly every ten years, so the last decade adds more than the first three decades combined: about $73,600 between years 30 and 40, against about $66,100 in years 1 to 30.</p>
+<p>It helps to split the balance into where it came from. The original $10,000 earns $700 per year the whole way through, which is the simple growth. Everything above that is growth earned on earlier growth. After 10 years that part is $2,672, and you'd hardly miss it. After 40 years it's $111,745, about three-quarters of the balance.</p>
+
+<!-- data: plain arithmetic at 7% per year. Deposit 10,000. Growth on the deposit = 700 × years: 7,000, 14,000, 21,000, 28,000. Growth on growth = 10,000 × 1.07^n − 10,000 − 700 × n: 2,672, 14,697, 45,123, 111,745. Totals 19,672, 38,697, 76,123, 149,745. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["10 years","20 years","30 years","40 years"],"xLabel":"Years invested","y":"money","series":[{"name":"Original deposit","tone":"muted","values":[10000,10000,10000,10000]},{"name":"Growth on the deposit","tone":"good","values":[7000,14000,21000,28000]},{"name":"Growth on earlier growth","tone":"accent","values":[2672,14697,45123,111745]}]}'>
+  <figcaption>What the $10,000 is made of after 10, 20, 30 and 40 years at 7%. Growth on the deposit rises by the same $7,000 each decade; growth on earlier growth does the rest.</figcaption>
+</figure>
 
 <h2 id="early">Why ten early years can beat twenty late ones</h2>
 <p>The clearest way to see what time is worth is to compare savers who put in the same amount per year but start at different ages. Here are four of them, each saving $6,000 per year ($500 per month) in today's dollars and retiring at 65.</p>
@@ -51,13 +57,13 @@
 
 <!-- widget: compound. Shows balance at 65 (y, today's dollars) against the age saving starts (x, 20 to 60), for a steady monthly amount kept up until 65. Inputs: the monthly amount (a slider from $100 to $3,000 in $50 steps; default $500, or the reader's own monthly saving from their plan, rounded to $50 and capped at $3,000) and the investment mix, using the Calculator's five mixes and their returns after inflation (Very conservative 2%, Conservative 3%, Balanced 4.5%, Growth 5.75%, Aggressive 7%; always starts on Balanced). Two series: the balance at 65 and, beneath it as a dashed line, the total put in, so the gap between them is the growth. A marker at the reader's current age ("You, at 40") when they have a plan and are 20 to 60. Moving the amount scales both lines; moving the mix bends the balance line (steeper at higher returns) and leaves the total put in unchanged. A line under the chart reads out three points rounded to $1,000, e.g. "Start at 25: $645,000. Start at 35: $368,000. Start at 45: $189,000" at $500 and Balanced: the Calculator's monthly engine, projectBasic, gives 645,006, 367,652 and 189,056 (annual-deposit arithmetic, as in the table above, gives 642,182, 366,042 and 188,229). -->
 <figure data-widget="compound">
-  <figcaption>What a steady amount per month grows to by 65, depending on the age you start. The space between the two lines is growth. Pick an amount and a mix to see how the curve bends.</figcaption>
+  <figcaption>What a steady amount per month grows to by 65, depending on the age you start. The space between the two lines is growth. Pick an amount and a mix to see how the curve bends. The money goes in monthly here, so the figures run slightly above the table's.</figcaption>
 </figure>
 
 <p data-yours></p>
 
 <h2 id="rule-72">The rule of 72</h2>
-<p>A quick way to feel compounding without a calculator: divide 72 by the yearly return, and you get roughly how many years it takes money to double. At 6%, about 12 years. At 9%, about 8. The rule is close enough for planning between about 3% and 12%, and you can check it against the exact answer below.</p>
+<p>A quick way to feel compounding without a calculator: divide 72 by the yearly return, and you get roughly how many years it takes money to double. At 6%, about 12 years. At 9%, about 8. The rule is close enough for planning between about 3% and 12%, and you can check it against the exact answer below. At higher rates it starts to undershoot: at 24% the rule says 3 years and the exact answer is 3.2.</p>
 
 <!-- data: rule of 72 = 72 ÷ rate. Exact doubling time = ln 2 ÷ ln(1 + rate), rounded to one decimal. -->
 <figure>
@@ -111,7 +117,13 @@
 <p>The tables above use a steady return every year. Real returns arrive unevenly, and that changes the arithmetic in a way that catches people out.</p>
 <p>A loss takes a bigger gain to undo. Fall 50% and you need a 100% gain to get back to where you started. So a portfolio that gains 50% one year and loses 50% the next has an average yearly return of 0%, but it ends 25% below where it began: $100 becomes $150, then $75. The return that actually compounds, the one that matches where your money ends up, is always a little lower than the simple average of the yearly returns when returns swing.</p>
 <p>For US stocks from 1926 through 2025, the simple average of the yearly real returns was 9.1%. The return that actually compounded was 7.3%. The 7.3% is the one to plan with. When you see a long-run average quoted, it's worth checking which kind it is.</p>
-<p>The swings also mean compounding comes in bursts. Stocks rose in 74 of the 100 calendar years since 1926, and the bad years can be very bad: −41.8% in the worst. Over longer stretches the record is steadier. The worst 20-year stretch for stocks still earned 0.8% per year after inflation, and the worst 30-year stretch 4.3%. So far, the good years have always outweighed the bad ones given a couple of decades, though the margin in the worst stretches was thin.</p>
+<p>The last thirty years show what the unevenness looks like from inside. From the start of 1996 to the end of 2025, $10,000 in US stocks grew to about $90,000 in buying power, the same place a steady 7.6% per year would have taken it. The route was nothing like steady. The money more than doubled in four years, lost 39% over the next three, and at the end of 2008 stood at about $13,000, less than it had been worth eleven years earlier.</p>
+
+<!-- data: lib/engine/data/history.js, HIST_M_STOCK and HIST_M_INFL compounded into calendar years; real return = (1 + stocks) ÷ (1 + inflation) − 1; $10,000 at the start of 1996, balance at each year end through 2025 (90,087). Steady line = 10,000 × 1.07602^n, the rate that ends at the same figure. End of 1997: 15,495; 1999: 22,653; 2002: 13,820 (−39% from 1999); 2008: 12,967. -->
+<figure data-chart='{"type":"line","x":[1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025],"xLabel":"End of year","y":"money","series":[{"name":"US stocks, after inflation","tone":"accent","values":[10000,11959,15495,19136,22653,20650,17727,13820,16586,18121,18764,20910,21358,12967,16414,18439,18286,20993,26828,30850,31251,34207,40507,39024,48129,56266,67423,53844,63399,80122,90087]},{"name":"A steady 7.6% per year","tone":"muted","dash":true,"values":[10000,10760,11578,12459,13406,14425,15521,16701,17971,19337,20808,22389,24092,25923,27894,30015,32296,34752,37394,40236,43295,46587,50129,53940,58040,62453,67201,72310,77807,83722,90087]}]}'>
+  <figcaption>$10,000 in US stocks from the end of 1995 to the end of 2025, dividends reinvested, in buying power, beside the steady return that ends at the same figure. No fees or taxes.</figcaption>
+</figure>
+<p>The swings also mean compounding comes in bursts. Stocks rose in 74 of the 100 calendar years since 1926, and the bad years can be very bad: −41.8% in 1931, the worst. Over longer stretches the record is steadier. The worst 20-year stretch for stocks still earned 0.8% per year after inflation, and the worst 30-year stretch 4.3%. So far, the good years have always outweighed the bad ones given a couple of decades, though the margin in the worst stretches was thin.</p>
 
 <h2 id="drags">What slows compounding down</h2>
 <p>Anything that takes a slice of the return every year compounds against you in the same way growth compounds for you.</p>
@@ -124,7 +136,7 @@
 
 <h2 id="plan">Seeing it in your own plan</h2>
 <p>The Calculator splits your result into what you put in and what growth added. Its starting example is Sam, 30, with $10,000 saved, adding $500 per month in a balanced mix until 65. At 65 Sam has $537,803 in today's dollars. Sam put in the $10,000 plus $206,672 of contributions, and growth supplied the other $321,131, about 60% of the total.</p>
-<p>Two changes show the clock at work. Move the retirement age from 65 to 60 and the balance falls to $405,105, about a quarter less, because the last five years are the ones with the largest balance to grow. Or move your current age back five years to see what an earlier start would have done. In the year-by-year table, look for the first year in which growth adds more than your own contributions; after that point, the investments are doing most of the work.</p>
+<p>Two changes show the clock at work. Move the retirement age from 65 to 60 and the balance falls to $405,105, about a quarter less, because the last five years are the ones with the largest balance to grow. Or move your current age back five years to see what an earlier start would have done. In the year-by-year table, look for the first year in which growth adds more than your own contributions (for Sam it's the fifteenth); after that point, the investments are doing most of the work.</p>
 
 <h2 id="questions">Common questions</h2>
 <details><summary>Is 7% per year a realistic return?</summary><p>For a portfolio of nearly all US stocks it's close to the long-run record after inflation, 7.3% per year since 1926. It isn't a promise: decades have come in far below it, and with stock prices high against company earnings today, the next ten years start from a less favorable point than most past decades did (<a href="/learn/cape-valuations">Starting valuations and CAPE</a> explains why). For a mixed portfolio, 4% to 5% after inflation is a more usual planning figure, and testing a lower return is a good habit.</p></details>
@@ -150,6 +162,7 @@
   <ul class="deeper">
     <li><a href="https://www.investor.gov/financial-tools-calculators/calculators/compound-interest-calculator">Compound interest calculator</a> <span>Investor.gov (SEC)</span></li>
     <li><a href="https://shillerdata.com/">Stock market data since 1871</a> <span>Robert Shiller, Yale</span></li>
+    <li><a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html">Historical returns on stocks, bonds and bills</a> <span>Aswath Damodaran, NYU Stern</span></li>
   </ul>
 </footer>
 </article>

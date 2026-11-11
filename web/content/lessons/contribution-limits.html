@@ -1,9 +1,14 @@
-<article class="lesson" data-slug="contribution-limits" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="contribution-limits" data-reviewed="2026-11-10"
   data-title="This year's limits"
   data-idea="Every 2026 contribution limit, catch-up and income range"
   data-tool="budget" data-try="Plan each paycheck's saving with every line capped at its 2026 limit.">
 
 <p class="lede">Every tax-advantaged account has a yearly cap on what can go in, and most have extra room once you turn 50. These are the figures for 2026. The IRS sets most of them each autumn for the following year, and the HSA's in the spring. They change most years, so check the year before relying on them.</p>
+
+<!-- data: sums of the 2026 limits in the tables below (lib/engine/data/2026.js limits). 401(k): 24,500; 32,500 from 50; 35,750 at 60-63; 32,500 at 64. IRA: 7,500; 8,600 from 50. HSA, self-only: 4,400; 5,400 from 55. Totals 36,400; 45,500; 46,500; 49,750; 46,500. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["Under 50","50–54","55–59","60–63","64"],"xLabel":"Age at the end of 2026","y":"money","series":[{"name":"401(k), with catch-up","tone":"accent","values":[24500,32500,32500,35750,32500]},{"name":"IRA, with catch-up","tone":"good","values":[7500,8600,8600,8600,8600]},{"name":"HSA, self-only, with catch-up","tone":"neutral","values":[4400,4400,5400,5400,5400]}]}'>
+  <figcaption>The most one person can put into a 401(k), an IRA and a self-only HSA for 2026, by age, not counting anything from an employer. It assumes the plan offers the larger catch-up at 60–63 and that you qualify for each account.</figcaption>
+</figure>
 
 <h2 id="workplace">401(k), 403(b), 457(b) and the TSP</h2>
 
@@ -25,7 +30,8 @@
 <p>A few rules decide how these apply to you:</p>
 <ul>
 <li>The $24,500 is per person, not per plan. If you work two jobs in the same year, or change jobs, your contributions to both plans together can't go over it. Employers don't track each other's plans, so this one's up to you. Too much contributed has to be taken back out, with its earnings, by April 15 of the next year, or it's taxed twice.</li>
-<li>A governmental 457(b) has its own separate limit. Someone with a 403(b) and a 457(b), common in public schools and hospitals, can put $24,500 into each. Some 457(b) plans also allow a special catch-up in the three years before the plan's normal retirement age, up to double the regular limit; you use it or the age-50 catch-up, whichever is larger, not both.</li>
+<li>A governmental 457(b) has its own separate limit. Someone with a 403(b) and a 457(b), common in public schools and hospitals, can put $24,500 into each. Some 457(b) plans also allow a special catch-up in the three years before the plan's normal retirement age, up to double the regular limit, but only as far as you left room unused in earlier years; you use it or the age-50 catch-up, whichever is larger, not both.</li>
+<li>Some 403(b) plans give employees with 15 or more years of service at the same school, hospital or church up to $3,000 more per year, with a $15,000 lifetime cap. The law counts money above $24,500 toward this before the age-50 catch-up.</li>
 <li>The catch-up depends on your age at the end of the year. Turn 50 in December and you can make the full catch-up for that year.</li>
 <li>Employer contributions never use up your $24,500. They count only toward the $72,000.</li>
 </ul>
@@ -39,7 +45,7 @@
 <ul>
 <li>Your regular contributions, up to $24,500, can still be traditional. Only the catch-up portion has to be Roth.</li>
 <li>If the plan doesn't offer a Roth option, people covered by the rule generally can't make catch-up contributions in it at all.</li>
-<li>It doesn't apply to IRAs.</li>
+<li>It doesn't apply to IRAs, SIMPLE IRAs or SEPs.</li>
 <li>Plans are allowed to switch your catch-up to Roth automatically once your contributions pass $24,500, so you may not need to change anything; check how yours does it.</li>
 </ul>
 <p>The law requiring this passed in 2022, but the IRS gave plans until the end of 2025 to get ready, so 2026 is the first year it applies. Final regulations formally take effect in 2027; for 2026, plans follow the law in good faith. If you're 50 or older and paid more than $150,000, check how your plan handles it. <a href="/learn/traditional-or-roth">Traditional or Roth</a> covers whether being pushed into Roth costs you anything; for many people in a high bracket it does, since the catch-up loses its deduction.</p>
@@ -76,6 +82,7 @@
 
 <p>Whether a traditional IRA contribution is deductible, and whether you can contribute to a Roth IRA directly, depends on your modified adjusted gross income (MAGI):</p>
 
+<!-- data: lib/engine/data/2026.js iraPhase (cov s 81000-91000, m 129000-149000; spouse 242000-252000) and rothPhase; all ranges, and married filing separately $0 to $10,000, match IRS release IR-2025-111 -->
 <figure>
   <table>
     <thead><tr><th>2026, by MAGI</th><th>Single or head of household</th><th>Married filing jointly</th></tr></thead>
@@ -92,30 +99,32 @@
 
 <h2 id="hsa">HSAs</h2>
 
-<!-- data: lib/engine/data/2026.js limits.hsa (self 4400, family 8750, catch55 1000), Rev. Proc. 2025-19; 2025 figures Rev. Proc. 2024-25 -->
+<!-- data: lib/engine/data/2026.js limits.hsa (self 4400, family 8750, catch55 1000), Rev. Proc. 2025-19; 2025 figures Rev. Proc. 2024-25; 2027 figures Rev. Proc. 2026-24 (irs.gov/pub/irs-drop/rp-26-24.pdf) -->
 <figure>
   <table>
-    <thead><tr><th>2026</th><th>Limit</th><th>2025</th></tr></thead>
+    <thead><tr><th></th><th>2026</th><th>2025</th><th>Announced for 2027</th></tr></thead>
     <tbody>
-      <tr><td>Self-only coverage</td><td>$4,400</td><td>$4,300</td></tr>
-      <tr><td>Family coverage</td><td>$8,750</td><td>$8,550</td></tr>
-      <tr><td>Catch-up from age 55, per person</td><td>$1,000</td><td>$1,000</td></tr>
-      <tr><td>High-deductible plan: minimum deductible</td><td>$1,700 self-only, $3,400 family</td><td>$1,650, $3,300</td></tr>
-      <tr><td>High-deductible plan: most out of pocket</td><td>$8,500 self-only, $17,000 family</td><td>$8,300, $16,600</td></tr>
+      <tr><td>Self-only coverage</td><td>$4,400</td><td>$4,300</td><td>$4,500</td></tr>
+      <tr><td>Family coverage</td><td>$8,750</td><td>$8,550</td><td>$9,000</td></tr>
+      <tr><td>Catch-up from age 55, per person</td><td>$1,000</td><td>$1,000</td><td>$1,000</td></tr>
+      <tr><td>High-deductible plan: minimum deductible</td><td>$1,700 self-only, $3,400 family</td><td>$1,650, $3,300</td><td>$1,750, $3,500</td></tr>
+      <tr><td>High-deductible plan: most out of pocket</td><td>$8,500 self-only, $17,000 family</td><td>$8,300, $16,600</td><td>$8,700, $17,400</td></tr>
     </tbody>
   </table>
-  <figcaption>HSA limits for 2026. Employer contributions count toward the limit. The $1,000 catch-up isn't adjusted for inflation.</figcaption>
+  <figcaption>HSA limits for 2026, with last year's and the figures the IRS has already set for 2027. Employer contributions count toward the limit. The $1,000 catch-up isn't adjusted for inflation.</figcaption>
 </figure>
 <p>Contributions stop once you're enrolled in Medicare. <a href="/learn/hsa">The HSA</a> covers eligibility, including the bronze and catastrophic plans that count from 2026.</p>
 
 <h2 id="other">Other 2026 figures that affect saving</h2>
 
-<!-- data: Saver's Credit AGI limits (25B(b)(1)(C)/(D)), Roth catch-up wage threshold for 2025 under 414(v)(7)(A) and HCE threshold 414(q)(1)(B) from IRS Notice 2025-67 itself; Social Security wage base from lib/engine/data/2026.js fica.ssCap -->
+<!-- data: Saver's Credit AGI limits (25B(b)(1)(C)/(D)), Roth catch-up wage threshold for 2025 under 414(v)(7)(A) and HCE threshold 414(q)(1)(B) from IRS Notice 2025-67 itself; Social Security wage base from lib/engine/data/2026.js fica.ssCap; SEP limit from the IRS SEP contribution limits page (lesser of 25% of pay or the 415(c) limit, $72,000); health FSA $3,400 from Rev. Proc. 2025-32 sec. 4.15 -->
 <figure>
   <table>
     <thead><tr><th>2026</th><th>Figure</th></tr></thead>
     <tbody>
       <tr><td>Saver's Credit: no credit above this AGI</td><td>$40,250 single, $60,375 head of household, $80,500 joint</td></tr>
+      <tr><td>SEP-IRA: the most an employer can put in for each person (no catch-up)</td><td>25% of pay, up to $72,000</td></tr>
+      <tr><td>Health care flexible spending account, through an employer</td><td>$3,400</td></tr>
       <tr><td>Social Security wage base (the 6.2% tax stops above this)</td><td>$184,500</td></tr>
       <tr><td>Wage line for the Roth catch-up rule (2025 wages)</td><td>$150,000</td></tr>
       <tr><td>Highly compensated employee line (prior-year pay), for plan testing</td><td>$160,000</td></tr>
@@ -123,6 +132,7 @@
   </table>
   <figcaption>Other federal figures for 2026. A highly compensated employee can have contributions limited, or partly refunded, if the plan fails its yearly fairness tests.</figcaption>
 </figure>
+<p>2026 is the last year of the Saver's Credit for retirement contributions. From 2027 it's replaced by the Saver's Match: the government pays in up to 50% of what a lower-income saver contributes, up to $1,000 per person, into the retirement account itself.</p>
 
 <h2 id="why-change">Why the figures move</h2>
 <p>Most limits rise with inflation, but only in whole steps: the 401(k) limit and its catch-ups move in $500 steps, the IRA limit in $500 steps, the IRA catch-up in $100 steps (it has only been indexed since 2024) and HSA limits in $50 steps. When inflation is low a limit can stay put, and after high inflation it can jump. The 60–63 catch-up is indexed on its own, which is why it stayed at $11,250 for 2026 while the regular catch-up rose to $8,000. The HSA's $1,000 catch-up and the $0–$10,000 ranges for married filing separately are fixed in law and never change.</p>
@@ -140,7 +150,7 @@
 <h2 id="questions">Common questions</h2>
 <details><summary>Can I fill a 401(k) and an IRA in the same year?</summary><p>Yes. The limits are separate, so for 2026 that's $24,500 plus $7,500, or $32,000, before any catch-ups or HSA.</p></details>
 <details><summary>Does the employer match count toward my $24,500?</summary><p>No. It counts only toward the $72,000 total for all contributions to the plan.</p></details>
-<details><summary>When are next year's limits announced?</summary><p>Usually in late October or November, once the IRS has the inflation figures. HSA limits come out earlier, usually in the spring.</p></details>
+<details><summary>When are next year's limits announced?</summary><p>Usually in late October or November, once the IRS has the inflation figures. HSA limits come out earlier, usually in the spring: the 2027 HSA figures were published in May 2026 and are in the table above. The 2027 limits for 401(k)s and IRAs hadn't been announced when this page was last checked, on November 10, 2026.</p></details>
 
 <section class="insum"><h2 id="short">In short</h2><ul>
 <li>401(k), 403(b), 457(b) and TSP for 2026: $24,500, plus $8,000 from 50 or $11,250 at 60–63.</li>
@@ -160,6 +170,8 @@
   <ul class="deeper">
     <li><a href="https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500">401(k) limit increases to $24,500 for 2026, IRA limit increases to $7,500</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-catch-up-contributions">Retirement topics: catch-up contributions</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/pub/irs-drop/rp-26-24.pdf">HSA and high-deductible plan figures for 2027</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/SaversMatch">Saver's Match</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/retirement-plans/cola-increases-for-dollar-limitations-on-benefits-and-contributions">COLA increases for dollar limitations on benefits and contributions</a> <span>IRS</span></li>
     <li><a href="https://www.federalregister.gov/documents/2025/09/16/2025-17865/catch-up-contributions">Final regulations: catch-up contributions</a> <span>Federal Register</span></li>
   </ul>

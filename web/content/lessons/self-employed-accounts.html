@@ -1,0 +1,159 @@
+<article class="lesson" data-slug="self-employed-accounts" data-reviewed="2026-11-10"
+  data-title="Accounts when you work for yourself"
+  data-idea="Solo 401(k), SEP, SIMPLE or a plain IRA, and what each one holds"
+  data-tool="incometax" data-try="Enter your profit as income and a traditional contribution as a 401(k) deduction to see the income tax it takes off.">
+
+<p class="lede">If you work for yourself, nobody hands you a 401(k), but you can open your own, and it can hold more than most employees' plans do. There are four choices: a solo 401(k), a SEP IRA, a SIMPLE IRA or an ordinary IRA. They differ in how much they hold at your level of income, how much paperwork they need and what happens if you ever hire someone. This applies whether self-employment is your whole living or a side job next to a salary.</p>
+
+<h2 id="four">The four accounts side by side</h2>
+<p>"Self-employed" here means you have net profit from a business you run: as a sole proprietor, a freelancer or contractor paid on a 1099, a partner, or the owner of a single-member LLC. The three business plans need that profit; wages from a job, investment income and rent don't count toward them.</p>
+
+<!-- data: 2026 limits from IRS Notice 2025-67 and lib/engine/data/2026.js (402(g) $24,500; 415(c) $72,000; SIMPLE $17,000 / $18,100; IRA $7,500). The higher SIMPLE limit applies automatically at employers with 25 or fewer employees (IRS Notice 2024-2, Q&A E-2). Rules from IRS Publication 560 and IRS "One-participant 401(k) plans". Roth: Publication 560 (SEP and SIMPLE Roth for tax years after 2022; Roth employer contributions to a 401(k)). -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>Solo 401(k)</th><th>SEP IRA</th><th>SIMPLE IRA</th><th>Traditional or Roth IRA</th></tr></thead>
+    <tbody>
+      <tr><td>Who it's for</td><td>An owner with no employees other than a spouse</td><td>Any business, with or without employees</td><td>A business with 100 or fewer employees and no other plan</td><td>Anyone with earned income</td></tr>
+      <tr><td>What goes in for 2026</td><td>$24,500 as the employee, plus about 20% of net earnings as the employer, up to $72,000 in all</td><td>About 20% of net earnings, up to $72,000</td><td>$18,100 as the employee, plus 3% of net earnings as the employer</td><td>$7,500</td></tr>
+      <tr><td>Extra from age 50</td><td>$8,000, or $11,250 at ages 60–63</td><td>None</td><td>$3,850, or $5,250 at ages 60–63</td><td>$1,100</td></tr>
+      <tr><td>Roth version</td><td>Yes, if the plan offers it</td><td>Allowed since 2023</td><td>Allowed since 2023</td><td>Yes, under the income limits</td></tr>
+      <tr><td>Yearly paperwork</td><td>Form 5500-EZ once assets pass $250,000</td><td>None</td><td>A yearly notice to any employees</td><td>None</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The four accounts for 2026, for a business owner under 50 unless noted. The SIMPLE figures are for a business with 25 or fewer employees; larger ones use $17,000 and a $4,000 catch-up.</figcaption>
+</figure>
+
+<p>The plain IRA is the same account everyone else has, covered in <a href="/learn/iras">IRAs</a>. You can have one in addition to any of the other three, and contributions to a SEP or solo 401(k) don't reduce its $7,500 limit. Having one of those plans does make you "covered by a plan at work", so a traditional IRA's deduction phases out at higher incomes.</p>
+
+<h2 id="solo">The solo 401(k): two halves</h2>
+<p>A solo 401(k) is an ordinary 401(k) with one participant, or two if your spouse works in the business. It holds more than the others because you contribute in two roles.</p>
+<ul>
+<li>As the employee, you can defer up to $24,500 of your earnings for 2026, the same limit as any 401(k), plus $8,000 from age 50 or $11,250 at 60 to 63. This half can be traditional or Roth.</li>
+<li>As the employer, the business can add up to 25% of your compensation. For a sole proprietor that works out to about 20% of net earnings, for reasons the next section explains.</li>
+</ul>
+<p>The two halves together can't exceed $72,000 for 2026, not counting catch-up contributions, and can't exceed what you earned. The employee half is what makes the solo 401(k) so useful at modest incomes. Someone who nets $30,000 from a business can shelter $24,500 of it this way, where a SEP would allow under $6,000.</p>
+<p>A spouse who works in the business and is paid for it gets the same two halves on their own earnings, so a couple can put away up to twice as much.</p>
+
+<h2 id="arithmetic">Why 25% of pay becomes 20% of profit</h2>
+<p>An employer's contribution is limited to 25% of the employee's pay, and pay doesn't include the contribution itself. An employee earning $80,000 can get $20,000, and the business has spent $100,000 in all. The $20,000 is 25% of pay but 20% of the total.</p>
+<p>A sole proprietor has no salary, only profit, and the contribution has to come out of that profit. So the law defines your compensation as net earnings after the contribution, and 25% of what's left after the contribution is the same as 20% of the amount before it. One more subtraction comes first: half of your self-employment tax, which is deductible.</p>
+<p>Take Nora, 40, a freelance designer with $100,000 of net profit on her Schedule C for 2026.</p>
+
+<!-- data: IRS Publication 560 chapter 5 (Deduction Worksheet for Self-Employed; rate table: 25% plan rate = 0.200000 self-employed rate) and Schedule SE. Net earnings for SE tax = 100,000 x 0.9235 = 92,350. SE tax = 92,350 x 15.3% = 14,129.55 (all under the 2026 wage base of $184,500, lib/engine/data/2026.js fica.ssCap). Half = 7,064.77. Net earnings for the plan = 100,000 - 7,064.77 = 92,935.23. Employer half = 20% x 92,935.23 = 18,587.05. Check: compensation after the contribution = 74,348.18; 25% of that = 18,587.05. Solo 401(k) total = 24,500 + 18,587 = 43,087. Script: scratchpad/old-401k-rollovers/calc.mjs -->
+<figure>
+  <table>
+    <thead><tr><th>Step</th><th>Arithmetic</th><th>Amount</th></tr></thead>
+    <tbody>
+      <tr><td>Net profit</td><td>Schedule C</td><td>$100,000</td></tr>
+      <tr><td>Self-employment tax</td><td>$100,000 × 92.35% × 15.3%</td><td>$14,130</td></tr>
+      <tr><td>Half of it, which is deductible</td><td>$14,130 ÷ 2</td><td class="neg">−$7,065</td></tr>
+      <tr><td>Net earnings for the plan</td><td>$100,000 − $7,065</td><td>$92,935</td></tr>
+      <tr><td>Employer contribution</td><td>20% of $92,935</td><td>$18,587</td></tr>
+      <tr><td>Employee deferral</td><td>The 2026 limit</td><td>$24,500</td></tr>
+      <tr><td>Most a solo 401(k) can take</td><td>$18,587 + $24,500</td><td>$43,087</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The most a 40-year-old sole proprietor with $100,000 of profit can contribute for 2026. A SEP IRA would stop at the employer line, $18,587.</figcaption>
+</figure>
+
+<p>You can check the 20% yourself. After an $18,587 contribution, Nora's compensation is $92,935 less $18,587, or $74,348, and 25% of $74,348 is $18,587. IRS Publication 560 has a worksheet that does these steps, and tax software follows it.</p>
+<p>If your business is an S corporation, the sums are simpler and usually smaller. You're an employee of the corporation, and both halves are based on the W-2 wages it pays you: you defer from those wages, and the corporation adds up to 25% of them. Profit paid out as shareholder distributions doesn't count as pay for any retirement plan.</p>
+
+<h2 id="compare">How much each account holds as income rises</h2>
+
+<!-- data: SEP passes SIMPLE where 0.18587P = 18,100 + 0.0277P, P = 114,400; SEP reaches 72,000 where N = 360,000, P = 376,500. Sole proprietor under 50, no other plan, 2026. For profit P: net earnings N = P - half of SE tax, where SE tax = 12.4% x min(0.9235P, 184,500) + 2.9% x 0.9235P. SEP = min(20% x N, 72,000). Solo 401(k) = min(24,500 + 20% x N, 72,000, N). SIMPLE = 18,100 + 3% x 0.9235P (Publication 560: a self-employed person's SIMPLE compensation is Schedule SE line 4). IRA = 7,500. P = 25,000: N 23,234; SEP 4,647; solo 23,234 (all of net earnings); SIMPLE 18,793. 50,000: SEP 9,294; solo 33,794; SIMPLE 19,485. 100,000: 18,587; 43,087; 20,871. 150,000: 27,881; 52,381; 22,256. 200,000: 37,177; 61,677; 23,641. 300,000: 56,909; 72,000; 26,412. Script: scratchpad/old-401k-rollovers/calc.mjs -->
+<figure data-chart='{"type":"bar","x":["$25K","$50K","$100K","$150K","$200K","$300K"],"xLabel":"Net profit","y":"money","series":[{"name":"Solo 401(k)","tone":"good","values":[23234,33794,43087,52381,61677,72000]},{"name":"SEP IRA","tone":"accent","values":[4647,9294,18587,27881,37177,56909]},{"name":"SIMPLE IRA","tone":"neutral","values":[18793,19485,20871,22256,23641,26412]},{"name":"IRA","tone":"muted","values":[7500,7500,7500,7500,7500,7500]}]}'>
+  <figcaption>The most each account takes for 2026, for a sole proprietor under 50 with no other plan and no employees, by net profit.</figcaption>
+</figure>
+
+<p>The solo 401(k) holds the most at every income, and the gap is widest at the bottom: at $25,000 of profit it can take nearly all of it. The SEP IRA holds less than a SIMPLE until profit passes roughly $115,000, and it only catches the solo 401(k) at about $375,000 of profit, where both reach the $72,000 ceiling. Below about $40,000 of profit, a SEP allows less than a plain IRA does.</p>
+<p>Few people can afford to save the maximum, so the chart is about room, and room matters most in an unusually good year or when one spouse's income covers the bills.</p>
+
+<h2 id="sep-simple">Where the SEP and the SIMPLE fit</h2>
+<h3>SEP IRA</h3>
+<p>A SEP (simplified employee pension) is an IRA that only the employer contributes to. It takes a one-page form to set up, has no yearly filing, and you can decide the amount each year, including nothing. You can open and fund it as late as the due date of your tax return, extensions included, which is why it's popular with people who discover in March that they'd like a deduction for last year. It has no employee half and no catch-up contributions.</p>
+<p>The cost comes when you have staff. Whatever percentage of pay you contribute for yourself, you must contribute for every eligible employee: anyone 21 or older who has worked for you in three of the last five years and earned at least $800 from you in 2026.</p>
+<h3>SIMPLE IRA</h3>
+<p>A SIMPLE IRA works like a small 401(k). Employees, including you, defer from pay, and the employer must either match deferrals dollar for dollar up to 3% of pay or put in 2% of pay for everyone eligible. For 2026 the deferral limit is $18,100 at a business with 25 or fewer employees that hasn't had another plan in the past three years, and $17,000 otherwise.</p>
+<p>For someone working alone it rarely beats a solo 401(k), which holds more and has no extra rules. Its place is the small business with a few employees that wants them to be able to save without the cost and testing of a full 401(k). Two rules catch people. A business with a SIMPLE generally can't run any other retirement plan in the same year, and a new one has to be set up by October 1. Withdrawals in the first two years after you join carry a 25% penalty before 59½ in place of the usual 10%.</p>
+
+<h2 id="roth">Roth options</h2>
+<p>Until recently only the solo 401(k)'s employee half could be Roth. SECURE 2.0, the retirement law passed in December 2022, opened up the rest. SEP and SIMPLE IRAs can now take Roth contributions, and a 401(k) can let you treat the employer half as Roth, in which case it counts as taxable income to you that year. All of this depends on the provider offering it, and many were slow to, so ask before you open an account if Roth matters to you. Some low-cost solo 401(k)s still offer no Roth side at all.</p>
+<p>Whether Roth is the better choice is the usual question of your tax rate now against your rate later, covered in <a href="/learn/traditional-or-roth">Traditional or Roth</a>. Self-employment adds one twist, the business income deduction described below, which makes traditional contributions worth a little less than they look.</p>
+
+<h2 id="deadlines">Deadlines for opening and funding</h2>
+
+<!-- data: IRS Publication 560 (SEP: set up and contribute by the due date of the return including extensions; SIMPLE IRA: set up January 1 to October 1, salary deferrals within 30 days after the end of the month, employer contributions by the return due date including extensions; 401(k): adopt by the return due date including extensions, owner deferrals elected by the end of the tax year, and for a new plan covering only a sole owner, first-year deferrals by the return due date without extensions). IRA deadline from Publication 590-A. Dates are for a calendar-year sole proprietor and tax year 2026. -->
+<figure>
+  <table>
+    <thead><tr><th>For tax year 2026</th><th>Open it by</th><th>Put the money in by</th></tr></thead>
+    <tbody>
+      <tr><td>Solo 401(k), employee half</td><td>December 31, 2026, to elect your deferral</td><td>Your tax filing deadline, with extensions</td></tr>
+      <tr><td>Solo 401(k), employer half</td><td>Your tax filing deadline, with extensions</td><td>Your tax filing deadline, with extensions</td></tr>
+      <tr><td>SEP IRA</td><td>Your tax filing deadline, with extensions</td><td>Your tax filing deadline, with extensions</td></tr>
+      <tr><td>SIMPLE IRA</td><td>October 1, 2026</td><td>Deferrals within 30 days after the month they come from; employer money by your tax filing deadline, with extensions</td></tr>
+      <tr><td>IRA</td><td>April 15, 2027</td><td>April 15, 2027</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Deadlines for a sole proprietor on a calendar year. The filing deadline is April 15, 2027, or October 15, 2027 with an extension.</figcaption>
+</figure>
+
+<p>The solo 401(k)'s employee half is the one with a year-end deadline: you choose how much to defer, in writing, by December 31, even though the deposit can follow later. There is one exception. If you're a sole owner opening a brand-new 401(k) after the year has ended, you can still make employee deferrals for that first year, as long as they're in by the filing deadline without extensions, April 15, 2027 for 2026.</p>
+
+<h2 id="day-job">Side income next to a day-job 401(k)</h2>
+<p>Plenty of people have a salary with a 401(k) and freelance income on the side. The $24,500 employee limit is per person, across every plan you're in. Whatever you defer at the day job comes off what you can defer into a solo 401(k). <a href="/learn/contribution-limits">This year's limits</a> covers how the shared limit works.</p>
+<p>The employer half is separate. Each unrelated business has its own $72,000 ceiling, and your side business can make its employer contribution no matter what happens at the day job.</p>
+<p>Say Jordan earns $90,000 in a salaried job, defers the full $24,500 into that employer's 401(k), and nets $40,000 from consulting. Jordan's employee room is used up. The consulting business can still contribute 20% of its net earnings: $40,000 less $2,826 for half the self-employment tax leaves $37,174, and 20% of that is $7,435. A SEP IRA and a solo 401(k) give the same $7,435 here, and the SEP is less work.</p>
+<p>The solo 401(k) is better in two cases. If the day-job plan is poor, with high fees and no match, you can defer less there and more into your own plan with funds you choose. And if you make backdoor Roth contributions, a SEP IRA balance counts in the pro-rata rule and a solo 401(k) balance doesn't, as <a href="/learn/iras">IRAs</a> explains. Collect any match at the day job first; <a href="/learn/where-each-dollar-goes">Where each dollar should go</a> has the order.</p>
+
+<h2 id="taxes">Self-employment tax and the business income deduction</h2>
+<p>Self-employment tax is Social Security and Medicare for people who are their own employer: 15.3% of 92.35% of your profit, with the 12.4% Social Security part stopping at $184,500 of earnings for 2026. Retirement contributions for yourself don't reduce it. They come off your income tax only, on Schedule 1 of your return, after self-employment tax has been figured on the full profit. An employee is in the same position with their own deferrals, which are also subject to Social Security and Medicare tax.</p>
+<p>The second interaction is less well known. Most sole proprietors get the qualified business income (QBI) deduction, which takes 20% of business income off taxable income and was made permanent in 2025. Business income for this purpose is figured after the deductions tied to the business, including the deduction for your own retirement contributions. So each dollar you put into a traditional solo 401(k) or SEP removes a dollar of income and also about 20 cents of QBI deduction, and taxable income falls by about 80 cents. In the 22% bracket, the dollar saves about 17.6 cents of tax, not 22.</p>
+<p>The withdrawal in retirement will be taxed in full. That tilts the comparison somewhat toward Roth for people who get the QBI deduction, since Roth contributions aren't deducted and leave it alone. The deduction has limits at higher incomes, particularly for professional services such as law, medicine and consulting, and above those limits this effect disappears.</p>
+
+<h2 id="employees">When you have employees, and the 5500-EZ</h2>
+<p>A solo 401(k) is solo by definition. Once you hire someone other than your spouse who meets the plan's eligibility rules, they have to be let in, and the plan becomes a regular 401(k) with yearly fairness testing, or a safe harbor design that avoids it, and usually an administrator to run it. Plans may exclude employees who are under 21 or who haven't worked long enough to qualify, so a business that uses only contractors or occasional help can often stay solo. Hiring is the point to compare a SIMPLE IRA with a full 401(k), and to read <a href="/learn/employer-match">The employer match</a> from the employer's side of the table.</p>
+<p>The one filing a solo 401(k) needs is Form 5500-EZ, a short yearly report to the IRS. It's required once the plan's assets are over $250,000 at the end of the year, and for the plan's final year whatever its size. It's due by the end of the seventh month after the plan year ends, July 31 for most. The penalties for missing it are large for a form this short, and people who opened a plan years ago at a brokerage and forgot the form exists are the ones who get caught.</p>
+<p>Whatever plan you choose, cost matters as it does in any account. Several large brokerages offer solo 401(k)s and SEP IRAs with no account fee and a full range of index funds; <a href="/learn/fees-and-index-funds">Fees and index funds</a> explains what to look for.</p>
+
+<h2 id="db">Beyond $72,000: defined-benefit plans</h2>
+<p>A high earner who wants to shelter more than these accounts allow can add a defined-benefit plan, often in the form called a cash balance plan. It promises a pension at retirement, of up to $290,000 per year under the 2026 limit, and an actuary works out how much has to go in each year to fund that promise. For someone in their fifties with a large, steady income, the required contribution can be well above $72,000 per year, all deductible. The plan needs an actuary and yearly filings, and the contributions are required each year once the plan is set up, so it suits a business with reliable profit over several years. It can sit alongside a solo 401(k).</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>Income Tax can show what a traditional contribution takes off your income tax. Enter your net profit as income, press Split, and put the contribution on the 401(k) line, which comes off federal and state income tax but not Social Security and Medicare tax, the same treatment a self-employed contribution gets. The tool treats the income as wages, so two figures will be off. Its Social Security and Medicare line is an employee's 7.65%, where self-employment tax is about 14.1% of profit. And it doesn't apply the deduction for half of that tax or the QBI deduction, both of which lower your income tax.</p>
+<p>For the long view, add what you plan to contribute to your monthly saving in the <a href="/calculator">Calculator</a> and see what it does to the balance at retirement.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Can I have a solo 401(k) and a SEP IRA in the same year?</summary><p>For the same business there's no point: the employer contribution limit is shared between them, so the SEP adds no room. An old SEP IRA can stay open, or be rolled into the solo 401(k) if the plan accepts roll-ins, which also takes it out of the backdoor Roth arithmetic.</p></details>
+<details><summary>My side business made only a few thousand dollars. Is a plan worth it?</summary><p>You can contribute only from net earnings, so a $5,000 profit supports under $5,000 of contributions in any plan. If you aren't already filling an IRA, that's the simplest place for it. If you are, and your day-job deferrals are below $24,500, a solo 401(k) lets you defer nearly all of the profit.</p></details>
+<details><summary>Does my spouse need their own plan?</summary><p>No. A spouse who works in the business and is paid can join the same solo 401(k) with their own account and their own limits. For a SEP, the business contributes to a separate SEP IRA in the spouse's name.</p></details>
+<details><summary>What counts as net earnings if I have a loss?</summary><p>Nothing. With no net profit for the year there's nothing to contribute from, in any of the business plans. An IRA is still possible if you or your spouse have wages.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>A solo 401(k) takes $24,500 as the employee plus about 20% of net earnings as the employer, up to $72,000 for 2026, and holds the most at every income.</li>
+<li>A SEP IRA takes only the 20%, but it's the least work and can be opened as late as your extended tax deadline.</li>
+<li>The $24,500 employee limit is shared with any 401(k) at a day job; the employer contribution from your own business is separate.</li>
+<li>Your own contributions cut income tax but not self-employment tax, and a traditional contribution also shrinks the 20% business income deduction.</li>
+<li>Hiring employees ends a solo 401(k), and a plan over $250,000 must file Form 5500-EZ each year.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How much each self-employed account holds at your income</li><li>How the solo 401(k) limit is worked out, step by step</li><li>What changes with a day job, employees or a deadline</li></ul>
+  <ul class="terms">
+    <li data-term="Solo 401(k)">A 401(k) for a business owner with no employees other than a spouse. The owner contributes both as employee and as employer.</li>
+    <li data-term="SEP IRA">A simplified employee pension: an IRA funded only by the employer, up to about 20% of a sole proprietor's net earnings.</li>
+    <li data-term="Net earnings from self-employment">Business profit less half of your self-employment tax. Plan contributions for a sole proprietor are figured from it.</li>
+    <li data-term="QBI deduction">A deduction of 20% of qualified business income for most sole proprietors and other pass-through owners, within income limits.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/publications/p560">Publication 560: retirement plans for small business</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/one-participant-401k-plans">One-participant 401(k) plans</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500">401(k) limit increases to $24,500 for 2026, IRA limit increases to $7,500</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/retirement-plans-faqs-regarding-seps">Retirement plans FAQs regarding SEPs</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/plan-sponsor/simple-ira-plan">SIMPLE IRA plan</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/businesses/small-businesses-self-employed/self-employment-tax-social-security-and-medicare-taxes">Self-employment tax (Social Security and Medicare taxes)</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/newsroom/qualified-business-income-deduction">Qualified business income deduction</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/retirement-plan-faqs-regarding-contributions-s-corporation">Retirement plan FAQs regarding contributions: S corporation</a> <span>IRS</span></li>
+  </ul>
+</footer>
+</article>

@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="bridge-to-59" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="bridge-to-59" data-reviewed="2026-11-10"
   data-title="Bridging to 59½"
   data-idea="Which money pays for the years before retirement accounts open"
   data-tool="bridge" data-try="Compare every legal route to 59½, with the tax, penalties and health premiums of each, with your plan already filled in.">
@@ -8,6 +8,11 @@
 <h2 id="penalty">The 10% penalty</h2>
 <p>The penalty is officially an additional tax on early distributions, and it comes from section 72(t) of the tax code. It applies to withdrawals before 59½ from traditional IRAs, 401(k)s, 403(b)s and similar plans, and it's charged on the part of the withdrawal that counts as taxable income. You pay it on top of the ordinary income tax, which you owe anyway.</p>
 <p>Take a single person, 52 and retired, who withdraws $40,000 from a traditional IRA in 2026 with no other income. Income tax on it, after the $16,100 standard deduction, is about $2,620. The penalty adds $4,000. Together that's $6,620 of federal tax on $40,000, a rate of about 17%, where the same withdrawal at 60 would cost $2,620.</p>
+
+<!-- data: 2026 single filer, lib/engine/data/2026.js: 40,000 - 16,100 standard deduction = 23,900 taxable; 10% x 12,400 + 12% x 11,500 = 2,620. Penalty 10% x 40,000 = 4,000. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["At 52","At 60"],"xLabel":"Age at the withdrawal","y":"money","series":[{"name":"Income tax","tone":"neutral","values":[2620,2620]},{"name":"10% penalty","tone":"bad","values":[4000,0]}]}'>
+  <figcaption>Federal tax on a $40,000 traditional IRA withdrawal in 2026, single, with no other income. The income tax is the same at either age; the penalty more than doubles the bill.</figcaption>
+</figure>
 <p>A few details decide what the penalty touches:</p>
 <ul>
 <li>It applies from the date you reach 59½, not the year. Someone born on March 10, 1977 reaches 59½ on September 10, 2036.</li>
@@ -20,7 +25,7 @@
 <h2 id="exceptions">The exceptions, and which ones can carry you</h2>
 <p>The tax code lists many exceptions to the penalty. Most are for one-off events. Only a few can pay for years of living, and those are the ones an early retirement is built on. Some apply only to employer plans like a 401(k), some only to IRAs, so where the money sits matters.</p>
 
-<!-- data: IRS, Retirement topics: exceptions to tax on early distributions (irs.gov), checked 2026-10-26; public-safety ages from 26 USC 72(t)(10) as amended by SECURE 2.0 (Cornell LII); domestic abuse limit indexed under 72(t)(2)(K), $10,500 for 2026 (IRS Notice 2025-67). -->
+<!-- data: IRS, Retirement topics: exceptions to tax on early distributions (irs.gov), checked 2026-11-10 (the page still shows the unindexed $10,000 domestic abuse figure and lists terminal illness for plans only); public-safety ages and the 25 years of service from 26 USC 72(t)(10) as amended by SECURE 2.0 (Cornell LII) and the Form 5329 instructions; domestic abuse limit indexed under 72(t)(2)(K)(vii), $10,500 for 2026, and the long-term care premium limit under 401(a)(39), $2,600 for 2026 (IRS Notice 2025-67); terminal illness for IRAs from IRS Pub 590-B and 72(t)(2)(L). -->
 <figure>
   <table>
     <thead><tr><th>Exception</th><th>401(k) and similar plans</th><th>IRAs</th><th>Can it pay for years?</th></tr></thead>
@@ -28,17 +33,19 @@
       <tr><td>Leaving your job in or after the year you turn 55 (50, or 25 years of service, for public-safety workers)</td><td>Yes, that employer's plan</td><td>No</td><td>Yes</td></tr>
       <tr><td>Substantially equal periodic payments, 72(t)</td><td>Yes, after leaving the employer</td><td>Yes</td><td>Yes, but locked in</td></tr>
       <tr><td>Disability (total and permanent)</td><td>Yes</td><td>Yes</td><td>If it applies</td></tr>
+      <tr><td>Terminal illness, certified by a physician</td><td>Yes</td><td>Yes</td><td>If it applies</td></tr>
       <tr><td>Medical expenses above 7.5% of income</td><td>Yes</td><td>Yes</td><td>No, one year's bills</td></tr>
       <tr><td>Health insurance premiums while unemployed</td><td>No</td><td>Yes</td><td>No, needs unemployment pay</td></tr>
       <tr><td>Higher education costs</td><td>No</td><td>Yes</td><td>No</td></tr>
       <tr><td>First home, up to $10,000 in a lifetime</td><td>No</td><td>Yes</td><td>No</td></tr>
+      <tr><td>Long-term care insurance premiums, up to $2,600 per year (for 2026)</td><td>Yes, if the plan offers it</td><td>No</td><td>No</td></tr>
       <tr><td>Birth or adoption, up to $5,000 per child</td><td>Yes</td><td>Yes</td><td>No</td></tr>
       <tr><td>Emergency personal expense, up to $1,000 once per calendar year</td><td>Yes</td><td>Yes</td><td>No</td></tr>
       <tr><td>Domestic abuse, the lesser of $10,500 (for 2026) or half the account</td><td>Yes</td><td>Yes</td><td>No</td></tr>
       <tr><td>Federally declared disaster, up to $22,000</td><td>Yes</td><td>Yes</td><td>No</td></tr>
     </tbody>
   </table>
-  <figcaption>The main exceptions to the 10% penalty and where they apply. The emergency and domestic abuse exceptions, from the SECURE 2.0 Act of 2022, apply to distributions from 2024 on; the domestic abuse limit rises with inflation. Income tax is still owed in every case.</figcaption>
+  <figcaption>The main exceptions to the 10% penalty and where they apply. The emergency and domestic abuse exceptions, from the SECURE 2.0 Act of 2022, apply to distributions from 2024 on, and the long-term care one from 2026; the domestic abuse and long-term care limits rise with inflation. Money paid to your beneficiaries after your death isn't penalized either. Income tax is still owed in every case.</figcaption>
 </figure>
 
 <p>The newer exceptions from SECURE 2.0 help in an emergency, but they're small and capped. For the years between retiring and 59½, the realistic options are the rule of 55, 72(t) payments, and money that was never subject to the penalty in the first place.</p>
@@ -79,7 +86,7 @@
 <p>A regular brokerage account has no age rules at all. When you sell, only the gain is income; the part that's your original investment, your cost basis, comes back untaxed. Long-term gains are taxed at 0% while your taxable income, gains included, stays under $98,900 for a married couple in 2026 ($49,450 single). A couple selling $60,000 of shares that are half gain has $30,000 of income from it. After the $32,200 standard deduction, with no other income, they owe no federal income tax at all.</p>
 <p>That makes the taxable account the cheapest money most early retirees have, and the one whose size decides how much freedom the rest of the plan has. People planning to retire early often keep saving into it alongside their 401(k), even though it has no tax break on the way in.</p>
 <h3>Roth contributions</h3>
-<p>Roth IRA withdrawals come out in a fixed order: your regular contributions first, then converted amounts, oldest first, then earnings. Because contributions come first and were already taxed, you can take out everything you've contributed, at any age, with no tax and no penalty. Someone who put $7,000 per year into a Roth IRA for ten years has about $70,000 they can reach today, whatever the account is worth now.</p>
+<p>Roth IRA withdrawals come out in a fixed order: your regular contributions first, then converted amounts, oldest first, then earnings. Because contributions come first and were already taxed, you can take out everything you've contributed, at any age, with no tax and no penalty. Someone who put $5,000 per year into a Roth IRA for ten years has $50,000 they can reach today, whatever the account is worth now.</p>
 <p>A Roth 401(k) is different. An early withdrawal from it comes out partly as contributions and partly as earnings, in proportion, and the earnings are taxed and penalized. Rolling it into a Roth IRA after you leave the job generally lets the contributions count as Roth IRA contributions, which you can then take first.</p>
 <h3>An HSA's old receipts</h3>
 <p>A health savings account can repay you, tax-free, for medical bills you paid out of pocket in any earlier year since the account was opened, as long as you kept the receipts. Someone who paid for care from other money for years while the HSA stayed invested can draw on those receipts in early retirement. The <a href="/learn/hsa">HSA lesson</a> covers the rules.</p>
@@ -113,8 +120,13 @@
   <figcaption>A hypothetical bridge in today's dollars, before investment growth. Conversions after 54 are optional for the bridge, since they wouldn't be usable before 59½ anyway, but can still make sense for taxes.</figcaption>
 </figure>
 
+<!-- data: the "What they live on" column of the table above, $60,000 per year by source. -->
+<figure data-chart='{"type":"bar","stack":true,"x":[52,53,54,55,56,57,58,59],"xLabel":"Age","y":"money","series":[{"name":"Cash","tone":"muted","values":[30000,0,0,0,0,0,0,0]},{"name":"Brokerage account","tone":"neutral","values":[30000,60000,60000,60000,40000,0,0,0]},{"name":"Roth contributions","tone":"good","values":[0,0,0,0,20000,0,0,0]},{"name":"Conversions made five years earlier","tone":"accent","values":[0,0,0,0,0,60000,60000,60000]}]}'>
+  <figcaption>Where each year's $60,000 comes from in the same plan. The money they can reach today has to last through 56, the last year before a conversion is ready.</figcaption>
+</figure>
+
 <p>Cash, the brokerage account and part of the Roth contributions cover the first five years, which is exactly the wait the first conversion needs. Each conversion of $60,000 costs them about $2,840 of federal income tax at 2026 rates. They keep $30,000 of Roth contributions in reserve, and the $720,000 or so left in traditional accounts after three conversions is untouched until 59½.</p>
-<p>The weak spot is their income in the conversion years. It's the $60,000 converted plus the gain on the shares they sell, about $30,000, so roughly $90,000. For 2026, marketplace premium credits stop above $84,600 for a household of two, and for a couple of 52 to 54 in a state with typical premiums, losing them would cost about $14,500 to $16,600 per year. Converting a little less, selling shares with less gain, or spending more of the cash in those years keeps them under the line. The conversion ladder lesson goes into how to size each year.</p>
+<p>The weak spot is their income in the conversion years. At 53 and 54 it's the $60,000 converted plus the gain on the shares they sell, about $30,000, so roughly $90,000. (At 52, when half the spending comes from cash, it's about $75,000.) For 2026, marketplace premium credits stop above $84,600 for a household of two, and for a couple of 52 to 54 in a state with typical premiums, losing them would cost about $14,500 to $16,600 per year. Converting a little less or selling shares with less gain in those two years keeps them under the line. The conversion ladder lesson goes into how to size each year.</p>
 <p>Other households would build it differently. Someone leaving a job at 55 with a large 401(k) might use the rule of 55 and nothing else. Someone with almost everything in an IRA and little in a brokerage account might start a 72(t) plan on part of the IRA to pay for the first years, and convert alongside it.</p>
 
 <p data-yours></p>

@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="social-security-benefit" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="social-security-benefit" data-reviewed="2026-11-10"
   data-title="How your benefit is figured"
   data-idea="From 35 years of pay to one monthly check"
   data-tool="social-security" data-try="See your benefit at every age from 62 to 70, worked out from your pay or your statement, with your plan already filled in.">
@@ -6,13 +6,13 @@
 <p class="lede">Your Social Security check comes from a fixed formula: your best 35 years of pay, adjusted for wage growth, averaged and run through a schedule that replaces a large share of the first dollars and a smaller share of the rest. Once you know the formula you can check your own figure, see what another year of work would add, and spot an error in your record while it can still be fixed.</p>
 
 <h2 id="credits">Who qualifies: credits</h2>
-<p>To get a retirement benefit on your own record you need 40 credits. You earn a credit for each $1,890 of wages or self-employment income in 2026, up to four per year, so $7,560 of earnings anywhere in the year earns all four. The dollar figure rises with average wages each year. Forty credits usually means about ten years of work, and they don't have to be consecutive.</p>
+<p>To get a retirement benefit on your own record you need 40 credits. You earn a credit for each $1,890 of wages or self-employment income in 2026, up to four per year, so $7,560 of earnings anywhere in the year earns all four. The dollar figure rises with average wages each year; for 2027 it's $1,970 per credit. Forty credits usually means about ten years of work, and they don't have to be consecutive.</p>
 <p>Credits only decide whether you qualify. Past 40 they add nothing, and the size of the check comes entirely from how much you earned. Someone with 40 credits from part-time work and someone with 45 years at a high salary are both "fully insured", but their benefits will be very different. A spouse without enough credits of their own can still collect on the other's record, which the lesson on <a href="/learn/spouses-and-survivors">spouses and survivors</a> covers.</p>
 
 <h2 id="formula">From your pay to your benefit</h2>
 <p>Social Security turns your earnings history into a single figure, the <b>primary insurance amount</b> (PIA). That's your monthly benefit if you claim at your full retirement age. Every other figure, the check at 62, at 70, for a spouse or a widow, is worked out from it. It takes four steps.</p>
 <h3>1. Each year's pay, capped and indexed</h3>
-<p>Only earnings that paid Social Security tax count, up to each year's wage base: $184,500 in 2026. Pay above the cap neither costs the 6.2% tax nor adds to your benefit. Each past year's earnings are then raised by how much average wages across the country have grown since, up to the year you turn 60. This is called indexing: $30,000 earned in 1995 counts as roughly what that same job would pay today, so a career that just kept pace with average wages looks level rather than rising. Earnings from age 60 on count at face value.</p>
+<p>Only earnings that paid Social Security tax count, up to each year's wage base: $184,500 in 2026, and $192,300 for 2027. Pay above the cap neither costs the 6.2% tax nor adds to your benefit. Each past year's earnings are then raised by how much average wages across the country have grown since, up to the year you turn 60. This is called indexing, and it puts old pay on the wage level of the year you turn 60. Take someone who turns 62 in 2026, and so turned 60 in 2024. The national average wage was $24,705.66 in 1995 and $69,846.57 in 2024, about 2.83 times as much, so $30,000 earned in 1995 counts as about $84,800. A career that just kept pace with average wages therefore looks level rather than rising. Earnings from age 60 on count at face value.</p>
 <h3>2. The best 35 years, averaged by the month</h3>
 <p>Social Security takes your 35 highest indexed years, adds them up and divides by 420, the number of months in 35 years. The result, rounded down to the dollar, is your <b>average indexed monthly earnings</b> (AIME). If you worked fewer than 35 years, the missing years count as zeros in that average.</p>
 <h3>3. The bend points</h3>
@@ -22,7 +22,7 @@
 <li>32% of AIME between $1,286 and $7,749, plus</li>
 <li>15% of AIME above $7,749.</li>
 </ul>
-<p>The two dollar figures are the bend points. They rise every year with average wages, and the ones that apply to you are fixed by the year you turn 62. Because your past pay was indexed to the same wage level, someone turning 62 in 2030 gets the same shaped formula at higher dollar figures. The 90%, 32% and 15% never change.</p>
+<p>The two dollar figures are the bend points. They rise every year with average wages, and the ones that apply to you are fixed by the year you turn 62. Because your past pay was indexed to the same wage level, someone turning 62 in a later year gets the same shaped formula at higher dollar figures: for 2027 the bend points are $1,340 and $8,077. The 90%, 32% and 15% haven't changed since the formula began in 1979.</p>
 <h3>4. Rounding, then raises</h3>
 <p>The PIA is rounded down to the dime. From the year you turn 62, it gets each year's cost-of-living adjustment, whether or not you've claimed. Then the check is adjusted for the age you actually start, which is the subject of <a href="/learn/when-to-claim">when to claim</a>.</p>
 
@@ -53,7 +53,14 @@
   <figcaption>The monthly benefit at full retirement age by average indexed monthly earnings, 2026 bend points. The line bends twice: above $1,286 each extra dollar adds 32 cents, above $7,749 it adds 15 cents.</figcaption>
 </figure>
 
-<p>Put in terms of yearly pay, the share replaced falls steadily as pay rises.</p>
+<p>The same formula, split into its three parts for five levels of pay, shows where the money comes from. Everyone who earns at least $15,432 per year ($1,286 per month) gets the same $1,157 from the 90% part. Higher pay only adds dollars at 32 cents and then 15 cents each.</p>
+
+<!-- data: level pay ÷ 12 = AIME, split by the 2026 bend points (lib/engine/data/2026.js). 90% part: 0.90 × min(AIME, 1,286); 32% part: 0.32 × (min(AIME, 7,749) − 1,286); 15% part: 0.15 × (AIME − 7,749). $30,000: 1,157 + 388 = 1,546; $50,000: 1,157 + 922 = 2,079; $75,000: 1,157 + 1,588 = 2,746; $100,000: 1,157 + 2,068 + 88 = 3,313; $150,000: 1,157 + 2,068 + 713 = 3,938. Totals match ssPiaFromEarnings(Array(35).fill(pay)) in lib/engine/math.js; parts rounded to the dollar, so a stack can differ from its total by $1. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["$30,000","$50,000","$75,000","$100,000","$150,000"],"xLabel":"Pay per year, 35 years","y":"money","series":[{"name":"From the 90% part","tone":"good","values":[1157,1157,1157,1157,1157]},{"name":"From the 32% part","tone":"accent","values":[388,922,1588,2068,2068]},{"name":"From the 15% part","tone":"muted","values":[0,0,0,88,713]}]}'>
+  <figcaption>What the monthly benefit at full retirement age is made of, for level pay in today's dollars with 2026 bend points. Five times the pay brings about two and a half times the benefit.</figcaption>
+</figure>
+
+<p>Put as a share of yearly pay, the benefit replaces less as pay rises.</p>
 
 <!-- data: ssPiaFromEarnings(Array(35).fill(pay)) in lib/engine/math.js with 2026 figures. PIA × 12 ÷ pay. $30,000: AIME 2,500, PIA 1,545.88 (61.8%); $50,000: AIME 4,166.67, PIA 2,079.21 (49.9%); $75,000: 6,250, 2,745.88 (43.9%); $100,000: 8,333.33, 3,313.21 (39.8%); $150,000: 12,500, 3,938.21 (31.5%). Rounded to the dollar. -->
 <figure>
@@ -70,15 +77,22 @@
   <figcaption>Hypothetical careers at level pay in today's dollars, 2026 bend points. Real figures differ a little, because pay is indexed to wages in the year you turn 60 and few careers are level.</figcaption>
 </figure>
 
-<p>The largest benefit anyone reaching full retirement age in 2026 can get is $4,152 per month, for someone who earned at or above the wage base for 35 years. Claiming at 70 can push a check above that.</p>
+<p>The largest benefit anyone reaching full retirement age in 2026 can get is $4,152 per month, for someone who earned at or above the wage base for 35 years. Someone with that record who waits and starts at 70 in 2026 gets $5,181.</p>
 
 <h2 id="years">Why the 35 years matter</h2>
 <p>Because the average always divides by 35 years, every year short of 35 is a zero. Dana's $2,745.80 assumed 35 full years. With only 30 years at the same pay, five zeros join the average, AIME drops to $5,357, and the benefit falls to about $2,460. With 25 years it's about $2,174, 21% less than the full career, from the same salary.</p>
+
+<!-- data: ssPiaFromEarnings(Array(years).fill(75000)) in lib/engine/math.js, 2026 bend points; AIME = years × $75,000 ÷ 420. 10 years: AIME 1,785.71, PIA 1,317.31; 15: 2,678.57, 1,603.02; 20: 3,571.43, 1,888.74; 25: 4,464.29, 2,174.45; 30: 5,357.14, 2,460.17; 35: 6,250, 2,745.88; 40: the best 35 are the same, 2,745.88. Rounded to the dollar. -->
+<figure data-chart='{"type":"bar","labels":true,"x":["10","15","20","25","30","35","40"],"xLabel":"Years worked at $75,000","y":"money","series":[{"name":"Benefit per month at full retirement age","tone":"accent","values":[1317,1603,1889,2174,2460,2746,2746]}]}'>
+  <figcaption>The same $75,000 salary, in today's dollars, over careers of different lengths. Each five years short of 35 costs about $286 per month, and years past 35 at the same pay add nothing.</figcaption>
+</figure>
+
+<p>The loss per missing year is smaller than you might expect, because the zeros come off the top of the average, where each dollar is replaced at 32% or 15%, while the 90% part stays whole. Ten years of work is 29% of a 35-year career and still earns 48% of the full-career benefit.</p>
 <p>That has two practical results. First, if you have fewer than 35 years, each extra year of work replaces a zero, and even part-time pay adds something. Ten years at $30,000 on top of Dana's 25 years at $75,000 would lift the benefit from about $2,174 to $2,403. Second, once you have 35 good years, another year only helps if it beats your lowest one. A year of part-time work at 64 doesn't push out a strong year from your forties. A year at full salary might push out a weak one from your early twenties, but the gain is small.</p>
 <p>Social Security recomputes your benefit each year you keep working, even after you've claimed, and raises it automatically if the new year makes the top 35.</p>
 <p>Years spent out of paid work to raise children or care for a parent count as zeros too. There's no caregiver credit in the formula, though a spousal benefit can make up some of the gap for a married person.</p>
 
-<!-- data: ssPiaFromEarnings in lib/engine/math.js: 30 × $75,000 → AIME 5,357.14, PIA 2,460.17; 25 × $75,000 → PIA 2,174.45; 25 × $75,000 + 10 × $30,000 → PIA 2,403.02. 2,174.45 ÷ 2,745.88 = 0.792, 21% less. -->
+<!-- data: ssPiaFromEarnings in lib/engine/math.js: 30 × $75,000 → AIME 5,357.14, PIA 2,460.17; 25 × $75,000 → PIA 2,174.45; 25 × $75,000 + 10 × $30,000 → PIA 2,403.02. 2,174.45 ÷ 2,745.88 = 0.792, 21% less. 10 years: 1,317.31 ÷ 2,745.88 = 0.48; 10 ÷ 35 = 0.29. -->
 
 <h2 id="fra">Full retirement age</h2>
 <p>Your PIA is paid in full only if you start at your full retirement age, which depends on the year you were born. It was 65 for decades. The 1983 Social Security Amendments raised it in steps of two months per birth year, so it's now 67 for anyone born in 1960 or later.</p>
@@ -108,7 +122,7 @@
 <h2 id="working">Working while you collect</h2>
 <p>You can claim Social Security and keep working. Before full retirement age, though, the <b>retirement earnings test</b> holds back part of your benefit if your pay goes over a yearly limit. Only wages and net self-employment earnings count. Pensions, investment income, IRA withdrawals and rental income don't.</p>
 
-<!-- data: lib/engine/data/2026.js ss.earn: under 24480, fraYear 65160 (SSA 2026 fact sheet). Monthly equivalents ÷ 12: $2,040 and $5,430. -->
+<!-- data: lib/engine/data/2026.js ss.earn: under 24480, fraYear 65160 (SSA 2026 fact sheet). Monthly equivalents ÷ 12: $2,040 and $5,430. For 2027: $25,560 and $67,920 (SSA 2027 fact sheet, ssa.gov/news/en/cola/factsheets/2027.html). -->
 <figure>
   <table>
     <thead><tr><th>When</th><th>2026 limit</th><th>Held back</th></tr></thead>
@@ -118,13 +132,13 @@
       <tr><td>From the month you reach full retirement age</td><td>No limit</td><td>Nothing</td></tr>
     </tbody>
   </table>
-  <figcaption>The limits rise each year with average wages. In the first year you claim, a monthly test also applies: any month you earn under $2,040 (or $5,430 in the year you reach full retirement age) and do no substantial self-employment work gets its full check, whatever you earned in the rest of the year.</figcaption>
+  <figcaption>The limits rise each year with average wages; for 2027 they are $25,560 and $67,920. In the first year you claim, a monthly test also applies: any month you earn under $2,040 (or $5,430 in the year you reach full retirement age) and do no substantial self-employment work gets its full check, whatever you earned in the rest of the year.</figcaption>
 </figure>
 
 <p>Here's how it works out. Say your PIA is $2,000 and you claim at 62, for $1,400 per month, $16,800 per year, then earn $40,000 at a part-time job. You're $15,520 over the limit, so $7,760 is held back. Social Security does this by withholding whole monthly checks from the start of the year, here six of them, and paying the small amount it overheld the next year.</p>
-<p>The withheld money isn't lost. At full retirement age Social Security refigures your benefit as if you had claimed later by the number of months it withheld. If the same thing happened every year from 62 to 67, about 28 to 30 months would be credited back and the check would rise from $1,400 to about $1,650 per month for life. You do get the money back, slowly, but the early claim paid far less in those years than it seemed to promise. If you expect to keep earning well over the limit, an early claim mostly means checks held back now and repaid later as a higher benefit.</p>
+<p>The withheld money isn't lost. At full retirement age Social Security refigures your benefit as if you had claimed later by the number of months it withheld. Every month with any amount held back counts, including the sixth, partly refunded one. If the same thing happened every year from 62 to 67, that's 30 months credited back, and the check would rise from $1,400 to about $1,667 per month for life, what a claim at 64 and a half would have paid. You do get the money back, slowly, but the early claim paid far less in those years than it seemed to promise. If you expect to keep earning well over the limit, an early claim mostly means checks held back now and repaid later as a higher benefit.</p>
 
-<!-- data: ssPerson({pia: 2000, fra: 67, claim: 62, earnings: 40000}) in lib/engine/math.js: annual 16,800; withheld (40,000 − 24,480) ÷ 2 = 7,760; earlyAnnual 9,040; monthsBack 28; laterMonthly 1,644.44 (= 2,000 × ssClaimFactor(62 + 28/12, 67)). 7,760 ÷ 1,400 = 5.5, so six checks. The engine credits 5.54 months per year × 5 years ≈ 28; if SSA counts every month with any deduction, as the sixth partly refunded month is, it's 6 × 5 = 30, and 2,000 × ssClaimFactor(64.5, 67) = 1,666.67. Hence "28 to 30" and "about $1,650". -->
+<!-- data: ssPerson({pia: 2000, fra: 67, claim: 62, earnings: 40000}) in lib/engine/math.js: annual 16,800; withheld (40,000 − 24,480) ÷ 2 = 7,760; earlyAnnual 9,040; monthsBack 30; laterMonthly 1,666.67 (= 2,000 × ssClaimFactor(64.5, 67)). 7,760 ÷ 1,400 = 5.5, so six checks; 6 × $1,400 − $7,760 = $640 overheld and paid back. Every month with a deduction counts, so 6 × 5 years = 30 months. -->
 
 <h2 id="raises">After you claim</h2>
 <p>Every January, benefits rise by the cost-of-living adjustment (COLA), set from the change in a consumer price index (CPI-W) from one third quarter to the next. The raise for 2026 was 2.8%. The one for 2027, announced in October 2026, is 3.6%. Because of it, a benefit keeps its buying power for life, and RetCalc shows Social Security in today's dollars without needing an inflation guess. The COLA applies from the year you turn 62, so someone who waits until 70 doesn't lose those raises by waiting.</p>
@@ -147,7 +161,7 @@
 <h2 id="questions">Common questions</h2>
 <details><summary>Do I get back what I paid in?</summary><p>Not directly. The formula looks at what you earned, not what you paid, and it favors lower earners. So a low earner's benefit replaces a larger share of their pay than a high earner's does. The program also pays disability, spousal and survivor benefits from the same taxes.</p></details>
 <details><summary>Does working past 62 raise my benefit even if I've already claimed?</summary><p>It can. Social Security refigures your record every year, and if a new year's earnings beat one of your top 35, the benefit goes up from the next January. The increase is usually small once you have 35 solid years.</p></details>
-<details><summary>Why is my statement's estimate different from this formula?</summary><p>The statement assumes you keep earning at your current pay until you claim, and its figures use this year's bend points and wage index, which change once you turn 62 and 60. An estimate made at 45 can move a fair amount by 62. Use the earnings record on it as the reliable part.</p></details>
+<details><summary>Why is my statement's estimate different from this formula?</summary><p>The statement assumes you keep earning at your current pay until you claim. It also has to use today's wage index and bend points, because yours aren't fixed until the years you turn 60 and 62. An estimate made at 45 can move a fair amount by 62. Use the earnings record on it as the reliable part.</p></details>
 <details><summary>Does a high salary late in my career count more than early years?</summary><p>No, as long as the early years kept pace with wages at the time. Indexing puts every year before 60 on today's wage level, so $40,000 in 1995 can count for more than $60,000 in 2020. Only the 35 highest indexed years matter, wherever they fall.</p></details>
 <details><summary>I have a government pension. Does it still cut my Social Security?</summary><p>Not anymore. The Social Security Fairness Act repealed the Windfall Elimination Provision and the Government Pension Offset for benefits from January 2024 on. Social Security had paid more than 3.1 million back-benefit payments by July 2025.</p></details>
 
@@ -171,6 +185,8 @@
     <li><a href="https://www.ssa.gov/oact/cola/piaformula.html">Primary Insurance Amount</a> <span>Social Security Administration</span></li>
     <li><a href="https://www.ssa.gov/benefits/retirement/planner/ageincrease.html">Retirement age and benefit reduction</a> <span>Social Security Administration</span></li>
     <li><a href="https://www.ssa.gov/benefits/retirement/planner/whileworking.html">Receiving benefits while working</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/oact/cola/AWI.html">National average wage index</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/news/en/cola/factsheets/2027.html">2027 cost-of-living adjustment fact sheet</a> <span>Social Security Administration</span></li>
     <li><a href="https://www.ssa.gov/myaccount/">my Social Security</a> <span>Social Security Administration</span></li>
     <li><a href="https://www.ssa.gov/benefits/retirement/social-security-fairness-act.html">Social Security Fairness Act: WEP and GPO update</a> <span>Social Security Administration</span></li>
   </ul>

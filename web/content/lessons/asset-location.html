@@ -1,0 +1,194 @@
+<article class="lesson" data-slug="asset-location" data-reviewed="2026-11-10"
+  data-title="Asset location: what to hold where"
+  data-idea="The same investments, taxed less by choosing the account for each"
+  data-tool="optimizer" data-try="Find the order of drawing on your traditional, Roth and taxable accounts that leaves the most after tax, with your plan already filled in.">
+
+<p class="lede">Most households end up with money in three kinds of account: traditional, Roth and taxable. Each one taxes investment income differently, and each kind of investment produces a different sort of income. Asset location is deciding which investment sits in which account so that the whole portfolio loses less to tax. It's worth a few tenths of a percent per year at best, which is small next to choosing the mix itself and large enough to add up over thirty years.</p>
+
+<h2 id="difference">Allocation first, then location</h2>
+<p>Asset allocation is how much of your money is in stocks, bonds and cash. It sets how much the portfolio is likely to grow and how far it can fall, and <a href="/learn/how-much-in-stocks">How much in stocks</a> covers choosing it. Asset location comes second. It takes the mix as decided and asks only where each piece should live.</p>
+<p>The idea depends on treating all your accounts as one portfolio. If you want 60% in stocks, each account doesn't need to be 60% stocks. One can hold nothing but bonds and another nothing but stocks, as long as they add up to 60/40.</p>
+
+<h2 id="taxed">How each account taxes what you earn</h2>
+<p>A traditional 401(k) or IRA ignores what goes on inside it. Interest, dividends and gains pile up untaxed, and every dollar withdrawn is taxed as ordinary income, whatever it came from. A Roth is the same inside, and qualified withdrawals aren't taxed at all. A taxable account is where the type of income matters, because each type is taxed in the year you receive it:</p>
+
+<!-- data: federal rules for 2026. Ordinary brackets and long-term gain breakpoints from lib/engine/data/2026.js (fed, ltcg);
+     NIIT 3.8% over $200,000 single / $250,000 joint MAGI (lib/engine/math.js NIIT). Section 199A deduction of 20% on ordinary REIT dividends,
+     made permanent by the 2025 tax act. Municipal bond interest: IRS Topic 403. Treasury interest is exempt from state income tax. -->
+<figure>
+  <table>
+    <thead><tr><th>What the investment pays</th><th>Federal tax in a taxable account</th><th>Typical sources</th></tr></thead>
+    <tbody>
+      <tr><td>Interest</td><td>Ordinary rates, 10% to 37%, every year</td><td>Bond funds, CDs, savings, money market funds</td></tr>
+      <tr><td>Dividends that aren't qualified</td><td>Ordinary rates every year (REIT dividends less a 20% deduction)</td><td>REIT funds, some foreign and short-held shares</td></tr>
+      <tr><td>Qualified dividends</td><td>0%, 15% or 20% every year</td><td>Most US and many foreign company shares, stock index funds</td></tr>
+      <tr><td>Long-term gains a fund pays out</td><td>0%, 15% or 20% in the year paid, even if reinvested</td><td>Actively managed funds, funds with heavy redemptions</td></tr>
+      <tr><td>Growth in price</td><td>Nothing until you sell; then 0%, 15% or 20% on the gain if held more than one year</td><td>Any share or fund you hold</td></tr>
+      <tr><td>Municipal bond interest</td><td>None</td><td>Municipal bond funds</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Federal treatment for 2026. A 3.8% net investment income tax is added above $200,000 of income for single filers and $250,000 for couples. Most states tax all of these except interest on US Treasuries and on their own municipal bonds.</figcaption>
+</figure>
+
+<p><a href="/learn/taxable-account">The taxable account</a> has the 2026 brackets for gains and dividends. Location works off the gaps between those rows. A married couple in the 22% bracket pays 22% on bond interest every year, and 15% on qualified dividends. On growth in a share's price they pay nothing until they sell, and nothing at all if they hold it until death or give it to charity.</p>
+<p>How much a fund trades matters as well. A fund that sells holdings at a profit must pass the gains to its shareholders each year. An index fund seldom sells, so nearly all its return arrives as untaxed growth plus a modest dividend. An actively managed fund that turns over much of its portfolio every year can hand you a taxable gain each December whether or not you sold a share.</p>
+<p>Put rough numbers on it and the differences are plain. The chart assumes a couple in the 22% bracket and typical payouts for each kind of fund.</p>
+
+<!-- data: hypothetical payouts, tax per year on $10,000 held in a taxable account by a couple at 22% ordinary and 15% on qualified dividends and long-term gains.
+     Bond fund: 4.5% interest × 22% = $99. REIT fund: 4% dividends, 80% taxable after the 20% deduction, × 22% = $70.
+     Active stock fund: 1.5% qualified dividends + 5% long-term gains paid out, × 15% = $98 (rounded from 97.5).
+     International index fund: 2.8% qualified dividends × 15% = $42, before any foreign tax credit. US stock index fund: 1.3% × 15% = $20 (19.5).
+     Municipal bond fund: $0 federal. State tax not counted. -->
+<figure data-chart='{"type":"bar","labels":true,"x":["Bond fund","Active stock fund","REIT fund","International index","US stock index","Municipal bonds"],"xLabel":"Held in a taxable account","y":"money","series":[{"name":"Federal tax per year on $10,000","tone":"accent","values":[99,98,70,42,20,0]}]}'>
+  <figcaption>Hypothetical yearly federal tax on $10,000 in a taxable account, for a couple in the 22% bracket: a bond fund paying 4.5% interest, an active stock fund paying 1.5% in dividends and 5% in gains, a REIT fund paying 4%, an international index fund paying 2.8%, a US index fund paying 1.3%. State tax and tax on a later sale aren't counted.</figcaption>
+</figure>
+
+<p>A bond fund costs this couple about five times as much in yearly tax as a US stock index fund, on the same $10,000. Inside a traditional or Roth account, every bar is zero.</p>
+
+<h2 id="order">The usual order</h2>
+<p>The standard advice follows from that chart. You fill the sheltered accounts with whatever would be taxed hardest outside them, and leave the taxable account for whatever is taxed lightest.</p>
+
+<!-- data: the conventional ordering as given by the Bogleheads wiki (Tax-efficient fund placement), Vanguard's research summary and Reichenstein and Meyer (2013). No figures. -->
+<figure>
+  <table>
+    <thead><tr><th>Account</th><th>What usually goes there</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Traditional 401(k) or IRA</td><td>Taxable bonds first, then REITs and actively managed funds</td><td>Their yearly income would be taxed at ordinary rates outside. Slower growth here also means smaller required withdrawals later.</td></tr>
+      <tr><td>Roth</td><td>Stocks, starting with those you expect to grow most</td><td>Nothing that grows in a Roth is ever taxed, so the account's limited room is worth most filled with the fastest grower.</td></tr>
+      <tr><td>Taxable</td><td>Broad stock index funds, US and international; municipal bonds if you need bonds here and your bracket is high</td><td>Low dividends at the lower rates, growth untaxed until sale, losses you can harvest, a step-up in basis for heirs.</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The conventional placement. It applies only once the overall mix is set, and only as far as each account has room.</figcaption>
+</figure>
+
+<p>Two cautions before applying it. Money should still go into the sheltered accounts first: the order above is about what to buy inside each account, and it never argues for saving in a taxable account in place of a 401(k) or IRA you could still add to. And a workplace plan limits you to its menu. If the plan's only bond fund is expensive, the fee can cost more than the tax you'd save.</p>
+
+<h2 id="example">A household with three accounts</h2>
+<p>Take a hypothetical couple, Sam and Jordan. They have $1,200,000: $600,000 in traditional 401(k)s, $200,000 in Roth IRAs and $400,000 in a taxable brokerage account. They want 60% in stocks and 40% in bonds, which is $720,000 and $480,000. Like many people, they've set every account to 60/40.</p>
+<p>Relocating means putting all $480,000 of bonds in the traditional accounts, with the remaining $120,000 there in stocks, and making the Roth and taxable accounts entirely stocks. The total in stocks and in bonds doesn't change by a dollar.</p>
+
+<!-- data: hypothetical. Traditional $600,000, Roth $200,000, taxable $400,000; target 60/40 = $720,000 stocks, $480,000 bonds.
+     Before, each account 60/40: traditional 360,000 / 240,000; Roth 120,000 / 80,000; taxable 240,000 / 160,000.
+     After: traditional 120,000 / 480,000; Roth 200,000 / 0; taxable 400,000 / 0.
+     Yearly federal tax on the taxable account at 22% ordinary, 15% qualified dividends, bond fund paying 4.5%, stock index fund paying 1.3% in dividends:
+     before 160,000 × 4.5% × 22% = 1,584, plus 240,000 × 1.3% × 15% = 468, total 2,052. After 400,000 × 1.3% × 15% = 780.
+     Saving 1,272 per year = 0.106% of 1,200,000. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["Traditional, before","Traditional, after","Roth, before","Roth, after","Taxable, before","Taxable, after"],"xLabel":"Account","y":"money","series":[{"name":"Stocks","tone":"accent","values":[360000,120000,120000,200000,240000,400000]},{"name":"Bonds","tone":"muted","values":[240000,480000,80000,0,160000,0]}]}'>
+  <figcaption>Sam and Jordan's three accounts with every account at 60/40, and after moving the bonds into the traditional accounts. The household holds $720,000 of stocks and $480,000 of bonds both ways.</figcaption>
+</figure>
+
+<p>Before the move, their taxable account held $160,000 of bonds paying, say, 4.5%: $7,200 of interest, taxed at 22%, or $1,584. Its $240,000 of stock index funds paid 1.3% in dividends, $3,120, taxed at 15%, or $468. That's $2,052 of federal tax per year. Afterwards the account holds $400,000 of stock funds paying $5,200 in dividends, and the tax is $780. They save $1,272 per year, about 0.11% of the portfolio, without changing what they own.</p>
+<p>The trades inside the 401(k)s and Roth IRAs cost nothing in tax. The one in the taxable account means selling its bond fund, which rarely carries much gain. If the holding you'd need to sell there has a large gain, it can be better to leave it and steer new savings instead.</p>
+
+<h2 id="yours">A traditional dollar is partly the government's</h2>
+<p>There's a catch in that example, and the finance professor William Reichenstein has been pointing it out since the early 2000s. A traditional account isn't all yours. Every dollar that comes out is taxed, so if you'll pay 22% on withdrawals, you own 78% of the balance and the government owns the rest. A Roth dollar is entirely yours. Reichenstein calls a traditional account a partnership in which the government holds a share of the principal equal to your future tax rate.</p>
+<p>That changes what Sam and Jordan really hold. Their $600,000 of traditional money is worth $468,000 to them after tax, so their portfolio is $1,068,000 of spendable money. Counting each account at its after-tax value gives the tax-adjusted allocation.</p>
+
+<!-- data: the same household, traditional balances counted at 78% (22% tax on withdrawal); Roth and taxable at full value (tax on taxable gains ignored).
+     After-tax total 468,000 + 200,000 + 400,000 = 1,068,000.
+     Every account 60/40: stocks 360,000 × 0.78 + 120,000 + 240,000 = 640,800 = 60.0%.
+     After relocating: stocks 120,000 × 0.78 + 200,000 + 400,000 = 693,600 = 64.9%; bonds 480,000 × 0.78 = 374,400.
+     To hold 60% after tax with Roth and taxable all stocks: traditional stocks = (640,800 − 600,000) / 0.78 = 52,308; stocks on statements 652,308 = 54.4% of 1,200,000. -->
+<figure>
+  <table>
+    <thead><tr><th>Arrangement</th><th>Stocks on the statements</th><th>Share of the statements</th><th>Stock share after tax</th></tr></thead>
+    <tbody>
+      <tr><td>Every account 60/40</td><td>$720,000</td><td>60%</td><td>60%</td></tr>
+      <tr><td>Bonds moved to traditional</td><td>$720,000</td><td>60%</td><td>65%</td></tr>
+      <tr><td>Bonds moved, then adjusted</td><td>$652,000</td><td>54%</td><td>60%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The same household with traditional balances counted at 78% of their value, for a 22% tax on withdrawals. Tax on gains in the taxable account is ignored.</figcaption>
+</figure>
+
+<p>After relocating, the stocks sit mostly in accounts they fully own and the bonds in the account they own 78% of. Their statements still say 60/40, but of the money that's theirs, 65% is in stocks. Some of what looks like a gain from asset location is more risk. To hold a true 60%, they'd keep about $52,000 of stocks in the traditional accounts where the first arrangement had $120,000, and the statements would read 54/46.</p>
+<p>The same reasoning explains the Roth row of the usual order. Stocks in the Roth and bonds in the traditional account will very likely leave you with more than the reverse, and part of the reason is that it tilts your after-tax money toward stocks. You don't have to do the adjustment. It's enough to know that a household with most of its bonds in traditional accounts is somewhat more exposed to stocks than its statements show, and to pick the mix with that in mind. <a href="/learn/traditional-or-roth">Traditional or Roth</a> covers how to think about the tax rate you'll pay on the way out.</p>
+
+<h2 id="yields">When bonds pay little, the rule weakens</h2>
+<p>The usual order assumes bonds throw off a lot of taxable interest. For most of 2020 the 10-year Treasury yielded under 1%. At that level there was hardly any interest to shelter, while the sheltered space could have held stocks compounding at several times the rate. Michael Kitces argued in 2013, when yields were also low, that most bonds had fallen into a "zone of indifference" where their placement barely mattered, and that location counts for much more with high-return investments than with low-return ones.</p>
+<p>The chart puts numbers on that. It takes $100,000 in a Roth and $100,000 in a taxable account, half the total in stocks and half in bonds, and compares the two ways of arranging them over 30 years at different bond yields. A Roth is used so both accounts are fully the investor's and the comparison is like for like.</p>
+
+<!-- data: hypothetical. $100,000 in a Roth and $100,000 taxable, 30 years, nothing added. Stocks return 7% per year: 5.5% price growth and 1.5% qualified dividends.
+     Taxable stocks: dividends taxed at 15% each year and reinvested (added to basis), then 15% of the remaining gain at the end: $639,795.
+     Roth stocks: 100,000 × 1.07^30 = 761,226. Roth bonds: 100,000 × (1 + y)^30. Taxable bonds: interest taxed at 22% each year, 100,000 × (1 + 0.78y)^30.
+     Bonds in the Roth (Roth bonds + taxable stocks): y = 1% 774,580; 2% 820,931; 3% 882,521; 4% 964,134; 5% 1,071,989; 6% 1,214,144.
+     Stocks in the Roth (Roth stocks + taxable bonds): 887,475; 920,329; 961,379; 1,012,580; 1,076,339; 1,155,602.
+     Break-even bond yield 5.08% at 22%, 4.39% at a 32% ordinary rate. If the taxable stocks are never sold (714,640 untaxed), break-even is about 3%.
+     10-year Treasury yield 4.86% on November 6, 2026 (FRED, DGS10). -->
+<figure data-chart='{"type":"bar","x":["1%","2%","3%","4%","5%","6%"],"xLabel":"Bond yield","y":"money","series":[{"name":"Bonds in the Roth, stocks taxable","tone":"neutral","values":[774580,820931,882521,964134,1071989,1214144]},{"name":"Stocks in the Roth, bonds taxable","tone":"accent","values":[887475,920329,961379,1012580,1076339,1155602]}]}'>
+  <figcaption>After-tax value after 30 years of $100,000 in a Roth and $100,000 in a taxable account, half in stocks returning 7% per year (1.5% of it dividends) and half in bonds, for an investor paying 22% on interest and 15% on dividends and gains, with the taxable holding sold at the end. Hypothetical, not adjusted for inflation.</figcaption>
+</figure>
+
+<p>At a 2% yield, sheltering the stocks left about $99,000 more. The two arrangements cross at a yield of about 5%, and above it sheltering the bonds wins. In early November 2026 the 10-year Treasury yielded about 4.9%, which is close to a tie on these assumptions. The crossing point moves with the inputs. At a 32% tax rate on interest it drops to about 4.4%. If the taxable stocks are never sold, because they go to heirs or charity, it drops to about 3%. A shorter horizon or lower stock returns move it down too.</p>
+
+<h3>What the research found it's worth</h3>
+<ul>
+  <li>Gobind Daryanani and Chris Cordaro, in the Journal of Financial Planning in January 2005, measured an average gain of 0.20% per year in after-tax return from locating assets well, compared with holding the same mix in every account.</li>
+  <li>Kitces, in his 2013 article, cited research putting the value at 0.20% to 0.50% per year or more, and stressed that the gain comes mostly from where the high-return holdings go.</li>
+  <li>Reichenstein and William Meyer, in the same journal in November 2013, redid the comparison holding after-tax risk constant. They concluded that stocks in taxable accounts and bonds in retirement accounts is the better arrangement except in rare cases, one of which is exceptionally low bond yields.</li>
+  <li>Vanguard's 2026 research summary puts the benefit at up to 0.3% per year for well-diversified investors with sizeable balances in both taxable and sheltered accounts, calls it modest next to asset allocation, and still starts from taxable bonds in the sheltered accounts.</li>
+</ul>
+<p>The studies land in the same range, tenths of a percent per year, and they disagree mostly about low-yield periods. With yields near 5%, the old order and the newer analysis point the same way. On Sam and Jordan's $1,200,000, 0.1% to 0.3% is $1,200 to $3,600 per year.</p>
+
+<h2 id="munis">Municipal bonds</h2>
+<p>Sometimes bonds have to go in the taxable account: the sheltered accounts are small, or you want safe money you can reach without touching a retirement account. Municipal bonds, issued by states and cities, are built for that case. Their interest is free of federal income tax, and usually of state tax too if the issuer is in your home state. Because of that they pay less than taxable bonds, so they only help above a certain bracket.</p>
+<p>The test is one line of arithmetic. Multiply the taxable bond's yield by one minus your tax rate and compare. If a taxable bond fund yields 4.5% and a municipal fund of similar quality yields 3.5%, then in the 12% bracket the taxable fund keeps 3.96% after tax and wins. In the 32% bracket it keeps 3.06% and the municipal fund wins. The two are level at a tax rate of about 22% (1 − 3.5 ÷ 4.5). The yields are examples; check current ones, and add your state rate if it applies.</p>
+<p>Municipal bonds never belong in a traditional or Roth account. You'd accept the lower yield and get nothing for it, and in a traditional account the interest would be taxed on withdrawal anyway. Their interest also still counts as income for the Medicare premium surcharge and for working out how much of your Social Security is taxed.</p>
+
+<h2 id="foreign">The foreign tax credit</h2>
+<p>Many countries withhold tax on dividends paid to foreign shareholders, and an international fund passes your share of that tax through to you. In a taxable account you can claim it back as a credit against your US tax. If the foreign tax is $300 or less ($600 on a joint return) and was all reported on a 1099, you can claim the credit directly on your return without filing Form 1116. In a traditional or Roth account the credit is lost.</p>
+<p>As a hypothetical, $100,000 in an international index fund might pay $2,800 in dividends with $200 withheld abroad. In a taxable account the $200 comes off your tax bill, worth 0.2% per year on that holding. That's a point in favor of holding international stock funds in the taxable account, set against their higher dividends, which cost more in yearly tax there than a US fund's. The two pull in opposite directions, so either placement is defensible.</p>
+
+<h2 id="limits">Limits and mistakes</h2>
+<ul>
+  <li>Don't let location change the allocation. If following the order would leave you at 75% stocks because the sheltered accounts can't hold all the bonds, hold some bonds in the taxable account. Vanguard's researchers warn that giving up the right mix for tax efficiency does far more damage than imperfect location.</li>
+  <li>Keep your reserve reachable. An <a href="/learn/emergency-fund">emergency fund</a> stays in cash in an ordinary account, outside this exercise. A taxable account that's all stocks could be down 30% when you need it, so money you may spend within a few years shouldn't be part of the stock holding.</li>
+  <li>Small or lopsided portfolios gain little. If nearly everything is in a 401(k), there's nothing to locate. On $50,000 in total, 0.1% is $50 per year.</li>
+  <li>Target-date and balanced funds are awkward in a taxable account. They hold bonds, so they pay taxable interest, and you can't move the bond part elsewhere. They can also pay out large gains: in 2021 Vanguard's target-date funds distributed unusually large capital gains after big retirement-plan investors left for a cheaper share class, leaving taxable holders with unexpected tax bills. Vanguard settled with the SEC over its disclosures in January 2025 for $106.41 million. In a 401(k) or IRA these funds are fine.</li>
+  <li>It makes rebalancing and bookkeeping harder. With different holdings in each account you have to add them up to see your mix, and most of the rebalancing has to happen where the bonds are. <a href="/learn/diversification-and-rebalancing">Diversifying and rebalancing</a> covers doing that.</li>
+  <li>Withdrawals change the picture. Once you're drawing on the accounts, the order you empty them in shifts where things sit, and that order usually matters more to your tax bill than location does. <a href="/learn/withdrawal-order">Which account to draw from first</a> takes that up.</li>
+</ul>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p><a href="/advanced">Advanced</a> splits your savings into traditional, Roth and taxable balances, so you can see how much room each kind of account gives you; location only has something to work with when at least two of them are sizeable. The <a href="/optimizer">Optimizer</a> then tests the order in which you draw on them in retirement, through every market since 1926 with 2026 federal and state tax. The tax your traditional withdrawals carry there is a guide to how much of that account is really yours.</p>
+<p><a href="/incometax">Income Tax</a> shows one year in detail. In retirement mode, enter a traditional withdrawal and a brokerage withdrawal with the share of it that's gain, and you can see how differently the two are taxed at your income.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Should every account hold the same mix?</summary><p>It doesn't need to. What counts is the mix across everything you own. Identical accounts are simpler to manage and cost a little more in tax each year, about 0.1% of the portfolio in the example above. Plenty of people decide the simplicity is worth it.</p></details>
+<details><summary>I only have a 401(k) and a Roth IRA. Does any of this apply?</summary><p>A little. Neither account is taxed along the way, so the yearly tax saving isn't there. The remaining choice is which one holds the bonds, and the usual answer is the traditional account, leaving the Roth for stocks. Remember that this raises your after-tax stock share somewhat.</p></details>
+<details><summary>Where should cash and CDs go?</summary><p>Their interest is taxed at ordinary rates, like bond interest, so by the tax logic they belong in a sheltered account. But cash you might need soon has to be reachable, which usually means a taxable account. Being able to get at it comes first.</p></details>
+<details><summary>What about REITs?</summary><p>Real estate investment trusts pay out most of their income, and most of it is taxed at ordinary rates, less a 20% deduction. They're a common choice for traditional or Roth space once the bonds are placed. A total stock market fund already holds REITs at their market weight, so this only comes up if you own a separate REIT fund.</p></details>
+<details><summary>Is it worth selling investments in my taxable account to fix this?</summary><p>Often not. Selling a holding with a large gain means paying tax now to save a little tax each year. It's usually better to change what new savings buy, make the swaps inside the retirement accounts where trades aren't taxed, and let the taxable account shift over time.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>Decide the overall mix first. Location only chooses which account holds each piece, across all your accounts counted as one.</li>
+  <li>The usual order: taxable bonds and other heavily taxed holdings in traditional accounts, the fastest growers in the Roth, broad stock index funds in the taxable account.</li>
+  <li>In the three-account example it cut the yearly federal tax from $2,052 to $780; studies put the benefit at about 0.1% to 0.3% per year, sometimes more.</li>
+  <li>A traditional dollar is partly the government's, so moving bonds there raises your real stock share: from 60% to 65% in the example.</li>
+  <li>The case for sheltering bonds is strong when yields are high and weak when they're very low; keep the right mix and a reachable reserve ahead of either.</li>
+</ul></section>
+
+<footer>
+  <ul class="points">
+    <li>How interest, dividends and gains are taxed by account</li>
+    <li>The usual placement order and when it weakens</li>
+    <li>Why bonds in a traditional account raise your stock share</li>
+  </ul>
+  <ul class="terms">
+    <li data-term="Asset location">Choosing which account holds each investment so the portfolio as a whole loses less to tax, without changing the overall mix.</li>
+    <li data-term="Tax drag">The return a taxable account loses each year to tax on interest, dividends and paid-out gains.</li>
+    <li data-term="Tax-adjusted allocation">Your mix measured after counting traditional balances at what they're worth once withdrawal tax is paid.</li>
+    <li data-term="Municipal bond">A bond issued by a state or local government. Its interest is free of federal income tax.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.financialplanningassociation.org/article/journal/JAN05-asset-location-generic-framework-maximizing-after-tax-wealth">Asset location: a generic framework for maximizing after-tax wealth (Daryanani and Cordaro, 2005)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://www.financialplanningassociation.org/article/journal/NOV13-asset-location-decision-revisited-0">The asset location decision revisited (Reichenstein and Meyer, 2013)</a> <span>Journal of Financial Planning</span></li>
+    <li><a href="https://www.kitces.com/blog/asset-location-the-new-wealth-management-value-add-for-optimal-portfolio-design/">Asset location: the new wealth management value-add for optimal portfolio design? (Kitces, 2013)</a> <span>Kitces.com</span></li>
+    <li><a href="https://corporate.vanguard.com/content/corporatesite/us/en/corp/articles/how-asset-location-can-boost-after-tax-returns.html">How asset location can boost after-tax returns</a> <span>Vanguard</span></li>
+    <li><a href="https://www.bogleheads.org/wiki/Tax-efficient_fund_placement">Tax-efficient fund placement</a> <span>Bogleheads wiki</span></li>
+    <li><a href="https://www.irs.gov/taxtopics/tc856">Topic 856: foreign tax credit</a> <span>IRS</span></li>
+    <li><a href="https://www.sec.gov/newsroom/press-releases/2025-21">Vanguard to pay more than $100 million over target date retirement funds</a> <span>SEC</span></li>
+    <li><a href="https://fred.stlouisfed.org/series/DGS10">Market yield on 10-year US Treasuries</a> <span>Federal Reserve Bank of St. Louis</span></li>
+  </ul>
+</footer>
+</article>

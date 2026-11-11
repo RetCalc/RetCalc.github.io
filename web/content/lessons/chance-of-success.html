@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="chance-of-success" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="chance-of-success" data-reviewed="2026-11-10"
   data-title='What "chance of success" means'
   data-idea="How the historical test works, and what 85% promises"
   data-tool="drawdown" data-try="See how often your plan lasted through every retirement since 1926, and how the ones that fell short went, with your plan already filled in.">
@@ -8,7 +8,27 @@
 <h2 id="historical">How a historical test works</h2>
 <p>The idea is simple. Take your plan, with its starting savings, yearly spending and mix of stocks and bonds, and pretend you retired at the start of 1927. Run it forward through the actual returns and inflation of 1927, 1928 and so on, taking out your spending each year, until the thirty years are up or the money runs out. Then do it again starting in 1928, then 1929, and so on until the last year that still has thirty years of history after it. Each start year is one test. The chance of success is the share of tests in which the money lasted.</p>
 <p>In the classic example, someone retires with $1,000,000 in 60% stocks and 40% bonds, takes out $40,000 in the first year (4%), and raises that amount with inflation every year after, whatever markets do. RetCalc's record of US stocks, bonds and inflation runs from 1926 through 2025, so there are 70 thirty-year retirements that start in January, from 1927 to 1996.</p>
-<p>The money lasted thirty years in 66 of them, a success rate of 94.3%. The four that ran out started in 1965, 1966, 1968 and 1969, and ran out in years 27 to 30. Starting a retirement every month instead of every January gives 835 tests and 94.0%, nearly the same answer.</p>
+<p>The table follows one of those tests, the retirement that began in January 1966, through its first five years. Each year the withdrawal comes out first and grows with the year's inflation; what's left earns the year's return.</p>
+
+<!-- data: historicalBacktest() in lib/engine/drawdown.js, options ddOptsFromState({initial: 1000000, years: 30, stock: 60, rate: 4, strategy: "fixed"}); the 1966 run's rows 1–5:
+     withdrawal, ret (60% stocks, 40% bonds, that year), infl, end, and realEnd (the end balance in 1966 dollars). Returns and inflation rounded to a tenth, dollars to the dollar.
+     Year 1: (1,000,000 − 40,000) × (1 − 0.0372) = 924,272; 924,272 ÷ 1.0346 = 893,369. Year 2 withdrawal: 40,000 × 1.0346 = 41,384. -->
+<figure>
+  <table>
+    <thead><tr><th>Year</th><th>Withdrawal</th><th>Return on the mix</th><th>Inflation</th><th>Balance at year end</th><th>In 1966 dollars</th></tr></thead>
+    <tbody>
+      <tr><td>1966</td><td>$40,000</td><td class="neg">−3.7%</td><td>3.5%</td><td>$924,272</td><td>$893,369</td></tr>
+      <tr><td>1967</td><td>$41,384</td><td>+11.9%</td><td>3.0%</td><td>$988,303</td><td>$927,081</td></tr>
+      <tr><td>1968</td><td>$42,641</td><td>+10.4%</td><td>4.7%</td><td>$1,043,964</td><td>$935,156</td></tr>
+      <tr><td>1969</td><td>$44,654</td><td class="neg">−8.9%</td><td>6.2%</td><td>$910,065</td><td>$767,641</td></tr>
+      <tr><td>1970</td><td>$47,421</td><td>+8.6%</td><td>5.6%</td><td>$936,882</td><td>$748,564</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The first five years of the 1966 test: $1,000,000 in 60% stocks and 40% bonds, $40,000 withdrawn at the start of the first year and raised with inflation after that. The percentages are rounded.</figcaption>
+</figure>
+
+<p>After five years the balance looks almost unchanged at $936,882, but prices had risen 25%, so it bought what $748,564 did in 1966, and the withdrawal had grown to $47,421 and was still climbing. The test carries on like this for thirty years, or until the balance reaches zero. For this start it reached zero in year 27.</p>
+<p>Across all 70 tests, the money lasted thirty years in 66, a success rate of 94.3%. The four that ran out started in 1965, 1966, 1968 and 1969, and ran out in years 27 to 30. Starting a retirement every month instead of every January gives 835 tests and 94.0%, nearly the same answer.</p>
 
 <!-- data: historicalBacktest() in lib/engine/drawdown.js, options ddOptsFromState({initial: 1000000, years: 30, stock: 60, rate: 4, strategy: "fixed"}).
      January starts 1927–1996: 70 retirements, 66 lasted (94.3%); failures 1965 (year 29), 1966 (year 27), 1968 (year 30), 1969 (year 28).
@@ -56,7 +76,17 @@
 <h3>It's a share of the past, not a forecast</h3>
 <p>84% is how many past starting years the plan survived. It isn't a measured probability of your future, because the future isn't drawn from the same hat. As the overlap section showed, the eleven failures at 4.6% came from very few episodes: the start of 1937, and the starts of 1962 to 1969, 1972 and 1973, which all ran into the high inflation and weak markets of the late 1960s and 1970s. Whether something like that happens in your first decade is the real question, and no success rate can answer it.</p>
 <h3>What a failure looks like</h3>
-<p>"Failure" in these tests means the savings ran out before the last year, with spending never cut. The earliest of the eleven ran out in year 21, most ran out between years 21 and 26, and three lasted to year 29 or 30. In a real retirement, Social Security or a pension would keep paying after the savings were gone, and long before the end, a retiree watching the balance fall would almost certainly have spent less. Michael Kitces has suggested calling a Monte Carlo shortfall a "probability of adjustment" for this reason: in practice it measures how often you'd need to make a mid-course change, not how often you'd end up broke.</p>
+<p>"Failure" in these tests means the savings ran out before the last year, with spending never cut. The earliest of the eleven ran out in year 21, most ran out between years 21 and 26, and three lasted to year 29 or 30. The chart follows three of them, and one retirement that finished close to the middle of the 70.</p>
+
+<!-- data: historicalBacktest() in lib/engine/drawdown.js, options ddOptsFromState({initial: 1000000, years: 30, stock: 60, rate: 4.6, strategy: "fixed"}).
+     Each run's rows[].realEnd (the balance at each year end in the start year's dollars), rounded to the nearest $1,000, for the January 1931, 1937, 1973 and 1966 starts.
+     Ran out: 1966 in year 21, 1973 in year 23, 1937 in year 29. 1931 ended with $1,091,000; the middle of the 70 endings is between $1,130,000 and $1,195,000. -->
+<figure data-chart='{"type":"line","x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],"xLabel":"Years into retirement","y":"money","series":[{"name":"Retired in 1931","tone":"good","values":[1000000,792000,797000,1004000,950000,1140000,1321000,1020000,1154000,1138000,1041000,840000,809000,869000,911000,1054000,813000,726000,696000,735000,761000,787000,819000,787000,971000,1110000,1064000,959000,1093000,1106000,1091000]},{"name":"Retired in 1937","tone":"neutral","values":[1000000,763000,850000,826000,743000,589000,553000,577000,588000,660000,495000,425000,388000,387000,377000,364000,351000,311000,347000,362000,316000,254000,249000,214000,173000,151000,100000,60000,15000,0,null]},{"name":"Retired in 1973","tone":"accent","values":[1000000,803000,576000,617000,654000,552000,485000,431000,400000,332000,347000,334000,302000,320000,337000,273000,250000,244000,189000,166000,132000,94000,45000,0,null,null,null,null,null,null,null]},{"name":"Retired in 1966","tone":"bad","values":[1000000,888000,914000,916000,746000,720000,732000,758000,600000,421000,437000,448000,365000,305000,255000,217000,160000,139000,103000,60000,17000,0,null,null,null,null,null,null,null,null,null]}]}'>
+  <figcaption>The balance after inflation, year by year, for four retirements that started with $1,000,000 in 60% stocks and 40% bonds and spent $46,000 per year, raised with inflation. Three ran out; the 1931 retirement finished near the middle of all 70.</figcaption>
+</figure>
+
+<p>None of the three failures came as a surprise in its last year. Ten years in, the 1966 and 1973 retirees had less than half of what they started with after inflation, and the 1937 retiree had about half. The warning arrived a decade or more before the money ran out.</p>
+<p>In a real retirement, Social Security or a pension would keep paying after the savings were gone, and long before the end, a retiree watching the balance fall would almost certainly have spent less. Michael Kitces has suggested calling a Monte Carlo shortfall a "probability of adjustment" for this reason: in practice it measures how often you'd need to make a mid-course change, not how often you'd end up broke.</p>
 <p>That cuts both ways, though, because the adjustment can be large. At 4%, the 1966 retiree was still spending $40,000 per year after inflation fifteen years in, with about $300,000 left, so the withdrawal had grown to more than 13% of the balance. Making the money last from there would have taken a deep cut, at around 80 for someone who retired at 65.</p>
 <h3>Success can be a close call</h3>
 <p>A plan "succeeds" if the last dollar lasts the last year. One that finished with $1,000 counts the same as one that finished with $5 million. A success rate can't tell you how close the survivors came, so look at the worst ending balances as well as the rate.</p>

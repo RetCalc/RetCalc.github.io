@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="beneficiaries-and-estate" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="beneficiaries-and-estate" data-reviewed="2026-11-10"
   data-title="Beneficiaries and estate basics"
   data-idea="Who gets what, how it gets to them, and the forms that decide it"
   data-tool="rmd" data-try="Project how large your traditional accounts could be at each age, the balance heirs would have to withdraw and pay tax on, with your plan already filled in.">
@@ -60,10 +60,35 @@
 
 <h2 id="heirs">What heirs receive, and the tax</h2>
 <h3>Retirement accounts</h3>
-<p>An inherited 401(k) or IRA keeps its tax character. A surviving spouse can generally treat it as their own. A few others, such as a minor child of the owner (until 21), a beneficiary who is disabled or chronically ill, or one no more than ten years younger than the owner, can stretch withdrawals over their own life expectancy. Almost everyone else, including most adult children, must empty it by the end of the tenth year after the owner's death, with yearly withdrawals along the way if the owner had already started required distributions. <a href="/learn/rmds">Required minimum distributions</a> covers those rules, from the 2024 final IRS regulations.</p>
-<p>Every dollar of an inherited traditional account is taxable income to the heir as it comes out. Ten years of large withdrawals can land in an adult child's peak earning years, at a higher rate than you paid. An inherited Roth IRA must also be emptied within ten years, but with no yearly minimum and, generally, no tax. That difference is one argument for <a href="/learn/roth-conversions">Roth conversions</a> if leaving money to children is part of the plan.</p>
+<p>An inherited 401(k) or IRA keeps its tax character: traditional money is still untaxed, Roth money still tax-free. How fast it has to come out depends on who inherits. Before 2020 most heirs could stretch withdrawals over their own lifetimes. The SECURE Act ended that for deaths from 2020 on, and most heirs now have ten years.</p>
+
+<!-- data: SECURE Act rules for deaths in 2020 or later, 26 U.S.C. 401(a)(9)(E) and (H) and the 2024 final regulations (age of majority 21); IRS, Retirement topics: beneficiary, and Publication 590-B. -->
+<figure>
+  <table>
+    <thead><tr><th>Who inherits</th><th>How long they have</th></tr></thead>
+    <tbody>
+      <tr><td>Your spouse</td><td>Can move it into their own IRA and treat it as theirs, with no withdrawals required until their own required distributions begin. Or can keep it as an inherited account.</td></tr>
+      <tr><td>Your child under 21</td><td>Small yearly withdrawals based on the child's life expectancy until 21, then ten more years. The account must be empty by the end of the year the child turns 31.</td></tr>
+      <tr><td>Someone disabled or chronically ill, or no more than ten years younger than you (a sibling or partner, often)</td><td>Withdrawals stretched over their own life expectancy</td></tr>
+      <tr><td>Anyone else: adult children, grandchildren, friends</td><td>Empty by the end of the tenth year after the year you die. If you had already reached the age for required distributions, they must also take a withdrawal each year in years one to nine.</td></tr>
+      <tr><td>Your estate, a charity, or a trust that doesn't qualify</td><td>Five years if you died before your required distributions began; otherwise over what would have been your remaining life expectancy</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Federal rules for retirement accounts whose owner dies in 2020 or later. A grandchild who is a minor doesn't get the child's exception; it applies only to the owner's own children.</figcaption>
+</figure>
+
+<p><a href="/learn/rmds">Required minimum distributions</a> covers the yearly amounts, from the 2024 final IRS regulations. An heir who misses a required withdrawal owes a penalty of 25% of the shortfall, or 10% if it's corrected promptly.</p>
+<p>Every dollar of an inherited traditional account is taxable income to the heir as it comes out. Ten years of large withdrawals can land in an adult child's peak earning years, at a higher rate than you paid.</p>
+<p>The timing within the ten years is the heir's choice, and it changes the bill. Suppose Nora, grown up and single, earns $110,000 and inherits a $600,000 traditional IRA. Ignore growth to keep the sums simple. If she takes $60,000 per year for ten years, each withdrawal sits on top of her salary, mostly in the 24% bracket, and costs about $14,200 in federal tax: $142,000 in all. If she leaves it alone and takes all $600,000 in the tenth year, most of it is taxed at 35% and 37%, and the bill is about $197,000. Spreading it out saves her $55,000, and an heir who has low-income years inside the window, between jobs or just retired, can do better still by taking more in those years.</p>
+
+<!-- data: 2026 single brackets and $16,100 standard deduction (lib/engine/data/2026.js), held for all ten years, no growth, federal tax only.
+     Taxable income before the IRA: 110,000 − 16,100 = 93,900. Extra tax on 60,000: 11,800 × 22% + 48,200 × 24% = 14,164; × 10 = 141,640.
+     Extra tax on 600,000 in one year: 11,800 × 22% + 96,075 × 24% + 54,450 × 32% + 384,375 × 35% + 53,300 × 37% = 197,330. Difference 55,690. -->
+
+<p>An inherited Roth IRA must also be emptied within ten years, but with no yearly minimum and, generally, no tax. That difference is one argument for <a href="/learn/roth-conversions">Roth conversions</a> if leaving money to children is part of the plan.</p>
 <h3>Everything else</h3>
-<p>Stocks, funds and a home you own when you die get a <b>step-up in basis</b>: their cost for tax purposes resets to their value on the date of death, so the gain during your lifetime is never taxed. When a married couple owns something jointly, half of it steps up at the first death; in community property states, both halves usually do. Retirement accounts get no step-up, since their tax was only ever deferred. <a href="/learn/taxable-account">The taxable account</a> explains how this shapes which accounts to spend first.</p>
+<p>Stocks, funds and a home you own when you die get a <b>step-up in basis</b>: their cost for tax purposes resets to their value on the date of death, so the gain during your lifetime is never taxed. If you paid $40,000 for shares that are worth $200,000 when you die, your heir's cost becomes $200,000. Selling them the next month for $200,000 produces no taxable gain; had you sold them yourself the day before, $160,000 of gain would have been taxed. It works in the other direction too: an investment worth less than you paid steps down, and the loss disappears. When a married couple owns something jointly, half of it steps up at the first death; in community property states, both halves usually do. Retirement accounts get no step-up, since their tax was only ever deferred. <a href="/learn/taxable-account">The taxable account</a> explains how this shapes which accounts to spend first.</p>
+<p>A health savings account is the odd one out. Left to a spouse, it becomes the spouse's own HSA. Left to anyone else, it stops being an HSA on the day you die and its whole value is taxable income to the heir that year.</p>
 <p>Life insurance paid to a beneficiary isn't taxable income to them. It does count toward your estate for estate tax if you own the policy, which matters only for the largest estates.</p>
 
 <h2 id="todpod">Payable on death and transfer on death</h2>
@@ -100,7 +125,7 @@
 <p>A revocable living trust is useful when you own property in more than one state, want privacy, or want money held for children past 18. It doesn't save income or estate tax, and it only covers what you actually retitle into it. Many families get the same result more simply with beneficiary forms, TOD and POD registrations and a will.</p>
 
 <h2 id="estatetax">Estate and gift tax</h2>
-<p>The federal estate tax reaches very few families. For 2026, each person can leave $15 million free of federal estate tax, under the 2025 tax law known as the One Big Beautiful Bill Act. The amount rises with inflation from 2027, and the law has no end date. Without it, the exemption would have fallen by about half in 2026. Above the exemption, the tax runs up to 40%.</p>
+<p>The federal estate tax reaches very few families. For 2026, each person can leave $15 million free of federal estate tax, under the 2025 tax law known as the One Big Beautiful Bill Act. The amount rises with inflation from 2027, when it will be $15,480,000, and the law has no end date. Without it, the exemption would have fallen by about half in 2026. Above the exemption, the tax runs up to 40%.</p>
 
 <!-- data: basic exclusion amount by year of death, IRS "What's new, estate and gift tax" (2011–2026); 2001–2009 from Congressional Research Service RL33718 and RL31092 (EGTRRA schedule).
      2010: no estate tax unless the estate elected it, with a $5,000,000 exclusion (Tax Relief Act of 2010); shown as 5,000,000. Nominal dollars. -->
@@ -108,9 +133,9 @@
   <figcaption>The amount each person can leave free of federal estate tax, in dollars of each year. In 2010 there was no estate tax unless an estate chose to apply it with a $5 million exemption. Sources: IRS for 2011 on; the 2001 tax law&rsquo;s schedule for earlier years.</figcaption>
 </figure>
 
-<p>Married couples do even better. Anything left to a spouse who is a US citizen passes free of estate tax, however large. And under <b>portability</b>, a surviving spouse can add whatever exemption the first spouse didn't use to their own, so a couple can leave up to $30 million between them. Portability isn't automatic: the executor has to file an estate tax return, Form 706, for the first spouse to die, even if no tax is owed. The IRS allows a late election for up to five years after the death for estates that weren't otherwise required to file.</p>
+<p>Married couples do even better. Anything left to a spouse who is a US citizen passes free of estate tax, however large. And under <b>portability</b>, a surviving spouse can add whatever exemption the first spouse didn't use to their own, so a couple can leave up to $30 million between them in 2026. Portability isn't automatic: the executor has to file an estate tax return, Form 706, for the first spouse to die, even if no tax is owed. The IRS allows a late election for up to five years after the death for estates that weren't otherwise required to file.</p>
 <h3>Gifts</h3>
-<p>The same $15 million covers gifts made while you're alive. On top of it, you can give up to $19,000 per person per year in 2026, to as many people as you like, without using any of it or filing anything. Spouses can each give that much, so a couple can give $38,000 to each person. Gifts above that need a gift tax return, Form 709, but no tax is due until lifetime gifts pass the exemption. Paying a hospital or a school directly for someone's medical care or tuition doesn't count toward any of these limits. A 529 plan has a special rule that lets you count one gift as spread over five years, so up to $95,000 per child at once (see <a href="/learn/saving-for-college">Saving for college</a>).</p>
+<p>The same $15 million covers gifts made while you're alive. On top of it, you can give up to $19,000 per person per year in 2026, to as many people as you like, without using any of it or filing anything. Spouses can each give that much, so a couple can give $38,000 to each person. For 2027 the figure rises to $20,000, or $40,000 from a couple. Gifts above that need a gift tax return, Form 709, but no tax is due until lifetime gifts pass the exemption. Paying a hospital or a school directly for someone's medical care or tuition doesn't count toward any of these limits. A 529 plan has a special rule that lets you count one gift as spread over five years, so up to $95,000 per child at once (see <a href="/learn/saving-for-college">Saving for college</a>).</p>
 <p>Gifts of shares you've held for a long time carry your original cost with them, while the same shares inherited would get a step-up. For appreciated investments, waiting can save your heirs tax.</p>
 <h3>State estate and inheritance taxes</h3>
 <p>States are another matter. Twelve states and the District of Columbia have their own estate tax, some starting much lower than the federal one; Oregon's starts at $1 million. Five states have an inheritance tax, paid by the heir, usually with exemptions or lower rates for spouses and children. If you live in one of them or own property there, a modest estate can owe state tax even though it's far below the federal line. <a href="/learn/state-taxes">State taxes</a> covers how states differ more broadly.</p>
@@ -153,6 +178,7 @@
 <li>Beneficiary forms and account titles, not the will, decide where most money goes. Keep them current and always name a contingent.</li>
 <li>Your spouse has a federal right to your 401(k) unless they consent in writing; after a divorce, change the forms yourself.</li>
 <li>Don't leave money directly to minors. Use a trust or a custodian, and name a guardian in a will.</li>
+<li>Most heirs must empty an inherited retirement account within ten years and pay income tax on traditional money as it comes out. Other investments and the home get a step-up in basis.</li>
 <li>For 2026 the federal estate tax applies only above $15 million per person, but some states tax much smaller estates.</li>
 <li>A will, financial and health care powers of attorney, and up-to-date forms cover most families; see an estate attorney when things are complicated.</li>
 </ul></section>
@@ -167,13 +193,13 @@
   </ul>
   <ul class="deeper">
     <li><a href="https://www.irs.gov/businesses/small-businesses-self-employed/whats-new-estate-and-gift-tax">What's new: estate and gift tax</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2027-taxpayers-continue-to-benefit-from-the-working-families-tax-cuts">Tax inflation adjustments for tax year 2027</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-beneficiary">Retirement topics: beneficiary</a> <span>IRS</span></li>
     <li><a href="https://www.law.cornell.edu/uscode/text/29/1055">29 U.S. Code § 1055, spousal rights in retirement plans</a> <span>Legal Information Institute, Cornell Law School</span></li>
     <li><a href="https://www.law.cornell.edu/supct/html/99-1529.ZS.html">Egelhoff v. Egelhoff (2001)</a> <span>Legal Information Institute, Cornell Law School</span></li>
     <li><a href="https://www.law.cornell.edu/supct/html/07-636.ZS.html">Kennedy v. Plan Administrator for DuPont Savings and Investment Plan (2009)</a> <span>Legal Information Institute, Cornell Law School</span></li>
     <li><a href="https://www.law.cornell.edu/supremecourt/text/16-1432">Sveen v. Melin (2018)</a> <span>Legal Information Institute, Cornell Law School</span></li>
     <li><a href="https://www.fdic.gov/resources/deposit-insurance/brochures/insured-deposits">Your insured deposits</a> <span>FDIC</span></li>
-    <li><a href="https://www.consumerfinance.gov/consumer-tools/managing-someone-elses-money/">Managing someone else's money</a> <span>Consumer Financial Protection Bureau</span></li>
   </ul>
 </footer>
 </article>

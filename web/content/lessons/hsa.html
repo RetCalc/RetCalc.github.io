@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="hsa" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="hsa" data-reviewed="2026-11-10"
   data-title="The HSA"
   data-idea="The account with three tax breaks, and how to use all of them"
   data-tool="budget" data-try="Add an HSA line through payroll and see how little of it comes out of take-home pay.">
@@ -13,7 +13,14 @@
 </ul>
 <p>Take someone single in the 22% federal bracket who puts the 2026 self-only maximum, $4,400, into an HSA through payroll. That saves $968 of federal income tax and $337 of Social Security and Medicare tax, so the $4,400 costs $3,095 of take-home pay. A traditional 401(k) contribution saves the income tax but not the payroll tax, and a Roth saves neither up front. Spent on medical bills, HSA money is never taxed at all.</p>
 
-<!-- data: arithmetic. 4,400 x 22% = 968; 4,400 x 7.65% = 336.60, rounds to 337; 4,400 - 968 - 336.60 = 3,095.40. Account rules from IRS Publication 969 (HSA), the RMD start ages in lib/engine/math.js, and the 20% additional tax under IRC 223(f)(4). -->
+<!-- data: arithmetic, single, 22% federal bracket, wages under the Social Security wage base, no state tax. 4,400 x 22% = 968; 4,400 x 7.65% = 336.60, rounds to 337; 4,400 - 968 - 337 = 3,095. HSA paid in directly and traditional 401(k): 4,400 - 968 = 3,432. Roth IRA: no saving, 4,400. -->
+<figure data-chart='{"type":"bar","stack":true,"x":["HSA, payroll","HSA, paid in yourself","Traditional 401(k)","Roth IRA"],"y":"money","series":[{"name":"Comes out of take-home pay","tone":"neutral","values":[3095,3432,3432,4400]},{"name":"Income tax saved","tone":"good","values":[968,968,968,0]},{"name":"Social Security and Medicare tax saved","tone":"accent","values":[337,0,0,0]}]}'>
+  <figcaption>What putting $4,400 into each account costs someone single in the 22% federal bracket for 2026, before any state tax. Only an HSA funded through payroll skips Social Security and Medicare tax as well.</figcaption>
+</figure>
+
+<p>The chart also shows why payroll is the better way in. An HSA you fund from your bank account gets the income tax back at filing time, but the 7.65% of Social Security and Medicare tax has already been paid on that money and doesn't come back. If your employer offers payroll contributions, use them.</p>
+
+<!-- data: Account rules from IRS Publication 969 (HSA), the RMD start ages in lib/engine/math.js, and the 20% additional tax under IRC 223(f)(4). -->
 <figure>
   <table>
     <thead><tr><th></th><th>HSA</th><th>Traditional 401(k)</th><th>Roth IRA</th></tr></thead>
@@ -35,7 +42,7 @@
 <h2 id="eligible">Who can contribute</h2>
 <p>You can put money into an HSA for any month in which you're covered by a qualifying high-deductible health plan (HDHP) and nothing else that pays before the deductible. For 2026, a plan qualifies if:</p>
 
-<!-- data: IRS Rev. Proc. 2025-19 (2026 HDHP figures); HSA limits also in lib/engine/data/2026.js limits.hsa (self 4400, family 8750, catch55 1000) -->
+<!-- data: IRS Rev. Proc. 2025-19 (2026 HDHP figures); HSA limits also in lib/engine/data/2026.js limits.hsa (self 4400, family 8750, catch55 1000). In the text below: direct primary care fee caps $150 / $300 per month from IRC 223(c)(1)(E) and Notice 2026-5; 2027 figures from Rev. Proc. 2026-24; long-term care premium limits and the health FSA limit ($3,400, carryover $680) from Rev. Proc. 2025-32. -->
 <figure>
   <table>
     <thead><tr><th>2026</th><th>Self-only coverage</th><th>Family coverage</th></tr></thead>
@@ -55,12 +62,14 @@
 <li>Medicare. Once any part of Medicare covers you, contributions have to stop. More on this below.</li>
 <li>Being claimed as someone else's dependent, which affects some young adults on a parent's plan.</li>
 </ul>
-<p>A law passed in July 2025 widened eligibility from 2026. Bronze and catastrophic plans, the kind sold on the ACA marketplace, now count as HSA-compatible even when they don't meet the usual HDHP rules. People with certain direct primary care arrangements, which charge a monthly fee for unlimited visits to a doctor, can now contribute too and pay those fees from the HSA. And HDHPs can cover telehealth before the deductible without disqualifying you, a rule that had been temporary and is now permanent for plan years from 2025.</p>
+<p>A law passed in July 2025 widened eligibility from 2026. Bronze and catastrophic plans, the kind sold on the ACA marketplace, now count as HSA-compatible even when they don't meet the usual HDHP rules. People with certain direct primary care arrangements, which charge a monthly fee for unlimited visits to a doctor, can now contribute too, as long as the fees come to no more than $150 per month for one person or $300 per month for an arrangement covering more than one. The fees themselves can be paid from the HSA. And HDHPs can cover telehealth before the deductible without disqualifying you, a rule that had been temporary and is now permanent for plan years from 2025.</p>
 
 <h2 id="limits">How the limits work</h2>
 <p>For 2026, the limit is $4,400 with self-only coverage and $8,750 with family coverage, which means anything covering at least two people. From 55, you can add $1,000 per year. Everything counts toward the limit: your payroll contributions, your own deposits and anything your employer puts in. If your employer adds $1,000, you can add $3,400 more with self-only coverage.</p>
+<p>The IRS sets HSA figures each spring, and the ones for 2027 are already out: $4,500 for self-only coverage and $9,000 for family coverage, with the catch-up still $1,000. A qualifying plan for 2027 needs a deductible of at least $1,750 or $3,500 and an out-of-pocket maximum of no more than $8,700 or $17,400.</p>
 <p>Married couples with family coverage share the $8,750 and can split it however they like between their two HSAs. The $1,000 catch-up is different: it's personal, so a spouse who is 55 or older needs an HSA in their own name to use it. A couple both over 55 with family coverage can put in $10,750 in total.</p>
-<p>If you're only eligible for part of the year, the limit is normally prorated by month. There's an exception, the last-month rule: if you're eligible on December 1, you can contribute the full year's amount, but you then have to stay eligible through the end of the following year. If you don't, the extra is added to your income with a 10% penalty. Like an IRA, an HSA takes contributions for each year until the tax filing deadline, April 15, 2027 for 2026.</p>
+<p>If you're only eligible for part of the year, the limit is normally prorated by month, counting each month in which you were eligible on the first day. Eight months of self-only coverage in 2026 allows eight-twelfths of $4,400, or $2,933. There's an exception, the last-month rule: if you're eligible on December 1, you can contribute the full year's amount, but you then have to stay eligible through the end of the following year. If you don't, the extra is added to your income with a 10% penalty. Like an IRA, an HSA takes contributions for each year until the tax filing deadline, April 15, 2027 for 2026.</p>
+<p>Anything over your limit is an excess contribution. It isn't deductible, and it's charged a 6% tax for every year it stays in the account. You avoid the 6% by taking the excess out, along with whatever it earned, before your tax return is due.</p>
 
 <h2 id="invest">Investing it, and paying yourself back later</h2>
 <p>Most HSAs start out as a savings account with a debit card. Many providers require a cash balance, often $1,000 or $2,000, before you can invest the rest in mutual funds. Left in cash, an HSA is a decent tax break on this year's medical bills. Invested, it's a retirement account.</p>
@@ -78,21 +87,22 @@
 <h2 id="medicare">Medicare ends contributions</h2>
 <p>Once you're enrolled in any part of Medicare, you can't contribute to an HSA, though you can keep spending what's there. Two details trip people up.</p>
 <p>First, if you apply for Social Security at 65 or older, you're enrolled in Medicare Part A automatically, and you can't turn Part A down while you collect Social Security. So working past 65 with an HSA means delaying Social Security as well.</p>
-<p>Second, when you sign up for premium-free Part A after 65, coverage is usually backdated up to six months, though not to before the month you turned 65. Any HSA contributions for those backdated months become excess contributions. Medicare's own advice is to stop contributing six months before you apply for Medicare or Social Security, if you're working past 65 with an HDHP at work. In the year you enroll, the limit is prorated for the months before Medicare started.</p>
+<p>Second, when you sign up for premium-free Part A after 65, coverage is usually backdated up to six months, though not to before the month you turned 65. Any HSA contributions for those backdated months become excess contributions, with the 6% yearly tax described above until they're taken out. Medicare's own advice, if you're working past 65 with an HSA, is to stop contributing six months before you retire or apply for Medicare or Social Security. In the year you enroll, the limit is prorated for the months before Medicare started.</p>
+<p>Say Sam, 67 and still working with self-only HDHP coverage, applies for Medicare in October 2026. Part A is backdated six months, to April 1. Sam was eligible for only January, February and March, so the 2026 limit is three-twelfths of $5,400 (the $4,400 limit plus the $1,000 catch-up), or $1,350. Anything Sam or the employer put in beyond that has to come back out.</p>
 <p>Someone covered by an HDHP through current work can keep contributing past 65 by delaying both. At an employer with fewer than 20 employees, check first, since Medicare may be required to pay first there. <a href="/learn/medicare">Medicare</a> covers the enrollment windows and the penalties for joining late.</p>
 
 <h2 id="after-65">Spending it in retirement</h2>
 <p>From 65, HSA money can come out for anything. Non-medical withdrawals are taxed as income, like a traditional IRA, with no penalty. Medical withdrawals stay tax-free, and qualified costs include several big ones for retirees:</p>
 <ul>
 <li>Medicare Part B and Part D premiums, and Medicare Advantage premiums. Medigap premiums don't count.</li>
-<li>Long-term care insurance premiums, up to a yearly limit that rises with age.</li>
+<li>Long-term care insurance premiums, up to a yearly limit that rises with age: for 2026, $1,860 per person at ages 51–60, $4,960 at 61–70 and $6,200 over 70.</li>
 <li>Dental, vision and hearing costs that Medicare doesn't cover, and copays and deductibles.</li>
 <li>Old receipts, from any year since the HSA was opened.</li>
 </ul>
 <p>Before 65, a withdrawal for anything that isn't a qualified medical cost is taxed and charged an extra 20%, double the penalty on an early IRA withdrawal.</p>
 
 <h2 id="heirs">What happens to it when you die</h2>
-<p>A spouse named as beneficiary simply takes it over as their own HSA, with all the same tax breaks. Anyone else gets the full balance as taxable income in the year of death, all at once, with no ten-year spreading as an inherited IRA would have. For that reason, many people plan to spend an HSA during retirement, on Medicare premiums and other costs, and leave Roth money to children instead.</p>
+<p>A spouse named as beneficiary simply takes it over as their own HSA, with all the same tax breaks. Anyone else gets the full balance as taxable income in the year of death, all at once, with no ten-year spreading as an inherited IRA would have. The only relief is that an heir can subtract any of your medical bills they pay within a year of the death. For that reason, many people plan to spend an HSA during retirement, on Medicare premiums and other costs, and leave Roth money to children instead.</p>
 
 <h2 id="states">State taxes</h2>
 <p>Almost every state follows the federal treatment. California and New Jersey don't: they tax HSA contributions as income and tax the earnings as they're made, so in those states the HSA's advantage is federal only. <a href="/learn/state-taxes">State taxes</a> covers how states treat retirement savings more generally.</p>
@@ -102,7 +112,7 @@
 <p>Income Tax shows the payroll tax effect exactly. Split your pre-tax deductions by kind and enter the HSA separately from the 401(k): the HSA comes off Social Security and Medicare tax as well, which a lump-sum entry would miss.</p>
 
 <h2 id="questions">Common questions</h2>
-<details><summary>How is an HSA different from an FSA?</summary><p>A flexible spending account is also pre-tax, but it belongs to your employer's plan, has a lower limit and is mostly use-it-or-lose-it each year. An HSA is yours, moves with you between jobs and carries over forever.</p></details>
+<details><summary>How is an HSA different from an FSA?</summary><p>A flexible spending account is also pre-tax, but it belongs to your employer's plan, has a lower limit ($3,400 for 2026) and is mostly use-it-or-lose-it: a plan can let you carry at most $680 into the next year. An HSA is yours, moves with you between jobs and carries over forever.</p></details>
 <details><summary>Is a high-deductible plan worth it just for the HSA?</summary><p>Compare the two plans in full: premiums, deductible, out-of-pocket maximum and any employer HSA contribution. For people who are usually healthy, the lower premium plus the tax break often wins; for someone with large predictable costs, a low-deductible plan can cost less overall. Count the HSA as one part of that comparison.</p></details>
 <details><summary>Can I pay for my children's or spouse's care from my HSA?</summary><p>Yes, for your spouse and tax dependents, even if they aren't on your health plan.</p></details>
 <details><summary>What if I switch to a plan that isn't an HDHP?</summary><p>You stop contributing, but the account stays yours. You can keep it invested and spend it on qualified costs at any time.</p></details>
@@ -125,6 +135,7 @@
   <ul class="deeper">
     <li><a href="https://www.irs.gov/publications/p969">Publication 969: health savings accounts</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/newsroom/treasury-irs-provide-guidance-on-new-tax-benefits-for-health-savings-account-participants-under-the-one-big-beautiful-bill">Guidance on new tax benefits for HSA participants</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/pub/irs-drop/rp-26-24.pdf">HSA and high-deductible plan figures for 2027</a> <span>IRS</span></li>
     <li><a href="https://www.medicare.gov/basics/get-started-with-medicare/medicare-basics/working-past-65">Working past 65</a> <span>Medicare.gov</span></li>
     <li><a href="https://www.bogleheads.org/wiki/Health_savings_account">Health savings account</a> <span>Bogleheads wiki</span></li>
   </ul>

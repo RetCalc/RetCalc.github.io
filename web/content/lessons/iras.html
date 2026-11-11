@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="iras" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="iras" data-reviewed="2026-11-10"
   data-title="IRAs"
   data-idea="Traditional and Roth IRAs: who can use them, and how"
   data-tool="budget" data-try="Add an IRA line, switch it between traditional and Roth, and see what it costs each paycheck.">
@@ -30,7 +30,7 @@
       <tr><td>Nobody on the return is covered</td><td colspan="2">Fully deductible at any income</td></tr>
     </tbody>
   </table>
-  <figcaption>Traditional IRA deduction phase-outs for 2026, by modified adjusted gross income (MAGI). The range for married filing separately isn't adjusted for inflation.</figcaption>
+  <figcaption>Traditional IRA deduction phase-outs for 2026, by modified adjusted gross income (MAGI). The range for married filing separately isn't adjusted for inflation, and it applies only if you lived with your spouse at some point in the year; if you lived apart all year, you use the single line.</figcaption>
 </figure>
 
 <p>Modified adjusted gross income, or MAGI, is your adjusted gross income with a few items added back, and for most people it's the same as AGI. Within a range, the deduction shrinks in proportion. Take Riley, single, with a 401(k) at work and MAGI of $85,000. That's $4,000 into a $10,000 range, so 40% of the deduction is lost and 60% is left: $4,500 of a $7,500 contribution is deductible. The IRS rounds the result up to the next $10, and anyone inside the range can deduct at least $200.</p>
@@ -49,10 +49,16 @@
       <tr><td>Married filing separately</td><td>$0</td><td>$10,000</td></tr>
     </tbody>
   </table>
-  <figcaption>Roth IRA contribution phase-outs for 2026, by modified adjusted gross income. A Roth conversion doesn't count toward this income.</figcaption>
+  <figcaption>Roth IRA contribution phase-outs for 2026, by modified adjusted gross income. A Roth conversion doesn't count toward this income. Married people filing separately who lived apart all year use the single line.</figcaption>
 </figure>
 
-<p>It works the same way as the deduction. Single at $160,500 of MAGI is halfway through a $15,000 range, so the most you can put into a Roth IRA is $3,750. Whatever you can't put in the Roth can go into a traditional IRA instead, as long as the total stays under $7,500.</p>
+<p>It works the same way as the deduction. Single at $160,500 of MAGI is halfway through a $15,000 range, so the most you can put into a Roth IRA is $3,750. Whatever you can't put in the Roth can go into a traditional IRA instead, as long as the total stays within $7,500.</p>
+<p>Put the two tables together and a single person with a 401(k) at work passes through three zones as income rises. Up to $81,000, both kinds of IRA are fully open. Between $91,000 and $153,000 there's no deduction, but the Roth is still fully open, so the Roth is the obvious IRA. Above $168,000, neither works directly, and the backdoor Roth below is what's left.</p>
+
+<!-- data: arithmetic on a $7,500 contribution, single filer covered by a plan at work, under 50. Deductible traditional = 7,500 x (91,000 - MAGI) / 10,000 between 81,000 and 91,000 (lib/engine/data/2026.js limits.iraPhase.cov.s). Direct Roth = 7,500 x (168,000 - MAGI) / 15,000 between 153,000 and 168,000 (limits.rothPhase.s). -->
+<figure data-chart='{"type":"line","x":[70000,81000,86000,91000,100000,120000,140000,153000,160500,168000,180000],"xLabel":"Modified adjusted gross income","xFormat":"money","y":"money","series":[{"name":"Roth IRA contribution allowed","tone":"good","values":[7500,7500,7500,7500,7500,7500,7500,7500,3750,0,0]},{"name":"Traditional IRA contribution you can deduct","tone":"accent","values":[7500,7500,3750,0,0,0,0,0,0,0,0]}]}'>
+  <figcaption>How much of a $7,500 IRA contribution a single person under 50 with a plan at work can deduct, or put directly into a Roth, at each income for 2026. A nondeductible traditional contribution is allowed at any income.</figcaption>
+</figure>
 <p>If you contribute and then find your income was too high, you can fix it by the filing deadline, including extensions: either move the contribution and its earnings to a traditional IRA (a recharacterization) or take it back out. Left in place, an excess contribution costs a 6% tax every year until it's removed.</p>
 
 <h2 id="spousal">The spousal IRA</h2>
@@ -65,6 +71,7 @@
 <li>Contribute to a traditional IRA, without taking a deduction (you couldn't anyway at that income if you have a plan at work).</li>
 <li>Convert it to a Roth IRA, usually within days, before it has had time to earn much. Since the contribution was already taxed, the conversion is tax-free, apart from any small gain in between.</li>
 </ul>
+<p>The result is the same $7,500 in a Roth IRA that someone under the income limit gets by contributing directly. The limit is still $7,500 per person ($8,600 at 50 and over), and it's shared with any other IRA contribution for the year.</p>
 <p>It's widely used, and the IRS hasn't challenged it. It only works cleanly, though, if you have no other pre-tax money in any traditional IRA, SEP IRA or SIMPLE IRA. That's because of the pro-rata rule.</p>
 <h3>The pro-rata rule</h3>
 <p>When you convert, you can't choose to convert only the after-tax dollars. The IRS treats all your traditional, SEP and SIMPLE IRAs as one pot, valued at December 31 of the year you convert, and every dollar you convert is part after-tax and part pre-tax in the same proportion as the pot.</p>
@@ -117,13 +124,20 @@
 <p>Roth IRA withdrawals come out in a fixed order, and that order is what makes the account so flexible.</p>
 <ul>
 <li>Your contributions come out first, at any age, with no tax or penalty. Put in $7,500 per year for five years and you can take $37,500 back out whenever you like.</li>
-<li>Converted money comes out next, oldest conversion first. It's never taxed again, but before 59½ each conversion has its own five-year wait to avoid the 10% penalty.</li>
-<li>Earnings come out last. They're tax-free once you're 59½ and it's been five tax years since your first contribution to any Roth IRA. Before then, they're taxed and usually hit with the 10% penalty.</li>
+<li>Converted money comes out next, oldest conversion first. It's never taxed again, but before 59½ each conversion has its own five-year wait to avoid the 10% penalty. The penalty applies only to the part that was taxed when you converted, so a backdoor Roth conversion, which was almost all after-tax money, has almost nothing exposed to it.</li>
+<li>Earnings come out last. They're tax-free once you're 59½ and it's been five tax years since your first contribution to any Roth IRA. After the five years, they're also tax-free if you're disabled, for up to $10,000 toward a first home, or for your heirs after your death. Otherwise they're taxed and usually hit with the 10% penalty.</li>
 </ul>
+
+<!-- data: arithmetic. $7,500 deposited at the end of each year, growing 5% per year after inflation. Contributions = 7,500 x n. Balance = 7,500 x ((1.05^n - 1)/0.05); earnings = balance - contributions. Script: scratchpad/where-each-dollar-goes/charts.mjs -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":[1,5,10,15,20,25,30],"xLabel":"Years contributing $7,500 per year","y":"money","series":[{"name":"Your contributions: out at any time, no tax","tone":"good","values":[7500,37500,75000,112500,150000,187500,225000]},{"name":"Earnings: tax-free after 59½ and five years","tone":"accent","values":[0,3942,19334,49339,97995,170453,273291]}]}'>
+  <figcaption>What a Roth IRA holds after contributing $7,500 at the end of each year, growing 5% per year after inflation, in today's dollars. The lower part of each bar can be taken back whenever you like; the upper part has to wait.</figcaption>
+</figure>
+
+<p>Taking contributions back out has a cost the chart doesn't show: you can't put them back later except as a new year's contribution, within that year's limit. The room is gone for good, along with the tax-free growth it would have held.</p>
 <p>The five-year clock for earnings starts on January 1 of the tax year of your first contribution. A contribution made in April 2027 for 2026 starts the clock on January 1, 2026. So it's worth opening a Roth IRA with even a small contribution early, to get the clock running. Roth IRAs have no required distributions for the owner.</p>
 
 <h2 id="moving">Rollovers and transfers</h2>
-<p>Money can move between IRAs, or from a workplace plan into an IRA, without tax. A direct transfer, where one provider sends the money to the other, has no limit on how often. An indirect rollover, where the money is paid to you and you redeposit it within 60 days, is limited to one per twelve months across all your IRAs, and a missed deadline makes the whole amount taxable.</p>
+<p>Money can move between IRAs, or from a workplace plan into an IRA, without tax. A direct transfer, where one provider sends the money to the other, has no limit on how often. An indirect rollover, where the money is paid to you and you redeposit it within 60 days, is limited to one per twelve months across all your IRAs, and a missed deadline makes the whole amount taxable. Roth conversions and rollovers from a workplace plan don't count toward that one.</p>
 <p>When you leave a job, rolling the 401(k) into an IRA gives you more investment choice and puts everything in one place. Keeping it in the plan, or rolling it into a new employer's plan, keeps the age-55 exception, keeps pre-tax money out of the backdoor Roth pot, and generally gives stronger protection from creditors under federal law.</p>
 
 <h2 id="plan">Seeing it in your own plan</h2>

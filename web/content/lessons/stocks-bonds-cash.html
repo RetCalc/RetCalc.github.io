@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="stocks-bonds-cash" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="stocks-bonds-cash" data-reviewed="2026-11-10"
   data-title="Stocks, bonds and cash"
   data-idea="What each one is, and what a century of each has done"
   data-tool="backtest" data-try="See what any mix of stocks, bonds and cash returned in every year since 1926.">
@@ -9,6 +9,14 @@
 <p>A stock is a small share of a company. You get a cut of its profits, some paid out as dividends, the rest kept to grow the business, and the price of your share moves with what other investors think those future profits are worth. Most people hold stocks through a fund that owns hundreds or thousands of companies at once, such as an S&amp;P 500 index fund, which holds the 500 or so largest US companies.</p>
 <p>A bond is a loan. You lend a government or company money for a set number of years; it pays you interest, called the coupon, and hands back the amount you lent at the end. US Treasury bonds are loans to the federal government, so the chance of not being paid back is about as low as it gets. The risk in a high-quality bond is that its price moves when interest rates do.</p>
 <p>Say you hold a 10-year bond that pays 4% per year on $1,000, and the next day new 10-year bonds pay 5%. Nobody will pay you $1,000 for your 4% bond when $1,000 buys a 5% one, so its price drops until the two pay the same, to about $923. That's a 7.7% fall from a rate rise of one point. Hold the bond to the end and you still get every coupon and your $1,000 back, but if you sell early, or own a bond fund that marks its bonds to the market every day, you see the loss. It works in your favor too: when rates fall, bond prices rise.</p>
+<p>How far the price moves depends on how long the bond has left to run. A bond with two years to go is stuck with its old rate for only two years, so a one-point rise in rates takes less than 2% off its price. The same rise takes about 15% off a 30-year bond. That's why short-term bond funds swing less than long-term ones, and why they usually pay a lower rate for the comfort.</p>
+
+<!-- data: price of a bond paying a $40 coupon once per year on $1,000 face, at each market yield y:
+     price = sum over t = 1..n of 40 / (1 + y)^t, plus 1,000 / (1 + y)^n, for n = 2, 10 and 30 years.
+     2-year: 1,039; 1,019; 1,000; 981; 963; 946. 10-year: 1,180; 1,085; 1,000; 923; 853; 789. 30-year: 1,448; 1,196; 1,000; 846; 725; 628. -->
+<figure data-chart='{"type":"line","x":[0.02,0.03,0.04,0.05,0.06,0.07],"xLabel":"Rate on new bonds","xFormat":"pct","y":"money","series":[{"name":"30 years left","tone":"bad","values":[1448,1196,1000,846,725,628]},{"name":"10 years left","tone":"accent","values":[1180,1085,1000,923,853,789]},{"name":"2 years left","tone":"muted","values":[1039,1019,1000,981,963,946]}]}'>
+  <figcaption>What a $1,000 bond paying 4% per year would sell for if new bonds paid each rate. The longer the bond has left, the more its price moves.</figcaption>
+</figure>
 <p>Cash here means money that keeps its dollar value from day to day and earns a short-term interest rate: a savings account, a money market fund, or Treasury bills, which are loans to the government for a year or less. A dollar in cash is still a dollar next month, though it may buy a little less.</p>
 
 <h2 id="century">What a century of each has returned</h2>
@@ -70,12 +78,20 @@
   <figcaption>The worst stretch of each length since 1926 (cash since 1927), measured in what the money would buy. Every rolling run of calendar years is counted.</figcaption>
 </figure>
 
+<p>The chart fills in every length between those rows. Each line is the worst an asset did, per year after inflation, over any stretch of that many years.</p>
+
+<!-- data: as the table above, for every window length from 1 to 30 calendar years: the lowest compound real return per year
+     among all rolling windows of that length. Stocks and bonds 1926–2025, cash 1927–2025. Stocks first positive at 18 years (+0.4%). -->
+<figure data-chart='{"type":"line","x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],"xLabel":"Years held","y":"pct","series":[{"name":"Stocks","tone":"accent","values":[-0.393,-0.291,-0.208,-0.162,-0.091,-0.101,-0.075,-0.057,-0.06,-0.04,-0.029,-0.019,-0.022,-0.014,-0.006,-0.01,-0.003,0.004,0.008,0.008,0.014,0.018,0.021,0.027,0.028,0.028,0.032,0.036,0.036,0.043]},{"name":"Bonds","tone":"neutral","values":[-0.201,-0.152,-0.112,-0.097,-0.077,-0.053,-0.058,-0.056,-0.05,-0.045,-0.039,-0.035,-0.032,-0.033,-0.031,-0.029,-0.028,-0.025,-0.024,-0.021,-0.018,-0.015,-0.016,-0.015,-0.015,-0.015,-0.015,-0.013,-0.016,-0.014]},{"name":"Cash","tone":"muted","values":[-0.15,-0.114,-0.084,-0.068,-0.06,-0.065,-0.067,-0.061,-0.055,-0.051,-0.05,-0.046,-0.043,-0.039,-0.037,-0.036,-0.035,-0.034,-0.032,-0.03,-0.028,-0.026,-0.025,-0.024,-0.023,-0.022,-0.021,-0.02,-0.019,-0.018]}]}'>
+  <figcaption>The worst return per year after inflation over any stretch of each length, 1926–2025 (cash from 1927). Over a few years stocks had by far the worst case. From about 10 years on they had the best of the three, and from 18 years on their worst case was a gain.</figcaption>
+</figure>
+
 <h3>Stocks: deep falls, and time</h3>
 <p>Measured at year ends, US stocks lost 62% of their value from the end of 1928 to the end of 1932, and month by month the fall from the 1929 high to the 1932 low was more than 80%. With dividends reinvested they didn't get back above the end-1928 level until the end of 1936. In 2008 they fell 39% in a single calendar year in this data, which uses monthly average prices (the S&amp;P 500's published total return for 2008 was −37%). Falls of 20% or more have come many times since, usually with no warning anyone could act on.</p>
 <p>Over long stretches the picture flips. The worst 20 years for stocks still came out slightly ahead of inflation, and the worst 30 years earned 4.3% per year after it. Stocks beat bonds after inflation in 77 of the 91 ten-year stretches since 1926, and in 80 of the 81 twenty-year ones. That's why money you won't need for decades can usually afford to sit in stocks, and why money you'll spend next year usually shouldn't.</p>
 
 <h3>Bonds and cash: inflation, slowly</h3>
-<p>The bond and cash columns run the other way. Their worst single years are milder than stocks', but their worst long stretches are worse. An investor holding 10-year Treasuries from 1940 to 1980 lost about half their spending power along the way, with every coupon reinvested, and didn't get back to the 1940 level until 1986. For much of the 1940s the Federal Reserve held Treasury rates down while prices rose; then came the inflation of the 1970s, when prices nearly tripled between 1966 and 1981. Cash did worse still in the 1940s: 1946 alone, with prices up 18%, took 15% off its value after inflation.</p>
+<p>The bond and cash columns run the other way. Their worst single years are milder than stocks', but their worst long stretches are worse. An investor holding 10-year Treasuries from 1940 to 1980 lost about half their spending power along the way, with every coupon reinvested, and didn't get back to the 1940 level until 1986. From 1942 to 1951 the Federal Reserve held Treasury rates down, long bonds at 2.5%, while prices rose much faster than that; then came the inflation of the 1970s, when prices nearly tripled between 1966 and 1981. Cash did worse still in the 1940s: 1946 alone, with prices up 18%, took 15% off its value after inflation.</p>
 <p>A bond's coupon is fixed in dollars when you buy it, and cash pays whatever short-term rate is on offer. Neither has a built-in link to prices. When inflation runs ahead of the rate you locked in, you lose ground every year without ever seeing a red number on a statement.</p>
 
 <h3>When bonds fall with stocks</h3>
@@ -129,6 +145,7 @@
     <li><a href="https://shillerdata.com/">Online data: US stock prices, dividends, interest rates and CAPE</a> <span>Robert Shiller, Yale</span></li>
     <li><a href="https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html">Data library: small-cap value and Treasury bill returns</a> <span>Kenneth French, Dartmouth</span></li>
     <li><a href="https://doi.org/10.1111/j.1540-6261.1992.tb04398.x">The cross-section of expected stock returns (Fama and French, 1992)</a> <span>Journal of Finance</span></li>
+    <li><a href="https://www.federalreservehistory.org/essays/treasury-fed-accord">The Treasury-Fed Accord: how bond rates were held down in the 1940s</a> <span>Federal Reserve History</span></li>
     <li><a href="https://www.treasurydirect.gov/marketable-securities/tips/">Treasury Inflation-Protected Securities (TIPS)</a> <span>TreasuryDirect</span></li>
     <li><a href="https://www.treasurydirect.gov/savings-bonds/i-bonds/">I bonds</a> <span>TreasuryDirect</span></li>
   </ul>

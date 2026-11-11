@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="when-to-claim" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="when-to-claim" data-reviewed="2026-11-10"
   data-title="When to claim Social Security"
   data-idea="A smaller check sooner, or a larger one for life"
   data-tool="social-security" data-try="Compare every claiming age from 62 to 70, by how long you live, with your plan already filled in.">
@@ -54,15 +54,25 @@
 <li>67 against 70: 82.5</li>
 <li>62 against 70: 80.4</li>
 </ul>
-<p>Live past the break-even age and waiting collected more; die before it and claiming early did. Since a 65-year-old in the US today lives to about 84 on average, and many live well past that, waiting comes out ahead in total more often than not. That's useful to know, but break-even analysis frames the choice as a bet on your own death date, and it leaves out three things.</p>
+<p>Live past the break-even age and waiting collected more; die before it and claiming early did. So the next question is how likely you are to get there. Social Security's own life table, which covers the whole population, sick and healthy together, gives the odds for someone who has reached 62.</p>
+
+<!-- data: SSA period life table, 2023, as used in the 2026 Trustees Report (ssa.gov/oact/STATS/table4c6.html), number of survivors out of 100,000 born. Men: 62: 82,563; 80: 50,785; 85: 35,529; 90: 19,063; 95: 6,333. Women: 62: 89,767; 80: 64,606; 85: 49,469; 90: 30,504; 95: 12,612. Chance of reaching an age from 62 = survivors at that age ÷ survivors at 62. Men 0.615, 0.430, 0.231, 0.077; women 0.720, 0.551, 0.340, 0.140. Either of a man and a woman both 62, treating the two lives as independent: 1 − (1 − men) × (1 − women) = 0.892, 0.744, 0.492, 0.206. Life expectancy at 65 from the same table: men 18.12 years, women 20.66. -->
+<figure data-chart='{"type":"bar","labels":true,"x":["80","85","90","95"],"xLabel":"Still alive at age","y":"pct","series":[{"name":"A man aged 62","tone":"muted","values":[0.615,0.430,0.231,0.077]},{"name":"A woman aged 62","tone":"accent","values":[0.720,0.551,0.340,0.140]},{"name":"At least one of a couple, both 62","tone":"good","values":[0.892,0.744,0.492,0.206]}]}'>
+  <figcaption>The chance that someone aged 62 lives to each age, from Social Security's 2023 life table. The couple is a man and a woman of 62 whose lifespans are treated as unrelated. The break-even ages fall between 78 and 83.</figcaption>
+</figure>
+
+<p>About 62% of men and 72% of women who reach 62 live past 80, and at 65 the average man has 18 years left and the average woman nearly 21. So waiting comes out ahead in total more often than not, and more often still for people in good health. That's useful to know, but break-even analysis frames the choice as a bet on your own death date, and it leaves out three things.</p>
 <h3>It weighs every dollar the same</h3>
 <p>Dying at 75 having claimed late is a disappointment for your heirs, but it isn't a financial problem for you. Living to 97 on a check that's 44% smaller, after your savings have run low, is. The cases where waiting pays off are the long-lived ones, which are exactly the cases where you'd need the money most.</p>
 <h3>It ignores a spouse</h3>
-<p>For a married couple, the higher earner's check becomes the survivor's check after the first death. If you're the higher earner, the bigger check from waiting keeps paying as long as either of you is alive, so the right life expectancy is the longer of two lives, not your own. The lesson on <a href="/learn/spouses-and-survivors">spouses and survivors</a> works through it.</p>
+<p>For a married couple, the higher earner's check becomes the survivor's check after the first death. If you're the higher earner, the bigger check from waiting keeps paying as long as either of you is alive, so the lifespan that counts is the longer of the two. In the chart above, there's about a three in four chance that at least one of a 62-year-old couple reaches 85, and an even chance that one reaches 90. The lesson on <a href="/learn/spouses-and-survivors">spouses and survivors</a> works through it.</p>
 <h3>It ignores what else the money could do</h3>
 <p>The usual counter-argument is that if you claim early and invest the checks, the investments could make up the difference. Market history can test that. Take the $2,000 PIA: claim at 62 and invest every $1,400 check in a mix of 60% stocks and 40% bonds until 70, then draw $1,080 per month from the pot to match what the age-70 check would have paid. Across every starting year since 1926, after inflation, the pot lasted to 85 in 60 of 78 starting years, to 90 in 35 of 73, and to 95 in only 28 of 68. Investing the early checks beat waiting when markets were kind and the person died fairly young. It usually lost over a long life.</p>
 
-<!-- data: ssInvestEarly({early: 62, late: 70, benEarly: 16800, benLate: 29760, through, mix: 0.6}) in lib/engine/math.js, history from lib/engine/data/history.js (start years from 1926, 10-year Treasuries for bonds, real returns using each window's own inflation). through 85: windows 78, won 60; through 90: 73, 35; through 95: 68, 28. benLate − benEarly = $12,960 per year = $1,080 per month. -->
+<!-- data: ssInvestEarly({early: 62, late: 70, benEarly: 16800, benLate: 29760, through, mix: 0.6}) in lib/engine/math.js, history from lib/engine/data/history.js (start years from 1926, 10-year Treasuries for bonds, real returns using each window's own inflation). through 85: windows 78, won 60 (76.9%); through 90: 73, 35 (47.9%); through 95: 68, 28 (41.2%). benLate − benEarly = $12,960 per year = $1,080 per month. -->
+<figure data-chart='{"type":"bar","labels":true,"x":["To 85","To 90","To 95"],"xLabel":"How long the invested checks had to last","y":"pct","series":[{"name":"Share of starting years the pot lasted","tone":"accent","values":[0.769,0.479,0.412]}]}'>
+  <figcaption>Claiming at 62 and investing every check in 60% stocks and 40% bonds, then drawing the difference from 70, against simply waiting until 70. Every starting year since 1926 with enough years of history after it, after inflation.</figcaption>
+</figure>
 
 <p>Researchers have looked at the same question in present-value terms. In two 2012 studies, the economists John Shoven and Sita Slavov found that delaying is worth more when real interest rates are low, and that at low rates it pays off for most people, even some whose life expectancy is well below average. The gains were larger for married couples than for singles, for single women than for single men, and for a couple's primary earner than for the spouse who earned less. At higher interest rates the advantage shrinks, and singles in poor health gain little or nothing from waiting.</p>
 
@@ -88,7 +98,7 @@
 <p>Waiting has a cost besides the checks you skip. Living on savings from 62 to 70 means larger withdrawals in the first years of retirement, which are the years when a market fall does the most damage (see <a href="/learn/sequence-risk">sequence-of-returns risk</a>). In return you lean on savings less for every year after 70. Whether that trade is worth it depends on how much you've saved compared with what you spend.</p>
 
 <h2 id="working">Claiming while you're still working</h2>
-<p>If you claim before full retirement age and keep working, the <b>retirement earnings test</b> applies. For 2026, Social Security holds back $1 of benefit for every $2 you earn over $24,480; in the year you reach full retirement age the limit is $65,160 and it holds back $1 for every $3, counting only earnings before the month you reach it. From that month on there's no limit.</p>
+<p>If you claim before full retirement age and keep working, the <b>retirement earnings test</b> applies. For 2026, Social Security holds back $1 of benefit for every $2 you earn over $24,480; in the year you reach full retirement age the limit is $65,160 and it holds back $1 for every $3, counting only earnings before the month you reach it. From that month on there's no limit. For 2027 the two limits are $25,560 and $67,920.</p>
 <p>The held-back checks aren't forfeited. At full retirement age your benefit is refigured as if you had claimed later by the number of months withheld. Still, for someone earning well over the limit, an early claim mostly produces paperwork: with a $2,000 PIA, claiming at 62 and earning $40,000 per year means about $7,760 per year held back, and only a partial check in hand. The lesson on <a href="/learn/social-security-benefit">how your benefit is figured</a> goes through that example in full.</p>
 
 <h2 id="changing">If you change your mind</h2>
@@ -132,6 +142,7 @@
     <li><a href="https://www.ssa.gov/benefits/retirement/planner/delayret.html">Delayed retirement credits</a> <span>Social Security Administration</span></li>
     <li><a href="https://www.nber.org/papers/w18210">When does it pay to delay Social Security? The impact of mortality, interest rates, and program rules</a> <span>Shoven and Slavov, NBER</span></li>
     <li><a href="https://www.nber.org/papers/w17866">The decision to delay Social Security benefits: theory and evidence</a> <span>Shoven and Slavov, NBER</span></li>
+    <li><a href="https://www.ssa.gov/oact/STATS/table4c6.html">Actuarial life table</a> <span>Social Security Administration</span></li>
     <li><a href="https://www.ssa.gov/benefits/retirement/planner/whileworking.html">Receiving benefits while working</a> <span>Social Security Administration</span></li>
   </ul>
 </footer>

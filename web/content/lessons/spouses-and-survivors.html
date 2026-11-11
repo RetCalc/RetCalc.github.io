@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="spouses-and-survivors" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="spouses-and-survivors" data-reviewed="2026-11-10"
   data-title="Spouses and survivors"
   data-idea="Why a couple's best claiming ages depend on the higher earner"
   data-tool="social-security" data-try="Try every pair of claiming ages for the two of you and see the survivor benefit, with your plan already filled in.">
@@ -16,21 +16,9 @@
 <p>A spousal benefit is cut more steeply for an early claim than a worker's own: 25/36 of 1% for each of the first 36 months before full retirement age, and 5/12 of 1% for each month beyond. At 62 with a full retirement age of 67, it's 65% of the full spousal amount, or 32.5% of the worker's PIA instead of 50%.</p>
 <p>And unlike your own benefit, a spousal benefit earns no delayed credits. It reaches its maximum at your full retirement age, so a spouse who's collecting only a spousal amount gains nothing by waiting past it.</p>
 
-<!-- data: Sam PIA $2,800, Jordan PIA $1,000, both full retirement age 67, Sam already claimed. Jordan's own: $1,000 × ssClaimFactor(age, 67); top-up: (0.5 × $2,800 − $1,000) × ssSpousalFactor(age, 67), lib/engine/math.js. 62: $700 + $400 × 0.65 = $960; 63: $750 + $400 × 0.70 = $1,030; 64: $800 + $400 × 0.75 = $1,100; 65: $866.67 + $400 × 0.8333 = $1,200; 66: $933.33 + $400 × 0.9167 = $1,300; 67: $1,000 + $400 = $1,400; 70: $1,240 + $400 = $1,640 (own benefit gets credits, top-up does not). -->
-<figure>
-  <table>
-    <thead><tr><th>Jordan claims at</th><th>Own benefit</th><th>Spousal top-up</th><th>Jordan's check per month</th></tr></thead>
-    <tbody>
-      <tr><td>62</td><td>$700</td><td>$260</td><td>$960</td></tr>
-      <tr><td>63</td><td>$750</td><td>$280</td><td>$1,030</td></tr>
-      <tr><td>64</td><td>$800</td><td>$300</td><td>$1,100</td></tr>
-      <tr><td>65</td><td>$867</td><td>$333</td><td>$1,200</td></tr>
-      <tr><td>66</td><td>$933</td><td>$367</td><td>$1,300</td></tr>
-      <tr><td>67</td><td>$1,000</td><td>$400</td><td>$1,400</td></tr>
-      <tr><td>70</td><td>$1,240</td><td>$400</td><td>$1,640</td></tr>
-    </tbody>
-  </table>
-  <figcaption>A hypothetical couple in today's dollars: Sam's PIA is $2,800 and Jordan's is $1,000, both with a full retirement age of 67, and Sam has already claimed. Jordan's own benefit keeps growing to 70; the top-up stops growing at 67.</figcaption>
+<!-- data: Sam PIA $2,800, Jordan PIA $1,000, both full retirement age 67, Sam already claimed. Jordan's own: $1,000 × ssClaimFactor(age, 67); top-up: (0.5 × $2,800 − $1,000) × ssSpousalFactor(age, 67), lib/engine/math.js. 62: $700 + $400 × 0.65 = $960; 63: $750 + $400 × 0.70 = $1,030; 64: $800 + $400 × 0.75 = $1,100; 65: $866.67 + $400 × 0.8333 = $1,200; 66: $933.33 + $400 × 0.9167 = $1,300; 67: $1,000 + $400 = $1,400; 68: $1,080 + $400 = $1,480; 69: $1,160 + $400 = $1,560; 70: $1,240 + $400 = $1,640 (own benefit gets credits, top-up does not). -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["62","63","64","65","66","67","68","69","70"],"xLabel":"Age Jordan claims","y":"money","series":[{"name":"Own benefit","tone":"accent","values":[700,750,800,867,933,1000,1080,1160,1240]},{"name":"Spousal top-up","tone":"good","values":[260,280,300,333,367,400,400,400,400]}]}'>
+  <figcaption>Jordan's monthly check by claiming age, in today's dollars, for a hypothetical couple: Sam's PIA is $2,800 and Jordan's is $1,000, both with a full retirement age of 67, and Sam has already claimed. Jordan's own benefit keeps growing to 70; the top-up stops growing at 67.</figcaption>
 </figure>
 
 <h3>You can't pick one and save the other</h3>
@@ -42,7 +30,27 @@
 <p>The survivor gets the larger of the two checks, never both, so the household loses the smaller one when the first spouse dies.</p>
 <h3>The age rules for survivors</h3>
 <p>A survivor can claim as early as 60, or 50 if disabled, or at any age while caring for the deceased's child under 16. Claimed at 60, the benefit is 71.5% of the full survivor amount, and the reduction shrinks evenly to zero at the survivor's full retirement age. That age runs on its own schedule, two years behind the retirement one: 66 for survivors born from 1945 to 1956, rising by two months per birth year to 67 for those born in 1962 or later.</p>
-<p>Survivor benefits aren't covered by deemed filing, which gives a widow or widower a real choice. You can take a reduced survivor benefit early and switch to your own benefit, grown with delayed credits, at 70. Or take your own reduced benefit early and switch to an unreduced survivor benefit at your survivor full retirement age. Which works better depends on which of the two would be larger in the end.</p>
+<p>Survivor benefits aren't covered by deemed filing, which gives a widow or widower a real choice. You can take a reduced survivor benefit early and switch to your own benefit, grown with delayed credits, at 70. Or take your own reduced benefit early and switch to an unreduced survivor benefit at your survivor full retirement age. Which works better depends on which of the two would be larger in the end. A survivor benefit earns no delayed credits of its own, so there's nothing to gain by starting it after your survivor full retirement age.</p>
+<p>The three kinds of benefit are reduced on three different schedules, which is easy to lose track of. Side by side, for someone whose full retirement age is 67 on both the retirement and survivor schedules:</p>
+
+<!-- data: share of the full amount by the age the benefit starts, full retirement age 67. Own: ssClaimFactor(age, 67); spousal: ssSpousalFactor(age, 67), lib/engine/math.js. Survivor: 71.5% at 60, the 28.5% reduction shrinking evenly over the 84 months to 67: 71.5 + 28.5 × (age − 60) ÷ 7 = 75.6, 79.6, 83.7, 87.8, 91.9, 95.9, 100 (SSA: payments start at 71.5% at 60). No spousal or survivor credits after 67; own benefit 124% at 70. -->
+<figure>
+  <table>
+    <thead><tr><th>Starts at</th><th>Your own benefit</th><th>Spousal benefit</th><th>Survivor benefit</th></tr></thead>
+    <tbody>
+      <tr><td>60</td><td>Not yet</td><td>Not yet</td><td>71.5%</td></tr>
+      <tr><td>61</td><td>Not yet</td><td>Not yet</td><td>75.6%</td></tr>
+      <tr><td>62</td><td>70%</td><td>65%</td><td>79.6%</td></tr>
+      <tr><td>63</td><td>75%</td><td>70%</td><td>83.7%</td></tr>
+      <tr><td>64</td><td>80%</td><td>75%</td><td>87.8%</td></tr>
+      <tr><td>65</td><td>86.7%</td><td>83.3%</td><td>91.9%</td></tr>
+      <tr><td>66</td><td>93.3%</td><td>91.7%</td><td>95.9%</td></tr>
+      <tr><td>67</td><td>100%</td><td>100%</td><td>100%</td></tr>
+      <tr><td>70</td><td>124%</td><td>100%</td><td>100%</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Share of the full amount paid, by the age each benefit starts, with a full retirement age of 67. The full amount is your PIA for your own benefit, half the worker's PIA for a spousal benefit, and what the deceased was receiving or due for a survivor benefit.</figcaption>
+</figure>
 <h3>If the deceased claimed early</h3>
 <p>A survivor's benefit is cut when the deceased claimed early, but there's a floor, sometimes called the widow's limit. The survivor gets the larger of the reduced amount the deceased was receiving and 82.5% of the deceased's PIA. So the cost of an early claim to the survivor is smaller than the cost to the worker: it can't take the survivor below 82.5%.</p>
 <h3>Other rules worth knowing</h3>
@@ -74,7 +82,7 @@
 
 <p>The chart follows the whole household. Sam and Jordan are the same age; Jordan claims at 62 every time; Sam dies at 80 and Jordan lives to 92. Only Sam's claiming age changes.</p>
 
-<!-- data: household Social Security per month by age, both the same age, today's dollars. Jordan claims own benefit at 62 ($700); spousal top-up once Sam files, reduced for Jordan's age then ($400 × 0.65 = $260 at 62, $400 at 67 or later). Sam claims at 62: $1,960 + $960 = $2,920 to 79; at 62: survivor $2,310 from 80. Sam at 67: $700 to 66; $2,800 + $1,100 = $3,900 to 79; $2,800 from 80. Sam at 70: $700 to 69; $3,472 + $1,100 = $4,572 to 79; $3,472 from 80. Lifetime totals to 92: $963,360, $1,053,600, $1,115,808. Cross-checked with ssHousehold in lib/engine/math.js, which matches except that it leaves out the 82.5% floor (gives $1,960 and $912,960 for the claim at 62). -->
+<!-- data: household Social Security per month by age, both the same age, today's dollars. Jordan claims own benefit at 62 ($700); spousal top-up once Sam files, reduced for Jordan's age then ($400 × 0.65 = $260 at 62, $400 at 67 or later). Sam claims at 62: $1,960 + $960 = $2,920 to 79; at 62: survivor $2,310 from 80. Sam at 67: $700 to 66; $2,800 + $1,100 = $3,900 to 79; $2,800 from 80. Sam at 70: $700 to 69; $3,472 + $1,100 = $4,572 to 79; $3,472 from 80. Lifetime totals to 92: $963,360, $1,053,600, $1,115,808. Cross-checked with ssHousehold in lib/engine/math.js (pia1 2800, pia2 1000, through 80 and 92, claim2 62), which gives the same three totals and survivor checks of $2,310, $2,800 and $3,472. -->
 <figure data-chart='{"type":"line","x":[62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91],"xLabel":"Age","y":"money","series":[{"name":"Sam claims at 62","tone":"bad","values":[2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2920,2310,2310,2310,2310,2310,2310,2310,2310,2310,2310,2310,2310]},{"name":"Sam claims at 67","tone":"neutral","values":[700,700,700,700,700,3900,3900,3900,3900,3900,3900,3900,3900,3900,3900,3900,3900,3900,2800,2800,2800,2800,2800,2800,2800,2800,2800,2800,2800,2800]},{"name":"Sam claims at 70","tone":"good","values":[700,700,700,700,700,700,700,700,4572,4572,4572,4572,4572,4572,4572,4572,4572,4572,3472,3472,3472,3472,3472,3472,3472,3472,3472,3472,3472,3472]}],"marks":[{"x":80,"label":"Sam dies"}]}'>
   <figcaption>The household's monthly Social Security, in today's dollars. Waiting means living on Jordan's $700 and savings for a few years; after 80, Jordan keeps $3,472 per month instead of $2,310. Over both lives, the claim at 70 collects $1,115,808, against $963,360 for the claim at 62.</figcaption>
 </figure>
@@ -126,7 +134,10 @@
   </ul>
   <ul class="deeper">
     <li><a href="https://www.ssa.gov/blog/en/posts/2024-07-11.html">Do you qualify for Social Security spouse's benefits?</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/benefits/retirement/planner/claiming.html">Filing rules for retirement and spouses benefits</a> <span>Social Security Administration</span></li>
     <li><a href="https://www.ssa.gov/pubs/EN-05-10084.pdf">Survivors benefits</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.ssa.gov/survivor/eligibility">Who can get survivor benefits</a> <span>Social Security Administration</span></li>
+    <li><a href="https://secure.ssa.gov/poms.nsf/lnx/0300615320">The widow's limit when the deceased claimed early (RS 00615.320)</a> <span>Social Security Administration, POMS</span></li>
     <li><a href="https://www.ssa.gov/benefits/retirement/social-security-fairness-act.html">Social Security Fairness Act: WEP and GPO update</a> <span>Social Security Administration</span></li>
     <li><a href="https://www.ssa.gov/blog/en/posts/2025-07-10.html">Celebrating our recent Social Security Fairness Act milestone</a> <span>Social Security Administration</span></li>
   </ul>

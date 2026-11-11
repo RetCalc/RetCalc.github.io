@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="tax-brackets" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="tax-brackets" data-reviewed="2026-11-10"
   data-title="Brackets: marginal and effective"
   data-idea="Your bracket taxes your last dollars, not all of them"
   data-tool="incometax" data-try="See your federal, state and FICA tax, with your marginal and effective rates, with your plan already filled in.">
@@ -26,7 +26,25 @@
 </figure>
 
 <p>This person is "in the 22% bracket", but only $8,500 of their income pays 22%. The first $16,100 pays nothing, because the standard deduction takes it out, and the next $50,400 pays 10% or 12%. The federal income tax comes to $7,670.</p>
-<p>That gives two different rates:</p>
+<p>The same thing happens at every salary. Each bar below is one salary, cut into the layers the tax code sees.</p>
+
+<!-- data: single filer, 2026, standard deduction, salary only (lib/engine/data/2026.js fed.s and fedStd.s). Untaxed = the 16,100 deduction.
+     Taxable = salary − 16,100, split at 12,400, 50,400 and 105,700. Each bar adds up to the salary.
+     Tax from the layers matches computeTax({status:"s", gross:g, dedType:"std", state:"TX"}).federal: 3,820; 7,670; 13,170; 24,734; 36,734. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["$50,000","$75,000","$100,000","$150,000","$200,000"],"xLabel":"Salary","y":"money","series":[{"name":"Untaxed (standard deduction)","tone":"muted","values":[16100,16100,16100,16100,16100]},{"name":"Taxed at 10%","tone":"good","values":[12400,12400,12400,12400,12400]},{"name":"Taxed at 12%","tone":"neutral","values":[21500,38000,38000,38000,38000]},{"name":"Taxed at 22%","tone":"accent","values":[0,8500,33500,55300,55300]},{"name":"Taxed at 24%","tone":"bad","values":[0,0,0,28200,78200]}]}'>
+  <figcaption>How much of a single filer's salary falls in each layer, 2026. Earning more adds to the top layer and leaves the ones below it as they were.</figcaption>
+</figure>
+
+<p>Try it with any income. Move the slider and watch which layers fill: the lower ones stop growing once they're full, and only the top one changes.</p>
+
+<!-- data: components/learn/widgets/Brackets.tsx: taxable income = income minus the 2026 standard deduction; bracketTax() on the 2026 federal brackets (lib/engine/data/2026.js). Wages only, no credits. -->
+<figure data-widget="brackets">
+  <figcaption>Federal income tax on a salary for 2026, with the standard deduction and no credits. Each pair of bars is one bracket: how much of the income is taxed at that rate, and the tax on it.</figcaption>
+</figure>
+
+
+<p>The bottom three layers are identical from $75,000 up. A person earning $200,000 pays exactly the same tax on their first $66,500 as a person earning $66,500 does.</p>
+<p>All of this gives two different rates:</p>
 <ul>
 <li>The <b>marginal rate</b> is the rate on the next dollar. Here it's 22%: another $1,000 of salary adds $220 of income tax.</li>
 <li>The <b>effective rate</b> is the total tax divided by income. $7,670 is 10.2% of the $75,000 salary, or 13.0% of the $58,900 taxable income. Either way, it's a long way below 22%.</li>
@@ -54,7 +72,7 @@
 </figure>
 
 <p>Two things in this table are easy to miss. First, the thresholds are taxable income, not salary. A single person doesn't reach the 22% bracket until gross income passes $66,500 ($50,400 plus the $16,100 deduction), and a couple doesn't reach it until $133,000.</p>
-<p>Second, the joint brackets are exactly double the single ones all the way up to the start of the 37% bracket. Two people earning $100,000 each pay the same federal income tax married as they would single. Only at the very top, where the joint 37% line ($768,700) is well short of twice the single one ($1,281,200), does marriage raise the bill. It cuts the other way when one spouse dies: the survivor usually files single from the year after, on brackets half as wide, often with much the same income. <a href="/learn/roth-conversions">Roth conversions</a> looks at what couples can do about that.</p>
+<p>Second, the joint brackets are exactly double the single ones all the way up to the start of the 37% bracket. Two people earning $100,000 each pay the same federal income tax married as they would single. In the brackets themselves, marriage raises the bill only at the very top, where the joint 37% line ($768,700) is well short of twice the single one ($1,281,200). (Some lines outside the brackets aren't doubled for couples either, among them the thresholds for taxing Social Security benefits and for the 3.8% tax on investment income.) The doubling cuts the other way when one spouse dies: the survivor usually files single from the year after, on brackets half as wide, often with much the same income. <a href="/learn/roth-conversions">Roth conversions</a> looks at what couples can do about that.</p>
 
 <h2 id="chart">Marginal and effective rates by income</h2>
 <p>The chart runs the same calculation at every salary from $0 to $300,000 for a single filer. The rate on the next dollar climbs in steps; the average rate rises smoothly underneath it and never catches up.</p>
@@ -82,13 +100,22 @@
 <h2 id="fica">FICA: the tax on wages</h2>
 <p>Income tax is only part of what comes out of a paycheck. Wages also pay FICA, the payroll tax that funds Social Security and Medicare. For 2026:</p>
 <ul>
-<li>Social Security tax is 6.2% of wages up to $184,500, the wage base. Nothing above it is taxed, so the most a worker pays is $11,439.</li>
+<li>Social Security tax is 6.2% of wages up to $184,500, the wage base. Nothing above it is taxed, so the most a worker pays is $11,439. The wage base rises with average wages each year; for 2027 it's $192,300.</li>
 <li>Medicare tax is 1.45% of all wages, with no cap.</li>
 <li>The additional Medicare tax adds 0.9% on wages over $200,000 for a single filer or $250,000 for a couple. Those thresholds were set in law and have never been raised for inflation.</li>
 </ul>
-<p>Your employer pays a matching 6.2% and 1.45% on top. If you work for yourself you pay both halves, 15.3% in all up to the wage base, and deduct half of it from your income.</p>
+<p>Your employer pays a matching 6.2% and 1.45% on top. If you work for yourself you pay both halves, 15.3% in all up to the wage base, figured on 92.35% of your net earnings, and you deduct half of the tax from your income.</p>
 <p>FICA is why the dotted line in the chart sits 7.65 points above the income tax line for most of its length, and why it drops back near $185,000. Once salary passes the wage base, the next dollar no longer pays Social Security tax, so a single earner at $190,000 has a lower rate on the next dollar (25.45%) than one at $150,000 (31.65%). The 0.9% surtax nudges it back up past $200,000.</p>
-<p>Two practical points follow. FICA comes off gross wages, and most pre-tax 401(k) contributions don't reduce it; HSA contributions and health premiums taken through payroll do. And FICA stops when wages stop: withdrawals from retirement accounts, pensions, Social Security benefits and investment income don't pay it. That's one reason the tax on a retiree's income is often a smaller share than it was while working. <a href="/learn/retirement-income-taxes">How retirement income is taxed</a> covers what replaces it.</p>
+
+<!-- data: computeTax({status:"s", gross:g, dedType:"std", state:"TX"}), 2026 figures: federal / g, ss / g, (med + addl) / g, and the rest. No state tax.
+     Dollars: 50,000: 3,820 / 3,100 / 725. 75,000: 7,670 / 4,650 / 1,087.50. 100,000: 13,170 / 6,200 / 1,450. 150,000: 24,734 / 9,300 / 2,175.
+     200,000: 36,734 / 11,439 / 2,900. 250,000: 51,304 / 11,439 / 4,075 (incl. 450 surtax). 300,000: 68,134.25 / 11,439 / 5,250 (incl. 900 surtax). -->
+<figure data-chart='{"type":"bar","stack":true,"x":["$50,000","$75,000","$100,000","$150,000","$200,000","$250,000","$300,000"],"xLabel":"Salary","y":"pct","series":[{"name":"Take-home pay","tone":"good","values":[0.8471,0.8212,0.7918,0.7586,0.7446,0.7327,0.7173]},{"name":"Federal income tax","tone":"accent","values":[0.0764,0.1023,0.1317,0.1649,0.1837,0.2052,0.2271]},{"name":"Social Security tax","tone":"neutral","values":[0.062,0.062,0.062,0.062,0.0572,0.0458,0.0381]},{"name":"Medicare tax","tone":"muted","values":[0.0145,0.0145,0.0145,0.0145,0.0145,0.0163,0.0175]}]}'>
+  <figcaption>Where each dollar of a single filer's salary goes in 2026, before any state tax or payroll deductions. At $50,000, FICA takes as much as income tax does.</figcaption>
+</figure>
+
+<p>At $50,000 of salary, FICA ($3,825) is slightly more than the federal income tax ($3,820). At lower salaries payroll tax is the bigger of the two, because it starts at the first dollar of wages and the standard deduction doesn't apply to it.</p>
+<p>Two practical points follow. FICA comes off gross wages, and pre-tax 401(k) contributions don't reduce it; HSA contributions and health premiums taken through payroll do. And FICA stops when wages stop: withdrawals from retirement accounts, pensions, Social Security benefits and investment income don't pay it. That's one reason the tax on a retiree's income is often a smaller share than it was while working. <a href="/learn/retirement-income-taxes">How retirement income is taxed</a> covers what replaces it.</p>
 
 <h2 id="history">How the brackets got here</h2>
 <p>The federal income tax began in 1913, with a top rate of 7%. It rose sharply in two world wars. In 1944 the top rate reached 94%, and it stayed above 90% until 1963. It was 70% from 1965 to 1981, 50% from 1982 to 1986, and the Tax Reform Act of 1986 cut it to 28% by 1988. Since 1991 it has moved between 31% and 39.6%. Those top rates applied only to very high incomes, and the tax code of those years was full of deductions that pulled effective rates well below them.</p>
@@ -111,9 +138,9 @@
 
 <h2 id="questions">Common questions</h2>
 <details><summary>Can a raise push me into a higher bracket and cost me money?</summary><p>Not through the brackets. Only the dollars above the bracket line pay the higher rate, so you always keep most of a raise. Where extra income can cost more than it brings in is at a cliff, such as Medicare's income surcharges or the ACA premium credit before 65, and those are worth checking if your income is close to one.</p></details>
-<details><summary>Why was my bonus taxed so heavily?</summary><p>Employers usually withhold federal income tax on a bonus at a flat 22%, plus FICA and any state tax, whatever your bracket. That's withholding, not the final tax. A bonus is taxed as ordinary wages on your return, and if too much was withheld, you get it back as a refund.</p></details>
+<details><summary>Why was my bonus taxed so heavily?</summary><p>Employers usually withhold federal income tax on a bonus at a flat 22% (37% on bonuses past $1 million in a year), plus FICA and any state tax, whatever your bracket. That's withholding, not the final tax. A bonus is taxed as ordinary wages on your return, and if too much was withheld, you get it back as a refund.</p></details>
 <details><summary>Is the effective rate figured on gross or taxable income?</summary><p>People use both, and they give different numbers: in the example above, 10.2% of gross pay or 13.0% of taxable income. Income Tax divides by gross income, which answers the more useful question of how much of what you earn goes in tax.</p></details>
-<details><summary>Do the brackets change every year?</summary><p>The rates don't, but the thresholds rise with inflation each year, and so do the standard deduction and most other limits. A raise that only matches inflation won't move you into a higher bracket.</p></details>
+<details><summary>Do the brackets change every year?</summary><p>The rates don't, but the thresholds rise with inflation each year, and so do the standard deduction and most other limits. A raise that only matches inflation won't move you into a higher bracket. For 2027 the IRS has already published the next set: the standard deduction goes to $16,600 single and $33,200 joint, and the 22% bracket starts at $52,025 of taxable income for a single filer, up from $50,400.</p></details>
 <details><summary>Does my state use the same brackets?</summary><p>No. Each state sets its own. Some have no income tax at all, about fifteen charge one flat rate, and the rest have their own graduated brackets. Many also treat retirement income differently from wages. <a href="/learn/state-taxes">State taxes</a> covers them.</p></details>
 
 <section class="insum"><h2 id="short">In short</h2><ul>
@@ -134,6 +161,7 @@
   </ul>
   <ul class="deeper">
     <li><a href="https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill">IRS releases tax inflation adjustments for tax year 2026</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2027-taxpayers-continue-to-benefit-from-the-working-families-tax-cuts">IRS releases tax inflation adjustments for tax year 2027</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/taxtopics/tc751">Topic 751, Social Security and Medicare withholding rates</a> <span>IRS</span></li>
     <li><a href="https://www.ssa.gov/oact/cola/cbb.html">Contribution and benefit base</a> <span>Social Security Administration</span></li>
     <li><a href="https://taxfoundation.org/data/all/federal/historical-income-tax-rates-brackets/">Historical US federal income tax rates and brackets</a> <span>Tax Foundation</span></li>

@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="how-much-in-stocks" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="how-much-in-stocks" data-reviewed="2026-11-10"
   data-title="How much in stocks"
   data-idea="Choosing your mix while you save, and after you retire"
   data-tool="advanced" data-try="Run your savings through every market since 1926 at the stock share you choose, with your plan already filled in.">
@@ -95,6 +95,16 @@
 <h2 id="target-date">Target-date funds and glide paths</h2>
 <p>A glide path is a plan for how the mix changes over time. Target-date funds build one in: you pick the fund named for roughly the year you'll retire, and it shifts from stocks toward bonds on its own as that year approaches.</p>
 <p>Vanguard's Target Retirement funds are one example. They hold about 90% stocks until around age 40, lower the share gradually to about 50% at 65, and keep lowering it after retirement until they reach 30% stocks and 70% bonds around age 72. That makes it a "through" glide path, one that keeps changing past the target date. A "to" glide path stops changing at the target date. Fund families differ a good deal in how much stock they hold at the target year, so two 2045 funds can be quite different investments; the fund's own fact sheet shows its path.</p>
+<p>The chart puts that path beside the two rules of thumb.</p>
+
+<!-- data: stock share by age. Age in bonds: 100 − age. 110 minus age: 110 − age.
+     Target-date: Vanguard's published points (90% to age 40, about 50% at 65, 30% from 72), joined by straight lines:
+     ages 40–65 fall 1.6 points per year (45: 82, 50: 74, 55: 66, 60: 58); 65–72 fall 20 points over 7 years (70: 35.7, shown as 36). -->
+<figure data-chart='{"type":"line","x":[25,30,35,40,45,50,55,60,65,70,72,75,80],"xLabel":"Age","y":"pct","series":[{"name":"Target-date fund (Vanguard)","tone":"accent","values":[0.9,0.9,0.9,0.9,0.82,0.74,0.66,0.58,0.5,0.36,0.3,0.3,0.3]},{"name":"110 minus your age","tone":"neutral","values":[0.85,0.8,0.75,0.7,0.65,0.6,0.55,0.5,0.45,0.4,0.38,0.35,0.3]},{"name":"Age in bonds","tone":"muted","values":[0.75,0.7,0.65,0.6,0.55,0.5,0.45,0.4,0.35,0.3,0.28,0.25,0.2]}],"marks":[{"x":65,"label":"Retire at 65"}]}'>
+  <figcaption>Share in stocks by age under each rule. The target-date line joins the points Vanguard publishes (90% to age 40, about 50% at 65, 30% from 72) with straight lines, so the years between are approximate.</figcaption>
+</figure>
+
+<p>All three slope the same way, but at 40 the target-date fund holds 90% in stocks where the rules say 70% and 60%, and it stays above both rules until the late 60s.</p>
 <p>A target-date fund's strength is that it does the rebalancing and the shifting for you, which removes a lot of chances to make a bad decision at a bad time. Its weakness is that the path is set by age alone. It can't know that you have a pension, or a spouse with a large 401(k), or a plan to retire at 55.</p>
 
 <h2 id="retired">Once you retire</h2>
@@ -135,7 +145,26 @@
 
 <h3>A rising glide path</h3>
 <p>The usual path keeps cutting stocks after retirement. In a paper published in the Journal of Financial Planning in January 2014, Wade Pfau and Michael Kitces tested the opposite: start retirement with fewer stocks and raise the share over the following years, for example from 30% to 60%. Their reasoning was sequence risk. The years just after you retire are when a fall does the most damage, so that's when the portfolio should be safest; by the time stocks are raised, the dangerous stretch has passed. They found rising paths could lower both the chance and the size of a shortfall compared with a fixed mix or a declining one.</p>
-<p>In the US record since 1926, at 4%, the differences were small. Going from 30% to 70% stocks over 30 years lasted in 65 of the 70 January starts; a fixed 60% lasted in 66, and so did going from 70% down to 30%. Starting at 40% and rising to 80% lasted in 68. The highest rate that lasted every start was within a few hundredths of a point for all of them. A rising path is a reasonable choice, especially for someone worried about a fall in the first few years, but this history doesn't show it as a big improvement. <a href="/learn/sequence-risk">Sequence-of-returns risk</a> covers why the early years matter so much.</p>
+<p>The table runs four paths through the same 70 retirements as above, each moving in a straight line from its first share to its last over the 30 years.</p>
+
+<!-- data: engine historicalBacktest() and ddQuick() (lib/engine/drawdown.js) via ddOptsFromState({initial:1000000, years:30, rate:4, stock, stockEnd, strategy:"fixed"}),
+     January starts 1927–1996 (70 retirements); the mix moves in a straight line from stock to stockEnd over the 30 years.
+     60 fixed: 66 of 70, highest rate 3.788%, medianEnd 1,616,000. 70 to 30: 66, 3.735%, 1,377,000.
+     30 to 70: 65, 3.739%, 921,000. 40 to 80: 68, 3.794%, 1,346,000. -->
+<figure>
+  <table>
+    <thead><tr><th>Stock share over 30 years</th><th>Lasted 30 years at 4%</th><th>Highest first-year rate that lasted every start</th><th>Middle amount left after 30 years</th></tr></thead>
+    <tbody>
+      <tr><td>60% throughout</td><td>66 of 70</td><td>3.79%</td><td>$1,616,000</td></tr>
+      <tr><td>Falling, 70% to 30%</td><td>66 of 70</td><td>3.74%</td><td>$1,377,000</td></tr>
+      <tr><td>Rising, 30% to 70%</td><td>65 of 70</td><td>3.74%</td><td>$921,000</td></tr>
+      <tr><td>Rising, 40% to 80%</td><td>68 of 70</td><td>3.79%</td><td>$1,346,000</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The same 70 retirements from $1,000,000, starting each January from 1927 to 1996, with $40,000 in the first year raised with inflation. Amounts left are in today's dollars.</figcaption>
+</figure>
+
+<p>In the US record since 1926 the differences were small. The highest rate that lasted every start sat between 3.74% and 3.79% for all four. Rising from 40% to 80% lasted in two more retirements than a fixed 60%, and rising from 30% to 70% in one fewer. Both rising paths left less in the middle case than the fixed mix. They held fewer stocks in the early years, so they had less growth to compound. A rising path is a reasonable choice, especially for someone worried about a fall in the first few years, but this history doesn't show it as a big improvement. <a href="/learn/sequence-risk">Sequence-of-returns risk</a> covers why the early years matter so much.</p>
 
 <h2 id="plan">Seeing it in your own plan</h2>
 <p>In <a href="/advanced">Advanced</a>, switch the chart to historical markets and set the stock share; your savings then run through every market since 1926 at that mix. Turn on the glide path to lower the share over the final years before you retire (it opens at 80% stocks, falling to 40%). Compare the bad case at a few different mixes, the way the Jordan table does, and look at how wide the range gets as the share rises.</p>

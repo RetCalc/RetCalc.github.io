@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="emergency-fund" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="emergency-fund" data-reviewed="2026-11-10"
   data-title="An emergency fund comes first"
   data-idea="How many months, where to keep it, and when to use it"
   data-tool="budget" data-try="Add up what you spend and size an emergency fund from it, with your plan already filled in.">
@@ -29,7 +29,7 @@
 <p>An emergency fund is measured in months of spending, not months of income. In a job loss, what you need to cover is your bills, and the taxes and retirement contributions that came out of your paycheck stop along with it. Someone who takes home $6,000 per month but spends $4,000 needs $4,000 per month of cushion, not $6,000.</p>
 <p>Three to six months of spending is the usual range. Where you belong in it depends mostly on how likely you are to lose your income and how long it might take to replace.</p>
 
-<!-- data: the ranges are the common guidance (CFPB; RetCalc's Guide gives full marks at six months). Dollar columns = months × $4,000 per month of spending, a hypothetical household. -->
+<!-- data: the ranges are the common guidance (FINRA suggests about three to six months of living expenses; the CFPB guide gives no figure and says it depends on your situation; RetCalc's Guide gives full marks at six months). Dollar columns = months × $4,000 per month of spending, a hypothetical household. -->
 <figure>
   <table>
     <thead><tr><th>Situation</th><th>Months of spending</th><th>At $4,000 per month</th></tr></thead>
@@ -45,7 +45,14 @@
 </figure>
 
 <p>How long job searches last supports the range. In 2025 the typical unemployed person in the US had been out of work about ten weeks, so three months covers a normal spell. Recessions are different: in June 2010, after the financial crisis, the median spell had stretched to about 25 weeks, and nearly half of unemployed people had been looking for more than six months. Regular state unemployment benefits help, but they usually last at most 26 weeks, fewer in some states, and replace only part of your pay.</p>
+
+<!-- data: US Bureau of Labor Statistics, median weeks unemployed (FRED series UEMPMED), annual average of the monthly figures, 1995 to 2025, read 10 November 2026. October 2025 has no monthly figure, so 2025 averages the other eleven months. The two dotted lines are 13 and 26 weeks. -->
+<figure data-chart='{"type":"line","x":[1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025],"xLabel":"Year","y":"num","series":[{"name":"Median weeks out of work","tone":"accent","values":[8.2,8.2,7.9,6.7,6.3,5.9,6.7,9.2,10.2,9.8,8.9,8.2,8.5,9.4,15.7,21.5,21.4,19.2,16.8,14.2,11.7,10.8,10.0,9.3,9.2,12.6,16.0,8.7,8.9,9.7,10.1]},{"name":"Three months","tone":"muted","dash":true,"values":[13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13]},{"name":"Six months","tone":"neutral","dash":true,"values":[26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26,26]}]}'>
+  <figcaption>How long the typical unemployed person had been out of work, in weeks, averaged over each year. Half of unemployed people had been looking for longer than this. Three months covered the typical spell in most years, but not from 2009 to 2014 or in 2021.</figcaption>
+</figure>
+
 <p>Two refinements make the figure more accurate. First, count what you'd actually spend in a lean stretch. Subscriptions, travel and eating out can be cut quickly; rent, insurance and loan payments can't. Second, add costs that only appear in a job loss. The biggest is usually health insurance: continuing your employer's plan through COBRA means paying the whole premium yourself, and a marketplace plan may be cheaper depending on your income for the year.</p>
+<p>Here's how the two can offset each other for a hypothetical household that spends $4,000 per month. Dropping $600 of travel, eating out and subscriptions brings that to $3,400. Paying $700 per month for health insurance that an employer used to cover brings it back to $4,100. Six months is then $24,600, close to the $24,000 the simple figure gave, but only because the two changes happened to be about the same size.</p>
 
 <p data-yours></p>
 
@@ -65,7 +72,7 @@
 <p>It helps to keep the fund at a different bank from your checking account. A day's delay is no problem in a real emergency, and it makes the money a little harder to dip into for things that aren't.</p>
 
 <h2 id="where">Where to keep it</h2>
-<p>The money needs to be safe, quick to reach, and earning something. Safe means it won't be down when you need it, which rules out stocks: US stocks fell by about half more than once in the last 25 years, and those falls tend to come with recessions and layoffs, exactly when an emergency fund gets used. Quick means days, not weeks.</p>
+<p>The money needs to be safe, quick to reach, and earning something. Safe means it won't be down when you need it, which rules out stocks: US stocks lost close to half their value twice since 2000, in 2000–02 and in 2007–09, and falls like those tend to come with recessions and layoffs, exactly when an emergency fund gets used. Quick means days, not weeks.</p>
 
 <!-- data: FDIC standard insurance $250,000 per depositor, per insured bank, per ownership category (fdic.gov). Treasury bill terms, minimum and tax treatment from TreasuryDirect; I bond rules from TreasuryDirect (electronic only since January 1, 2025; $10,000 per person per calendar year; no redemption for 12 months; the last 3 months of interest forfeited before 5 years). Money market funds: SEC and Investor.gov. -->
 <figure>
@@ -85,11 +92,17 @@
 
 <p>Most people keep the first month or two in a high-yield savings account linked to their checking, where a transfer takes a day, and the rest wherever earns a bit more: a money market fund, a ladder of Treasury bills that mature every few weeks, or I bonds once their first 12 months have passed. FDIC insurance covers $250,000 per depositor, per insured bank, per ownership category, so very large balances may need more than one bank.</p>
 <p>Expect the fund to roughly hold its value after inflation, not grow. One-month Treasury bills earned 3.29% per year from 1927 through 2025, about 0.30% after inflation, and less than inflation in long stretches such as 2009 to 2021. That's the price of having money that's always there.</p>
+
+<!-- data: lib/engine/data/history.js, one-month Treasury bills (HIST_M_CASH) and CPI-U inflation (HIST_M_INFL), monthly figures compounded over each calendar year, 2000 to 2025. Compounding bill return ÷ inflation over all 26 years gives 0.841: $1 at the start of 2000 buys what 84 cents bought then. 1927 through 2025: bills 3.29% per year, inflation 2.98%, 0.30% after inflation. 2009 through 2021: bills 0.44% per year, inflation 2.20%. -->
+<figure data-chart='{"type":"line","x":[2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025],"xLabel":"Year","y":"pct","series":[{"name":"One-month Treasury bills","tone":"accent","values":[0.0588,0.0382,0.0163,0.0102,0.0119,0.0298,0.0481,0.0467,0.0159,0.0009,0.001,0.0004,0.0006,0,0,0.0001,0.0021,0.0079,0.018,0.0214,0.0045,0.0001,0.0141,0.0494,0.0525,0.0425]},{"name":"Inflation","tone":"bad","values":[0.0339,0.0155,0.0238,0.0188,0.0326,0.0342,0.0254,0.0408,0.0009,0.0272,0.015,0.0296,0.0174,0.015,0.0076,0.0073,0.0208,0.0211,0.0191,0.0228,0.0136,0.0704,0.0646,0.0335,0.0289,0.0267]}]}'>
+  <figcaption>What cash earned each year against that year's inflation. In the years where the inflation line is on top, cash lost buying power. Over the whole stretch, $1 kept in Treasury bills since the start of 2000 buys about what 84 cents bought then.</figcaption>
+</figure>
+
 <h3>Backstops, not substitutes</h3>
 <p>A few other sources can help in a pinch, but each has a catch that makes it a poor main fund.</p>
 <ul>
 <li>Roth IRA contributions (not the earnings on them) can be withdrawn at any time without tax or penalty. The catch is that you can't put them back beyond the yearly limit, so the money loses its tax-free growth for good.</li>
-<li>Since 2024, retirement plans and IRAs can allow one emergency withdrawal of up to $1,000 per year without the 10% additional tax. It's still taxed as income, and you can't take another for three years unless you repay it or put in at least as much again.</li>
+<li>Since 2024, retirement plans and IRAs can allow one emergency withdrawal of up to $1,000 per year without the 10% additional tax (less if your vested balance is under $2,000, since the withdrawal can't take it below $1,000). It's still taxed as income, and you can't take another for three years unless you repay it or put in at least as much again.</li>
 <li>A home equity line of credit can cover a large repair, but lenders can freeze or cut a line in a downturn, the moment you might need it.</li>
 <li>A credit card works for a week or two if you can pay it off in full. Beyond that, the interest outruns almost anything your savings earn.</li>
 </ul>
@@ -131,6 +144,7 @@
   </ul>
   <ul class="deeper">
     <li><a href="https://www.consumerfinance.gov/an-essential-guide-to-building-an-emergency-fund/">An essential guide to building an emergency fund</a> <span>Consumer Financial Protection Bureau</span></li>
+    <li><a href="https://www.finra.org/investors/insights/how-avoid-bad-financial-luck-friday-13th">Five tips, including an emergency fund of three to six months of living expenses</a> <span>FINRA</span></li>
     <li><a href="https://www.federalreserve.gov/publications/2026-economic-well-being-of-us-households-in-2025-executive-summary.htm">Economic well-being of US households in 2025</a> <span>Federal Reserve</span></li>
     <li><a href="https://fred.stlouisfed.org/series/UEMPMED">Median weeks unemployed</a> <span>US Bureau of Labor Statistics, via FRED</span></li>
     <li><a href="https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-exceptions-to-tax-on-early-distributions">Exceptions to tax on early distributions</a> <span>IRS</span></li>

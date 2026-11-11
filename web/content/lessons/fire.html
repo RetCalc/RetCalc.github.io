@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="fire" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="fire" data-reviewed="2026-11-10"
   data-title="FIRE and financial independence"
   data-idea="Your number, your savings rate and a lower rate for a long retirement"
   data-tool="fire" data-try="See when your savings could cover your spending, and when you could stop adding to them, with your plan already filled in.">
@@ -10,7 +10,7 @@
 <p>The spending figure is what most of the work goes into, and it's easy to get too low. It has to include the things an employer used to pay for or that come around only every few years:</p>
 <ul>
 <li>Health insurance. Before Medicare at 65 you buy your own, and for a couple in their fifties the full price of a marketplace plan can run well over $20,000 per year. What you actually pay depends heavily on your income, which is why <a href="/learn/health-cover-before-65">health cover before 65</a> is part of planning an early retirement.</li>
-<li>Tax on what you withdraw. Money from a traditional 401(k) or IRA is taxed as income when it comes out. A single person taking $50,000 from a traditional IRA in 2026, with no other income, owes about $3,820 of federal income tax on it, before any state tax.</li>
+<li>Tax on what you withdraw. Money from a traditional 401(k) or IRA is taxed as income when it comes out. A single person taking $50,000 from a traditional IRA in 2026, with no other income, owes about $3,820 of federal income tax on it, before any state tax. To have $50,000 left to spend, that person has to withdraw about $54,340, and it's the $54,340 that goes into the number: about $1,359,000 at 4% instead of $1,250,000. Money in a Roth account, or the part of a brokerage sale that is your own original investment, comes out untaxed, so the mix of accounts changes the answer.</li>
 <li>Costs that come every few years, like a car, a roof, a new furnace or help for a grown child. A budget built from monthly bills leaves them out, so spread them over the years and add them in.</li>
 </ul>
 <p>Home equity isn't part of the number. A paid-off house lowers what you spend, and that lowers the number, but the house itself doesn't produce income unless you sell it or borrow against it.</p>
@@ -32,6 +32,13 @@
     </tbody>
   </table>
   <figcaption>US stocks and bonds since 1926, 60% stocks, a fixed withdrawal raised with inflation. "Lasted" is the share of starting years in which the money held out for the whole period.</figcaption>
+</figure>
+
+<p>The next chart shows the same thing from the other side: how often each withdrawal rate lasted, over 30 years and over 50.</p>
+
+<!-- data: same test and inputs as the table (60% stocks, fixed withdrawal raised with inflation), historicalBacktest().successRate at each rate. 30 years (70 starts): 100%, 100%, 100%, 100%, 94.3%, 90.0%, 88.6%, 81.4%, 74.3%. 50 years (50 starts): 100%, 100%, 94.0%, 84.0%, 80.0%, 62.0%, 52.0%, 48.0%, 38.0%. -->
+<figure data-chart='{"type":"line","x":[0.03,0.0325,0.035,0.0375,0.04,0.0425,0.045,0.0475,0.05],"xLabel":"First-year withdrawal rate","xFormat":"pct","y":"pct","series":[{"name":"Lasted 30 years","tone":"neutral","values":[1,1,1,1,0.943,0.9,0.886,0.814,0.743]},{"name":"Lasted 50 years","tone":"accent","values":[1,1,0.94,0.84,0.8,0.62,0.52,0.48,0.38]}]}'>
+  <figcaption>The share of starting years since 1927 in which the money lasted, 60% stocks, withdrawal raised with inflation. Past about 3.5% the 50-year line falls away much faster than the 30-year one.</figcaption>
 </figure>
 
 <p>Over 50 years, 4% ran out in one start in five. The failures began in 1937, in 1962–69 and in 1973; the 1960s starts ran into the high inflation and weak stocks of the 1970s within their first decade. At 3.5%, three 50-year starts ran out (1965, 1966 and 1969); at 3.25%, none did.</p>
@@ -59,7 +66,7 @@
   <figcaption>Years from nothing saved to financial independence, earning 5% per year after inflation. Spending is whatever isn't saved.</figcaption>
 </figure>
 
-<p>Saving half of take-home pay reaches 25 times spending in about 17 years; saving a quarter takes about 32. Planning on 3.5% instead of 4% adds only about a year and a half at a 50% savings rate. The last years before independence are when the balance grows fastest, so the larger target costs less time than it seems. Starting with some savings already shortens all of these. The <a href="/learn/savings-rate">savings rate lesson</a> goes into how to measure and raise yours.</p>
+<p>You can check one point by hand. Someone who takes home $80,000 and saves half spends $40,000, so the target at 4% is $1,000,000. Saving $40,000 per year with no growth at all would take 25 years; at 5% growth it takes about 17, because by the end the investments are adding more each year than the saver is. Saving a quarter of take-home pay takes about 32 years. Planning on 3.5% instead of 4% adds only about a year and a half at a 50% savings rate. The last years before independence are when the balance grows fastest, so the larger target costs less time than it seems. Starting with some savings already shortens all of these. The <a href="/learn/savings-rate">savings rate lesson</a> goes into how to measure and raise yours.</p>
 
 <p data-yours></p>
 
@@ -95,7 +102,7 @@
 <h3>Health insurance and income</h3>
 <p>Before 65, marketplace premiums depend on your household income. For 2026 the premium tax credit stops entirely above 400% of the federal poverty line, $84,600 for a household of two. An early retiree living on brokerage sales, where only the gain counts as income, can often keep income low and premiums modest. The same retiree drawing from a traditional IRA counts every dollar.</p>
 <h3>A smaller Social Security benefit, later</h3>
-<p>Social Security bases your benefit on your 35 highest-earning years, adjusted for wage growth. Stop working at 45 after starting at 23 and you have 22 years of earnings; the other 13 count as zeros. Your statement at ssa.gov assumes you keep working until you claim, so it will overstate the benefit if you stop early. Benefits also can't start before 62. Many early retirees leave Social Security out of their FIRE number as a margin of safety and treat it as a raise later.</p>
+<p>Social Security bases your benefit on your 35 highest-earning years, adjusted for wage growth. Stop working at 45 after starting at 23 and you have 22 years of earnings; the other 13 count as zeros. Your statement at ssa.gov assumes you keep working until you claim, so it will overstate the benefit if you stop early. The cut is smaller than the missing years suggest, though, because the benefit formula replaces a much larger share of the first dollars of average earnings than of the last; the <a href="/learn/social-security-benefit">Social Security benefit lesson</a> works through it. Benefits also can't start before 62. Many early retirees leave Social Security out of their FIRE number as a margin of safety and treat it as a raise later.</p>
 <h3>More exposure to a bad start</h3>
 <p>The first decade of retirement matters most for how long the money lasts, and an early retiree goes through it with no paycheck and a long road ahead. <a href="/learn/sequence-risk">Sequence-of-returns risk</a> covers why. The most common defense among early retirees is flexibility: being able to cut spending for a few years, or to earn something, if markets fall soon after you stop. Even $15,000 per year of part-time income in the first years shrinks the withdrawals that do the most damage.</p>
 

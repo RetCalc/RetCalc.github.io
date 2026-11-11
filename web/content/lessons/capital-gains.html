@@ -1,0 +1,197 @@
+<article class="lesson" data-slug="capital-gains" data-reviewed="2026-11-10"
+  data-title="Capital gains and how to harvest them"
+  data-idea="What a sale is taxed on, at which rate, and how to choose the year"
+  data-tool="incometax" data-try="Enter a brokerage withdrawal and the share of it that's gain to see how much lands at 0%, 15% and 20%, with your plan already filled in.">
+
+<p class="lede">When you sell an investment outside a retirement account, the tax depends on three things: what you paid for the shares you sold, how long you held them, and what other income the gain lands on top of. You choose all three more often than you'd think. This lesson covers the mechanics, then the two ways of timing a sale that planners call harvesting, and what each one costs.</p>
+
+<h2 id="basis">Cost basis and lots</h2>
+<p>A capital gain is the sale price minus your <b>cost basis</b>: what you paid, including any commission, plus every dividend you reinvested along the way. <a href="/learn/taxable-account">The taxable account</a> covers the basics of how a brokerage account is taxed. Here we go one level down, to the shares themselves.</p>
+<p>Each purchase is a separate <b>lot</b> with its own price and date, and a reinvested dividend is a small lot of its own. When you sell part of a holding, the gain depends on which lots you sold. There are three ways to decide:</p>
+<ul>
+<li><b>First in, first out</b> (FIFO): the oldest shares go first. This is what the IRS assumes if you don't identify the shares, and it's most brokerages' default for stocks and exchange-traded funds.</li>
+<li><b>Specific identification</b>: you tell the brokerage which lots to sell, at the time of the sale. Most brokerages let you pick lots on the order screen or set a standing rule such as highest cost first.</li>
+<li><b>Average cost</b>: every share gets the same basis, the average of all of them. It's allowed only for mutual fund shares and shares bought through a dividend reinvestment plan, and it's often the default for mutual funds.</li>
+</ul>
+<p>Say Sam bought 100 shares of the same mutual fund three times and sells 100 shares in November 2026 at $100 each.</p>
+
+<!-- data: hypothetical. Lots: March 2019, 100 shares at $50 = 5,000; June 2022, 100 at $90 = 9,000; February 2026, 100 at $110 = 11,000. Sale of 100 shares at $100 = 10,000 in November 2026.
+     FIFO: 10,000 − 5,000 = 5,000, held over a year. 2022 lot: 10,000 − 9,000 = 1,000, long-term. 2026 lot: 10,000 − 11,000 = −1,000, held nine months, short-term.
+     Average: (5,000 + 9,000 + 11,000) / 300 = 83.33 per share; 10,000 − 8,333 = 1,667; under average cost the shares sold are treated as the oldest, so long-term. -->
+<figure>
+  <table>
+    <thead><tr><th>Method</th><th>Shares sold</th><th>Basis</th><th>Gain or loss</th><th>Kind</th></tr></thead>
+    <tbody>
+      <tr><td>First in, first out</td><td>The 2019 lot, bought at $50</td><td>$5,000</td><td>$5,000</td><td>Long-term</td></tr>
+      <tr><td>Specific identification</td><td>The 2022 lot, bought at $90</td><td>$9,000</td><td>$1,000</td><td>Long-term</td></tr>
+      <tr><td>Specific identification</td><td>The 2026 lot, bought at $110</td><td>$11,000</td><td class="neg">−$1,000</td><td>Short-term</td></tr>
+      <tr><td>Average cost</td><td>Any 100, at $83.33 each</td><td>$8,333</td><td>$1,667</td><td>Long-term</td></tr>
+    </tbody>
+  </table>
+  <figcaption>One sale of 100 shares for $10,000, four possible results. Sam holds 300 shares bought at $50, $90 and $110. The total gain across all 300 shares is the same whichever method is used; the method decides how much of it is taxed now.</figcaption>
+</figure>
+
+<p>Over the life of the holding the total gain comes out the same under every method. What changes is the year it's reported in, and that is worth a good deal. Picking lots lets you raise cash while realizing little gain, realize a loss on purpose, or realize a large gain in a year when it's taxed at 0%.</p>
+<p>Brokerages have had to track basis and report it to the IRS on Form 1099-B for stock bought since 2011 and for mutual funds, ETFs and reinvestment-plan shares bought since 2012. For anything older, the records are yours to keep. If you can't show what you paid, the IRS can treat the whole sale price as gain.</p>
+
+<h2 id="term">Short-term and long-term</h2>
+<p>Hold an investment for more than one year and the gain is long-term, taxed at the lower rates below. Hold it one year or less and it's short-term, taxed as ordinary income at your bracket rate. The count starts the day after you buy and includes the day you sell, so shares bought on March 10 become long-term if sold on March 11 of the next year or later.</p>
+<p>Losses are sorted the same way, and the tax return nets them in order. Short-term losses come off short-term gains, and long-term losses off long-term gains. If one side ends up a net loss and the other a net gain, they're netted against each other. This ordering has a practical consequence. A short-term loss is the most useful kind, because it first cancels short-term gains that would have been taxed at your full bracket rate.</p>
+
+<h2 id="rates">The 2026 rates, and how gains stack</h2>
+<p>Long-term gains are taxed at 0%, 15% or 20%. Which rate applies depends on your taxable income, the figure left after deductions (see <a href="/learn/tax-brackets">Brackets: marginal and effective</a>), with the gain included.</p>
+
+<!-- data: IRS Rev. Proc. 2025-32 sec. 4.03 (maximum zero rate amount and maximum 15% rate amount for 2026), read from the IRS PDF: joint 98,900 / 613,700; head of household 66,200 / 579,600; all other individuals 49,450 / 545,500. Single and joint match lib/engine/data/2026.js ltcg. -->
+<figure>
+  <table>
+    <thead><tr><th>Rate</th><th>Single</th><th>Head of household</th><th>Married filing jointly</th></tr></thead>
+    <tbody>
+      <tr><td>0%</td><td>Up to $49,450</td><td>Up to $66,200</td><td>Up to $98,900</td></tr>
+      <tr><td>15%</td><td>$49,450–$545,500</td><td>$66,200–$579,600</td><td>$98,900–$613,700</td></tr>
+      <tr><td>20%</td><td>Over $545,500</td><td>Over $579,600</td><td>Over $613,700</td></tr>
+    </tbody>
+  </table>
+  <figcaption>2026 federal rates on long-term capital gains and qualified dividends, by taxable income including the gain.</figcaption>
+</figure>
+
+<p>The gain doesn't get its own trip through that table. Your ordinary income (wages, pensions, IRA withdrawals, interest) fills the bottom of the stack, and the gain sits on top of it. Only the part of the gain that pokes above a line pays the higher rate.</p>
+<p>Take Sam and Jordan, married and both 60, with $100,000 of pension and IRA income and a $50,000 long-term gain from selling a fund. Their standard deduction is $32,200, so ordinary income takes up $67,800 of taxable income. The gain sits on top of that, from $67,800 to $117,800. The first $31,100 of it reaches the $98,900 line and is taxed at 0%. The other $18,900 is over the line and pays 15%, which comes to $2,835. Across the whole gain that's about 5.7%.</p>
+<p>The chart puts the same $50,000 gain on top of different amounts of other income.</p>
+
+<!-- data: married filing jointly, both under 65, 2026. Other (ordinary) income 40,000 to 160,000 less the 32,200 standard deduction = ordinary taxable income 7,800, 27,800, 47,800, 67,800, 87,800, 107,800, 127,800.
+     Gain of 50,000 on top: part at 0% = min(50,000, max(0, 98,900 − ordinary taxable)); the rest at 15%.
+     Tax on the gain: 0, 0, 0, 2,835, 5,835, 7,500, 7,500, matching computeRetireTax({status:"m", trad:x, brok:50000, gainPct:1}) less the same with no gain. -->
+<figure data-chart='{"type":"bar","stack":true,"x":["$40,000","$60,000","$80,000","$100,000","$120,000","$140,000","$160,000"],"xLabel":"Other income before the standard deduction","y":"money","series":[{"name":"Ordinary income after the deduction","tone":"neutral","values":[7800,27800,47800,67800,87800,107800,127800]},{"name":"Gain taxed at 0%","tone":"good","values":[50000,50000,50000,31100,11100,0,0]},{"name":"Gain taxed at 15%","tone":"bad","values":[0,0,0,18900,38900,50000,50000]}],"levels":[{"y":98900,"label":"0% ends at $98,900"}]}'>
+  <figcaption>A $50,000 long-term gain for a married couple under 65 in 2026, stacked on seven levels of other income. The height of each bar is taxable income. The tax on the gain runs from nothing, with $80,000 or less of other income, to $7,500 once ordinary income alone passes the line.</figcaption>
+</figure>
+
+<p>Stacking has a side effect that catches people out. Once a gain straddles the line, every extra dollar of ordinary income pushes a dollar of gain from 0% up to 15%. If Sam and Jordan took another $1,000 from the IRA that year, they'd pay 12% on the withdrawal and 15% on the $1,000 of gain it lifted over the line: $270 on $1,000, in what looks like the 12% bracket.</p>
+<h3>The 3.8% tax on top</h3>
+<p>Above $200,000 of modified AGI for a single filer or $250,000 for a couple, the net investment income tax adds 3.8% to gains, dividends and interest, so the top federal rate on a long-term gain is 23.8%. One large sale can put a household over the threshold for a single year. <a href="/learn/retirement-income-taxes#niit">How retirement income is taxed</a> has a worked example.</p>
+
+<h2 id="dividends">Dividends and fund distributions</h2>
+<p>Two kinds of investment income show up every year whether you sell or not.</p>
+<p>The first is dividends. A qualified dividend is taxed at the long-term rates above, and stacks the same way. Most dividends from US companies qualify if you held the stock for more than 60 days of the 121-day period that starts 60 days before the ex-dividend date.  Ordinary dividends are taxed at your bracket rate. Those include interest paid out by bond funds and money market funds, and most dividends from real estate investment trusts.</p>
+<p>The second is capital-gain distributions. When a mutual fund sells holdings at a profit, it has to pass the net gain on to its shareholders, usually in December. These distributions are always long-term gains to you, however long you've owned the fund, and they're taxable even when reinvested. So buying a fund in a taxable account just before its year-end distribution means paying tax on gains you never enjoyed: the share price drops by the amount paid out, and you get part of your own money back as taxable income. A fund with heavy turnover can also hand you a tax bill in a year when its price fell. Index funds and ETFs distribute far less.</p>
+
+<h2 id="losses">Harvesting losses</h2>
+<p>Selling an investment for less than you paid produces a capital loss. Losses first cancel gains. If losses are left over, up to $3,000 per year ($1,500 if married filing separately) comes off ordinary income, and the rest carries forward to later years until it's used. Tax-loss harvesting means selling a holding that's down, on purpose, and buying something similar so your investments barely change. <a href="/learn/taxable-account#losses">The taxable account</a> has an example of one year's saving. What follows is the rule that limits it, and the tax that comes back later.</p>
+<h3>The wash-sale rule</h3>
+<p>The loss is disallowed if you buy the same or a "substantially identical" investment within 30 days before or after the sale, a 61-day window in all. The rule reaches further than your own brokerage account:</p>
+<ul>
+<li>A purchase by your spouse counts, and so does one by a corporation you control.</li>
+<li>A purchase inside your IRA or Roth IRA counts. The IRS ruled on this in 2008 (Revenue Ruling 2008-5).</li>
+<li>A contract or option to buy counts as a purchase.</li>
+<li>Automatic purchases count: a reinvested dividend, or a regular contribution that buys the same fund in another account.</li>
+</ul>
+<p>In an ordinary wash sale the loss isn't gone for good. It's added to the basis of the replacement shares, and their holding period picks up the old shares' holding period, so you get the loss when you eventually sell them. The IRA case is worse. The 2008 ruling says the IRA's basis isn't increased, so the loss is simply lost.</p>
+<p>The rule applies to losses only. You can sell at a gain and buy back the same day.</p>
+<h3>Why it mostly defers tax</h3>
+<p>The replacement shares start with a lower basis than the ones you sold, lower by exactly the loss you took. When you sell them one day, the gain is larger by the same amount. So harvesting moves tax to a later year. Whether any of it goes away for good depends on what happens to the replacement shares.</p>
+
+<!-- data: hypothetical. Loss harvested 9,000, no other gains: 3,000 per year off ordinary income for three years at 22% = 660 × 3 = 1,980.
+     Replacement fund has a basis 9,000 lower, so the later sale has 9,000 more long-term gain: at 15% = 1,350; at 0% = 0; never sold by the owner (held until death, or given to charity) = 0.
+     Net: 1,980 − 1,350 = 630; 1,980; 1,980. -->
+<figure>
+  <table>
+    <thead><tr><th>What happens to the replacement shares</th><th>Tax saved now</th><th>Extra tax later</th><th>Net saving</th></tr></thead>
+    <tbody>
+      <tr><td>Sold later, with the gain taxed at 15%</td><td>$1,980</td><td>$1,350</td><td>$630</td></tr>
+      <tr><td>Sold in a year with room at 0%</td><td>$1,980</td><td>$0</td><td>$1,980</td></tr>
+      <tr><td>Held until death, or given to charity</td><td>$1,980</td><td>$0</td><td>$1,980</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A $9,000 loss harvested by someone in the 22% bracket with no gains to offset: $3,000 comes off ordinary income in each of three years. The replacement fund's basis is $9,000 lower, so $9,000 of extra gain is waiting when it's sold.</figcaption>
+</figure>
+
+<p>If the loss only cancels long-term gains that would have been taxed at 15% and the later gain is taxed at 15% too, all you've gained is time. And if your gains this year would have been taxed at 0% anyway, a harvested loss used against them saves nothing and still lowers your basis.</p>
+<p>The $3,000 limit is a fixed dollar amount, not adjusted for inflation. A carryforward doesn't expire while you're alive, but it can't be inherited.</p>
+
+<h2 id="gains">Harvesting gains at 0%</h2>
+<p>Gain harvesting is the mirror image. In a year when your taxable income is under the 0% line, you sell shares with a long-term gain and buy them straight back. There's no federal tax on the gain and no waiting period, and the shares now carry today's price as their basis. Later growth is still taxable, but the gain up to now never will be. The typical window is early retirement, after the paychecks stop and before Social Security and required withdrawals begin.</p>
+<p>How much room you have is simple to work out: the 0% line minus your taxable ordinary income. A couple under 65 with $60,000 of ordinary income has $27,800 of it taxable after the deduction, which leaves $71,100 of gain at 0%.</p>
+<p>A gain taxed at 0% is still income, though. It raises your AGI by the full amount, and several other things key off AGI.</p>
+<ul>
+<li>Social Security: a gain counts toward the income test that decides how much of your benefit is taxable, so it can pull more of the benefit into tax at ordinary rates.</li>
+<li>ACA premium credits: before 65, if you buy health insurance on the marketplace, your credit shrinks as income rises and stops completely above 400% of the poverty line: $62,600 for one person and $84,600 for a couple for 2026 coverage. A gain that takes you a dollar over costs the whole credit. <a href="/learn/health-cover-before-65">Health cover before 65</a> has the numbers.</li>
+<li>Medicare premiums: the income surcharge known as IRMAA looks at your income from two years earlier. At 2026 rates, the first tier starts above $109,000 single or $218,000 joint and adds about $1,148 per person per year. Gains at 63 or later can land there. See <a href="/learn/irmaa">IRMAA</a>.</li>
+<li>State tax: most states tax a capital gain as ordinary income and have no 0% rate. <a href="/learn/state-taxes">State taxes</a> covers which ones don't.</li>
+</ul>
+<p>The Social Security effect is the least obvious. Take a married couple, both 67, with $48,000 of Social Security and $30,000 of IRA withdrawals. Before any gain they owe no federal tax: $14,500 of their benefits is taxable, and their $47,500 of deductions more than covers their income. The chart shows what each extra dollar of long-term gain costs them.</p>
+
+<!-- data: computeRetireTax({year:2026, status:"m", seniors:2, ss:48000, trad:30000, brok:g, gainPct:1, state:"FL"}) for g = 0 to 100,000 in steps of 5,000.
+     Tax on the next dollar = federal tax at g + 1 less federal tax at g. Rate on the gain itself = 15% once taxable income reaches 98,900, otherwise 0%.
+     8.5% = 85 cents of Social Security made taxable per dollar of gain × the 10% bracket. Benefits reach the 85% cap (40,800 taxable) at about 31,000 of gain. Total federal tax: 0 with no gain, 2,330 at 35,000 and still 2,330 at 60,000, all of it on ordinary income.
+     Taxable income passes 98,900 at 75,600 of gain (15% from there), and AGI passes 150,000 at 79,200, where the senior deduction starts phasing out too: 15% × 1.12 + 10% × 0.12 = 18%; 18.24% once ordinary taxable income reaches the 12% bracket. -->
+<figure data-chart='{"type":"line","x":[0,5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,55000,60000,65000,70000,75000,80000,85000,90000,95000,100000],"xLabel":"Long-term gain realized","xFormat":"money","y":"pct","series":[{"name":"Tax on the next dollar of gain","tone":"bad","values":[0,0.085,0.085,0.085,0.085,0.085,0.085,0,0,0,0,0,0,0,0,0,0.18,0.18,0.18,0.1824,0.1824],"step":true},{"name":"Rate on the gain itself","tone":"muted","dash":true,"values":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.15,0.15,0.15,0.15,0.15],"step":true}]}'>
+  <figcaption>Federal tax on each extra dollar of long-term gain in 2026 for a married couple, both 67, with $48,000 of Social Security and $30,000 of IRA withdrawals. The dotted line is the capital-gains rate. The gap between the lines is tax on Social Security benefits that the gain pulled into income, and further right, the senior deduction phasing out.</figcaption>
+</figure>
+
+<p>A $35,000 gain is entirely inside their 0% band, and no capital-gains tax is due on it. But it lifts the taxable part of their Social Security from $14,500 to the maximum, $40,800, and their federal tax goes from nothing to $2,330. That's 6.7% of the gain. The next $40,000 of gain adds no federal tax at all, because their benefits can't become any more taxable. A harvest is worth doing when the tax it triggers elsewhere is smaller than the tax it saves later, and working that out takes the whole return.</p>
+<p>Gain harvesting also competes with Roth conversions for the same low-income years, since conversion income fills the stack from the bottom and pushes gains up. <a href="/learn/withdrawal-order">Which account to draw from first</a> and <a href="/learn/roth-conversions">Roth conversions</a> cover that trade.</p>
+
+<h2 id="other">Homes, collectibles and rental property</h2>
+<p>A few assets have their own rules.</p>
+<ul>
+<li>Your home: if you owned and lived in it for at least two of the five years before the sale, up to $250,000 of gain is excluded from income, or $500,000 on a joint return. You can generally use the exclusion once every two years. A surviving spouse who hasn't remarried keeps the $500,000 figure for a sale within two years of the death. Gain above the exclusion is a long-term gain like any other, and a loss on your own home isn't deductible.</li>
+<li>Collectibles: long-term gains on coins, art, antiques and precious metals are taxed at your ordinary rate, capped at 28%.</li>
+<li>Rental property: the depreciation you deducted while you owned the building comes back when you sell. That part of the gain is taxed at your ordinary rate up to a maximum of 25%, and only the rest gets the 0%, 15% and 20% rates.</li>
+</ul>
+
+<h2 id="heirs">Step-up at death, and gifts</h2>
+<p>What happens to a gain when shares change hands depends on how they change hands.</p>
+<p>At death, the basis of what you own resets to its value on that day, the step-up in basis. The gain that built up in your lifetime is never taxed, and your heirs are treated as long-term holders from the first day. It works downward too: shares worth less than you paid get the lower value as their basis, and the loss disappears. Retirement accounts get no step-up. <a href="/learn/beneficiaries-and-estate">Beneficiaries and estate basics</a> covers jointly owned and community property.</p>
+<p>A gift during your life carries your basis and your holding period with it. If you give Nora shares you bought for $2,000 that are now worth $10,000, she owes tax on the $8,000 when she sells. That can work in the family's favor if her income puts the gain in the 0% band. It doesn't work for children under 19, or full-time students under 24: the "kiddie tax" taxes their investment income above $2,700 (for 2026) at the parents' rates. For 2026 you can give $19,000 per person without filing a gift tax return.</p>
+<p>Shares that have lost value make a poor gift. The recipient can't use your loss, because for figuring a loss their basis is the value on the day of the gift. Sell them yourself, take the loss, and give the cash.</p>
+<p>A gift to charity of shares held more than a year avoids the gain altogether. <a href="/learn/charitable-giving">Giving in retirement</a> works through an example.</p>
+<p>For an older investor with more than they'll spend, these rules favor selling the high-basis lots for cash and keeping the lowest-basis shares for heirs or charity.</p>
+
+<h2 id="mistakes">Common mistakes</h2>
+<ul>
+<li>Selling a few days short of one year. On a $10,000 gain in the 22% bracket, a short-term sale costs $2,200 and a long-term one $1,500, or nothing in the 0% band.</li>
+<li>Leaving the lot method on its default, so the oldest and cheapest shares are sold first.</li>
+<li>Tripping the wash-sale rule with a reinvested dividend, a purchase in an IRA, or a spouse's account buying the same fund.</li>
+<li>Harvesting a gain at 0% without checking Social Security, ACA credits, Medicare premiums and state tax.</li>
+<li>Harvesting a loss in a year when your gains would have been taxed at 0% anyway.</li>
+<li>Buying a mutual fund in a taxable account in early December, just ahead of its distribution.</li>
+<li>Leaving reinvested dividends out of the basis of old shares, and so paying tax on them twice.</li>
+<li>Giving away shares that are at a loss.</li>
+</ul>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>Income Tax, in retirement mode, takes a brokerage withdrawal and the share of it that's gain. It stacks the gain on your other income, shows how much falls at 0%, 15% and 20%, works out how much of your Social Security becomes taxable, and adds the 3.8% tax and your state's tax. To test a gain harvest, raise the gain and watch the total tax as well as the capital-gains line. If the total moves while the gain is still inside the 0% band, one of the side effects above is the cause.</p>
+<p>Healthcare shows the ACA credit at each income before 65. The Withdrawal Order optimizer runs the larger question of which account to draw on each year across a whole retirement.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>If I reinvest the money straight away, do I still owe tax on the gain?</summary><p>Yes. A sale in a taxable account is taxed whatever you do with the proceeds. Moving from one fund to another is a sale of the first. Only inside a retirement account can you switch investments without tax.</p></details>
+<details><summary>Does the wash-sale rule apply when I sell at a gain?</summary><p>No. It only disallows losses. You can sell at a gain and buy the same shares back immediately, which is what makes gain harvesting possible.</p></details>
+<details><summary>Do my capital losses ever expire?</summary><p>Not while you're alive. Unused losses carry forward year after year, offsetting gains and then up to $3,000 of ordinary income each year. They can't be passed to heirs, so a large carryforward late in life is a reason to realize gains against it.</p></details>
+<details><summary>Is all of a mutual fund's year-end payout a capital gain?</summary><p>Not necessarily. Funds pay out dividends and capital gains separately, and Form 1099-DIV lists each: ordinary dividends, the qualified part of them, and capital-gain distributions. Only the last is always treated as a long-term gain.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>The gain on a sale depends on which lots you sell; specific identification lets you choose, and it has to be chosen at the time of the sale.</li>
+<li>Long-term gains stack on top of ordinary income and are taxed at 0% up to $98,900 of taxable income for a couple in 2026 ($49,450 single), then 15%, then 20%.</li>
+<li>A harvested loss offsets gains and $3,000 of income per year, but it lowers your basis, so it mostly moves tax to a later year.</li>
+<li>A wash sale, including one through an IRA or a spouse's account, disallows the loss.</li>
+<li>A gain at 0% still raises AGI, which can make Social Security taxable, cut ACA credits, raise Medicare premiums and draw state tax.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>How lots and holding periods set the tax on a sale</li><li>How gains stack on other income, and what 0% really costs</li><li>When harvesting a loss or a gain is worth doing</li></ul>
+  <ul class="terms">
+    <li data-term="Lot">The shares bought in one purchase, with their own cost and date. Which lots you sell decides the gain you report.</li>
+    <li data-term="Specific identification">Telling the brokerage exactly which lots to sell, at the time of the sale, instead of letting the oldest go first.</li>
+    <li data-term="Tax-loss harvesting">Selling an investment at a loss to offset gains and up to $3,000 of other income per year, and buying something similar in its place.</li>
+    <li data-term="Tax-gain harvesting">Selling at a gain in a year when the gain is taxed at 0%, then buying back, so the shares carry a higher basis from then on.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/taxtopics/tc409">Topic 409, Capital gains and losses</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p550">Publication 550, Investment income and expenses</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/pub/irs-drop/rp-25-32.pdf">Revenue Procedure 2025-32: 2026 capital-gain rate thresholds</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/faqs/capital-gains-losses-and-sale-of-home/stocks-options-splits-traders/stocks-options-splits-traders-1">Stocks: basis, covered securities and identifying shares</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/pub/irs-drop/rr-08-05.pdf">Revenue Ruling 2008-5: wash sales and IRAs</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p551">Publication 551, Basis of assets</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p523">Publication 523, Selling your home</a> <span>IRS</span></li>
+  </ul>
+</footer>
+</article>

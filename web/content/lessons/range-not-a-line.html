@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="range-not-a-line" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="range-not-a-line" data-reviewed="2026-11-10"
   data-title="A range, not a line"
   data-idea="Why a plan shows a band of outcomes, and how to read one"
   data-tool="advanced" data-try="See your savings as a band of outcomes across every market since 1926, with your plan already filled in.">
@@ -48,7 +48,11 @@
 <p>It's tempting to read the 10th percentile line as "a bad market" and follow it across the chart. It isn't one market. At each year it's whichever market happened to be at that rank then, and markets move up and down the ranks over time. A stretch starting in January 1929 was near the very bottom of all the January starts four years in, after the crash, and ended 25 years later a little below the middle, at $1,158,000. One starting in January 1973 was the lowest of them all after two years, and ended at $1,344,000, above the median. A bad start for a saver often turns out fine, because the contributions made at low prices recover with everything else. (For a retiree drawing money out, it's the reverse, which is the subject of <a href="/learn/sequence-risk">Sequence-of-returns risk</a>.)</p>
 
 <!-- data: historicalRuns() traces (January starts only, 76 of them, 1926–2001), Jordan's plan as above. 1929: year 4 $110,000, lower than 99% of January starts at year 4;
-     year 25 $1,158,000, 43rd percentile. 1973: year 2 $73,000, lowest of all January starts at year 2; year 25 $1,344,000, 63rd percentile (median $1,187,000). -->
+     year 25 $1,158,000, 43rd percentile. 1973: year 2 $73,000, lowest of all January starts at year 2; year 25 $1,344,000, 63rd percentile (median $1,187,000).
+     Chart: those two traces, year by year, over the p10 and p50 bands of the chart above (all 901 starts), rounded to $1,000. -->
+<figure data-chart='{"type":"line","x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],"xLabel":"Years from the start","y":"money","series":[{"name":"Median","tone":"muted","dash":true,"values":[100000,120000,141000,161000,182000,205000,229000,251000,291000,327000,352000,392000,426000,456000,484000,527000,550000,613000,670000,727000,780000,844000,913000,999000,1099000,1187000]},{"name":"10th percentile","tone":"bad","dash":true,"values":[100000,98000,105000,115000,128000,141000,152000,171000,169000,179000,191000,205000,225000,247000,271000,284000,296000,327000,343000,362000,412000,438000,465000,525000,600000,657000]},{"name":"Started January 1929","tone":"accent","values":[100000,109000,105000,87000,110000,177000,190000,276000,370000,282000,367000,397000,388000,339000,375000,462000,545000,717000,581000,569000,603000,716000,842000,980000,1130000,1158000]},{"name":"Started January 1973","tone":"good","values":[100000,90000,73000,99000,125000,120000,126000,136000,157000,151000,187000,221000,234000,302000,379000,367000,417000,517000,491000,583000,654000,712000,692000,921000,1068000,1344000]}]}'>
+  <figcaption>Two real markets against the band, for Jordan's plan in today's dollars. The 1929 start dips below the 10th percentile line in years 3 and 4, and the 1973 start stays below it for ten years. Both end close to the median or above it.</figcaption>
+</figure>
 
 <h2 id="plan-around">Which part to plan around</h2>
 <p>The median is the easiest figure to fix on, and the least useful for planning. Half the markets did worse. A plan that only works at the median is a coin flip.</p>

@@ -131,10 +131,20 @@ Every lesson has at least one picture; most have two or three.
   - `series`: up to four, each `{"name", "values", "tone"}`; tone is "good",
     "bad", "accent", "neutral" or "muted"; `"dash": true` for a dotted line, `"step": true` for a value that
     holds until the next point and then jumps (tax brackets).
+  - Optional `"stack": true` on a bar or area chart: each series sits on
+    the ones before it (where income comes from each year, what a paycheck
+    is made of); up to five series. `"labels": true` on a bar chart writes
+    each bar's value over it (a stack's total), where the bars are wide
+    enough, so use it with about eight bars or fewer.
+  - Optional `levels`: `[{"y": 0.04, "label": "4%"}]`, horizontal dashed
+    lines at a value (a limit, a target, a rule of thumb).
   - Optional `marks`: `[{"x": 62, "label": "Retire at 62"}]`, vertical lines;
     `band`: `{"from": 57, "to": 72, "label": "Most exposed"}`, a shaded span.
   - Keep JSON inside single quotes; no apostrophes inside it (write
     "Today" not "Today's").
+  Pointing at a chart (or touching it) reads off every series at that
+  point, so a chart can carry more exact figures than its axis shows; the
+  caption doesn't need to repeat them.
 - **Widgets**: a few lessons have an interactive picture built for them
   (`<figure data-widget="...">`): `sequence` (sequence-risk), `compound`
   (compound-growth), `fees` (fees-and-index-funds), `claim-age`
@@ -177,6 +187,13 @@ than no lesson.
   inventing it. Simple arithmetic is fine too; show it in the comment.
 - No made-up statistics, quotes or examples presented as real. Worked
   examples are clearly hypothetical.
+
+## Checking a lesson
+
+`node scripts/learn/check.mjs <slug>` (from `web/`; no slug checks every
+lesson) checks the parts a lesson needs, that chart data parses and lines
+up, that links to lessons exist, and the copy rules a search can catch.
+It can't check a fact.
 
 ## Copy rules
 

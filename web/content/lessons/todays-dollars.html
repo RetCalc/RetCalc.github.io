@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="todays-dollars" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="todays-dollars" data-reviewed="2026-11-10"
   data-title="Today's dollars"
   data-idea="Inflation, real versus nominal, and why plans show today's prices"
   data-tool="calculator" data-try="See what your savings could be worth at retirement in today's dollars, with your plan already filled in.">
@@ -9,19 +9,20 @@
 <p>Inflation is the rise in prices across the economy, usually measured in the US by the Consumer Price Index (CPI), which the Bureau of Labor Statistics compiles each month from the prices of a broad basket of goods and services. When prices rise 3% over one year, $100 buys what $97.09 bought the year before.</p>
 <p>A few percent per year compounds into a lot. At 3% inflation, prices double in about 24 years, and a $5 cup of coffee costs about $12.14 in thirty. Turned around, money you'll have in the future is worth less in today's terms, and the further away it is, the bigger the gap.</p>
 
-<!-- data: today's value = $100,000 ÷ (1 + inflation)^years, rounded to the nearest dollar. -->
-<figure>
-  <table>
-    <thead><tr><th>$100,000 received in</th><th>At 2% inflation</th><th>At 3%</th><th>At 4%</th></tr></thead>
-    <tbody>
-      <tr><td>10 years</td><td>$82,035</td><td>$74,409</td><td>$67,556</td></tr>
-      <tr><td>20 years</td><td>$67,297</td><td>$55,368</td><td>$45,639</td></tr>
-      <tr><td>30 years</td><td>$55,207</td><td>$41,199</td><td>$30,832</td></tr>
-      <tr><td>40 years</td><td>$45,289</td><td>$30,656</td><td>$20,829</td></tr>
-    </tbody>
-  </table>
-  <figcaption>What $100,000 in the future buys, in today's dollars, at three steady inflation rates.</figcaption>
+<!-- data: today's value = $100,000 ÷ (1 + inflation)^years, every five years, rounded to the nearest dollar. At 30 years: 55,207 (2%), 41,199 (3%), 30,832 (4%). -->
+<figure data-chart='{"type":"line","x":[0,5,10,15,20,25,30,35,40],"xLabel":"Years from now","y":"money","series":[{"name":"2% inflation","tone":"good","values":[100000,90573,82035,74301,67297,60953,55207,50003,45289]},{"name":"3% inflation","tone":"accent","values":[100000,86261,74409,64186,55368,47761,41199,35538,30656]},{"name":"4% inflation","tone":"bad","values":[100000,82193,67556,55526,45639,37512,30832,25342,20829]}]}'>
+  <figcaption>What $100,000 received in the future buys, in today's dollars, at three steady inflation rates.</figcaption>
 </figure>
+
+<p>Set your own rate below. A small change in the rate makes a large difference over a retirement that runs thirty years.</p>
+
+<!-- data: components/learn/widgets/Inflation.tsx: buying power = $100,000 ÷ (1 + inflation)^years; years for prices to double = ln 2 ÷ ln(1 + inflation). -->
+<figure data-widget="inflation">
+  <figcaption>What $100,000 received in the future buys, in today's dollars, at a steady inflation rate you choose. The dotted line is 3%.</figcaption>
+</figure>
+
+
+<p>One point of inflation looks small on the chart for the first few years and isn't by the end. $100,000 that arrives in thirty years buys what about $55,000 buys today at 2% inflation, $41,000 at 3% and $31,000 at 4%.</p>
 
 <p>To turn a future amount into today's dollars, divide by (1 + inflation) once for each year. A million dollars in 35 years, at 3% per year, is $1,000,000 divided by 1.03 raised to the 35th power, about $355,000 in today's money. A goal set in today's dollars and one set in future dollars are very different targets, and mixing them up is one of the easiest ways to misjudge a plan.</p>
 
@@ -29,15 +30,16 @@
 <p>A nominal figure is the number of dollars: the balance on your statement, the interest rate your bank quotes, the return a fund reports. A real figure takes inflation out, so it measures buying power. The real return is the nominal return adjusted for inflation:</p>
 <p>real return = (1 + nominal return) ÷ (1 + inflation) − 1</p>
 <p>With a 7% nominal return and 3% inflation, that's 1.07 ÷ 1.03 − 1, or 3.88%. Simply subtracting, 7% − 3% = 4%, is close enough for most purposes and is how most people do it in their heads.</p>
+<p>The mistake to avoid is mixing the two kinds in one calculation. Growing your savings at a nominal return and then comparing the result with spending at today's prices makes a plan look much better than it is. Taking inflation off a return that was already real counts it twice and makes the plan look worse.</p>
 <h3>Taxes fall on the nominal figure</h3>
 <p>One detail makes inflation more expensive than it looks. Taxes are charged on nominal income and gains, including the part that only keeps up with prices. Say a bond pays 4% interest while inflation runs at 3%, and you're in the 22% bracket. You keep 3.12% after tax, and after inflation that's about 0.12%: almost no real gain, though you paid tax as if you'd earned 4%. The same happens to capital gains on stocks held in a taxable account, since the cost basis isn't adjusted for inflation. Tax-sheltered accounts avoid this, which is one more reason they come first in most plans.</p>
 
 <h2 id="history">US inflation since 1926</h2>
 <p>From 1926 through 2025, US consumer prices rose about 2.9% per year on average, so that something costing $1 in 1926 cost about $18 in 2025. The average hides long stretches that looked nothing like it.</p>
 
-<!-- data: lib/engine/data/history.js, HIST_M_INFL (CPI-U, month over month, BLS), compounded into calendar years; each bar is the geometric mean for the decade (the 2020s bar is 2020–2025). Cumulative 1926–2025: 18.1 times. Geometric mean 1926–2025: 2.94% per year. -->
-<figure data-chart='{"type":"bar","x":["1930s","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"],"xLabel":"Decade","y":"pct","series":[{"name":"Inflation per year","tone":"accent","values":[-0.0204,0.0536,0.0222,0.0252,0.0736,0.051,0.0293,0.0252,0.0175,0.0394]}]}'>
-  <figcaption>Average yearly US inflation (CPI-U) by decade. The 2020s bar covers 2020 through 2025.</figcaption>
+<!-- data: lib/engine/data/history.js, HIST_M_INFL (CPI-U, month over month, BLS), compounded into calendar years, so each point is December to December, 1926 through 2025. Cumulative 1926–2025: 18.1 times. Geometric mean 1926–2025: 2.94% per year. Lowest −10.3% (1932); highest 18.1% (1946). -->
+<figure data-chart='{"type":"line","x":[1926,1927,1928,1929,1930,1931,1932,1933,1934,1935,1936,1937,1938,1939,1940,1941,1942,1943,1944,1945,1946,1947,1948,1949,1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025],"xLabel":"Year","y":"pct","series":[{"name":"Inflation that year","tone":"accent","values":[-0.011,-0.023,-0.012,0.006,-0.064,-0.093,-0.103,0.008,0.015,0.03,0.014,0.029,-0.028,0,0.007,0.099,0.09,0.03,0.023,0.022,0.181,0.088,0.03,-0.021,0.059,0.06,0.008,0.007,-0.007,0.004,0.03,0.029,0.018,0.017,0.014,0.007,0.013,0.016,0.01,0.019,0.035,0.03,0.047,0.062,0.056,0.033,0.034,0.087,0.123,0.069,0.049,0.067,0.09,0.133,0.125,0.089,0.038,0.038,0.039,0.038,0.011,0.044,0.044,0.046,0.061,0.031,0.029,0.027,0.027,0.025,0.033,0.017,0.016,0.027,0.034,0.016,0.024,0.019,0.033,0.034,0.025,0.041,0.001,0.027,0.015,0.03,0.017,0.015,0.008,0.007,0.021,0.021,0.019,0.023,0.014,0.07,0.065,0.034,0.029,0.027]}],"band":{"from":1973,"to":1981,"label":"1973 to 1981"}}'>
+  <figcaption>US inflation in each calendar year, 1926 through 2025 (CPI-U, December to December). Point at a year to read it.</figcaption>
 </figure>
 
 <h3>The 1930s: prices fell</h3>
@@ -48,7 +50,7 @@
 <h3>1983 to 2020: the quiet years</h3>
 <p>From 1983 through 2020 inflation averaged about 2.6% per year, and after 2008 it often ran below 2%. In 2012 the Federal Reserve made its goal explicit: 2% per year over time, measured by a slightly different index than the CPI, the price index for personal consumption expenditures. A generation of savers came to treat low inflation as normal.</p>
 <h3>2021 to 2023: the return of inflation</h3>
-<p>Prices rose 7.0% in 2021, 6.5% in 2022 and 3.4% in 2023, December to December, and the twelve-month rate peaked at 9.1% in June 2022, the highest since 1981. From the end of 2020 to the end of 2025, prices rose about 24% in five years. Bonds had a bad year at the same time: in 2022 the 10-year Treasury lost about 15% as interest rates rose (measured with monthly average prices; from the last day of 2021 to the last day of 2022 the loss was closer to 18%), which with inflation was a loss of about 20% in buying power in a single year.</p>
+<p>Prices rose 7.0% in 2021, 6.5% in 2022 and 3.4% in 2023, December to December, and the twelve-month rate peaked at 9.1% in June 2022, the highest since 1981. From the end of 2020 to the end of 2025, prices rose about 24% in five years. Bonds had a bad year at the same time: in 2022 the 10-year Treasury lost about 15% as interest rates rose (measured with monthly average prices; from the last day of 2021 to the last day of 2022 the loss was closer to 18%), which with inflation was a loss of about 20% in buying power in a single year. Inflation then eased, to 2.9% in 2024 and 2.7% in 2025.</p>
 <p>Nobody predicts these bursts reliably, so the useful test is whether a plan could live with one: a few years of 6% or 7% inflation, or a decade like the 1970s.</p>
 
 <h2 id="why">Why RetCalc shows today's dollars</h2>
@@ -59,6 +61,11 @@
 <li>Social Security fits naturally. Benefits rise each year with a cost-of-living adjustment based on the CPI for urban wage earners (CPI-W), so a benefit in today's dollars stays level for life.</li>
 </ul>
 <p>The catch is that some figures don't rise with prices, and in a real-dollar plan they shrink. A pension with no cost-of-living raise loses buying power every year: at 3% inflation, a $24,000 pension buys what about $18,000 does today after ten years, and about $13,000 after twenty. A fixed-rate mortgage payment shrinks the same way, which works in your favor. And a few tax thresholds have never been indexed: the income levels at which Social Security benefits start to be taxed ($25,000 single and $32,000 married, set in 1983) and the 3.8% net investment income tax thresholds ($200,000 and $250,000, since 2013). As incomes rise with inflation, more people cross them each year.</p>
+
+<!-- data: $24,000 ÷ 1.03^years, every five years: 24,000, 20,703, 17,858, 15,405, 13,288, 11,463, 9,888. The Social Security line is flat at 24,000 because its cost-of-living adjustment keeps pace with prices. -->
+<figure data-chart='{"type":"line","x":[0,5,10,15,20,25,30],"xLabel":"Years into retirement","y":"money","series":[{"name":"$24,000 of Social Security","tone":"good","values":[24000,24000,24000,24000,24000,24000,24000]},{"name":"$24,000 pension with no raises","tone":"bad","values":[24000,20703,17858,15405,13288,11463,9888]}]}'>
+  <figcaption>Two incomes that both start at $24,000 per year, in today's dollars, with prices rising 3% per year. The pension check never changes, and after thirty years it buys less than $10,000 does today.</figcaption>
+</figure>
 <p>Federal tax brackets and the standard deduction, by contrast, are adjusted for inflation every year, so RetCalc holds them at 2026 levels in today's dollars.</p>
 
 <p data-yours></p>
@@ -87,8 +94,8 @@
 <p>No single holding protects against every kind of inflation, but several help in different ways.</p>
 <ul>
 <li>Stocks have outrun inflation over long periods, 7.3% per year after inflation since 1926, because company revenues and earnings tend to rise with prices. Over short periods they can do badly in high inflation, as they did in 1973–74.</li>
-<li>Treasury Inflation-Protected Securities (TIPS) adjust their principal with the CPI, so their real return is set when you buy them. They're the closest thing to an inflation-proof bond.</li>
-<li>Series I savings bonds pay a fixed rate plus an inflation rate that resets every six months. Purchases are limited to $10,000 per person per year, and they can't be cashed for the first 12 months.</li>
+<li>Treasury Inflation-Protected Securities (TIPS) adjust their principal with the CPI, so their real return is set when you buy them. They're the closest thing to an inflation-proof bond if you hold them until they mature, when you're paid the adjusted principal or the original, whichever is more. Sold earlier, their price can be down, as with any bond when interest rates have risen.</li>
+<li>Series I savings bonds pay a fixed rate plus an inflation rate that resets every six months. Purchases are limited to $10,000 per person per year, and they can't be cashed for the first 12 months. Cashing one within five years gives up the last three months of interest.</li>
 <li>Social Security is inflation-adjusted for life, and claiming later raises the amount. For many retirees it's the largest inflation-protected income they will ever have.</li>
 <li>A fixed-rate mortgage gets cheaper in real terms as prices rise.</li>
 </ul>
@@ -100,7 +107,7 @@
 
 <h2 id="questions">Common questions</h2>
 <details><summary>What inflation rate should I assume?</summary><p>RetCalc uses 3% per year where a tool asks for one. That's a little above the Federal Reserve's 2% goal and close to the 2.9% average since 1926. If you work in real returns, as the Calculator does, the choice matters much less, because the return you pick is already after inflation.</p></details>
-<details><summary>Does Social Security keep up with inflation?</summary><p>Yes, by law. Each year's cost-of-living adjustment is the rise in the CPI-W from the third quarter of the previous year to the third quarter of the current one. The Bureau of Labor Statistics also publishes an experimental index weighted toward the spending of people 62 and older, the CPI-E, but the law uses the CPI-W.</p></details>
+<details><summary>Does Social Security keep up with inflation?</summary><p>Yes, by law. Each year's cost-of-living adjustment is the rise in the CPI-W from the third quarter of the previous year to the third quarter of the current one. If the index hasn't risen, there's no adjustment and benefits stay where they were; they aren't cut. That happened for 2010, 2011 and 2016. The Bureau of Labor Statistics also publishes a research index weighted toward the spending of people 62 and older, the R-CPI-E, but the law uses the CPI-W.</p></details>
 <details><summary>My statements show nominal returns. How do I compare them with a plan in today's dollars?</summary><p>Subtract the year's inflation from the return for a quick answer. A fund that returned 9% over twelve months in which prices rose 3% gained about 6% in buying power. For a balance decades away, divide by 1.03 once for each year at 3% inflation.</p></details>
 <details><summary>Should I hold gold or real estate as an inflation hedge?</summary><p>Both have kept up with inflation over some long periods and badly lagged it over others, and gold pays no income. For most retirement savers, stocks, TIPS and a later Social Security claim cover inflation more reliably. Owning your home does protect you against rising rents.</p></details>
 
@@ -115,7 +122,7 @@
 <footer>
   <ul class="points"><li>How inflation shrinks a future dollar, and how to convert</li><li>What a century of US inflation looked like</li><li>Why plans read best in today's dollars</li></ul>
   <ul class="terms">
-    <li data-term="Inflation">The rise in prices over time, usually measured by the Consumer Price Index. At 3% per year, $100 today buys what about $74 buys in ten years.</li>
+    <li data-term="Inflation">The rise in prices over time, usually measured by the Consumer Price Index. At 3% per year, $100 received in ten years buys what about $74 buys today.</li>
     <li data-term="Nominal">A figure in plain dollars, before adjusting for inflation: the number on a statement or a quoted interest rate.</li>
     <li data-term="Real return">A return after inflation. A 7% return with 3% inflation is about a 4% real return.</li>
     <li data-term="TIPS">Treasury Inflation-Protected Securities: US government bonds whose principal rises with the CPI, so their return after inflation is fixed when you buy.</li>
@@ -125,6 +132,8 @@
     <li><a href="https://www.bls.gov/data/inflation_calculator.htm">CPI inflation calculator</a> <span>US Bureau of Labor Statistics</span></li>
     <li><a href="https://www.federalreserve.gov/faqs/economy_14400.htm">Why does the Federal Reserve aim for 2 percent inflation over time?</a> <span>Federal Reserve</span></li>
     <li><a href="https://www.ssa.gov/oact/cola/colasummary.html">Cost-of-living adjustments</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.bls.gov/cpi/research-series/r-cpi-e-home.htm">R-CPI-E, the research price index for Americans 62 and older</a> <span>US Bureau of Labor Statistics</span></li>
+    <li><a href="https://www.treasurydirect.gov/savings-bonds/i-bonds/">I bonds</a> <span>TreasuryDirect</span></li>
     <li><a href="https://www.treasurydirect.gov/marketable-securities/tips/">Treasury Inflation-Protected Securities</a> <span>TreasuryDirect</span></li>
   </ul>
 </footer>

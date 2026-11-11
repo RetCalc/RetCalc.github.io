@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="fees-and-index-funds" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="fees-and-index-funds" data-reviewed="2026-11-10"
   data-title="Fees and index funds"
   data-idea="Small yearly percentages that add up to large sums"
   data-tool="advanced" data-try="Add a fee to your savings and see what it costs by retirement, in dollars, with your plan already filled in.">
@@ -39,7 +39,15 @@
 
 <!-- data: the same $100,000 at 6%, with 1% of the balance taken at the end of each year: balance × 1.06 × 0.99 per year,
      100,000 × 1.0494^30 = 424,846. Fees taken summed over the 30 years: 69,704. Gap to 574,349: 149,503.
-     $1 at 6% for 29 years: 1.06^29 = 5.42. -->
+     $1 at 6% for 29 years: 1.06^29 = 5.42.
+     Chart: gap to the no-fee balance (100,000 × 1.06^n) split into fees taken so far and the rest (growth those fees would have earned).
+     Year 10: no fee 179,085, with fee 161,961, gap 17,124 = fees 13,295 + growth 3,828 (rounded parts).
+     Year 20: 320,714, 262,314, gap 58,400 = 34,828 + 23,571. Year 30: 574,349, 424,846, gap 149,503 = 69,704 + 79,799. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["After 10 years","After 20 years","After 30 years"],"xLabel":"","y":"money","series":[{"name":"Fees paid so far","tone":"bad","values":[13295,34828,69704]},{"name":"Growth those fees would have earned","tone":"muted","values":[3828,23571,79799]}]}'>
+  <figcaption>How far a 1% yearly fee leaves $100,000 behind the no-fee balance, at 6% per year before fees, and what the gap is made of. Before inflation and taxes.</figcaption>
+</figure>
+
+<p>After 10 years the fees themselves are most of the gap. By year 30 the growth they would have earned is the larger part, and it keeps pulling ahead the longer the money stays invested.</p>
 
 <h2 id="saver">For someone still saving</h2>
 <p>Most people don't invest a lump sum and walk away; they add money every month. The cost of a fee is smaller as a share for a saver, because the newest contributions haven't been paying it for long, but it's still large in dollars. Move the fee below and watch the gap.</p>
@@ -77,10 +85,10 @@
 <h3>The arithmetic</h3>
 <p>In 1991 the Stanford economist William Sharpe set out why indexing works in a short article, "The Arithmetic of Active Management." Every share in the market is owned by someone. Index investors as a group hold the market, so before costs they earn the market's return. That means active investors as a group must also earn the market's return before costs, since together they own everything else. After costs, the average actively managed dollar must do worse than the average index dollar, by the difference in what each pays. Some active managers will beat the index in any given year, but the group as a whole can't.</p>
 <h3>The scorecard</h3>
-<p>S&amp;P Dow Jones Indices has measured this since 2002 in its SPIVA reports, now published twice per year, which compare active funds with their benchmark index and count funds that closed along the way as well as those that survived. The latest, the SPIVA U.S. Mid-Year 2026 scorecard, covering results to June 30, 2026, found that 67% of actively managed large-company US stock funds trailed the S&amp;P 500 in the first half of 2026, after 79% trailed it over calendar 2025. Over longer stretches the share climbs: about 90% trailed over 15 years and about 93% over 20 years.</p>
+<p>S&amp;P Dow Jones Indices has measured this since 2002 in its SPIVA reports, now published twice per year, which compare active funds with their benchmark index and count funds that closed along the way as well as those that survived. The latest, the SPIVA U.S. Mid-Year 2026 scorecard, covering results to June 30, 2026, found that 67% of actively managed large-company US stock funds trailed the S&amp;P 500 in the first half of 2026, after 79% trailed it over calendar 2025. Over longer stretches the share climbs: in recent scorecards about nine in ten have trailed over both 15 and 20 years.</p>
 <p>The short-term figure moves around; the long-term one barely does. Some managers beat the index for a few years, but the winners of one stretch have rarely stayed winners in the next, so there's no reliable way to find the minority ahead of time. And a fund that trails badly tends to close or merge into another, which is why counting only the survivors makes active funds look better than they were.</p>
 <h3>What funds cost now</h3>
-<p>Fees have fallen a long way. The Investment Company Institute puts the average expense ratio for stock mutual funds at 0.40% in 2025, weighted by how much money is in each fund, down from 1.04% in 1996; for index stock ETFs the average was 0.14%. Morningstar's 2026 fee study found investors paid 0.32% on average across all US mutual funds and ETFs in 2025, and 0.10% for index funds, with many of the largest index funds charging under 0.05%. Those averages are pulled down by where the money is: plenty of funds, active and index alike, still charge 0.75% or more.</p>
+<p>Fees have fallen a long way. The Investment Company Institute puts the average expense ratio for stock mutual funds at 0.40% in 2025, weighted by how much money is in each fund, down from 1.04% in 1996; for index stock ETFs the average was 0.14%. Morningstar's 2026 fee study found investors paid 0.32% on average across all US mutual funds and ETFs in 2025, and 0.10% for index funds, with many of the largest index funds charging under 0.05%. Those averages are pulled down by where the money is. Counting every fund once, whatever its size, Morningstar's average was 0.92%, so plenty of funds, active and index alike, still charge 0.75% or more.</p>
 
 <h2 id="hidden">Where fees hide</h2>
 <p>The expense ratio is the fee you can see on a fund's page. Others take more looking for.</p>
@@ -98,7 +106,7 @@
 <p>For the funds themselves, the case for paying more is weaker. A higher expense ratio buys a manager's attempt to beat the market, and the long-run record above says most attempts don't succeed after costs.</p>
 
 <h2 id="plan">Seeing it in your own plan</h2>
-<p><a href="/advanced">Advanced</a> has a Fees field: enter your all-in cost, the funds' expense ratios plus any advisory fee, and it shows the return net of fees and what your savings come to with and without them. Add up what you actually pay first: the expense ratio of each fund you hold, weighted by how much is in it, plus any adviser or plan fee. The <a href="/drawdown">Drawdown Simulator</a> and the <a href="/backtest">Backtest</a> each take a fee too, so you can see its effect on retirement spending and on past returns.</p>
+<p><a href="/advanced">Advanced</a> has a Fees field: enter your all-in cost, the funds' expense ratios plus any advisory fee, and it shows the return net of fees and what your savings come to with and without them. Add up what you actually pay first: the expense ratio of each fund you hold, weighted by how much is in it, plus any adviser or plan fee. With $300,000 in a fund that costs 0.04% and $100,000 in one that costs 0.80%, the funds cost $120 plus $800 per year, and $920 on $400,000 is 0.23%. An adviser charging 1% on top would make it 1.23%. The <a href="/drawdown">Drawdown Simulator</a> and the <a href="/backtest">Backtest</a> each take a fee too, so you can see its effect on retirement spending and on past returns.</p>
 
 <h2 id="questions">Common questions</h2>
 <details><summary>Is an ETF cheaper than a mutual fund?</summary><p>Not by being an ETF. An exchange-traded fund is bought and sold on a stock exchange like a share, while a mutual fund is bought from the fund company at the day's closing price. Index ETFs and index mutual funds that track the same market often charge about the same, and some fund companies offer the same fund both ways. In a taxable account, ETFs have tended to pass on fewer capital gains.</p></details>
@@ -110,7 +118,7 @@
   <li>Fees are charged on your whole balance every year, so a 1% fee can take a sixth or more of each year's growth.</li>
   <li>Over 30 years, 1% cost a quarter of a $100,000 investment growing at 6%; 0.05% cost about 1.4%.</li>
   <li>In retirement, a 1% fee cut the historically safe starting withdrawal from 3.79% to 3.36% for a 60/40 mix.</li>
-  <li>Most active stock funds trail their index over long periods, about nine in ten over 15 and 20 years in the latest SPIVA scorecard.</li>
+  <li>Most active stock funds trail their index over long periods, about nine in ten over 15 and 20 years in recent SPIVA scorecards.</li>
   <li>Count every layer: fund expense ratios, adviser and plan fees, sales charges and taxes on fund trading.</li>
 </ul></section>
 

@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="traditional-or-roth" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="traditional-or-roth" data-reviewed="2026-11-10"
   data-title="Traditional or Roth"
   data-idea="Pay the tax now or later, and how to tell which costs less"
   data-tool="incometax" data-try="See what a traditional 401(k) or IRA contribution takes off this year's tax, and what withdrawals would cost later.">
@@ -15,6 +15,14 @@
   <figcaption>What $10,000 of pay is worth after thirty years and after tax, for someone in the 22% bracket today. Assumes 5% growth per year after inflation; in today's dollars.</figcaption>
 </figure>
 
+<p>Set the two rates yourself. When they match, the bars match; the further apart they are, the more the choice is worth.</p>
+
+<!-- data: components/learn/widgets/RothOrTraditional.tsx: traditional = 10,000 × 1.05^30 × (1 − rate later); Roth = 10,000 × (1 − rate now) × 1.05^30. -->
+<figure data-widget="roth-or-traditional">
+  <figcaption>What $10,000 of pay is worth after thirty years and after tax in each kind of account, at tax rates you choose. Assumes 5% growth per year after inflation; in today's dollars.</figcaption>
+</figure>
+
+
 <p>If your rate in retirement is lower than today, traditional wins: at 12%, it leaves $38,033 against the Roth's $33,711, about 13% more. If your rate is higher, Roth wins. The gap is the difference in rates, applied to the whole balance.</p>
 
 <h2 id="rates">Your rate now and your rate later</h2>
@@ -24,7 +32,32 @@
 <h3>The rate later is often lower than people expect</h3>
 <p>In retirement, traditional withdrawals stack up from zero. The first dollars each year are covered by the standard deduction and come out tax-free; the next are taxed at 10%, then 12%. So the average rate on all your withdrawals is lower than the rate on the last dollar.</p>
 <p>A married couple, both over 65, with $60,000 of traditional IRA withdrawals and $48,000 of Social Security pays $5,804 of federal income tax for 2026. That's helped by the larger standard deduction at 65 and the temporary senior deduction for 2025 through 2028. Their top bracket is 12%, and the whole bill comes to under 10% of the IRA withdrawals.</p>
-<p>The next dollar can cost more than the bracket suggests. For that couple, another $1,000 from the IRA would also make $800 more of their Social Security taxable, so it would cost $216 in federal tax, an effective 21.6%, though their bracket says 12%. Past that point 85% of their benefit is taxable, the most there can be, and the rate drops back to 12%. <a href="/learn/retirement-income-taxes">How retirement income is taxed</a> explains why. The rate that matters for a contribution is the one on the withdrawals it will eventually pay for, and that depends on how much else you'll have coming in.</p>
+
+<!-- data: computeRetireTax({trad:60000, ss:48000, status:"m", ages:[67,67], dedType:"std", state:"TX"}) from lib/engine/math.js, 2026: taxableSS 40,000; agi 100,000; fedDed 47,500 (standard 32,200 + 2 x 1,650 at 65 + senior deduction 2 x 6,000); fedTaxable 52,500; bands 24,800 at 10% = 2,480 and 27,700 at 12% = 3,324; federal 5,804. Script: scratchpad/where-each-dollar-goes/calc.mjs -->
+<figure>
+  <table>
+    <thead><tr><th>The couple's 2026 federal return</th><th>Amount</th></tr></thead>
+    <tbody>
+      <tr><td>Traditional IRA withdrawals</td><td>$60,000</td></tr>
+      <tr><td>Taxable part of $48,000 of Social Security</td><td>$40,000</td></tr>
+      <tr><td>Standard deduction, with the extra at 65</td><td class="neg">−$35,500</td></tr>
+      <tr><td>Senior deduction, $6,000 each</td><td class="neg">−$12,000</td></tr>
+      <tr><td>Taxable income</td><td>$52,500</td></tr>
+      <tr><td>Tax on the first $24,800 at 10%</td><td>$2,480</td></tr>
+      <tr><td>Tax on the next $27,700 at 12%</td><td>$3,324</td></tr>
+      <tr><td>Federal income tax</td><td>$5,804</td></tr>
+    </tbody>
+  </table>
+  <figcaption>How $60,000 of traditional withdrawals and $48,000 of Social Security is taxed for a married couple, both over 65, for 2026. State tax is left out.</figcaption>
+</figure>
+<p>The next dollar can cost more than the bracket suggests. For that couple, another $1,000 from the IRA would also make $800 more of their Social Security taxable, so it would cost $216 in federal tax, an effective 21.6%, though their bracket says 12%. Past that point 85% of their benefit is taxable, the most there can be, and the rate drops back to 12%. <a href="/learn/retirement-income-taxes">How retirement income is taxed</a> explains why.</p>
+
+<!-- data: computeRetireTax as above with trad from 0 to 150,000, 2026. Rate on the next dollar = (federal at trad + 100, minus federal at trad) / 100, read at each point where it changes: tax starts at about 31,700 (18.5% = 10% x 1.85 while each dollar also makes 85 cents of Social Security taxable), 22.2% from about 45,100 (12% x 1.85), 12% from 61,000 once 85% of the benefit (40,800) is taxable, 22% from about 107,500, 24.64% from 109,200 where AGI passes 150,000 and the senior deduction shrinks by 6 cents per dollar (22% x 1.12). Bracket = the bracket taxable income is in (0 while taxable income is 0). Average = federal / trad. Script: scratchpad/where-each-dollar-goes/charts2.mjs -->
+<figure data-chart='{"type":"line","x":[0,10000,20000,30000,31700,40000,45100,50000,60000,61000,70000,80000,90000,100000,107500,109200,110000,120000,130000,140000,150000],"xLabel":"Traditional IRA withdrawals for the year","xFormat":"money","y":"pct","series":[{"name":"Rate on the next dollar","tone":"bad","step":true,"values":[0,0,0,0,0.185,0.185,0.222,0.222,0.222,0.12,0.12,0.12,0.12,0.12,0.22,0.2464,0.2464,0.2464,0.2464,0.2464,0.2464]},{"name":"Their bracket","tone":"muted","step":true,"dash":true,"values":[0,0,0,0,0.1,0.1,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.22,0.22,0.22,0.22,0.22,0.22,0.22]},{"name":"Average rate on all the withdrawals","tone":"accent","values":[0,0,0,0,0.0005,0.0387,0.0553,0.0717,0.0967,0.0987,0.1014,0.1037,0.1056,0.107,0.1079,0.1097,0.1106,0.122,0.1315,0.1397,0.1468]}]}'>
+  <figcaption>Federal tax rates on traditional IRA withdrawals for the same couple, with $48,000 of Social Security, for 2026. The first $31,700 or so comes out untaxed. Between there and $61,000, each dollar costs more than the bracket says because it also makes Social Security taxable.</figcaption>
+</figure>
+
+<p>The average line is what the couple pays on the withdrawals as a whole: even at $100,000 per year, it's under 11%. For the next contribution, the rate that matters is the one on the withdrawals it will eventually pay for, which sit on top of everything else you'll have coming in. If this couple's other savings already produce $50,000 per year of withdrawals, a further contribution today comes out later at 22.2% or 12%, and the 0% and 10% layers are already used up.</p>
 
 <h3>What usually decides it</h3>
 <p>For most people, the comparison comes down to where they are in their career and how much they'll have saved.</p>
@@ -109,7 +142,7 @@
 </figure>
 
 <p>The Roth 401(k) is the only way to make large Roth contributions at a high income, since it has no income limit. The Roth IRA is the more flexible of the two: you can take your contributions back out at any time, which makes it a reasonable second line behind an emergency fund. <a href="/learn/iras">IRAs</a> covers its rules in detail.</p>
-<p>One rule change affects people 50 and over with higher pay. From 2026, if your wages from your employer were over $150,000 in 2025, any catch-up contributions you make to that employer's plan must go in as Roth. Your regular contributions up to $24,500 can still be traditional. <a href="/learn/contribution-limits">This year's limits</a> has the details.</p>
+<p>One rule change affects people 50 and over with higher pay. From 2026, if your wages from your employer were over $150,000 in 2025, any catch-up contributions you make to that employer's plan must go in as Roth. The wages that count are the Social Security wages on your W-2 from that one employer, and the threshold rises with inflation each year. Your regular contributions up to $24,500 can still be traditional. If the plan has no Roth option, people over the threshold can't make catch-up contributions at all, which is one reason nearly every plan now has one. <a href="/learn/contribution-limits">This year's limits</a> has the details.</p>
 
 <h2 id="plan">Seeing it in your own plan</h2>
 <p>Income Tax shows both sides of the trade. In normal mode, enter your pay and add a traditional 401(k) or IRA contribution under pre-tax deductions: the tool shows how much tax it saves this year and your marginal rate, the rate a traditional contribution saves. In retirement mode, enter the withdrawals and Social Security you expect and it shows the tax on each kind of income and the rate on the next dollar, the rate the same money would pay coming out.</p>
@@ -138,11 +171,12 @@
     <li data-term="Tax diversification">Holding traditional, Roth and taxable money, so each year in retirement you can choose which to draw from and how much taxable income to have.</li>
   </ul>
   <ul class="deeper">
-    <li><a href="https://www.irs.gov/retirement-plans/roth-comparison-chart">Roth comparison chart</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/retirement-plan-and-ira-required-minimum-distributions-faqs">Retirement plan and IRA required minimum distributions FAQs</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500">401(k) limit increases to $24,500 for 2026, IRA limit increases to $7,500</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-catch-up-contributions">Retirement topics: catch-up contributions</a> <span>IRS</span></li>
     <li><a href="https://workplace.vanguard.com/insights-and-research/report/how-america-saves-2026.html">How America Saves 2026</a> <span>Vanguard</span></li>
     <li><a href="https://www.bogleheads.org/wiki/Traditional_versus_Roth">Traditional versus Roth</a> <span>Bogleheads wiki</span></li>
-    <li><a href="https://www.kitces.com/blog/roth-vs-traditional-ira-the-four-factors-that-determine-which-is-best/">How to know when a Roth vs traditional IRA is best</a> <span>Kitces</span></li>
+    <li><a href="https://www.kitces.com/blog/roth-vs-traditional-ira-the-four-factors-that-determine-which-is-best/">Roth vs traditional IRA: the four factors that determine which is best</a> <span>Kitces</span></li>
   </ul>
 </footer>
 </article>

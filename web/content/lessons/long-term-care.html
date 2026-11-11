@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="long-term-care" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="long-term-care" data-reviewed="2026-11-10"
   data-title="Long-term care"
   data-idea="What it costs, who pays, and how to plan for a risk you may never face"
   data-tool="drawdown" data-try="Add a long-term care cost as a future expense and see whether your savings still last, with your plan already filled in.">
@@ -18,20 +18,21 @@
 <h2 id="odds">How likely you are to need it</h2>
 <p>The federal Administration for Community Living, part of the Department of Health and Human Services, puts the odds this way for someone turning 65 today.</p>
 
-<!-- data: Administration for Community Living (HHS), LongTermCare.gov, "How much care will you need?" (acl.gov/ltc/basic-needs/how-much-care-will-you-need): any services 69%, average 3 years; at home, any 65%, 2 years; at home, paid 42%, under 1 year; in facilities 37%, 1 year; nursing facilities 35%, 1 year; assisted living 13%, under 1 year. Women 3.7 years, men 2.2 years on average; about one-third never need care; 20% need it for more than 5 years. -->
+<!-- data: Administration for Community Living (HHS), LongTermCare.gov, "How much care will you need?" (acl.gov/ltc/basic-needs/how-much-care-will-you-need): any services 69%, average 3 years; at home, any 65%, 2 years; at home, unpaid only 59%, 1 year; at home, paid 42%, under 1 year; in facilities 37%, 1 year; nursing facilities 35%, 1 year; assisted living 13%, under 1 year. Women 3.7 years, men 2.2 years on average; about one-third never need care; 20% need it for more than 5 years. -->
 <figure>
   <table>
     <thead><tr><th>Kind of care</th><th>Share of people turning 65 who will use it</th><th>Average years of use</th></tr></thead>
     <tbody>
       <tr><td>Any long-term care</td><td>69%</td><td>3</td></tr>
       <tr><td>Care at home, paid or unpaid</td><td>65%</td><td>2</td></tr>
+      <tr><td>Unpaid care at home only</td><td>59%</td><td>1</td></tr>
       <tr><td>Paid care at home</td><td>42%</td><td>Under 1</td></tr>
       <tr><td>Care in a facility</td><td>37%</td><td>1</td></tr>
       <tr><td>Nursing facility</td><td>35%</td><td>1</td></tr>
       <tr><td>Assisted living</td><td>13%</td><td>Under 1</td></tr>
     </tbody>
   </table>
-  <figcaption>LongTermCare.gov, Administration for Community Living. Averages are over the people who use each kind of care.</figcaption>
+  <figcaption>LongTermCare.gov, Administration for Community Living. Averages are over the people who use each kind of care. The rows overlap, because many people use more than one kind over the years.</figcaption>
 </figure>
 
 <p>The averages hide a very uneven spread. About a third of people never need long-term care. Many need it for a few months, often after a hospital stay. And about 20% need it for more than five years. Women need care for longer on average than men, 3.7 years against 2.2, partly because they tend to live longer and are more often widowed by the time they need it.</p>
@@ -55,6 +56,13 @@
 
 <!-- data: 20 hours × $35 × 52 weeks = $36,400 per year × 1.5 = $54,600. $74,400 × 2 = $148,800. $129,575 × 3 = $388,725. -->
 
+<p>The chart carries the same arithmetic out to five years, the length of care about one person in five ends up needing.</p>
+
+<!-- data: CareScout 2025 national medians per year × years of care, at today's prices with no inflation. Assisted living $74,400: $74,400; $148,800; $223,200; $297,600; $372,000. Home care, 44 hours per week, $80,080: $80,080; $160,160; $240,240; $320,320; $400,400. Nursing home, private room, $129,575: $129,575; $259,150; $388,725; $518,300; $647,875. -->
+<figure data-chart='{"type":"line","x":[1,2,3,4,5],"xLabel":"Years of care","y":"money","series":[{"name":"Nursing home, private room","tone":"bad","values":[129575,259150,388725,518300,647875]},{"name":"Home care, 44 hours per week","tone":"accent","values":[80080,160160,240240,320320,400400]},{"name":"Assisted living","tone":"neutral","values":[74400,148800,223200,297600,372000]}]}'>
+  <figcaption>Total cost by how long care lasts, at the 2025 national medians and today's prices. The average need is about three years; one person in five needs more than five.</figcaption>
+</figure>
+
 <p>These are today's prices. Care is mostly labor, so its price follows wages, which over long periods have risen faster than prices in general. In a plan that runs in today's dollars, it's sensible to assume care costs grow at least with inflation. Rates also vary enormously by place: the same survey finds assisted living and nursing homes cost far more in some states than in others.</p>
 
 <h2 id="who">Who pays for it</h2>
@@ -75,14 +83,23 @@
   <figcaption>The main ways long-term care is paid for in the US. Medicaid pays more of it than any other source, 61% of all spending in 2022, according to KFF.</figcaption>
 </figure>
 
+<!-- data: KFF, 10 things about long-term services and supports (July 8, 2024): of $415 billion of US spending on long-term services and supports in 2022, Medicaid 61%, out of pocket 17%, other public and private payers 21%. The shares are rounded and add to 99%. KFF's total leaves out unpaid family care and private long-term care insurance. -->
+<figure data-chart='{"type":"bar","labels":true,"x":["Medicaid","Out of pocket","Other public and private payers"],"y":"pct","series":[{"name":"Share of US long-term care spending, 2022","tone":"accent","values":[0.61,0.17,0.21]}]}'>
+  <figcaption>Who paid for the $415 billion spent on long-term care in the US in 2022, according to KFF. Unpaid care from family isn't in the total, and neither is private long-term care insurance, which KFF counts separately.</figcaption>
+</figure>
+
 <h2 id="medicaid">How Medicaid pays for care</h2>
 <p>Medicaid is the safety net for long-term care, and for many people it's what pays in the end. It's means-tested: you qualify only when your income and countable assets are low. The rules differ by state, but the federal framework is the same everywhere.</p>
 <h3>Assets and income</h3>
 <p>For a single person, the asset limit is often around $2,000, plus some exempt items. Your home is usually exempt while you or a spouse live in it, as long as your equity is under the state's limit, which for 2026 is at least $752,000 and in some states up to $1,130,000. A car, personal belongings and a small burial fund are usually exempt too. Most of your income, including Social Security and pensions, goes toward the cost of care, apart from a small personal allowance set by the state.</p>
 <h3>Protecting a spouse at home</h3>
 <p>When one spouse needs nursing home care and the other stays at home, federal rules stop the one at home from being impoverished. The community spouse can keep a share of the couple's assets, between $32,532 and $162,660 in 2026 depending on the state and the couple's assets, plus the home. They can also keep enough of the couple's income to bring their own up to a minimum, as much as $4,066.50 per month in 2026.</p>
+<p>Take a hypothetical couple, Sam and Jordan, with $300,000 in savings and a house. Sam moves into a nursing home. In many states Jordan keeps half of the savings, within those limits: $150,000. Sam can keep about $2,000. The other $148,000 has to be spent, on Sam's care or on things Medicaid doesn't count, such as paying down the mortgage or repairing the house, before Medicaid starts paying. Some states let the spouse at home keep the full $162,660 whatever the half comes to, which would leave $135,340 to spend. The house stays out of the sum as long as Jordan lives in it.</p>
+
+<!-- data: hypothetical. Half of $300,000 = $150,000, between the 2026 minimum $32,532 and maximum $162,660 (CMS, 2026 SSI and spousal impoverishment standards, December 9, 2025). $300,000 − $150,000 − $2,000 = $148,000. With the full maximum: $300,000 − $162,660 − $2,000 = $135,340. -->
 <h3>The five-year look-back</h3>
-<p>Medicaid looks back 60 months from the date you apply. Money or property given away in that time, or sold for less than it's worth, triggers a period during which Medicaid won't pay for nursing home care. Giving assets to children a year before needing care doesn't work. Planning more than five years ahead, for example with certain irrevocable trusts, can, and that's work for an elder-law attorney in your state.</p>
+<p>Medicaid looks back 60 months from the date you apply. Money or property given away in that time, or sold for less than it's worth, triggers a period during which Medicaid won't pay for nursing home care. The length is the amount given away divided by what the state takes as the average monthly cost of a nursing home. A $100,000 gift in a state that uses $10,000 per month means ten months without Medicaid. And the ten months don't start on the day of the gift. They start when you're in a nursing home, have spent down your assets and would otherwise qualify, which is when you have the least to pay with. So giving assets to children a year before needing care doesn't work. Planning more than five years ahead, for example with certain irrevocable trusts, can, and that's work for an elder-law attorney in your state.</p>
+<!-- data: penalty period = uncompensated transfer ÷ the state's average monthly private-pay nursing home cost; it begins when the applicant is in a facility and otherwise eligible (Deficit Reduction Act of 2005, sections 6011 and 6016). Hypothetical $100,000 ÷ $10,000 = 10 months; each state sets its own divisor. -->
 <h3>Estate recovery</h3>
 <p>After a Medicaid recipient dies, the state must try to recover what it spent on long-term care for anyone 55 or older from their estate, which often means the house. Recovery is postponed while a spouse or a young or disabled child is still alive, and states have hardship rules.</p>
 <p>Medicaid also limits choice. Not every nursing home takes it, and home and community care is often limited or has a waiting list. That's one reason people with savings try to pay privately for at least the first part of their care.</p>
@@ -98,12 +115,13 @@
 <p>Policies are medically underwritten, so you have to buy while you're healthy. The share of applicants turned down rises steeply with age, which is why most buyers are in their fifties or early sixties.</p>
 <p>The biggest problem has been premiums. Insurers priced early policies assuming more people would drop them and fewer would claim, and when that proved wrong, they raised premiums on existing policyholders, some by large amounts several times over. A policy's premium isn't guaranteed, and someone who can no longer afford it may have to cut the benefit or drop the coverage after years of paying. Ask any insurer for its history of increases.</p>
 <h3>Tax treatment</h3>
-<p>Premiums for a tax-qualified policy count as medical expenses up to a limit that rises with age: for 2026, $4,960 per person at 61 to 70 and $6,200 at 71 and older. You can pay them from an <a href="/learn/hsa">HSA</a> tax free up to the same limits. Benefits from a tax-qualified policy are generally tax free. Most states also run Partnership programs: buy a qualifying policy, and each dollar it pays out is a dollar of assets you can keep and still qualify for Medicaid later.</p>
+<p>Premiums for a tax-qualified policy count as medical expenses up to a limit that rises with age: for 2026, $1,860 per person at 51 to 60, $4,960 at 61 to 70 and $6,200 at 71 and older. That only helps if you itemize and your medical expenses for the year come to more than 7.5% of your adjusted gross income. You can pay them from an <a href="/learn/hsa">HSA</a> tax free up to the same limits. Benefits from a tax-qualified policy are generally tax free. Most states also run Partnership programs: buy a qualifying policy, and each dollar it pays out is a dollar of assets you can keep and still qualify for Medicaid later.</p>
 <h3>Hybrid policies</h3>
 <p>A hybrid policy combines life insurance or an annuity with a long-term care benefit. You pay a lump sum or a fixed number of premiums, often guaranteed not to rise. If you need care, it pays a multiple of what you put in; if you don't, your heirs get a death benefit. The trade-offs are a larger payment up front and, for the same premium, less care coverage than a traditional policy. You can move money from an existing life insurance policy or annuity into one without tax, through a 1035 exchange.</p>
 <h3>State programs</h3>
-<p>Washington State is the first to run its own long-term care insurance. Workers there pay 0.58% of wages into the WA Cares Fund, and from July 2026 people who qualify can draw a lifetime benefit of up to $36,500, adjusted for inflation. Other states have studied similar programs.</p>
+<p>Washington State is the first to run its own long-term care insurance. Workers there pay 0.58% of wages into the WA Cares Fund, and since July 1, 2026 people who have paid in for long enough and need care can draw on a lifetime benefit that starts at $36,500 and rises with inflation. At the national median that's about three months in a nursing home, or a year of help at home for 20 hours per week. It covers the start of a need and leaves a long one to you. Other states have studied similar programs.</p>
 
+<!-- data: WA Cares Fund FAQ (updated October 20, 2026): 0.58% of wages, benefits available from July 1, 2026, lifetime benefit starts at $36,500. $36,500 ÷ $355 per day = 103 days in a private nursing home room; $36,500 ÷ (20 hours × $35 × 52 ÷ 12 = $3,033 per month) = 12 months of home care at 20 hours per week. -->
 <h2 id="self">Paying for it yourself</h2>
 <p>For many people with substantial savings, the plan is to pay for care from their own money if it's needed. That works best as a deliberate plan:</p>
 <ul>
@@ -144,6 +162,8 @@
     <li><a href="https://investor.genworth.com/news-events/press-releases/detail/1054/carescout-releases-2025-cost-of-care-survey-results">CareScout releases 2025 Cost of Care Survey results</a> <span>Genworth</span></li>
     <li><a href="https://aspe.hhs.gov/pdf-report/most-older-adults-are-likely-need-and-use-long-term-services-and-supports-issue-brief">Most older adults are likely to need and use long-term services and supports</a> <span>Johnson and others, ASPE, HHS</span></li>
     <li><a href="https://www.medicaid.gov/medicaid/eligibility-policy/spousal-impoverishment">Spousal impoverishment</a> <span>Medicaid.gov</span></li>
+    <li><a href="https://www.medicaid.gov/federal-policy-guidance/downloads/cib12092025.pdf">2026 SSI and spousal impoverishment standards</a> <span>CMS</span></li>
+    <li><a href="https://wacaresfund.wa.gov/">WA Cares Fund</a> <span>Washington State</span></li>
     <li><a href="https://www.kff.org/medicaid/issue-brief/10-things-about-long-term-services-and-supports-ltss/">10 things about long-term services and supports</a> <span>KFF</span></li>
   </ul>
 </footer>

@@ -1,0 +1,162 @@
+<article class="lesson" data-slug="old-401k-rollovers" data-reviewed="2026-11-10"
+  data-title="Changing jobs: what to do with an old 401(k)"
+  data-idea="Leave it, roll it over or cash it out, and what each one costs"
+  data-tool="calculator" data-try="Run your savings with the old 401(k) counted, then without it, to see what cashing out would cost by the age you retire.">
+
+<p class="lede">When you leave a job, the 401(k) stays behind until you tell it where to go. You have four choices: leave it where it is, move it into your new employer's plan, move it into an IRA, or take the cash. The first three keep the money growing untaxed, and the differences between them are mostly fees, fund choice and a few rules that matter to some people a great deal. Taking the cash usually costs about a third of the balance on the day, and far more than that by the time you retire.</p>
+
+<h2 id="choices">The four choices</h2>
+<p>Everything here applies equally to a 403(b), and mostly to a governmental 457(b) and the federal Thrift Savings Plan. Your own contributions and their growth are always yours to take. Employer money comes with you only as far as it has vested, so check the vested balance, not the total; <a href="/learn/employer-match">The employer match</a> covers how vesting works.</p>
+
+<!-- data: rules from IRS "Retirement topics: termination of employment", IRS "Rollovers of retirement plan and IRA distributions", IRS exceptions to tax on early distributions (separation from service at 55: qualified plans yes, IRAs no), 26 USC 411(a)(11) ($7,000). The cashing-out cost is the worked example in the next section. -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>What happens</th><th>What it costs or gives up</th></tr></thead>
+    <tbody>
+      <tr><td>Leave it in the old plan</td><td>Nothing changes except that you can't add to it. Allowed whenever your vested balance is over $7,000.</td><td>One more account to keep track of, and some plans charge former employees more. Keeps the age-55 exception for that plan.</td></tr>
+      <tr><td>Roll it into the new employer's plan</td><td>The balance joins your new 401(k), if that plan accepts roll-ins. Most do; none has to.</td><td>You're limited to the new plan's funds and fees. Keeps everything in one place and out of the backdoor Roth arithmetic.</td></tr>
+      <tr><td>Roll it into an IRA</td><td>The balance moves to an IRA at a brokerage you choose, traditional money to a traditional IRA and Roth money to a Roth IRA.</td><td>Widest choice of investments, often the lowest cost. Gives up the age-55 exception and can spoil a backdoor Roth.</td></tr>
+      <tr><td>Cash it out</td><td>The plan sends you a check with 20% already withheld for federal tax.</td><td>Income tax on the whole pre-tax balance, usually a 10% penalty before 59½, and all the growth the money would have had.</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The four things you can do with a 401(k) from a job you've left. You can also split a balance between them.</figcaption>
+</figure>
+
+<p>None of the first three has a deadline. If you do nothing and the balance is over $7,000, it simply stays in the old plan, and you can move it next month or in ten years. The week you change jobs is a bad time for a rushed decision about retirement savings, and you don't have to make one.</p>
+
+<h2 id="cashing-out">What cashing out really costs</h2>
+<p>A traditional 401(k) has never been taxed. When you cash it out, the whole balance is added to your income for the year and taxed at your ordinary rates, on top of your pay. If you're under 59½ there is also a 10% additional tax, with a few exceptions that <a href="/learn/bridge-to-59">Bridging to 59½</a> lists. Most states with an income tax take their share too.</p>
+<p>Say Sam is 35, single, earns $75,000 and is leaving a job with $30,000 in a traditional 401(k). Without the cash-out, Sam's 2026 federal income tax is $7,670. With it, taxable income rises by $30,000, all of which lands in the 22% bracket, and the tax goes to $14,270: $6,600 more. The 10% penalty is another $3,000. Sam keeps $20,400 of the $30,000 before any state tax.</p>
+
+<!-- data: lib/engine math.js bracketTax with data/2026.js (single, standard deduction $16,100). Tax on $75,000 of wages = $7,670; on $105,000 = $14,270; difference $6,600 (22% x 30,000, since taxable income moves from $58,900 to $88,900, inside the 22% band $50,400-$105,700). Penalty 10% x 30,000 = $3,000. Kept = 30,000 - 6,600 - 3,000 = $20,400. No state tax. Script: scratchpad/old-401k-rollovers/calc.mjs -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["Rolled over","Cashed out"],"y":"money","series":[{"name":"Still yours","tone":"good","values":[30000,20400]},{"name":"Federal income tax","tone":"bad","values":[0,6600]},{"name":"10% early withdrawal penalty","tone":"accent","values":[0,3000]}]}'>
+  <figcaption>Where a $30,000 traditional 401(k) goes for a 35-year-old single filer earning $75,000 in 2026. State income tax would take more.</figcaption>
+</figure>
+
+<p>The check itself is misleading. The plan must withhold 20% for federal tax, so Sam receives $24,000 and may think that's the end of it. The $6,000 withheld is only a deposit against the $9,600 actually owed, and the other $3,600 comes due with the tax return the following spring.</p>
+<p>The larger cost doesn't show up for decades. Left in a retirement account and growing 5% per year after inflation, the $30,000 would be about $129,700 in today's dollars when Sam turns 65.</p>
+
+<!-- data: 30,000 x 1.05^n for n = 0, 5, ..., 30 (5% per year after inflation, no further contributions): 30000, 38288, 48867, 62368, 79599, 101591, 129658. Level at $20,400 is the after-tax cash from the example above. -->
+<figure data-chart='{"type":"line","x":[35,40,45,50,55,60,65],"xLabel":"Age","y":"money","series":[{"name":"Rolled over and left invested","tone":"good","values":[30000,38288,48867,62368,79599,101591,129658]}],"levels":[{"y":20400,"label":"Cash kept at 35: $20,400"}]}'>
+  <figcaption>The same $30,000 left invested until 65, growing 5% per year after inflation, in today's dollars. The withdrawals would still be taxed in retirement.</figcaption>
+</figure>
+
+<p>So the trade is $20,400 now for roughly $129,700 of retirement money later. That money will be taxed when it comes out, but at whatever rate Sam pays in retirement and with no penalty. If you need some of the money, you can cash out part and roll over the rest, and the tax and penalty apply only to the part you take.</p>
+
+<h2 id="moving">Direct and indirect rollovers</h2>
+<p>There are two ways to move the money, and one of them is much safer.</p>
+<p>In a direct rollover, the old plan sends the balance straight to the new plan or IRA. Nothing is withheld, nothing is taxed, and there's no deadline to meet. Some plans do this by wire. Others mail you a check made out to the new custodian "for the benefit of" you, which you forward. It's still a direct rollover, because the check isn't payable to you.</p>
+<p>In an indirect rollover, the plan pays you, and you have 60 days from the day you receive the money to put it into another plan or an IRA. The catch is the withholding. The plan has to hold back 20% for federal tax, even if you tell them you intend to roll it all over. To complete the rollover, you have to deposit the full original amount, which means finding the withheld 20% from your own pocket and waiting for it to come back as a tax refund.</p>
+
+<!-- data: $30,000 distribution, 20% withheld = $6,000, check = $24,000 (IRS "Rollovers of retirement plan and IRA distributions", which gives the same example on $10,000). Row 2: $6,000 not rolled over is taxable; at 22% = $1,320, penalty 10% = $600, total $1,920; refund = 6,000 withheld - 1,920 = $4,080. Row 3: the cash-out example above, $6,600 + $3,000 = $9,600 owed, $6,000 already withheld. Same taxpayer as above (single, $75,000 of wages, under 59 1/2). -->
+<figure>
+  <table>
+    <thead><tr><th>Sam gets a $24,000 check and then</th><th>Lands in the IRA</th><th>Tax and penalty</th><th>The $6,000 withheld</th></tr></thead>
+    <tbody>
+      <tr><td>Deposits $30,000 within 60 days, adding $6,000 from savings</td><td>$30,000</td><td>$0</td><td>All refunded at tax time</td></tr>
+      <tr><td>Deposits only the $24,000 within 60 days</td><td>$24,000</td><td class="neg">−$1,920</td><td>$4,080 refunded</td></tr>
+      <tr><td>Misses the 60 days</td><td>$0</td><td class="neg">−$9,600</td><td>All used, with $3,600 more owed</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Three endings to an indirect rollover of $30,000, for the same 35-year-old in the 22% bracket. In the middle row, the $6,000 that wasn't redeposited counts as a withdrawal.</figcaption>
+</figure>
+
+<p>If you miss the 60 days for a reason outside your control, such as a serious illness or a mistake by the financial institution, the IRS can waive the deadline, and for the reasons on its list you can certify the cause yourself to the receiving institution and complete the rollover late. The limit of one indirect rollover per twelve months applies between IRAs only, not to money moving from a plan to an IRA or between plans. A few payments can't be rolled over at all, including required minimum distributions and hardship withdrawals.</p>
+
+<h2 id="small">Small balances and force-outs</h2>
+<p>Leaving the money alone is only guaranteed for vested balances over $7,000. At or below that, the plan is allowed to move you out without your consent. The limit was $5,000 until 2024, and each plan sets its own threshold up to the legal maximum.</p>
+<ul>
+<li>If the balance is $1,000 or less, the plan can simply mail you a check, less 20% withholding. You still have 60 days to roll it into an IRA or your new plan, including the withheld part if you want to avoid tax on it.</li>
+<li>If it's over $1,000 and you don't answer the plan's notice, the plan must roll it into an IRA it opens in your name. These automatic rollover IRAs are meant to hold the money safely. They generally sit in a cash-like investment and often charge a yearly fee, so a small balance left there for years can shrink.</li>
+</ul>
+<p>Either way, the fix is to answer the letter. Tell the plan where to send the money before it chooses for you, and keep your address current with old employers.</p>
+<p>A newer arrangement, automatic portability, moves a small balance from an automatic rollover IRA into your 401(k) at a new employer without your doing anything, unless you opt out. SECURE 2.0, the retirement law passed in December 2022, provided for it. It works only where both the old and new plans take part, so don't count on it.</p>
+
+<h2 id="loans">A plan loan when you leave</h2>
+<p>If you've borrowed from your 401(k), check the loan terms before your last day. Many plans require the balance to be repaid when you leave, though some let former employees keep making payments. If it isn't repaid, the plan subtracts what you owe from your account and reports that amount as a distribution. That's called a loan offset. It's taxed like any other withdrawal, with the 10% penalty if you're under 59½.</p>
+<p>You can undo it. When the offset happens because you left the job, you have until your tax return is due for that year, including extensions, to put the same amount into an IRA or another plan from your own money. Leave in 2026 with $8,000 of loan outstanding, and depositing $8,000 into an IRA by the filing deadline in 2027 (October 15 with an extension) cancels the tax and the penalty on it.</p>
+
+<h2 id="kinds">Roth money, after-tax money and company stock</h2>
+<p>Most of the above assumes ordinary pre-tax money. Three other kinds follow their own rules.</p>
+<h3>Roth 401(k) money</h3>
+<p>A Roth 401(k) balance rolls into a Roth IRA or into a new employer's Roth 401(k), with no tax. One detail is worth knowing. Roth earnings come out tax-free only after the account has been open five years and you're 59½, and the years your money spent in the Roth 401(k) don't carry over to a Roth IRA. What counts is when you first contributed to any Roth IRA. If you opened one eight years ago, the rolled-over money is treated as eight years old; if the rollover opens your first Roth IRA, the five years start then. <a href="/learn/iras">IRAs</a> explains the clock.</p>
+<p>You can also roll traditional 401(k) money into a Roth IRA. That is a Roth conversion: the whole pre-tax amount is taxed as income in the year you do it, with no penalty. <a href="/learn/roth-conversions">Roth conversions</a> covers when that's worth doing.</p>
+<h3>After-tax contributions</h3>
+<p>Some plans allow after-tax contributions beyond the regular limit, which are different from Roth contributions: the money you put in was already taxed, but its earnings haven't been. When you move the whole account, you can send the two parts to different places at the same time. The after-tax contributions go to a Roth IRA, tax-free, and the pre-tax money, including the earnings on those contributions, goes to a traditional IRA. You can't take only the after-tax dollars and leave the rest. A partial withdrawal always carries pre-tax and after-tax money in proportion.</p>
+<h3>Employer stock and net unrealized appreciation</h3>
+<p>If your 401(k) holds shares of your employer's own stock that have risen a lot, think before rolling them into an IRA. A special rule lets you move the shares themselves into an ordinary brokerage account. You pay income tax that year on what the plan originally paid for the shares, their cost basis. The growth above that, called net unrealized appreciation or NUA, isn't taxed until you sell, and then at long-term capital gains rates, which are lower than ordinary income rates for most people. Roll the shares into an IRA instead and the break is gone, because everything that later comes out of the IRA is ordinary income.</p>
+<p>The conditions are strict. Your whole balance in that employer's plans has to be paid out within one calendar year, after you leave the job or reach 59½; the part that isn't company stock can be rolled over in the usual way. The rule pays off most when the basis is a small part of the stock's value. Talk to a tax professional before any of the account moves, since a partial rollover in an earlier year can undo it.</p>
+
+<h2 id="ira-costs">What an IRA rollover gives up</h2>
+<p>An IRA usually wins on choice and often on cost, which is why it's the common default. It has three drawbacks, and each matters only to certain people.</p>
+<h3>The backdoor Roth</h3>
+<p>People whose income is too high for a direct Roth IRA contribution often use the backdoor: a nondeductible traditional IRA contribution, converted to Roth. The conversion is taxed in proportion to all the pre-tax money in your traditional, SEP and SIMPLE IRAs on December 31 of that year, which is the pro-rata rule. A rollover IRA holding $92,500 of old 401(k) money makes a $7,500 backdoor conversion 92.5% taxable. Money in a workplace plan isn't counted. If you use the backdoor Roth, or expect to, keeping old 401(k) money in a plan (the old one or the new one) avoids the problem. <a href="/learn/iras">IRAs</a> works through the arithmetic.</p>
+<h3>The rule of 55</h3>
+<p>If you leave an employer in or after the calendar year you turn 55, you can withdraw from that employer's plan without the 10% penalty. The exception doesn't apply to IRAs. Roll the account into an IRA at 56 and the money is locked behind the penalty again until 59½. Anyone leaving a job in their mid-fifties who might need the money before 59½ should leave at least that much in the plan. The rule also covers only the plan of the employer you just left, so rolling older 401(k)s into your current plan while you still work there brings that money under it too.</p>
+<h3>Protection from creditors</h3>
+<p>Money in an employer's plan covered by ERISA, the federal law governing workplace plans, can't generally be reached by creditors, in bankruptcy or outside it. The main exceptions are a divorce order and debts to the federal government. IRAs get less. In bankruptcy, federal law protects them, but for money you contributed to an IRA yourself the protection is capped, at $1,711,975 for cases filed from April 2025 to March 2028; amounts rolled over from an employer plan don't count toward the cap. Outside bankruptcy, say in a lawsuit, an IRA has only whatever protection your state's law gives, and that varies widely. Most people never need it. For someone in a profession where lawsuits are common, or with business debts, it can decide the question.</p>
+
+<h2 id="deciding">Fees and funds usually decide it</h2>
+<p>For everyone else, the decision comes down to where the money can be invested most cheaply in funds you'd want to own. <a href="/learn/fees-and-index-funds">Fees and index funds</a> shows how much a small difference compounds. On Sam's $30,000 over 30 years, at 5% per year after inflation before costs, a fund charging 0.05% leaves about $127,800 and one charging 0.50% about $112,400. That's $15,400 lost to the higher fee with no further contributions.</p>
+<p>Compare three things in each place the money could go:</p>
+<ul>
+<li>The expense ratios of the funds you'd actually use. Large employers' plans often have index funds at very low institutional prices, sometimes cheaper than anything sold to the public. Small employers' plans often have expensive funds only.</li>
+<li>Any account-level charges. Some plans bill each account a flat or percentage recordkeeping fee, and a few charge former employees fees that current ones don't pay. The plan's yearly fee disclosure lists them. An IRA at a large brokerage typically has no account fee.</li>
+<li>What's on the menu. An IRA can hold nearly any fund. A plan may have something an IRA can't, such as a stable value fund, which pays bond-like interest without the price swings.</li>
+</ul>
+<p>The suggestion to roll over often comes from an adviser or brokerage that will earn fees on the IRA. The rollover may still be the right move, but check the costs yourself.</p>
+
+<h2 id="steps">How to do it, step by step</h2>
+<ul>
+<li>Find your vested balance, and whether any of it is Roth, after-tax or company stock. The plan's website shows each.</li>
+<li>Open the receiving account first: a traditional IRA for pre-tax money and a Roth IRA for Roth money, or enroll in the new employer's plan and ask whether it accepts roll-ins and what form it needs.</li>
+<li>Ask the old plan for a direct rollover, by phone or on its website. Give it the new account's details. If it mails a check, the check should be payable to the new custodian for your benefit, not to you.</li>
+<li>Check that the money arrives, and then invest it. Rollover deposits usually land in a cash fund and stay there until you choose investments. Money left in cash for years is a common and costly oversight.</li>
+<li>Keep the paperwork. In January the old plan sends a Form 1099-R showing the distribution. A direct rollover is reported on your tax return but isn't taxable. If the form shows a taxable amount you didn't expect, call the plan before you file.</li>
+</ul>
+
+<h2 id="lost">Finding a lost 401(k)</h2>
+<p>Accounts get lost because people move, employers merge or change names, and plans switch recordkeepers. The money is still yours. Places to look:</p>
+<ul>
+<li>The Department of Labor's Retirement Savings Lost and Found database, at lostandfound.dol.gov, created under SECURE 2.0. It searches private-sector employer and union plans, pensions as well as 401(k)s, linked to your Social Security number, and shows who to contact. You sign in through Login.gov with verified identity. It doesn't cover IRAs or government plans, and its contact details come from plan filings that may be years old.</li>
+<li>Your old employer's benefits office, or its successor if the company was bought. An old statement or W-2 has the exact names. If a small balance was forced out, the plan's administrator can say which IRA provider it went to.</li>
+<li>Your state's unclaimed property office, where uncashed checks from small force-outs often end up.</li>
+</ul>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Calculator shows what an old balance is worth to your retirement. Run it with everything you've saved, old 401(k) included, and note the figure at your retirement age. Then take the old account out of your savings and run it again. The difference between the two results is what cashing out would cost in today's dollars, which is usually several times the balance.</p>
+<p>If you're leaving work before 59½, <a href="/bridge">the Bridge</a> tests the rule of 55 against the other ways to reach your money early.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Is there a deadline to roll over after I leave?</summary><p>Not for a direct rollover. If your vested balance is over $7,000, you can leave it for years and move it whenever you like. The 60-day deadline applies only once money has been paid to you. At $7,000 or less, the plan can move the money itself, so act when its notice arrives.</p></details>
+<details><summary>Can I roll an old 401(k) into my new employer's plan later?</summary><p>Yes, if the new plan accepts roll-ins. You can also roll a rollover IRA into a 401(k) later, which is how people clear pre-tax IRA money out of the way before a backdoor Roth. Plans generally take pre-tax money only, not the after-tax part of an IRA.</p></details>
+<details><summary>Does a rollover count toward this year's contribution limit?</summary><p>No. Rollovers are separate from contributions. You can roll over $200,000 and still put the full $7,500 into an IRA and $24,500 into your new 401(k) for 2026.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+<li>You can leave an old 401(k) where it is, roll it into a new plan or an IRA, or cash it out. Only cashing out is taxed.</li>
+<li>Cashing out $30,000 at 35 in the 22% bracket leaves $20,400 after federal tax and the 10% penalty, in place of about $129,700 at 65.</li>
+<li>Ask for a direct rollover. An indirect one has 20% withheld and a 60-day deadline.</li>
+<li>Balances of $7,000 or less can be forced out, and an unpaid plan loan becomes a taxable distribution unless you replace it by your tax deadline.</li>
+<li>An IRA usually has the most choice, but it gives up the rule of 55, can spoil a backdoor Roth and has weaker creditor protection.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>What each of the four choices costs and keeps</li><li>How to roll over without tax, withholding or a deadline</li><li>When an IRA is the wrong home for old 401(k) money</li></ul>
+  <ul class="terms">
+    <li data-term="Direct rollover">The old plan sends your balance straight to the new plan or IRA. Nothing is withheld or taxed, and no deadline applies.</li>
+    <li data-term="Indirect rollover">The plan pays you, with 20% withheld, and you have 60 days to deposit the full amount in another plan or IRA.</li>
+    <li data-term="Loan offset">An unpaid plan loan subtracted from your account when you leave. It's a taxable distribution unless you roll over the same amount by your tax deadline.</li>
+    <li data-term="Net unrealized appreciation">The growth of employer stock inside the plan. Moved out as shares in a lump-sum distribution, it's taxed as a long-term capital gain when sold.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/retirement-plans/plan-participant-employee/rollovers-of-retirement-plan-and-ira-distributions">Rollovers of retirement plan and IRA distributions</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-termination-of-employment">Retirement topics: termination of employment</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/publications/p575">Publication 575: pension and annuity income</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/rollovers-of-after-tax-contributions-in-retirement-plans">Rollovers of after-tax contributions in retirement plans</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/retirement-plans-faqs-on-designated-roth-accounts">FAQs on designated Roth accounts</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/taxtopics/tc412">Topic no. 412: lump-sum distributions</a> <span>IRS</span></li>
+    <li><a href="https://lostandfound.dol.gov/">Retirement Savings Lost and Found database</a> <span>US Department of Labor</span></li>
+    <li><a href="https://www.govinfo.gov/content/pkg/FR-2025-02-04/html/2025-02207.htm">Adjustment of certain dollar amounts applicable to bankruptcy cases</a> <span>Federal Register</span></li>
+  </ul>
+</footer>
+</article>

@@ -273,7 +273,7 @@
       "data_for": "5% (Notice 2022-6: the greater of 5% or 120% of the federal mid-term rate)",
       "next_due": "2027-10-01",
       "priority": "low",
-      "notes": "If the floor changes, change the default, the glossary entry and the articles' worked examples together (tests/math.test.js checks them). The lesson's dated figures (120% of the mid-term rate was 5.40% in September and 5.54% in October 2026) are reviewed with the lessons."
+      "notes": "If the floor changes, change the default, the glossary entry and the articles' worked examples together (tests/math.test.js checks them). The lesson's dated figures (120% of the mid-term rate was 5.40% in September, 5.54% in October and 6.11% in November 2026, the last from Rev. Rul. 2026-21; the lesson's table uses 6.11% for a plan starting in December 2026) are reviewed with the lessons."
     },
     {
       "id": "debt-defaults",

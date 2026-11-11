@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="deductions" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="deductions" data-reviewed="2026-11-10"
   data-title="Deductions and credits"
   data-idea="What comes off your income, what comes off your tax, and at 65"
   data-tool="incometax" data-try="Compare the standard deduction with your itemized total, and see the extra deductions at 65, with your plan already filled in.">
@@ -8,6 +8,13 @@
 <h2 id="worth">What a deduction is worth</h2>
 <p>A deduction comes off your taxable income, the income the brackets apply to. So it saves tax at your marginal rate, the rate on your last dollars (<a href="/learn/tax-brackets">Brackets: marginal and effective</a> explains the difference). A $1,000 deduction saves $220 if you're in the 22% bracket, $120 in the 12% bracket, and nothing at all if your income is already below the standard deduction.</p>
 <p>A credit comes off the tax bill directly. A $1,000 credit saves $1,000 whatever your bracket, as long as you owe at least that much tax. A refundable credit goes further: if it's larger than your tax, the IRS pays you the difference.</p>
+
+<!-- data: $1,000 × the 2026 bracket rate (lib/engine/data/2026.js fed) for the deduction; the credit is $1,000 at every rate, assuming at least $1,000 of tax is owed. -->
+<figure data-chart='{"type":"bar","x":["10%","12%","22%","24%","32%","35%","37%"],"xLabel":"Your tax bracket","y":"money","series":[{"name":"$1,000 deduction","tone":"accent","values":[100,120,220,240,320,350,370]},{"name":"$1,000 credit","tone":"good","values":[1000,1000,1000,1000,1000,1000,1000]}]}'>
+  <figcaption>Federal tax saved by a $1,000 deduction and by a $1,000 credit, by bracket. From 2026 an itemized deduction in the 37% bracket saves $350, not $370.</figcaption>
+</figure>
+
+<p>So the same deduction is worth more to a household in a high bracket than to one in a low bracket, while a credit is worth the same to both. When someone says an expense is "tax deductible", the saving is the expense times your marginal rate, and you're still out the rest.</p>
 <p>Deductions also come in two kinds, and in retirement the difference counts for a lot:</p>
 <ul>
 <li>Above-the-line deductions come off before your adjusted gross income (AGI) is figured. Traditional IRA and HSA contributions are the common ones.</li>
@@ -16,7 +23,7 @@
 <p>Both lower your income tax. Only the first kind lowers AGI, and AGI (or a figure close to it) is what decides how much of your Social Security is taxable, your Medicare premiums, your ACA premium credit before 65, and several phase-outs.</p>
 
 <h2 id="standard">The standard deduction for 2026</h2>
-<p>Everyone can take the standard deduction, a flat amount set by filing status, without keeping a single receipt. For 2026 it's $16,100 for a single filer, $24,150 for a head of household and $32,200 for a married couple filing jointly. It rises with inflation each year.</p>
+<p>Everyone can take the standard deduction, a flat amount set by filing status, without keeping a single receipt. For 2026 it's $16,100 for a single filer, $24,150 for a head of household and $32,200 for a married couple filing jointly. It rises with inflation each year; for 2027 it will be $16,600, $24,925 and $33,200.</p>
 <p>At 65, two more amounts can be added. The table shows how they combine.</p>
 
 <!-- data: lib/engine/data/2026.js fedStd, seniorAddl and seniorBonus; head of household from IRS Rev. Proc. 2025-32 (sec. 4.14: $24,150; the unmarried age-65 amount $2,050 applies).
@@ -72,12 +79,13 @@
 <li>Medical and dental costs above 7.5% of AGI, including Medicare premiums and long-term care costs. This one can be large in the last years of life.</li>
 </ul>
 <p>From 2026 there's also a cap for the highest earners: in the 37% bracket, itemized deductions save at most 35 cents per dollar.</p>
-<p>When the Tax Cuts and Jobs Act roughly doubled the standard deduction in 2018 and capped SALT at $10,000, itemizing collapsed. About 31% of returns itemized in 2017 and 9.5% did in 2022, according to the Tax Policy Center. The higher SALT cap will bring some people back, mostly homeowners in high-tax states, but the standard deduction still wins for most households.</p>
+<p>When the Tax Cuts and Jobs Act roughly doubled the standard deduction in 2018 and capped SALT at $10,000, itemizing collapsed. About 31% of returns itemized in 2017, and by 2022 about 9.5% did, going by IRS return data. The higher SALT cap will bring some people back, mostly homeowners in high-tax states, but the standard deduction still wins for most households.</p>
 <h3>A worked example, and bunching</h3>
 <p>Take a hypothetical married couple under 65 with $160,000 of AGI, a mortgage and some regular giving.</p>
 
 <!-- data: hypothetical; all gifts in cash to public charities (not a donor-advised fund). Charity floor 0.5% × 160,000 = 800.
      Every year: itemized 13,000 + 13,000 + (8,000 − 800) = 33,200; standard 32,200 plus the 2,000 non-itemizer cash gift deduction (no 0.5% floor) = 34,200, so they take the standard. Two years: 68,400.
+     The first five rows are the year the gifts are made; the last row is both years together.
      Bunched: 16,000 given in year 1, nothing in year 2. Year 1: 13,000 + 13,000 + (16,000 − 800) = 41,200, beating 34,200; year 2 standard 32,200 (no gifts, so nothing extra). Two years: 73,400.
      73,400 − 68,400 = 5,000 more deducted; taxable income stays in the 22% bracket (100,800–211,400 joint) in every year, so 5,000 × 22% = 1,100. -->
 <figure>
@@ -90,12 +98,13 @@
       <tr><td>Itemized total</td><td>$33,200</td><td>$41,200</td></tr>
       <tr><td>Standard deduction, plus up to $2,000 for gifts</td><td>$34,200</td><td>$34,200</td></tr>
       <tr><td>Better choice</td><td>Standard, plus $2,000 for gifts</td><td>Itemize, then standard next year</td></tr>
+      <tr><td><b>Deducted over two years</b></td><td>$68,400</td><td>$73,400</td></tr>
     </tbody>
   </table>
   <figcaption>A married couple with $160,000 of AGI in 2026, giving $8,000 per year in cash, or $16,000 every other year. Bunching deducts $5,000 more over two years, about $1,100 less tax in the 22% bracket.</figcaption>
 </figure>
 
-<p>Giving $8,000 every year, their itemized total falls short of the standard deduction plus the $2,000 that non-itemizers can deduct for cash gifts (below), so only $2,000 of their giving lowers their tax. Giving two years' worth in one year lets them itemize that year and take the standard deduction the next. A donor-advised fund lets them make the deduction in one year and send the money to charities over several.</p>
+<p>Giving $8,000 every year, their itemized total falls short of the standard deduction plus the $2,000 that non-itemizers can deduct for cash gifts (below), so only $2,000 of their giving lowers their tax. Giving two years' worth in one year lets them itemize that year ($41,200) and take the plain standard deduction the next ($32,200, with no gifts to add). That's $73,400 over the two years against $68,400. A donor-advised fund lets them make the deduction in one year and send the money to charities over several.</p>
 <p>The extra $1,650 per spouse at 65 makes itemizing harder still for older couples, since it's lost when they itemize. The senior deduction isn't, so it doesn't tip the choice either way.</p>
 
 <h2 id="charity">Giving without itemizing</h2>
@@ -119,8 +128,8 @@
 <h2 id="credits">Credits</h2>
 <p>Credits are fewer but larger per dollar. The ones that matter most to households planning for retirement:</p>
 <ul>
-<li>The child tax credit, $2,200 per child under 17 for 2026, of which up to $1,700 is refundable.</li>
-<li>The Saver's Credit, for workers with modest incomes who put money into a 401(k) or IRA: 10%, 20% or 50% of up to $2,000 contributed per person.</li>
+<li>The child tax credit, $2,200 per child under 17 for 2026, of which up to $1,700 is refundable. It starts to shrink above $200,000 of income, or $400,000 on a joint return. For 2027 the amounts are $2,300 and $1,800.</li>
+<li>The Saver's Credit, for workers with modest incomes who put money into a 401(k) or IRA: 10%, 20% or 50% of up to $2,000 contributed per person. For 2026 there's no credit above $40,250 of AGI for a single filer or $80,500 on a joint return. It isn't refundable, so it can only reduce tax you actually owe. From 2027 it's scheduled to be replaced by a Saver's Match, paid into the retirement account instead.</li>
 <li>The premium tax credit for ACA health insurance, which for early retirees can be worth more than every deduction put together. <a href="/learn/health-cover-before-65">Health cover before 65</a> covers it.</li>
 <li>The foreign tax credit, for tax withheld abroad on the dividends of international funds held in a taxable account.</li>
 </ul>
@@ -158,6 +167,7 @@
     <li><a href="https://www.irs.gov/newsroom/check-your-eligibility-for-the-new-enhanced-deduction-for-seniors">Check your eligibility for the new enhanced deduction for seniors</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/taxtopics/tc551">Topic 551, Standard deduction</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill">IRS releases tax inflation adjustments for tax year 2026</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-savings-contributions-credit-savers-credit">Retirement savings contributions credit (Saver's Credit)</a> <span>IRS</span></li>
     <li><a href="https://taxpolicycenter.org/briefing-book/what-are-itemized-deductions-and-who-claims-them">What are itemized deductions and who claims them?</a> <span>Tax Policy Center</span></li>
   </ul>
 </footer>

@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="savings-rate" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="savings-rate" data-reviewed="2026-11-10"
   data-title="Your savings rate is the lever"
   data-idea="What you control, how many working years it buys, and how to raise it"
   data-tool="fire" data-try="Find the age your savings could let you stop working, and how much sooner saving more gets you there, with your plan already filled in.">
@@ -10,7 +10,7 @@
 <p>Two definitions are in common use, and it helps to know which one a rule of thumb means.</p>
 <ul>
 <li>Share of gross pay, including your employer's match. This is how most retirement guidelines are written, including the common target of 15%. Someone earning $80,000 who puts $6,400 into a 401(k) (8%) and gets a $3,200 match (4%) has a savings rate of 12%: $9,600 ÷ $80,000.</li>
-<li>Share of take-home pay. Early-retirement writers often measure it this way: what you save divided by what you take home after taxes, with any pre-tax retirement contributions added back. It produces a bigger percentage for the same saving, and it's the version that ties neatly to how long you'll have to work.</li>
+<li>Share of take-home pay. Early-retirement writers often measure it this way: what you save divided by what you take home after taxes, with any pre-tax retirement contributions added back. It produces a bigger percentage for the same saving, and it's the version that ties neatly to how long you'll have to work. Say the same $80,000 earner's paychecks come to $58,000 over the year, after taxes and the 401(k) contribution. Adding the $9,600 of saving back gives $67,600, and $9,600 is 14% of that.</li>
 </ul>
 <p>Either works, as long as you compare like with like. RetCalc's Retirement Readiness Guide uses the first, gross pay with the match counted.</p>
 
@@ -49,7 +49,20 @@
   <figcaption>Starting from nothing, earning 5% per year after inflation. Independence means savings of 25 times yearly spending (4%) or about 28.6 times (3.5%).</figcaption>
 </figure>
 
-<p>Most of the gain is at the top of the table. Going from 10% to 20% takes fifteen years off a working life. Going from 20% to 30% takes off another eight. Each additional point is worth less as the rate rises, but the early points are worth a great deal. The lower withdrawal rate in the third column, often used for retirements expected to last 40 years or more, adds one to three years.</p>
+<p>Most of the gain is in the first rows of the table. Going from 10% to 20% takes fifteen years off a working life. Going from 20% to 30% takes off another eight. Each additional point is worth less as the rate rises, but the early points are worth a great deal. The lower withdrawal rate in the third column, often used for retirements expected to last 40 years or more, adds one to three years.</p>
+
+<!-- data: the same monthly calculation as the table, at every five points of savings rate from 5% to 80%, years to one decimal. 4% withdrawals: 65.3, 51.0, 42.5, 36.4, 31.6, 27.7, 24.3, 21.4, 18.8, 16.4, 14.3, 12.3, 10.4, 8.7, 7.1, 5.5. 3.5%: 68.0, 53.5, 44.9, 38.7, 33.8, 29.8, 26.3, 23.2, 20.4, 17.9, 15.7, 13.5, 11.5, 9.7, 7.9, 6.2. -->
+<figure data-chart='{"type":"line","x":[0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8],"xLabel":"Share of take-home pay saved","xFormat":"pct","y":"num","series":[{"name":"Years of work, 4% withdrawals","tone":"accent","values":[65.3,51,42.5,36.4,31.6,27.7,24.3,21.4,18.8,16.4,14.3,12.3,10.4,8.7,7.1,5.5]},{"name":"Years of work, 3.5% withdrawals","tone":"muted","dash":true,"values":[68,53.5,44.9,38.7,33.8,29.8,26.3,23.2,20.4,17.9,15.7,13.5,11.5,9.7,7.9,6.2]}]}'>
+  <figcaption>The table as a curve: years of work from a standing start, by savings rate, earning 5% per year after inflation. The curve is steepest at the low rates and flattens as the rate rises.</figcaption>
+</figure>
+
+<p>Move the savings rate yourself, and switch the return, to see how little the return changes the answer next to the rate.</p>
+
+<!-- data: components/learn/widgets/SavingsRate.tsx: the same monthly arithmetic as the table above (take-home pay taken as 1, target 25 times yearly spending, starting from zero), at a real return of 3%, 5% or 7%. -->
+<figure data-widget="savings-rate">
+  <figcaption>Years from nothing saved to 25 times yearly spending, by the share of take-home pay saved. Returns after inflation.</figcaption>
+</figure>
+
 <p>The table has limits worth knowing. It ignores Social Security, which for most people covers a good part of spending from their 60s, and so overstates how long a conventional retiree needs to work. It ignores what you've already saved, which shortens the time: someone saving 25% who already has two years of take-home pay invested gets there in about 25 years instead of 32. And it assumes spending stays at the level you lived on while saving, which is the point: a high savings rate only works because it comes with a lower cost of living.</p>
 
 <p data-yours></p>
@@ -61,7 +74,7 @@
 
 <h2 id="enough">How much is enough</h2>
 <p>The usual answer for someone starting in their 20s or early 30s is about 15% of gross pay, match included. The Center for Retirement Research at Boston College reached a similar figure in 2014 for a typical household, and it's the level at which RetCalc's Guide gives full marks for saving.</p>
-<p>The right rate depends heavily on when you start, because a later start leaves compounding less time. Here's the share of pay needed to reach a common benchmark, savings of ten times your pay by 67, for someone whose pay stays level after inflation and who has nothing saved yet.</p>
+<p>The right rate depends heavily on when you start, because a later start leaves compounding less time. Here's the share of pay needed to reach a common benchmark, savings of ten times your pay by 67 (the figure Fidelity's guideline uses), for someone whose pay stays level after inflation and who has nothing saved yet.</p>
 
 <!-- data: plain arithmetic. Required share of pay = 10 ÷ (((1 + r)^n − 1) ÷ r), the future-value-of-annuity factor, with n = 67 − starting age, yearly deposits at year end, r = 4.5% (the Calculator's Balanced mix) or 5.75% (its Growth mix), after inflation. Pay level in today's dollars; nothing saved at the start. -->
 <figure>
@@ -85,19 +98,11 @@
 <h2 id="raise">Raising it over time</h2>
 <p>The easiest time to save more is when your pay goes up, because you never get used to spending the extra. Saving half of every raise lets your spending grow too, while your savings rate climbs year by year.</p>
 <p>Richard Thaler and Shlomo Benartzi built a 401(k) feature around this idea, which they called Save More Tomorrow. Employees agreed in advance to raise their contribution with each future pay raise. In the first company to use it, reported in the <i>Journal of Political Economy</i> in 2004, participants' average saving rate went from 3.5% to 13.6% over 40 months. Many plans now offer automatic increases of one percentage point per year, and under the SECURE 2.0 Act, 401(k) and 403(b) plans set up after December 29, 2022 must, from 2025, enroll eligible employees automatically at 3% to 10% of pay and raise that by a point each year to at least 10% (and no more than 15%). Businesses with 10 or fewer employees or less than three years old, church and government plans, and SIMPLE 401(k) plans are exempt. Employees can opt out or choose a different rate.</p>
-<p>Take a hypothetical 30-year-old earning $60,000, with pay level after inflation, earning 4.5% per year after inflation until 67. Saving a flat 6% builds about $327,700. Starting at 6% and raising it one point per year until it reaches 15% builds about $701,700, more than twice as much, and the higher rate is reached by 39.</p>
+<p>Take a hypothetical 30-year-old earning $60,000, with pay level after inflation, earning 4.5% per year after inflation until 67. Saving a flat 6% builds about $327,700. Starting at 6% and raising it one point per year until it reaches 15% builds about $701,700, more than twice as much, and the higher rate is reached by 39. A flat 15% from the first year builds about $819,400, so the nine years spent climbing cost about $118,000 of the total.</p>
 
-<!-- data: plain arithmetic, yearly deposits at year end, 37 years (30 to 67), 4.5% real. Flat: 60,000 × 6% × ((1.045^37 − 1) ÷ 0.045) = 327,749. Escalating: year k (0-based) saves min(15%, 6% + 1% × k) of 60,000, balance × 1.045 + deposit each year = 701,722. A flat 15% from the start: 819,372. -->
-<figure>
-  <table>
-    <thead><tr><th>Saving from 30 to 67, on $60,000 of pay</th><th>Balance at 67</th></tr></thead>
-    <tbody>
-      <tr><td>A flat 6% every year</td><td>$327,749</td></tr>
-      <tr><td>6%, rising one point per year to 15%</td><td>$701,722</td></tr>
-      <tr><td>A flat 15% every year</td><td>$819,372</td></tr>
-    </tbody>
-  </table>
-  <figcaption>Hypothetical saver earning 4.5% per year after inflation, pay level in today's dollars. Match included in the percentages.</figcaption>
+<!-- data: plain arithmetic, yearly deposits at year end, 37 years (30 to 67), 4.5% real, balance every third year and at 67. Flat: 60,000 × 6% × ((1.045^37 − 1) ÷ 0.045) = 327,749. Escalating: year k (0-based) saves min(15%, 6% + 1% × k) of 60,000, balance × 1.045 + deposit each year = 701,722. A flat 15% from the start: 819,372. -->
+<figure data-chart='{"type":"line","x":[30,33,36,39,42,45,48,51,54,57,60,63,66,67],"xLabel":"Age","y":"money","series":[{"name":"A flat 15% every year","tone":"good","values":[0,28233,60452,97219,139176,187056,241696,304048,375203,456402,549064,654806,775476,819372]},{"name":"6%, rising one point per year to 15%","tone":"accent","values":[0,13120,33739,62916,100031,142385,190718,245874,308816,380644,462611,556149,662892,701722]},{"name":"A flat 6% every year","tone":"muted","values":[0,11293,24181,38888,55671,74823,96678,121619,150081,182561,219625,261922,310190,327749]}]}'>
+  <figcaption>Hypothetical saver on $60,000 of pay, level in today's dollars, earning 4.5% per year after inflation. Match included in the percentages. The rising saver starts on the bottom line and ends close to the top one.</figcaption>
 </figure>
 
 <p>Other ways to lift the rate without feeling it: send bonuses and tax refunds straight to savings, keep saving the amount of a car payment or a daycare bill after it ends, and set contributions as a percentage of pay so they rise automatically with every raise.</p>
@@ -132,6 +137,7 @@
     <li><a href="https://www.mrmoneymustache.com/2012/01/13/the-shockingly-simple-math-behind-early-retirement/">The shockingly simple math behind early retirement</a> <span>Mr. Money Mustache, 2012</span></li>
     <li><a href="https://www.chicagobooth.edu/research/rustandy/social-impact-research/research-papers/2004/save-more-tomorrow-using-behavioral-economics-to-increase-employee-saving">Save More Tomorrow: using behavioral economics to increase employee saving</a> <span>Thaler and Benartzi, Journal of Political Economy, 2004</span></li>
     <li><a href="https://crr.bc.edu/how-much-should-people-save/">How much should people save?</a> <span>Center for Retirement Research at Boston College, 2014</span></li>
+    <li><a href="https://www.fidelity.com/viewpoints/retirement/how-much-do-i-need-to-retire">How much do I need to retire?</a> <span>Fidelity</span></li>
     <li><a href="https://www.irs.gov/irb/2025-08_IRB#REG-100669-24">Automatic enrollment requirements under section 414A (proposed regulations)</a> <span>IRS</span></li>
   </ul>
 </footer>

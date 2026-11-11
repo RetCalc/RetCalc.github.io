@@ -1,0 +1,228 @@
+<article class="lesson" data-slug="your-paycheck" data-reviewed="2026-11-10"
+  data-title="Your paycheck, line by line"
+  data-idea="Where each dollar of gross pay goes before it reaches your account"
+  data-tool="budget" data-try="Enter your pay on the Paycheck tab and see each check from gross pay down to the deposit.">
+
+<p class="lede">The salary on your offer letter and the deposit in your bank account are two different numbers, and for most people the second is somewhere near two thirds of the first. A pay stub lists everything in between. Once you can read it, you can check that it's right, see what a retirement contribution really costs you, and tell whether April will bring a refund or a bill.</p>
+
+<h2 id="gross">From gross pay to net pay</h2>
+<p><b>Gross pay</b> is what you earn before anything comes out: salary, or hours times your rate, plus overtime, bonuses and commissions. <b>Net pay</b>, or take-home pay, is what's deposited. Everything in between is one of three kinds of line:</p>
+<ul>
+  <li>Taxes your employer must withhold: federal income tax, Social Security tax, Medicare tax, and in most places state income tax.</li>
+  <li>Pre-tax deductions: money that comes out before some or all of those taxes are figured, such as a traditional 401(k) contribution or your share of health insurance.</li>
+  <li>After-tax deductions: money that comes out of pay that has already been taxed, such as a Roth 401(k) contribution.</li>
+</ul>
+<p>Here's one made-up employee to follow through the lesson. Sam is single, lives in Illinois and earns $78,000 per year, paid every two weeks, so 26 checks of $3,000. Sam puts 6% of pay into a traditional 401(k), pays $120 per check toward health insurance and puts $50 per check into a health savings account (HSA).</p>
+
+<!-- data: computeTax (lib/engine/math.js) with 2026 figures: single, Illinois, gross 78,000, deductions by kind k401 4,680, health 3,120, hsa 1,300, standard deduction. Federal: 78,000 − 9,100 − 16,100 = 52,800 taxable; 10% × 12,400 + 12% × 38,000 + 22% × 2,400 = 6,328. Social Security: (78,000 − 3,120 − 1,300) × 6.2% = 73,580 × 6.2% = 4,561.96. Medicare: 73,580 × 1.45% = 1,066.91. Illinois: (68,900 − 2,925) × 4.95% = 3,265.76. Net: 78,000 − 9,100 − 6,328 − 4,561.96 − 1,066.91 − 3,265.76 = 53,677.37. Per check = per year ÷ 26. The Budget page's Paycheck tab gives the same figures (it spreads the year's tax evenly over the checks). -->
+<figure>
+  <table>
+    <thead><tr><th>Sam's pay stub</th><th>Each check</th><th>Over the year</th></tr></thead>
+    <tbody>
+      <tr><td><b>Gross pay</b></td><td><b>$3,000.00</b></td><td><b>$78,000.00</b></td></tr>
+      <tr><td>Traditional 401(k), 6% of pay</td><td class="neg">−$180.00</td><td class="neg">−$4,680.00</td></tr>
+      <tr><td>Health insurance premium</td><td class="neg">−$120.00</td><td class="neg">−$3,120.00</td></tr>
+      <tr><td>HSA</td><td class="neg">−$50.00</td><td class="neg">−$1,300.00</td></tr>
+      <tr><td>Federal income tax</td><td class="neg">−$243.38</td><td class="neg">−$6,328.00</td></tr>
+      <tr><td>Social Security tax</td><td class="neg">−$175.46</td><td class="neg">−$4,561.96</td></tr>
+      <tr><td>Medicare tax</td><td class="neg">−$41.04</td><td class="neg">−$1,066.91</td></tr>
+      <tr><td>Illinois income tax</td><td class="neg">−$125.61</td><td class="neg">−$3,265.76</td></tr>
+      <tr><td><b>Net pay</b></td><td><b>$2,064.51</b></td><td><b>$53,677.37</b></td></tr>
+    </tbody>
+  </table>
+  <figcaption>A hypothetical single employee in Illinois earning $78,000 in 2026, paid every two weeks. Withholding is shown as the year's tax spread evenly over 26 checks.</figcaption>
+</figure>
+
+<p>Sam keeps 68.8% of gross pay as cash. Another 11.7% goes to the 401(k), the HSA and health cover, which are Sam's too in a different form. Taxes take the remaining 19.5%. The sections below take the lines one at a time.</p>
+
+<h2 id="withholding">Federal income tax and the W-4</h2>
+<p>Federal income tax isn't billed once per year. Your employer takes an estimate out of every check and sends it to the IRS, and your tax return in the spring settles the difference. The amount withheld depends on your pay and on <b>Form W-4</b>, which you fill in when you start a job and can replace at any time.</p>
+<p>The employer's payroll system works roughly like this. It multiplies the taxable pay on one check by the number of checks per year, subtracts the standard deduction for the filing status on your W-4, runs the result through the tax brackets, and divides the answer by the number of checks. For Sam, taxable pay for income tax is $2,650 per check, or $68,900 per year. Less the $16,100 standard deduction for 2026, that's $52,800, on which the tax is $6,328: 10% of the first $12,400, 12% of the next $38,000 and 22% of the last $2,400. Divided by 26, that's $243.38 per check. <a href="/learn/tax-brackets">Brackets: marginal and effective</a> explains the layers.</p>
+<p>The current W-4 has five steps and no "allowances", which went away when the form was redesigned for 2020:</p>
+<ul>
+  <li>Step 1 is your name and filing status. If you fill in only this and sign, withholding assumes one job and the standard deduction.</li>
+  <li>Step 2 is for people with more than one job, or couples where both work. Skipping it when it applies is the most common cause of a tax bill, for a reason shown further down.</li>
+  <li>Step 3 is for credits. For 2026 it's $2,200 for each child under 17 and $500 for other dependents. Whatever you enter lowers withholding by that amount over the year.</li>
+  <li>Step 4 covers other adjustments: (a) income with no withholding, like interest or dividends, (b) deductions beyond the standard one, which for 2026 can include the new deductions for tips and overtime, and (c) an extra flat amount to withhold from every check.</li>
+  <li>Step 5 is your signature.</li>
+</ul>
+<p>Bonuses often look overtaxed because employers may withhold a flat 22% from pay that's separate from regular wages, whatever your bracket. That's only withholding. The bonus is taxed like any other pay when you file, and if 22% was too much, the excess comes back as a refund.</p>
+
+<h2 id="fica">Social Security and Medicare tax</h2>
+<p>These two lines, sometimes grouped as FICA or shown as OASDI and Med, are simpler than income tax. There's no form to fill in and no deduction for filing status.</p>
+<ul>
+  <li>Social Security tax is 6.2% of wages up to a yearly cap, the <b>wage base</b>, which is $184,500 for 2026. The most anyone pays through one job is $11,439. For 2027 the wage base rises to $192,300.</li>
+  <li>Medicare tax is 1.45% of all wages, with no cap.</li>
+  <li>The additional Medicare tax is another 0.9% on wages above $200,000 for a single filer or $250,000 for a married couple filing jointly.</li>
+</ul>
+<p>Your employer pays a matching 6.2% and 1.45% that never appears on your stub. Sam's rates apply to $2,830 per check, since health premiums and HSA money are exempt from these taxes but 401(k) contributions aren't: $175.46 for Social Security and $41.04 for Medicare.</p>
+<p>Two things surprise higher earners. Someone paid $240,000 evenly through the year passes $184,500 in October, and from then on the 6.2% stops and each check is larger until January. And an employer starts withholding the extra 0.9% once your pay at that job passes $200,000, whatever your filing status. A married couple who each earn $150,000 have nothing extra withheld by either employer, but together they're $50,000 over the $250,000 line and owe $450 on their return.</p>
+<p>What the Social Security tax buys is covered in <a href="/learn/social-security-benefit">How your benefit is figured</a>. Earnings above the wage base aren't taxed and don't count toward the benefit either.</p>
+
+<h2 id="state">State and local taxes</h2>
+<p>Most states withhold their own income tax, each with its own form or its own reading of your federal W-4. Nine states don't tax wages: Alaska, Florida, Nevada, New Hampshire, South Dakota, Tennessee, Texas, Washington and Wyoming. The rest range from flat rates (Illinois taxes Sam at 4.95% after a $2,925 exemption) to brackets that top out above 10% in California, Hawaii, New Jersey and New York.</p>
+<p>A few other lines can appear depending on where you live and work:</p>
+<ul>
+  <li>City or county income tax. New York City, many Ohio and Pennsylvania municipalities and every Maryland county levy one.</li>
+  <li>State disability or paid family leave insurance. California's, shown as SDI, is 1.3% of all wages for 2026.</li>
+</ul>
+<p>States mostly follow the federal rules on what's pre-tax, with exceptions worth knowing if you live in one. Pennsylvania taxes 401(k) contributions. New Jersey taxes HSA contributions and health premiums. California taxes HSA contributions. In those states the deduction still saves federal tax; it just doesn't lower the state line.</p>
+
+<h2 id="pretax">Pre-tax deductions, kind by kind</h2>
+<p>"Pre-tax" means different things for different deductions. Some skip federal income tax only. Others skip Social Security and Medicare tax as well, which is worth another 7.65% for most workers.</p>
+
+<!-- data: tax treatment: IRS Publication 15-B (cafeteria plans, HSA, dependent care, transportation) and the General Instructions for Forms W-2 and W-3 (elective deferrals are reported in boxes 3 and 5 but not box 1). 2026 limits: 401(k) and HSA from lib/engine/data/2026.js (limits.k401, limits.hsa); health FSA $3,400, dependent care $7,500 and transit and parking $340 per month from IRS Publication 15-B (2026). -->
+<figure>
+  <table>
+    <thead><tr><th>Deduction</th><th>Federal income tax</th><th>Social Security and Medicare tax</th><th>2026 limit</th></tr></thead>
+    <tbody>
+      <tr><td>Traditional 401(k) or 403(b)</td><td>Skips it</td><td>Pays it</td><td>$24,500, more from age 50</td></tr>
+      <tr><td>Health, dental and vision premiums</td><td>Skips it</td><td>Skips it</td><td>None</td></tr>
+      <tr><td>HSA through payroll</td><td>Skips it</td><td>Skips it</td><td>$4,400 self-only, $8,750 family</td></tr>
+      <tr><td>Health care flexible spending account (FSA)</td><td>Skips it</td><td>Skips it</td><td>$3,400</td></tr>
+      <tr><td>Dependent care FSA</td><td>Skips it</td><td>Skips it</td><td>$7,500 per household</td></tr>
+      <tr><td>Transit pass or parking</td><td>Skips it</td><td>Skips it</td><td>$340 per month each</td></tr>
+      <tr><td>Roth 401(k)</td><td>Pays it</td><td>Pays it</td><td>Shares the $24,500</td></tr>
+    </tbody>
+  </table>
+  <figcaption>What each common payroll deduction saves in federal tax, with its limit for 2026. The employer must offer the benefit, and premiums, HSAs and FSAs must run through its benefits plan to skip Social Security and Medicare tax.</figcaption>
+</figure>
+
+<p>A few notes on the rows:</p>
+<ul>
+  <li>A traditional 401(k) only postpones income tax. The contribution and its growth are taxed when you withdraw them. <a href="/learn/traditional-or-roth">Traditional or Roth</a> covers when that trade is a good one, and <a href="/learn/employer-match">The employer match</a> covers the money your employer adds, which isn't on your stub as pay.</li>
+  <li>Health premiums are the deduction people forget is pre-tax. If your employer runs them through its benefits plan, as most do, your share comes out before all three federal taxes.</li>
+  <li>An HSA is the only account where money can go in, grow and come out for medical costs without ever being taxed. It needs a qualifying high-deductible health plan. <a href="/learn/hsa">The HSA</a> has the rules.</li>
+  <li>A health FSA covers the same kinds of costs but is mostly use-it-or-lose-it within the plan year, so it suits expenses you can predict. A dependent care FSA pays for daycare, preschool and similar care for children under 13.</li>
+</ul>
+<p>One cost to set against the saving: deductions that lower your Social Security wages also lower, slightly, the earnings your future benefit is figured from.</p>
+
+<h2 id="aftertax">Roth and other after-tax deductions</h2>
+<p>A Roth 401(k) contribution comes out after every tax has been figured. It lowers take-home pay dollar for dollar and saves nothing today; the payoff is that qualified withdrawals in retirement are tax-free. On the stub it usually has its own line, apart from the traditional 401(k).</p>
+<p>Other after-tax lines include some disability and life insurance premiums, union dues, charitable gifts through payroll, and wage garnishments. One line can run the other way: if your employer gives you more than $50,000 of group life insurance, the cost of the extra cover is added to your taxable pay. It shows up as a small amount of "imputed income" that you're taxed on without receiving it in cash.</p>
+
+<h2 id="hundred">Why $100 pre-tax costs less than $100</h2>
+<p>Every pre-tax dollar is a dollar the tax lines never see, so part of each contribution is paid for by tax you would otherwise have owed. How much depends on your <b>marginal rate</b>, the rate on your last dollars of pay.</p>
+<p>Sam's last dollars are taxed at 22% federally and 4.95% by Illinois. Put another $100 per check into the traditional 401(k) and federal income tax falls by $22.00 and state tax by $4.95. Take-home pay drops by $73.05. Put the $100 into the HSA instead and Social Security and Medicare tax fall too, by $7.65, so take-home drops by $65.40. A Roth contribution costs the full $100.</p>
+
+<!-- data: computeTax (lib/engine/math.js), Sam as above. An extra $100 of traditional 401(k): federal −22.00, Illinois −4.95, net −73.05. An extra $100 of HSA through payroll: federal −22.00, Illinois −4.95, Social Security −6.20, Medicare −1.45, net −65.40. Roth 401(k): no tax change, net −100. -->
+<figure data-chart='{"type":"bar","labels":true,"x":["Roth 401(k)","Traditional 401(k)","HSA through payroll"],"y":"money","series":[{"name":"Fall in take-home pay for $100 put in","tone":"accent","values":[100,73.05,65.4]}]}'>
+  <figcaption>What $100 into each account takes out of Sam's paycheck, at a 22% federal and 4.95% Illinois marginal rate. The rest is tax that wasn't withheld.</figcaption>
+</figure>
+
+<p>Across the whole year, Sam's $9,100 of pre-tax deductions lower take-home pay by $6,309. Without them, net pay would be $59,987 instead of $53,677, and the other $2,791 would have gone to tax.</p>
+<p>The saving is larger in higher brackets and smaller in lower ones. In the 12% bracket with no state income tax, $100 into a traditional 401(k) costs $88. The saving can also stop partway if a deduction carries you down into a lower bracket: only the top $2,400 of Sam's taxable income for the year is in the 22% bracket, so 401(k) dollars beyond another $2,400 per year save 12%.</p>
+
+<h2 id="dollar">Where a gross dollar goes</h2>
+<p>The shares shift as pay rises. The chart runs four salaries through the same setup as Sam's: single, Illinois, 6% to a traditional 401(k), and the same $3,120 of health premiums and $1,300 of HSA money.</p>
+
+<!-- data: computeTax (lib/engine/math.js), 2026, single, Illinois, standard deduction, k401 = 6% of gross, health 3,120, hsa 1,300, at gross 40,000 / 78,000 / 120,000 / 200,000. Shares of gross. Take-home: 27,158.91, 53,677.37, 79,304.51, 127,569.47. Pre-tax deductions: 6,820, 9,100, 11,620, 16,420. Federal income tax: 1,801.60, 6,328, 15,013.60, 32,793.20. Social Security and Medicare: 2,721.87, 5,628.87, 8,841.87, 14,274.91 (Social Security capped at 11,439 for the last). Illinois: 1,497.62, 3,265.76, 5,220.02, 8,942.42. -->
+<figure data-chart='{"type":"bar","stack":true,"x":["$40,000","$78,000","$120,000","$200,000"],"xLabel":"Gross pay per year","y":"pct","series":[{"name":"Take-home pay","tone":"good","values":[0.679,0.6882,0.6609,0.6378]},{"name":"401(k), HSA and health premiums","tone":"accent","values":[0.1705,0.1167,0.0968,0.0821]},{"name":"Federal income tax","tone":"bad","values":[0.045,0.0811,0.1251,0.164]},{"name":"Social Security and Medicare tax","tone":"neutral","values":[0.068,0.0722,0.0737,0.0714]},{"name":"Illinois income tax","tone":"muted","values":[0.0374,0.0419,0.0435,0.0447]}]}'>
+  <figcaption>Each dollar of gross pay, split five ways, for a single employee in Illinois in 2026. Federal income tax grows from 4.5% of pay at $40,000 to 16.4% at $200,000, while Social Security and Medicare stay near 7%.</figcaption>
+</figure>
+
+<p>Federal income tax is the line that grows, because the brackets rise with income. Social Security and Medicare take about the same share at every level until pay passes the wage base, and the flat state tax barely moves. The fixed-dollar health and HSA deductions take a bigger share of a small paycheck than a large one.</p>
+
+<h2 id="owe">Withholding and what you owe</h2>
+<p>Withholding is a running estimate. Your real tax for the year is worked out on your return, from all of your income and all of your deductions and credits. If more was withheld than you owe, you get the difference back as a <b>refund</b>. If less, you pay the balance when you file.</p>
+<p>A refund is your own money coming back without interest. Through early May of the 2026 filing season the IRS had issued about 99 million refunds averaging $3,276, which works out to roughly $270 per month that those households could have had in their paychecks. Whether to aim for zero is a matter of taste. Some people like the forced saving, and a small refund is safer than a small bill.</p>
+<p>With one job, the standard deduction and no other income, withholding lands very close, as it does for Sam. It drifts when the payroll system can't see something:</p>
+<ul>
+  <li>A second job, or a working spouse. Each employer withholds as if its paycheck were your only income.</li>
+  <li>Income with no withholding: interest, dividends, capital gains, freelance work, rent.</li>
+  <li>A mid-year change: marriage, a child, a house, a large raise.</li>
+</ul>
+<p>The two-job case is worth seeing in numbers. Suppose a single person has one job paying $50,000 and another paying $30,000, with a basic W-4 at each.</p>
+
+<!-- data: 2026 single brackets and $16,100 standard deduction (lib/engine/data/2026.js). Job A alone: 50,000 − 16,100 = 33,900; 1,240 + 12% × 21,500 = 3,820. Job B alone: 30,000 − 16,100 = 13,900; 1,240 + 12% × 1,500 = 1,420. Withheld: 5,240. Actual: 80,000 − 16,100 = 63,900; 1,240 + 4,560 + 22% × 13,500 = 8,770. Short: 3,530. Withholding follows IRS Publication 15-T (percentage method, Step 2 box not checked), which gives each job the full standard deduction and the full width of the lower brackets. -->
+<figure>
+  <table>
+    <thead><tr><th></th><th>Pay</th><th>Federal income tax withheld</th></tr></thead>
+    <tbody>
+      <tr><td>Job A, withheld as if it were the only job</td><td>$50,000</td><td>$3,820</td></tr>
+      <tr><td>Job B, withheld as if it were the only job</td><td>$30,000</td><td>$1,420</td></tr>
+      <tr><td>Total withheld</td><td>$80,000</td><td>$5,240</td></tr>
+      <tr><td>Tax actually owed on $80,000</td><td></td><td>$8,770</td></tr>
+      <tr><td>Balance due at filing</td><td></td><td class="neg">−$3,530</td></tr>
+    </tbody>
+  </table>
+  <figcaption>A hypothetical single person with two jobs in 2026 and Step 2 of the W-4 left blank at both. Each job's withholding uses the full standard deduction and starts again in the lowest brackets.</figcaption>
+</figure>
+
+<p>Each employer gave the whole $16,100 standard deduction and the whole 10% and 12% brackets to its own paycheck. Together, the standard deduction was counted twice and none of the income was withheld at 22%, though $13,500 of it is taxed there. Step 2 of the W-4 exists to fix exactly this, and the same thing happens to married couples with two incomes.</p>
+<p>The fix is a new W-4, which you can hand in any time. The IRS's Tax Withholding Estimator takes your pay stubs and fills one in for you. The bluntest tool is Step 4(c): to close a $3,530 gap over 26 checks, enter $136 of extra withholding per check.</p>
+<p>A balance due carries no penalty if it's small. You're generally safe if you owe less than $1,000 when you file, or if what you paid during the year covers at least 90% of this year's tax or 100% of last year's (110% if last year's adjusted gross income was over $150,000).</p>
+
+<h2 id="reading">Reading a pay stub and a W-2</h2>
+<p>A pay stub has two columns that matter, this period and year to date (YTD), and three blocks: earnings, taxes and deductions. A quick check takes a few minutes:</p>
+<ul>
+  <li>Gross pay matches your salary divided by the number of checks, or your hours times your rate.</li>
+  <li>Social Security is 6.2% and Medicare 1.45% of gross pay less premiums, HSA and FSA money. If those two are right, the payroll system has your pre-tax deductions set up correctly.</li>
+  <li>The 401(k) line is the percentage you chose, and it's on the traditional or Roth line you meant.</li>
+  <li>YTD 401(k) contributions are on pace for what you intend, and under the limit.</li>
+  <li>Any line you don't recognize gets a question to payroll.</li>
+</ul>
+<p>If you're paid every two weeks, two months of the year have three paydays. Budgets built on two checks per month get a spare check in those months.</p>
+<p>Early each year your employer sends <b>Form W-2</b>, the year's totals as reported to the IRS. For 2026 it's due to you by February 1, 2027. The boxes don't match your gross pay, and the reason is the pre-tax deductions.</p>
+
+<!-- data: Sam's year from the first table, laid out per the IRS General Instructions for Forms W-2 and W-3 (2026). Box 1 = 78,000 − 4,680 − 3,120 − 1,300 = 68,900. Boxes 3 and 5 = 78,000 − 3,120 − 1,300 = 73,580 (401(k) deferrals are included in boxes 3 and 5). Box 4 = 73,580 × 6.2% = 4,561.96. Box 6 = 73,580 × 1.45% = 1,066.91. Box 12: code D elective deferrals to a 401(k); code W employer contributions to an HSA, including amounts the employee put in through the cafeteria plan; code AA designated Roth 401(k) contributions; code DD cost of employer-sponsored health coverage, not taxable. -->
+<figure>
+  <table>
+    <thead><tr><th>W-2 box</th><th>What it is</th><th>Sam's figure</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Wages subject to federal income tax: gross pay less the 401(k), premiums and HSA</td><td>$68,900.00</td></tr>
+      <tr><td>2</td><td>Federal income tax withheld</td><td>$6,328.00</td></tr>
+      <tr><td>3</td><td>Wages subject to Social Security tax: gross pay less premiums and HSA only, capped at $184,500</td><td>$73,580.00</td></tr>
+      <tr><td>4</td><td>Social Security tax withheld</td><td>$4,561.96</td></tr>
+      <tr><td>5</td><td>Wages subject to Medicare tax: the same as box 3, with no cap</td><td>$73,580.00</td></tr>
+      <tr><td>6</td><td>Medicare tax withheld</td><td>$1,066.91</td></tr>
+      <tr><td>12, code D</td><td>Traditional 401(k) contributions</td><td>$4,680.00</td></tr>
+      <tr><td>12, code W</td><td>HSA contributions through payroll, the employer's and your own together</td><td>$1,300.00</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The main boxes of a 2026 Form W-2 for the same hypothetical employee. Boxes 15 to 17 repeat the pattern for the state.</figcaption>
+</figure>
+
+<p>Box 1 is the figure your tax return starts from. It's lower than boxes 3 and 5 by exactly the 401(k) contributions, because those skip income tax but not Social Security and Medicare tax. Two other box 12 codes come up often. Code AA is Roth 401(k) contributions, which are already inside box 1. Code DD is the full cost of your health plan, your share and your employer's, and it's there for information only; it isn't taxed.</p>
+<p>Your last pay stub of the year should agree with the W-2. If box 2 is far from the tax you end up owing, change your W-4 before the gap builds up for another year.</p>
+
+<h2 id="plan">Seeing it in your own plan</h2>
+<p>The Budget page's Paycheck tab does this arithmetic for your own pay. Enter your gross pay, how often you're paid, your filing status and state, and what you pay for health cover through work, and it shows the check from gross pay to the deposit: each pre-tax line, federal and state income tax, Social Security and Medicare. Enter Sam's figures and you'll get the table at the top of this lesson.</p>
+<p>Then move one line. Add $50 per check to the 401(k), or switch it from traditional to Roth, and watch how much the deposit changes. Each pre-tax line shows what its amount costs your deposit, which is the $73.05 and $65.40 arithmetic above done with your own rates. From there, <a href="/learn/savings-rate">Your savings rate is the lever</a> and <a href="/learn/where-each-dollar-goes">Where each dollar should go</a> take up how much to save and in which account.</p>
+
+<h2 id="questions">Common questions</h2>
+<details><summary>Why did my take-home pay barely move after a raise?</summary><p>It moved by the raise minus the tax on it. The extra dollars are taxed at your marginal rates: Sam would keep about 65 cents of each new dollar after federal tax at 22%, Illinois at 4.95% and 7.65% for Social Security and Medicare, and less if 6% of the raise also goes to the 401(k). A raise never lowers take-home pay through the brackets alone.</p></details>
+<details><summary>Should I try to get a big refund?</summary><p>A refund means too much was withheld during the year. Lowering withholding puts that money in each paycheck instead. If you'd rather have the lump sum, or your income is hard to predict, a modest refund does no harm. Owing a large balance can bring a penalty, so err slightly on the side of a refund.</p></details>
+<details><summary>Can I claim "exempt" on my W-4?</summary><p>Only if you owed no federal income tax last year and expect to owe none this year. Then no income tax is withheld, though Social Security and Medicare tax still are. An exemption lasts one year, and for 2027 a new form is due by February 16, 2027.</p></details>
+<details><summary>I worked two jobs and paid too much Social Security tax. Do I get it back?</summary><p>Yes. Each employer withholds 6.2% up to the wage base without knowing about the other. If your combined wages were over $184,500 in 2026, you can generally claim the excess you paid as a credit on your federal tax return. If a single employer withheld too much, that employer has to correct it.</p></details>
+<details><summary>Does a 401(k) contribution lower my Social Security benefit?</summary><p>No. 401(k) contributions still pay Social Security tax and still count as earnings for your benefit. Premiums, HSA and FSA money taken through payroll are the deductions that lower Social Security wages.</p></details>
+
+<section class="insum"><h2 id="short">In short</h2><ul>
+  <li>Between gross and net pay are withheld taxes, pre-tax deductions and after-tax deductions.</li>
+  <li>Federal income tax withholding is an estimate set by your W-4. Your return settles it with a refund or a balance due.</li>
+  <li>For 2026, Social Security tax is 6.2% of wages up to $184,500 and Medicare tax is 1.45% of all wages, plus 0.9% on high pay.</li>
+  <li>A traditional 401(k) skips income tax. Health premiums, HSA and FSA money through payroll skip Social Security and Medicare tax too. A Roth skips neither.</li>
+  <li>A pre-tax $100 costs less than $100 of take-home pay: $73.05 for Sam's 401(k), $65.40 for the HSA.</li>
+  <li>On a W-2, box 1 is pay after all pre-tax deductions, and boxes 3 and 5 still include 401(k) contributions.</li>
+</ul></section>
+
+<footer>
+  <ul class="points"><li>What each line between gross and net pay is</li><li>Which deductions escape which taxes, and what they cost</li><li>How to read a pay stub, a W-4 and a W-2</li></ul>
+  <ul class="terms">
+    <li data-term="Gross and net pay">Gross pay is what you earn before anything comes out. Net pay, or take-home pay, is what's deposited after taxes and deductions.</li>
+    <li data-term="Withholding">Tax your employer takes from each check and sends to the government on your behalf. It's an estimate, settled on your tax return.</li>
+    <li data-term="Pre-tax deduction">Money taken from pay before some or all taxes are figured, such as a traditional 401(k) contribution or a health premium.</li>
+    <li data-term="Wage base">The most pay in a year that Social Security tax applies to: $184,500 for 2026.</li>
+  </ul>
+  <ul class="deeper">
+    <li><a href="https://www.irs.gov/forms-pubs/about-form-w-4">About Form W-4, Employee's Withholding Certificate</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/individuals/tax-withholding-estimator">Tax Withholding Estimator</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/taxtopics/tc751">Topic no. 751, Social Security and Medicare withholding rates</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/taxtopics/tc560">Topic no. 560, Additional Medicare tax</a> <span>IRS</span></li>
+    <li><a href="https://www.ssa.gov/oact/cola/cbb.html">Contribution and benefit base</a> <span>Social Security Administration</span></li>
+    <li><a href="https://www.irs.gov/publications/p15b">Publication 15-B, Employer's Tax Guide to Fringe Benefits</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/instructions/iw2w3">General Instructions for Forms W-2 and W-3</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/payments/underpayment-of-estimated-tax-by-individuals-penalty">Underpayment of estimated tax by individuals penalty</a> <span>IRS</span></li>
+  </ul>
+</footer>
+</article>

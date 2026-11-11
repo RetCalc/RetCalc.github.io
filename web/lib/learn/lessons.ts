@@ -21,6 +21,12 @@ export interface ChartSpec {
   series: { name: string; values: (number | null)[]; tone?: "good" | "bad" | "accent" | "neutral" | "muted"; dash?: boolean; step?: boolean }[];
   marks?: { x: number | string; label: string }[];
   band?: { from: number; to: number; label?: string };
+  /** Horizontal lines across the chart at a value (a limit, a target). */
+  levels?: { y: number; label?: string }[];
+  /** Bars or areas: each series sits on top of the ones before it. */
+  stack?: boolean;
+  /** Bars: write each bar's value over it (a stack's total). */
+  labels?: boolean;
 }
 
 /** A piece of the lesson's text: HTML as written, or a picture or line the page draws. */

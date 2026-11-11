@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="withdrawal-order" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="withdrawal-order" data-reviewed="2026-11-10"
   data-title="Which account to draw from first"
   data-idea="The same savings can cost very different tax depending on the order"
   data-tool="optimizer" data-try="Try every withdrawal order, conversion level and claiming age against every market since 1926, with your plan already filled in.">
@@ -63,12 +63,18 @@
   <figcaption>Thirty years of the same plan under three orders. In today's dollars, 2026 federal rules throughout. A hypothetical example, not a forecast.</figcaption>
 </figure>
 
+<!-- data: the same model's balances at the end of the 30th year, by account, from the comment above the table. Totals: $2,295,323, $2,277,720, $2,146,131. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["Brokerage, IRA, Roth","Fill 12% bracket","Fill 22% bracket"],"xLabel":"Withdrawal order","y":"money","series":[{"name":"Traditional IRAs, still to be taxed","tone":"bad","values":[846676,0,0]},{"name":"Brokerage account","tone":"neutral","values":[1124307,678592,77982]},{"name":"Roth IRAs, tax-free","tone":"good","values":[324340,1599128,2068149]}]}'>
+  <figcaption>What Sam and Jordan have left at 95 under each order, by kind of account. In today's dollars. A hypothetical example.</figcaption>
+</figure>
+
 <p>Filling the 12% bracket cuts their lifetime federal tax by $95,872, more than a third. What's left at 95 looks about the same, but under the conventional order $846,676 of it is still in IRAs, and whoever inherits it will owe income tax on every dollar. Filling the 22% bracket instead goes too far for this couple: it pays 22% now on money that would have been taxed at 12% later, and ends with less.</p>
 <p>The best line for someone else could be higher or lower. It depends on how large the traditional balance is compared with your spending, when Social Security starts, and your state. A bigger IRA can justify filling the 22% or even the 24% bracket; a smaller one may need little more than the standard deduction filled.</p>
 
 <h2 id="torpedo">How Social Security bends the brackets</h2>
 <p>Social Security makes the tax on an extra traditional dollar higher than your bracket suggests. How much of your benefit is taxed depends on your "provisional income": your other income plus half your benefit. Above $25,000 for a single filer ($32,000 married), up to half of the benefit becomes taxable; above $34,000 ($44,000 married), up to 85%. These thresholds were set in 1983 and 1993 and have never been raised for inflation, so each year they catch more retirees.</p>
 <p>In the range where benefits are being phased in, each extra $1 of IRA income makes up to $0.85 of Social Security taxable as well, so $1.85 of income gets taxed. In the 12% bracket that's a real rate of 22.2%. In the 22% bracket it's 40.7%. Planners call this the tax torpedo.</p>
+<p>You can check it by hand. Take a single retiree with $40,000 of Social Security who withdraws $30,000 from an IRA. Provisional income is $30,000 plus half the benefit, $50,000. That's $16,000 over the $34,000 line, so the taxable part of the benefit is 85% of $16,000, plus $4,500 for the stretch between the two lines: $18,100. Now withdraw $31,000 instead. The taxable benefit rises to $18,950, so total income goes up by $1,850 for an extra $1,000 withdrawn, and at 12% the tax on it is $222.</p>
 
 <!-- data: lib/engine/math.js computeRetireTax, 2026, single, one person 65+, $40,000 of Social Security, no other income, Florida; the IRA withdrawal varied in $100 steps and the federal tax
      on the next $10 measured. Boundaries rounded to the nearest $100. The 2026 senior deduction ($6,000, less 6% of income over $75,000) explains the 23.3% and 25.4% (22% or 24% × 1.06) and the 43.1% (22% × 1.85 × 1.06). It is gone once income passes $175,000 (IRA withdrawal about $141,000); the 32% bracket starts at about $186,000. -->
@@ -86,6 +92,13 @@
     </tbody>
   </table>
   <figcaption>A single retiree, 65 or older, with $40,000 of Social Security and no other income, 2026 federal rules. Rates slightly above the bracket (23.3%, 25.4%) come from the temporary senior deduction phasing out, which ends after 2028.</figcaption>
+</figure>
+
+<!-- data: the same computeRetireTax run as the table above (single, 65+, $40,000 of Social Security, 2026). Each point is where the rate on the next dollar changes; a step line holds the rate until the next point.
+     Tax on the next dollar: 0% to $17,100, 18.5% to $23,800, 22.2% to $44,300, 40.7% to $44,600, 43.1% to $48,700, 23.3% to $92,800, 25.4% to $141,000, 24% to $186,000, then 32%.
+     Bracket alone: the ordinary bracket the same retiree is in at that withdrawal (0%, 10%, 12%, 22%, 24%, 32%). -->
+<figure data-chart='{"type":"line","x":[0,17100,23800,44300,44600,48700,92800,141000,186000,200000],"xLabel":"IRA withdrawal for the year","xFormat":"money","y":"pct","series":[{"name":"Tax on the next dollar","tone":"bad","step":true,"values":[0,0.185,0.222,0.407,0.431,0.233,0.254,0.24,0.32,0.32]},{"name":"Bracket rate alone","tone":"muted","step":true,"dash":true,"values":[0,0.1,0.12,0.22,0.22,0.22,0.24,0.24,0.32,0.32]}]}'>
+  <figcaption>The same retiree: the federal tax rate on one more dollar of IRA withdrawal, against the bracket rate. The wide gap between the lines is the torpedo, and it ends once 85% of the benefit is taxable. The small gap left after that is the senior deduction phasing out.</figcaption>
 </figure>
 
 <p>Traditional money taken out before Social Security starts misses the torpedo entirely, which is one reason bracket filling and delayed claiming work well together. Once benefits are 85% taxable, the extra cost stops, and a traditional dollar costs just the bracket rate again. Michael Kitces described the phase-in in 2013 as, in effect, a surtax that falls mostly on retirees with fairly modest incomes.</p>

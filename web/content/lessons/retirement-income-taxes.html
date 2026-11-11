@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="retirement-income-taxes" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="retirement-income-taxes" data-reviewed="2026-11-10"
   data-title="How retirement income is taxed"
   data-idea="Each source is taxed its own way, and they push on each other"
   data-tool="incometax" data-try="Switch to retirement income to see each source taxed its own way, and the rate on your next $1,000, with your plan already filled in.">
@@ -20,7 +20,7 @@
       <tr><td>Selling investments in a taxable account</td><td>The original cost comes back untaxed. Gains on investments held over a year are taxed at 0%, 15% or 20%; held a year or less, as ordinary income.</td></tr>
       <tr><td>Qualified dividends</td><td>0%, 15% or 20%, like long-term gains.</td></tr>
       <tr><td>Interest, and other dividends</td><td>Ordinary income. Municipal bond interest is exempt from federal tax, but it still counts in the Social Security and Medicare income tests.</td></tr>
-      <tr><td>HSA withdrawals</td><td>Nothing if spent on medical costs. After 65, other spending is ordinary income with no penalty.</td></tr>
+      <tr><td>HSA withdrawals</td><td>Nothing if spent on medical costs. Other spending is ordinary income, with a 20% penalty before 65 and none after.</td></tr>
     </tbody>
   </table>
   <figcaption>Federal treatment of common retirement income. States follow their own rules, often more generous to retirement income.</figcaption>
@@ -33,7 +33,7 @@
 <p><b>Provisional income</b> = your AGI not counting Social Security + tax-exempt interest + half of your Social Security benefits.</p>
 <p>Then the thresholds decide how much of your benefit becomes taxable income:</p>
 
-<!-- data: IRC sec. 86; lib/engine/math.js SS_PROV (t1 25,000 / 32,000; t2 34,000 / 44,000). Checked against IRS Publication 915 and CRS report RL30581. -->
+<!-- data: IRC sec. 86; lib/engine/math.js SS_PROV (t1 25,000 / 32,000; t2 34,000 / 44,000). Checked against IRS Publication 915 and CRS report RL32552. -->
 <figure>
   <table>
     <thead><tr><th>Provisional income</th><th>Single</th><th>Married filing jointly</th><th>Share of benefits taxable</th></tr></thead>
@@ -47,7 +47,16 @@
 </figure>
 
 <p>The shares are "up to" because benefits are phased in gradually. Between the thresholds, the taxable part is half of the provisional income over the first line (capped at half your benefits). Above the second line it's 85% of the amount over it, plus the smaller of $6,000 for a couple ($4,500 single) or half the benefits, capped at 85% of benefits. No one ever pays tax on more than 85% of their Social Security.</p>
-<p>A worked example: a married couple with $40,000 of Social Security between them and $30,000 of IRA withdrawals. Their provisional income is $30,000 + $20,000 (half the benefits) = $50,000, which is $6,000 over the $44,000 line. Taxable Social Security is 85% of $6,000, plus $6,000, which comes to $11,100, well under the $34,000 cap (85% of $40,000). Their AGI is $41,100.</p>
+<p>A worked example: a married couple with $40,000 of Social Security between them and $30,000 of IRA withdrawals. Their provisional income is $30,000 + $20,000 (half the benefits) = $50,000, which is $6,000 over the $44,000 line. Taxable Social Security is 85% of $6,000, plus $6,000, which comes to $11,100, well under the $34,000 cap (85% of $40,000). Their AGI is $41,100: the $30,000 of withdrawals plus the $11,100 of benefits that count. The other $28,900 of Social Security never appears as income.</p>
+
+<!-- data: ssTaxable(40000, x, status) in lib/engine/math.js (IRC sec. 86), via computeRetireTax({ss:40000, trad:x}).taxableSS, x = 0 to 80,000 in steps of 5,000.
+     Couple: nothing until other income passes 12,000 (provisional 32,000); at 30,000 it is 11,100, the worked example; the 85% cap, 34,000, is reached at about 56,950.
+     Single: starts past 5,000 (provisional 25,000) and reaches the cap at about 48,700. -->
+<figure data-chart='{"type":"line","x":[0,5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,55000,60000,65000,70000,75000,80000],"xLabel":"Other income (IRA withdrawals, pension, interest)","xFormat":"money","y":"money","series":[{"name":"Married couple","tone":"accent","values":[0,0,0,1500,4000,6850,11100,15350,19600,23850,28100,32350,34000,34000,34000,34000,34000]},{"name":"Single person","tone":"neutral","values":[0,0,2500,5350,9600,13850,18100,22350,26600,30850,34000,34000,34000,34000,34000,34000,34000]}]}'>
+  <figcaption>How much of $40,000 of Social Security benefits counts as taxable income, by the household's other income. The line flattens at $34,000, which is 85% of the benefits.</figcaption>
+</figure>
+
+<p>The steep part of each line is what the next section is about. Where the line is rising steeply, every extra $1,000 of other income drags $850 of benefits into taxable income with it. A single person gets there with much less income than a couple, because the single thresholds are lower but the benefit is the same size.</p>
 <p>If both are 65 or older, their 2026 deductions come to $47,500 (the standard deduction, the extra amount at 65 and the senior deduction; <a href="/learn/deductions">Deductions and credits</a> has the details), so they owe no federal income tax at all. If both were under 65, the $32,200 standard deduction would leave $8,900 taxable and a bill of $890.</p>
 <p>The thresholds date from 1983, when Congress began taxing benefits from 1984 to shore up Social Security's finances, and the 85% tier was added in 1993. Neither set has ever been indexed. They were meant to touch only better-off retirees, but as benefits and other incomes have risen with inflation, more people have crossed them each year. SSA's researchers found that the share of beneficiary families taxed on their benefits rose from less than one in ten in 1984 to more than half.</p>
 
@@ -61,7 +70,7 @@
   <figcaption>Federal tax on the next dollar of IRA withdrawals, 2026, for a married couple both 67 with $50,000 of Social Security and no other income. The dotted line is their bracket.</figcaption>
 </figure>
 
-<p>For this couple the first $30,000 or so of withdrawals is covered by their deductions and costs nothing. From about $35,000 to $60,000, each dollar pays 18.5 or 22.2 cents while their bracket says 10 or 12. Once 85% of their benefits is taxable, the extra effect stops and the rate drops back to 12%, lower than in the torpedo zone. Further up, above $150,000 of AGI, the senior deduction starts to phase out and the rate rises past their 22% bracket to 24.64%.</p>
+<p>For this couple the first $31,000 or so of withdrawals is covered by their deductions and costs nothing. From there to about $62,000, each dollar pays 18.5 or 22.2 cents while their bracket says 10 or 12. You can check one point by hand. At $50,000 of withdrawals, another $1,000 makes another $850 of Social Security taxable, so taxable income rises by $1,850. They're in the 12% bracket, and 12% of $1,850 is $222, or 22.2 cents per dollar withdrawn. Once 85% of their benefits is taxable, at about $62,000, the extra effect stops and the rate drops back to 12%, lower than in the torpedo zone. Further up, above $150,000 of AGI, the senior deduction starts to phase out and the rate rises past their 22% bracket to 24.64%.</p>
 <p>The torpedo gets sharper when the zone overlaps a higher bracket. A single person of 67 with $40,000 of Social Security pays about 43 cents of federal tax on each dollar of IRA withdrawals around $46,000, in the 22% bracket: 22% times 1.85, plus the senior deduction shrinking at the same time.</p>
 <p>A few things soften it:</p>
 <ul>
@@ -89,6 +98,17 @@
 
 <p>The rates apply to taxable income including the gain, and gains are stacked on top of ordinary income. Your IRA withdrawals, pension and taxable Social Security fill the bottom of the stack; the gains sit above them, and only the part of the gains that reaches past the line pays 15%.</p>
 <p>Take a married couple, both 66, with $60,000 of IRA withdrawals, $30,000 of Social Security and a $40,000 long-term gain from selling shares. $25,500 of their benefits is taxable, so their AGI is $125,500. After $47,500 of deductions, ordinary income uses $38,000 of taxable income and the $40,000 gain sits on top, reaching $78,000. That's under the $98,900 line, so the whole gain is taxed at 0%, and they could have realized another $20,900 of gain at 0%. Their federal tax, $4,064, is all on the ordinary income.</p>
+<p>Had the gain been $80,000, it would have reached past the line. The bars show both cases.</p>
+
+<!-- data: computeRetireTax({status:"m", seniors:2, ss:30000, trad:60000, brok:g, gainPct:1, state:"TX"}) for g = 40,000 and 80,000, 2026 figures. Each bar adds up to AGI.
+     40,000 gain: AGI 125,500; deductions 47,500; ordinary taxable 38,000 (tax 4,064); gain 40,000 at 0%. Federal tax 4,064.
+     80,000 gain: AGI 165,500, which is 15,500 over 150,000, so the senior deduction falls by 2 × 6% × 15,500 = 1,860 and deductions are 45,640; ordinary taxable 39,860 (tax 4,287.20);
+     gain at 0% = 98,900 − 39,860 = 59,040; gain at 15% = 20,960 (tax 3,144). Federal tax 7,431.20. -->
+<figure data-chart='{"type":"bar","stack":true,"labels":true,"x":["$40,000 gain","$80,000 gain"],"xLabel":"Long-term gain realized","y":"money","series":[{"name":"Covered by deductions","tone":"muted","values":[47500,45640]},{"name":"Ordinary income, taxed at 10% and 12%","tone":"neutral","values":[38000,39860]},{"name":"Gain taxed at 0%","tone":"good","values":[40000,59040]},{"name":"Gain taxed at 15%","tone":"bad","values":[0,20960]}]}'>
+  <figcaption>The same couple, both 66, with $60,000 of IRA withdrawals and $30,000 of Social Security, realizing a $40,000 or an $80,000 long-term gain in 2026. Each bar is their AGI, with ordinary income at the bottom of the stack and the gain on top.</figcaption>
+</figure>
+
+<p>With the $80,000 gain, $59,040 of it still fits under the $98,900 line and is taxed at 0%. The top $20,960 pays 15%, which is $3,144. The bigger gain also raises their AGI past $150,000, which trims their senior deduction by $1,860 and pushes that much more ordinary income into tax. Their federal bill goes from $4,064 to $7,431: the second $40,000 of gain cost $3,367, about 8.4%, and the first cost nothing.</p>
 <p>A couple under 65 with no other income could realize about $130,000 of long-term gains in 2026 and owe no federal income tax: $130,000 less the $32,200 standard deduction is $97,800 of taxable income, all inside the 0% band.</p>
 <p>That's the reason for gain harvesting: in a year with room in the 0% band, sell shares with gains and buy them straight back. You owe nothing, and the higher cost basis means less taxable gain later. (The wash-sale rule only stops you claiming losses this way, not gains.) The catch is that the gain is still income. It raises AGI, so it can make more Social Security taxable, raise Medicare premiums two years later and shrink ACA premium credits before 65.</p>
 <p>When you sell shares from a taxable account, only the gain is income. If you bought for $60,000 and sell for $100,000, $60,000 comes back as your own money and only $40,000 is taxed. That's why a taxable account is so useful early in retirement: it can pay for a lot of spending while reporting little income. <a href="/learn/taxable-account">The taxable account</a> covers it in more detail.</p>
@@ -139,7 +159,7 @@
     <li><a href="https://www.ssa.gov/policy/docs/research-summaries/income-taxes-on-benefits.html">Income taxes on Social Security benefits</a> <span>Social Security Administration</span></li>
     <li><a href="https://www.irs.gov/taxtopics/tc409">Topic 409, Capital gains and losses</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/taxtopics/tc559">Topic 559, Net investment income tax</a> <span>IRS</span></li>
-    <li><a href="https://www.everycrsreport.com/reports/RL30581.html">Social Security: taxation of benefits</a> <span>Congressional Research Service</span></li>
+    <li><a href="https://www.everycrsreport.com/reports/RL32552.html">Social Security: taxation of benefits</a> <span>Congressional Research Service</span></li>
   </ul>
 </footer>
 </article>

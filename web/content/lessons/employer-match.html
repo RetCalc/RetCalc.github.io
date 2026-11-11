@@ -1,4 +1,4 @@
-<article class="lesson" data-slug="employer-match" data-reviewed="2026-10-26"
+<article class="lesson" data-slug="employer-match" data-reviewed="2026-11-10"
   data-title="The employer match"
   data-idea="How match formulas, vesting and true-ups decide what you keep"
   data-tool="budget" data-try="Enter your match formula and see what each paycheck needs to collect all of it.">
@@ -14,6 +14,13 @@
 <li>She contributes 10%, or $6,000. The employer still adds $1,800. The extra 4% gets her own tax break but no more match.</li>
 </ul>
 <p>So the number that matters is the contribution rate that collects the full match, 6% in Maya's case. Below it, she leaves money behind. Above it, she's saving more, which may be a good idea, but the match has stopped growing.</p>
+<p>The chart below shows the same thing for three common formulas on Maya's salary. Each line climbs as she contributes more and then goes flat at the formula's cap. Past the flat point, more of her own money brings no more of the employer's.</p>
+
+<!-- data: arithmetic on a $60,000 salary, 1% of pay = $600. 50% of first 6%: 0.5 x min(r,6) x 600. 100% of first 3% plus 50% of next 2%: (min(r,3) + 0.5 x max(0, min(r,5) - 3)) x 600. 100% of first 4%: min(r,4) x 600. Script: scratchpad/where-each-dollar-goes/charts.mjs -->
+<figure data-chart='{"type":"line","x":[0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10],"xLabel":"Share of pay you contribute","xFormat":"pct","y":"money","series":[{"name":"50% of the first 6%","tone":"accent","values":[0,300,600,900,1200,1500,1800,1800,1800,1800,1800]},{"name":"100% of the first 3%, then 50% of the next 2%","tone":"good","values":[0,600,1200,1800,2100,2400,2400,2400,2400,2400,2400]},{"name":"100% of the first 4%","tone":"neutral","dash":true,"values":[0,600,1200,1800,2400,2400,2400,2400,2400,2400,2400]}]}'>
+  <figcaption>What the employer adds per year on a $60,000 salary at each contribution rate, under three formulas. The last two both top out at $2,400, but one needs 5% of pay to get there and the other 4%.</figcaption>
+</figure>
+
 <p>Formulas vary a lot. In Vanguard's 2026 report, covering 2025, the plans it administers used more than 100 different formulas, and no single one was used by more than 12% of plans. These were the most common:</p>
 
 <!-- data: formulas and shares from Vanguard, How America Saves 2026, Figure 6 (most frequently used match formulas, 2025). Dollar columns are arithmetic on a $60,000 salary: contribution to get the full match = cap x 60,000; match = sum of tier rate x tier width x 60,000 -->
@@ -38,12 +45,12 @@
 <h2 id="worth">What a missed match costs</h2>
 <p>A missed match looks small in a single year. In Maya's case, contributing 3% instead of 6% costs her $900 per year. But each year's missing $900 would have been invested for decades.</p>
 
-<!-- data: end-of-year deposits at 5% per year after inflation, salary held at $60,000 in today's dollars. Full match 3% x 60,000 = $1,800 per year; half 1.5% = $900. FV = pmt x ((1.05^n - 1)/0.05). Script: scratchpad/agents/saving/calc2.mjs -->
+<!-- data: end-of-year deposits at 5% per year after inflation, salary held at $60,000 in today's dollars. Full match 3% x 60,000 = $1,800 per year; half 1.5% = $900. FV = pmt x ((1.05^n - 1)/0.05). Rechecked 2026-11-10: scratchpad/where-each-dollar-goes/calc.mjs -->
 <figure data-chart='{"type":"line","x":[0,5,10,15,20,25,30],"xLabel":"Years contributing","y":"money","series":[{"name":"Full match, contributing 6%","tone":"good","values":[0,9946,22640,38841,59519,85909,119590]},{"name":"Half the match, contributing 3%","tone":"bad","values":[0,4973,11320,19421,29759,42954,59795]}]}'>
   <figcaption>Just the employer's money, on a $60,000 salary with a 50% match on the first 6%, growing 5% per year after inflation. In today's dollars.</figcaption>
 </figure>
 
-<p>After thirty years, the gap is about $60,000 in today's dollars, from contributing $1,800 per year less of her own money. The tax break makes the gap cheaper to close than it looks. In the 22% federal bracket, an extra $1,800 into a traditional 401(k) reduces take-home pay by about $1,400, because the rest would have gone to income tax.</p>
+<p>After thirty years, the gap is about $60,000 in today's dollars, from contributing $1,800 per year less of her own money. The tax break makes the gap cheaper to close than it looks. Single on $60,000, Maya is in the 12% federal bracket for 2026, so an extra $1,800 into a traditional 401(k) reduces her take-home pay by about $1,584; the other $216 would have gone to income tax. In the 22% bracket the same $1,800 would cost about $1,404. State income tax, where there is one, lowers the cost a little more.</p>
 
 <h2 id="vesting">Vesting: when the match becomes yours</h2>
 <p>Your own contributions are always 100% yours. The employer's match may not be. Vesting is the schedule on which it becomes yours, usually based on years of service. Leave before you're fully vested and the unvested part goes back to the plan.</p>
@@ -66,13 +73,18 @@
 </figure>
 
 <p>Nearly half of Vanguard plans vested the match immediately in 2025, and 22% used a five- or six-year graded schedule. A year of service is usually any plan year in which you work at least 1,000 hours, and the count normally starts when you're hired, not when you join the plan. You also become fully vested at the plan's normal retirement age, or if the employer ends the plan.</p>
-<p>Vesting matters most when you're thinking about changing jobs. Suppose you're three years and ten months into a job with a 3-year cliff: you're already fully vested, and leaving costs nothing. On a 6-year graded schedule, leaving with four years of service means giving up 40% of every match you've received; staying to complete a fifth year cuts that to 20%. It's worth checking your vested balance, which the plan's website shows, before you give notice.</p>
+<p>Vesting matters most when you're thinking about changing jobs. Suppose you're three years and ten months into a job with a 3-year cliff: you're already fully vested, and leaving costs nothing. On a 6-year graded schedule, leaving with four years of service means giving up 40% of every match you've received; staying to complete a fifth year cuts that to 20%. In dollars: if the employer's contributions and their growth come to $15,000, leaving at four years forfeits $6,000 and leaving at five forfeits $3,000. The percentage applies to the whole employer balance, growth included, and not only to the latest year's match. It's worth checking your vested balance, which the plan's website shows, before you give notice.</p>
 
 <h2 id="timing">Matched by paycheck, and the true-up</h2>
 <p>Many plans figure the match each pay period, on that paycheck alone. That's fine if you contribute steadily all year. It causes trouble if you contribute heavily and reach the annual limit early, because once your contributions stop, so does the match.</p>
 <p>Take someone earning $150,000, paid every two weeks, contributing 25% of pay to a plan that matches 100% of the first 4%. Each paycheck is $5,769.23, so the match is $230.77 per check, and the full year's match should be $6,000. But at 25%, they reach the 2026 limit of $24,500 on the 17th paycheck. For the last nine paychecks of the year, they contribute nothing and get no match.</p>
 
-<!-- data: arithmetic. 150,000 / 26 = 5,769.23 per check; 25% = 1,442.31 per check; 24,500 / 1,442.31 = 16.99, so the limit is reached on check 17 (that check deposits the remaining 1,423.08). Match per check 4% x 5,769.23 = 230.77; 17 checks = 3,923.08; full year 4% x 150,000 = 6,000; missing 2,076.92. Script: scratchpad/agents/saving/calc2.mjs -->
+<!-- data: running total of the match by paycheck, from the same arithmetic as the table below. Match per check = 4% x 5,769.23 = 230.77 while contributions continue. At 25% the 17th check is the last with a contribution (3,923.08 in total); at 16% all 26 are matched (6,000). Script: scratchpad/where-each-dollar-goes/charts.mjs -->
+<figure data-chart='{"type":"line","x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26],"xLabel":"Paycheck of the year","y":"money","series":[{"name":"Contributing 16% all year","tone":"good","values":[231,462,692,923,1154,1385,1615,1846,2077,2308,2538,2769,3000,3231,3462,3692,3923,4154,4385,4615,4846,5077,5308,5538,5769,6000]},{"name":"Contributing 25%, limit reached on check 17","tone":"bad","values":[231,462,692,923,1154,1385,1615,1846,2077,2308,2538,2769,3000,3231,3462,3692,3923,3923,3923,3923,3923,3923,3923,3923,3923,3923]}],"marks":[{"x":17,"label":"Limit reached"}]}'>
+  <figcaption>Match received so far through the year, on a $150,000 salary with a 100% match on the first 4% of each paycheck and no true-up.</figcaption>
+</figure>
+
+<!-- data: arithmetic. 150,000 / 26 = 5,769.23 per check; 25% = 1,442.31 per check; 24,500 / 1,442.31 = 16.99, so the limit is reached on check 17 (that check deposits the remaining 1,423.08). Match per check 4% x 5,769.23 = 230.77; 17 checks = 3,923.08; full year 4% x 150,000 = 6,000; missing 2,076.92. Rechecked 2026-11-10: scratchpad/where-each-dollar-goes/calc.mjs -->
 <figure>
   <table>
     <thead><tr><th></th><th>Contributing 25%</th><th>Contributing 16%</th></tr></thead>
@@ -106,7 +118,7 @@
   <figcaption>Safe harbor 401(k) designs. A QACA can also use a 3% nonelective contribution in place of the match.</figcaption>
 </figure>
 
-<p>Automatic enrollment works alongside the match. In plans that use it, new employees are signed up at a default rate unless they opt out, and often raised by one point each year. SECURE 2.0, a retirement law passed in December 2022, requires most 401(k) and 403(b) plans set up after it passed to enroll new employees automatically from 2025, starting between 3% and 10% of pay and rising by one point per year to at least 10%. Businesses with ten or fewer employees, businesses under three years old, and church and government plans are exempt.</p>
+<p>Automatic enrollment works alongside the match. In plans that use it, new employees are signed up at a default rate unless they opt out, and often raised by one point each year. SECURE 2.0, a retirement law passed in December 2022, requires most 401(k) and 403(b) plans set up after it passed to enroll new employees automatically from 2025, starting between 3% and 10% of pay and rising by one point per year until it reaches at least 10% (a plan can let it go on to 15%). Businesses with ten or fewer employees, businesses under three years old, and church and government plans are exempt.</p>
 <p>A default rate of 3% can sit below what the match pays for. If your plan enrolled you automatically, check the rate against the formula. A plan matching 50% of the first 6% still leaves half the match unclaimed at 3%.</p>
 
 <h2 id="secure">Newer options from SECURE 2.0</h2>
@@ -118,10 +130,10 @@
 <p>From plan years starting in 2024, employers may treat your student loan payments as if they were 401(k), 403(b), SIMPLE IRA or governmental 457(b) contributions and match them. If you're paying down loans and can't afford to contribute as well, you can still collect the match. Your employer has to offer it, and you'll usually have to certify the payments each year.</p>
 
 <h3>The Saver's Match</h3>
-<p>Separate from your employer, a federal Saver's Match is scheduled to start in 2027 for workers with modest incomes: 50% of up to $2,000 of retirement contributions per year, deposited into the account. It replaces the Saver's Credit, which works as a tax credit until then.</p>
+<p>Separate from your employer, a federal Saver's Match starts in 2027 for workers with modest incomes: 50% of up to $2,000 of retirement contributions per year, so at most $1,000, deposited into a retirement account. It replaces the Saver's Credit, which works as a tax credit through 2026. The match is worked out from your tax return, so the IRS expects the first deposits in 2028, for contributions made for 2027. In August 2026 the IRS said it would propose regulations on how the money gets to accounts; those details weren't final when this was written.</p>
 
 <h2 id="limits">How the match fits with the limits</h2>
-<p>The match doesn't use up any of your own contribution limit. For 2026, you can contribute $24,500 yourself, plus catch-up contributions from age 50, and the employer's match comes on top. There is a separate ceiling on everything going into one employer's plan for you in one year: your contributions, the match and any profit-sharing together. For 2026 it's $72,000, or 100% of your pay if that's less, with catch-up contributions allowed on top. Few people get near it unless their employer is unusually generous or they use after-tax contributions. <a href="/learn/contribution-limits">This year's limits</a> has every figure.</p>
+<p>The match doesn't use up any of your own contribution limit. For 2026, you can contribute $24,500 yourself, plus catch-up contributions of $8,000 from age 50 (or $11,250 in the years you turn 60 to 63, if the plan allows), and the employer's match comes on top. If your Social Security wages from the employer were over $150,000 in 2025, the catch-up part has to go in as Roth from 2026. That rule doesn't touch the match. There is a separate ceiling on everything going into one employer's plan for you in one year: your contributions, the match and any profit-sharing together. For 2026 it's $72,000, or 100% of your pay if that's less, with catch-up contributions allowed on top. Few people get near it unless their employer is unusually generous or they use after-tax contributions. <a href="/learn/contribution-limits">This year's limits</a> has every figure.</p>
 <p>If you have two jobs in the same year, your own $24,500 is shared across both employers' plans, but each employer's match is figured on its own. Contributing at both up to each match, while staying under the combined $24,500, collects both.</p>
 
 <h2 id="plan">Seeing it in your own plan</h2>
@@ -155,6 +167,8 @@
     <li><a href="https://www.irs.gov/retirement-plans/faqs-auto-enrollment-are-there-different-types-of-automatic-contribution-arrangements-for-retirement-plans">Types of automatic contribution arrangements</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/pub/irs-drop/n-24-63.pdf">Notice 2024-63: matching contributions for student loan payments</a> <span>IRS</span></li>
     <li><a href="https://www.irs.gov/newsroom/secure-2-point-0-act-impacts-how-businesses-complete-forms-w-2">SECURE 2.0 Act impacts how businesses complete Forms W-2</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/retirement-plans/cola-increases-for-dollar-limitations-on-benefits-and-contributions">COLA increases for dollar limitations on benefits and contributions</a> <span>IRS</span></li>
+    <li><a href="https://www.irs.gov/newsroom/treasury-irs-begin-implementing-executive-order-14403-by-announcing-intent-to-issue-proposed-regulations-on-savers-match-which-will-benefit-millions-of-low-and-moderate-income-taxpayers">Treasury and IRS announce proposed regulations on the Saver's Match</a> <span>IRS</span></li>
   </ul>
 </footer>
 </article>
