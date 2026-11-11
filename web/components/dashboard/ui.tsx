@@ -4,11 +4,12 @@
    note, and the way a section asks for what it's missing. */
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { ChevronDownIcon, InfoIcon, PlusIcon, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { TipDot } from "@/components/shell/Tooltips";
+import { useLandedOn } from "./land";
 import { TIPS, type TipId } from "./tips";
 
 /** A tile; `id` lets a link land on it ("/dashboard/profile#assumptions");
@@ -126,6 +127,8 @@ export function PlanFacts({ rows, note, id }: { rows: [ReactNode, ReactNode][]; 
     away. */
 export function Fold({ icon: Icon, title, summary, id, className, children }: { icon: LucideIcon; title: string; summary: ReactNode; id?: string; className?: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  // A link to it ("/dashboard/summary#assumption-check") opens it.
+  useLandedOn(id ?? "", useCallback(() => setOpen(true), []));
   return (
     <div className="dsh-fold" id={id}><Collapsible open={open} onOpenChange={setOpen}>
       <section className="dsh-tile dsh-fold-h">

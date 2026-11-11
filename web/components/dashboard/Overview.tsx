@@ -29,6 +29,7 @@ import { flow, mixWords, retireMix } from "./flows";
 import { hasAccounts, netWorth, useDashboard, type DashData } from "./store";
 import { useLandedOn } from "./land";
 import { Empty, Tile, Tip } from "./ui";
+import { AssumptionChip } from "./AssumptionCheck";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
 
@@ -245,6 +246,7 @@ export function Overview() {
           {full.overlay((px) => chart(px), legend)}
           <div className="dsh-assume dsh-cap">
             In today&apos;s dollars{tax}. Assumes <b>{pct(realGrowth(pr))}</b> growth per year after inflation{R.retireYear ? ` until ${R.retireYear}` : ""}, then every market since 1926 invested <b>{mixWords(retireMix(pr))}</b>. <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#assumptions" />}>Growth is set in Profile</Button>, the mix on <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement" />}>Retirement</Button>.
+            <AssumptionChip pr={pr} entries={data.entries} R={R} />
           </div>
         </Tile>
         <div className="dsh-side"><Readiness R={R} pr={pr} entries={data.entries} /><Chance R={R} accounts={accounts} /></div>

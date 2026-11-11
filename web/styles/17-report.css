@@ -245,3 +245,30 @@
 .rp-offer p{margin:0;font-size:13px;line-height:1.5;color:var(--ds-muted);max-width:none}
 .rp-offer p b{display:block;color:var(--ds-text);font-size:14px;font-weight:600;margin-bottom:2px}
 @media (max-width:480px){ .rp-thumb{width:76px} .rp-offer{gap:12px;padding:12px} }
+
+/* How your assumptions compare: the five-band scale (Balanced shaded, both
+   ends tinted alike) and the table's rating cells. */
+.rp-acs{position:relative;width:70px;flex:none}
+.rp-acs.lg{width:100%;margin-top:.2in}
+.rp-acs-bar{position:relative}
+.rp-acs-t{display:grid;grid-template-columns:repeat(5,1fr);gap:1.5px;height:5px;border-radius:3px;overflow:hidden}
+.rp-acs.lg .rp-acs-t{height:9px}
+.rp-acs-t i{background:var(--rp-land)}
+.rp-acs-t i[data-b="bal"]{background:var(--rp-grid)}
+.rp-acs-t i[data-b="cons"],.rp-acs-t i[data-b="aggr"]{background:#EBD9B0}
+.rp-acs-t i[data-b="vcons"],.rp-acs-t i[data-b="vaggr"]{background:var(--rp-sand)}
+.rp-acs-bar b{position:absolute;top:50%;left:calc(var(--p) * 100%);width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--rp-ink);box-shadow:0 0 0 1.5px #fff}
+.rp-acs.lg .rp-acs-bar b{width:13px;height:13px;margin:-6.5px 0 0 -6.5px;box-shadow:0 0 0 2px #fff}
+.rp-acs-w{display:grid;grid-template-columns:repeat(5,1fr);margin-top:5px;font-size:10px;color:var(--rp-ink2);text-align:center}
+.rp-acs-w span[data-on]{color:var(--rp-ink);font-weight:700}
+.rp-act td{vertical-align:middle}
+.rp-act td.l,.rp-act th.l{text-align:left}
+.rp-act-g td{padding-top:9px;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--rp-ink2)}
+.rp-act-b{display:inline-flex;align-items:center;gap:7px}
+.rp-act td.l{padding-left:12px}
+.rp-act td:nth-child(2){max-width:1.7in}
+.rp-act td:nth-child(4),.rp-act td:nth-child(5){white-space:nowrap}
+.rp-act-r{display:block;font-size:9.5px;color:var(--rp-ink2)}
+.rp-act-why{display:block;columns:3;column-gap:.22in}
+.rp-act-why .rp-small{break-inside:avoid}
+.rp-act-why .rp-small{margin-top:4px;font-size:9.5px}

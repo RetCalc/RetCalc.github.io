@@ -17,6 +17,7 @@ import { PLAN_DEFAULTS, type PlanState } from "@/tools/plan/model";
 import { planSummary, type PlanSummary } from "@/tools/plan/results";
 import { sim } from "@/tools/guide/calc";
 import { childCost, children } from "@/tools/guide/schedule";
+import { AssumptionCheck } from "./AssumptionCheck";
 import { Accounts as PlanAccounts, ChildrenCost, Climb, PayCard, StageLine } from "@/tools/plan/Summary";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { Legend, TodayBars } from "./Accounts";
@@ -130,6 +131,7 @@ export function Summary() {
           <PayCard S={S} />
         </div>
       ) : <Note>The summary fills in once your profile has your age, retirement age and pay.</Note>}
+      {S ? <AssumptionCheck pr={pr} entries={data.entries} R={R} /> : null}
 
       <EarlyRetirement pr={pr} entries={data.entries} R={R} />
       <HealthCover pr={pr} R={R} />

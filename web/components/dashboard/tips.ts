@@ -62,6 +62,7 @@ export const TIPS = {
   growLines: "Saving follows pay. Each of you's pay rises by your raise each year beyond inflation, and of each raise, after tax, the share you choose is saved (the same share of take-home pay as now unless you change it). Each account stops at its legal limit and the rest goes to the next. Set both on Year by year.",
 
   /* Retirement and Plan summary */
+  acUsual: "Your plan run again with every guess about the future at its usual figure (growth, inflation, raises, and what the children and college cost), everything else as it is. The ones that count once you've retired, Social Security and how long the plan runs, don't change savings at retirement; their figures say what they're worth then.",
   chance: "How often your plan lasted to 95 (or the years set on Retirement) when retirement started in each month since 1926 and lived through what markets did next, drawing down with your withdrawal strategy.",
   taxes: "Taxes on what you take out in retirement, in the plan's average year. Money from traditional accounts is taxed as income, and the required withdrawals that start in your 70s can raise taxes later; Roth money comes out tax-free.",
   ssPct: "The part of your benefit you expect to be paid. Social Security's trust fund is projected to run short in the 2030s; if Congress doesn't act, benefits could be cut to roughly 80%. Set a lower share here to plan for that: every benefit in your plan is scaled by it, from the day each of you claims.",

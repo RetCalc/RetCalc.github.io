@@ -23,12 +23,13 @@ import { payoffDrop } from "../housing";
 import { ASSET_GROUPS, DEBT_GROUPS, groupOf, kindName, ownerOf } from "../kinds";
 import { ageOf, answers, couple, grossYear, payYear, holdings, mortgage, nameOf, outsideUS, people, results, spendMonth, type Results } from "../model";
 import { allSteps } from "../nextsteps";
+import { rateAssumptions } from "../assumptions";
 import { explain } from "../readiness";
 import { liveScenarios, scenarioName, scenarioSentence } from "../scenarios";
 import { PER_LABEL, hasAccounts, netWorth, sum, type DashData, type Item } from "../store";
 
 export type PageId = "cover" | "stand" | "worth" | "income" | "spending" | "saving" | "home" | "family" | "changes" | "road" | "last" | "bridge" | "social"
-  | "health" | "money" | "score" | "next" | "sources" | "saveyears" | "years";
+  | "health" | "money" | "score" | "next" | "assume" | "sources" | "saveyears" | "years";
 export interface PageInfo { id: PageId; title: string; n: number; because?: string }
 
 const PHASE_NAMES: Record<PhaseId, string> = {
@@ -281,6 +282,9 @@ export function dashReport(d: DashData, today = new Date()) {
   add("money", "Where the money comes from");
   add("score", "Your readiness score");
   add("next", "Next steps");
+  // How the plan's guesses about the future compare with the usual figures.
+  const assume = rateAssumptions(pr, entries, R);
+  if (assume) add("assume", "How your assumptions compare");
   add("sources", "Assumptions and method");
   // The tables run over as many sheets as they need, split evenly.
   const PER = 37;
@@ -297,7 +301,7 @@ export function dashReport(d: DashData, today = new Date()) {
     mapFrom: Math.floor(Math.min(a.age, ...hist2.map((h) => a.age! - (today.getTime() - new Date(h.date + "T12:00:00").getTime()) / 3.15576e10))),
     missing: null, pr, entries, R, S, a, F, H, who, abroad, today, yearOf, age0, retire, end, rmdAge, firstClaim, firstMed, claim2, med2, r2,
     phases, stops, runs, worst, hist, rows, money, worth, pay, other: pr.other.filter((x) => (x.amount ?? 0) > 0), save, spend, home: homeShown ? home : null,
-    family, changes, bridge, health, social, score, rating: rating(score, R.partial), areas, steps, mix, mixWords: mixWords(mix), stocks: stocksOf(mix),
+    family, changes, bridge, health, social, score, assume, rating: rating(score, R.partial), areas, steps, mix, mixWords: mixWords(mix), stocks: stocksOf(mix),
     goal: target(a), pages, perSave, perYears,
     // For the Guide's charts, which take the plan's figures by these names.
     factors: FACTORS, Rg: { P: R.parts as Record<string, { p: number; txt: string }>, score: score ?? 0 },

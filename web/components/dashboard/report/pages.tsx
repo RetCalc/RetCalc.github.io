@@ -16,6 +16,8 @@ import {
 import { axis } from "@/tools/guide/report/charts";
 import { rounded } from "@/tools/guide/words";
 import { pctDown } from "../format";
+import { BANDS, BAND_WORDS, type Band } from "../assume-bench";
+import { GROUP_NAMES, SHORT, type GroupId } from "../assumptions";
 import { AgeStack, Climb, Fan, HBars, Lanes, Lines, OwedBars, SplitBar, WorthLine, WorthMap, kidColor } from "./charts";
 import type { DashReport, PageInfo } from "./model";
 
@@ -665,6 +667,43 @@ function Next({ M, p }: { M: M_; p: PageInfo }) {
   );
 }
 
+/* ---------- how your assumptions compare ---------- */
+/** The five-band scale, Balanced shaded, a marker where the figure sits. */
+const AcScale = ({ pos, band, words }: { pos: number; band: Band; words?: boolean }) => (
+  <div className={"rp-acs" + (words ? " lg" : "")}>
+    <div className="rp-acs-bar"><div className="rp-acs-t">{BANDS.map((b) => <i key={b} data-b={b} />)}</div><b style={{ "--p": pos } as React.CSSProperties} /></div>
+    {words ? <div className="rp-acs-w">{BANDS.map((b) => <span key={b} data-on={b === band ? "" : undefined}>{BAND_WORDS[b]}</span>)}</div> : null}
+  </div>
+);
+const signed = (v: number) => (Math.abs(v) < 500 ? "—" : (v > 0 ? "+" : "−") + money(Math.round(Math.abs(v) / 1000) * 1000));
+function Assume({ M, p }: { M: M_; p: PageInfo }) {
+  const A = M.assume!, more = A.band === "aggr" || A.band === "vaggr";
+  const groups = (Object.keys(GROUP_NAMES) as GroupId[]).map((g) => ({ g, rows: A.rows.filter((r) => r.group === g) })).filter((x) => x.rows.length);
+  return (
+    <Sheet M={M} p={p}>
+      <Lead h={<>Your assumptions: {low(BAND_WORDS[A.band])}.</>}>
+        {A.band === "bal" ? "Your plan's guesses about the future are close to the usual figures." : <>Your plan assumes {more ? "a kinder" : "a tougher"} future than the usual figures{A.lead ? ", mostly from " + SHORT[A.lead.id] : ""}.</>}{" "}
+        Savings at retirement come to <b>{rounded(A.mine)}</b> with your figures and <b>{rounded(A.usual)}</b> with every guess at its usual figure. Each guess is also run at its usual figure alone; the difference is what it adds or takes away.
+      </Lead>
+      <AcScale pos={A.pos} band={A.band} words />
+      <table className="rp-t rp-act gap"><thead><tr><th>Assumption</th><th className="l">Yours</th><th className="l">Usual, and the balanced range</th><th className="l">Rating</th><th>Effect at retirement</th></tr></thead>
+        {groups.map(({ g, rows }) => (
+          <tbody key={g}>
+            <tr className="rp-act-g"><td colSpan={5}>{GROUP_NAMES[g]}</td></tr>
+            {rows.map((r) => (
+              <tr key={r.id}><td>{r.name}</td><td className="l">{r.yours}</td><td className="l">{r.usual}<span className="rp-act-r">{r.range}</span></td>
+                <td className="l"><span className="rp-act-b"><AcScale pos={r.pos} band={r.band} />{BAND_WORDS[r.band]}</span></td><td>{signed(r.dollars)}{r.worth && Math.abs(r.dollars) >= 500 ? "*" : ""}</td></tr>
+            ))}
+          </tbody>
+        ))}
+      </table>
+      {A.rows.some((r) => r.worth && Math.abs(r.dollars) >= 500) ? <p className="rp-small">* Social Security and how long the plan runs don&apos;t change savings at retirement; these say what the difference in the years they change is worth then.</p> : null}
+      <Sec>Where the usual figures come from</Sec>
+      <div className="rp-cols2 rp-act-why">{A.rows.map((r) => <p key={r.id} className="rp-small"><b>{r.name}.</b> {r.why}</p>)}</div>
+    </Sheet>
+  );
+}
+
 /* ---------- assumptions and method ---------- */
 function Sources({ M, p }: { M: M_; p: PageInfo }) {
   const pr = M.pr, st = STATE_OPTIONS.find((s) => s.code === pr.state)?.name, real = (1 + pr.assume.growth) / (1 + pr.assume.inflation) - 1;
@@ -766,6 +805,7 @@ export function DashPages({ M }: { M: M_ }) {
       case "money": return <Money key={p.n} M={M} p={p} />;
       case "score": return <Score key={p.n} M={M} p={p} />;
       case "next": return <Next key={p.n} M={M} p={p} />;
+      case "assume": return <Assume key={p.n} M={M} p={p} />;
       case "sources": return <Sources key={p.n} M={M} p={p} />;
       case "saveyears": return <SaveYears key={p.n} M={M} p={p} part={part} />;
       case "years": return <Years key={p.n} M={M} p={p} part={part} />;
