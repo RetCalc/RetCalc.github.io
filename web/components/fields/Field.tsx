@@ -7,7 +7,7 @@
      <Field id="moTerm" label="Length"><NativeSelect id="moTerm">...</NativeSelect></Field>
 */
 
-import type { ReactNode, Ref } from "react";
+import { Children, isValidElement, type ReactNode, type Ref } from "react";
 import { InputGroup, InputGroupAddon, InputGroupText } from "@/components/ui/input-group";
 import { InGroup, InPercent, MoneyInput, NumberInput } from "./NumberInput";
 import { Label } from "@/components/ui/label";
@@ -35,14 +35,45 @@ export function Field({ id, label, labelId, wrapId, hidden, className, children 
   );
 }
 
+/* A field is no wider than what goes in it needs (its largest answer and
+   its unit, with room to spare), so a two-digit age doesn't sit in a box
+   that would take a sentence: the width hints at the answer, as GOV.UK's
+   fixed-width inputs and Baymard's form research advise. Never narrower
+   than 9 characters, and never wider than its column (InputGroup and
+   NativeSelect's `fit`). */
+
+/** Characters a number field's longest answer takes, from its `max` and
+    `step` (a percent field without a max goes to 100), with its unit. */
+function numberChars(max: number | undefined, step: number | undefined, unit: string | undefined, negative: boolean | undefined): number | null {
+  const top = max ?? (unit?.startsWith("%") ? 100 : undefined);
+  if (top == null || !isFinite(top)) return null;
+  const digits = String(Math.floor(Math.abs(top))).length;
+  const decimals = step != null && step % 1 !== 0 ? (String(step).split(".")[1]?.length ?? 0) + 1 : 0;
+  return digits + decimals + (negative ? 1 : 0) + (unit ? unit.length + 1 : 0);
+}
+
+/** Characters a dropdown's longest choice takes, when every choice is short
+    words or a number; null (full width) otherwise. */
+const SHORT_CHOICE = 14;
+function choiceChars(children: ReactNode): number | null {
+  let longest = 0;
+  for (const c of Children.toArray(children)) {
+    if (!isValidElement<{ children?: ReactNode }>(c)) continue;
+    const t = c.props.children;
+    if (typeof t !== "string" && typeof t !== "number") return null;
+    longest = Math.max(longest, String(t).length);
+  }
+  return longest && longest <= SHORT_CHOICE ? longest : null;
+}
+
 /** An input with its "$" in front and its unit after. The addons follow
     the input in the markup, so Tab reaches the input first; `align` puts
-    them on their side. */
-export function Affixed({ prefix, suffix, action, children, className }: { prefix?: ReactNode; suffix?: ReactNode; action?: ReactNode; children: ReactNode; className?: string }) {
+    them on their side. `fit`: the characters its longest answer takes. */
+export function Affixed({ prefix, suffix, action, children, className, fit }: { prefix?: ReactNode; suffix?: ReactNode; action?: ReactNode; children: ReactNode; className?: string; fit?: number | null }) {
   return (
     <InGroup value={true}>
       <InPercent value={typeof suffix === "string" && suffix.startsWith("%")}>
-      <InputGroup className={className}>
+      <InputGroup className={className} fit={fit}>
         {children}
         {prefix ? <InputGroupAddon><InputGroupText>{prefix}</InputGroupText></InputGroupAddon> : null}
         {suffix ? <InputGroupAddon align="inline-end"><InputGroupText>{suffix}</InputGroupText></InputGroupAddon> : null}
@@ -82,7 +113,7 @@ export function NumberField({ id, label, unit, step, max, wrapId, hidden, classN
   Omit<FieldProps, "children"> & ValueProps & { unit?: string; step?: number; max?: number; inputRef?: Ref<HTMLInputElement>; negative?: boolean }) {
   return (
     <Field id={id} label={label} wrapId={wrapId} hidden={hidden} className={className}>
-      <Affixed suffix={unit}><NumberInput ref={inputRef} id={id} nonNeg={!negative} step={step} max={max} {...input} /></Affixed>
+      <Affixed suffix={unit} fit={numberChars(max, step, unit, negative)}><NumberInput ref={inputRef} id={id} nonNeg={!negative} step={step} max={max} {...input} /></Affixed>
     </Field>
   );
 }
@@ -92,7 +123,7 @@ export function SelectField({ id, label, value, onChange, wrapId, hidden, classN
   Omit<FieldProps, "children"> & { value: string; onChange: (v: string) => void; children: ReactNode; "aria-label"?: string }) {
   return (
     <Field id={id} label={label} wrapId={wrapId} hidden={hidden} className={className}>
-      <NativeSelect id={id} {...attrs} value={value} onChange={(e) => onChange(e.target.value)}>{children}</NativeSelect>
+      <NativeSelect id={id} {...attrs} fit={choiceChars(children)} value={value} onChange={(e) => onChange(e.target.value)}>{children}</NativeSelect>
     </Field>
   );
 }

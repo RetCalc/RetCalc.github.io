@@ -312,8 +312,7 @@ function ProfilePage() {
 
       <div className="dsh-r4"><Children pr={pr} set={set} /></div>
       <div className="dsh-r4"><Assumptions pr={pr} set={set} /></div>
-      <div className="dsh-r4"><CheckinEmail /></div>
-      <div className="dsh-r4"><StartOver /></div>
+      <div className="dsh-grid dsh-two dsh-even"><CheckinEmail /><StartOver /></div>
       {pr.state === OUTSIDE_US ? <div className="dsh-r4"><Note>Outside the US we don&apos;t work out taxes or Social Security: your plan&apos;s figures for retirement are <b>before taxes</b>.</Note></div> : null}
     </Frame>
   );

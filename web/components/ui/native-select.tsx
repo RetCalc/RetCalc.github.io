@@ -9,6 +9,9 @@ type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> & {
       corners of its own, and its focus ring sits inside, since the toolbar
       clips what spills over. */
   variant?: "default" | "joined" | "inline"
+  /** The characters its longest choice takes: no wider than that needs
+      (with the arrow and some room), never narrower than 9. */
+  fit?: number | null
 }
 
 /* A native <select>, so its value, change events and the site's own
@@ -20,10 +23,12 @@ function NativeSelect({
   className,
   size = "default",
   variant = "default",
+  fit,
   ...props
 }: NativeSelectProps) {
   return (
     <div
+      style={fit ? ({ "--fit": Math.max(9, fit) } as React.CSSProperties) : undefined}
       className={cn(
         "group/native-select relative w-full",
         /* The joined scenario picker is disabled on pages without a tool
@@ -32,6 +37,7 @@ function NativeSelect({
         variant !== "joined" && "has-[select:disabled]:opacity-50",
         /* "inline": a blank in a sentence, as wide as its choice. */
         variant === "inline" && "inline-block w-auto",
+        fit && "max-w-[calc(var(--fit)*1ch+3.25rem)]",
         className
       )}
       data-slot="native-select-wrapper"

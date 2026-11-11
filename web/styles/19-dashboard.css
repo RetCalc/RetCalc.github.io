@@ -970,3 +970,7 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-profile-t b { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dsh-profile-t .dsh-cap { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dsh-profile-b { flex: none; gap: 4px; }
+
+/* Two tiles side by side at the same height (Profile: Email and Reset). */
+.dsh-two.dsh-even { align-items: stretch; }
+.dsh-even .dsh-reset { flex-wrap: wrap; }
