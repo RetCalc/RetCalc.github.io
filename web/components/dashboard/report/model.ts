@@ -43,6 +43,31 @@ const quant = (s: number[], q: number) => s[Math.min(s.length - 1, Math.max(0, M
 /** Each month's amount of a budget line. */
 const monthly = (amount: string, freq: number) => (parseNum(amount) || 0) * (freq || 12) / 12;
 
+/** The plan's saving schedule as the report's table has it: each yearly
+    raise is a stage of its own in the plan ("…, after the raise, after the
+    raise"), so the raise words come off and the years that are the same
+    stage join into one row, saving from its first year to its last. */
+export interface StageRow { from: number; to: number; label: string; first: number; last: number; short: number; paused: boolean }
+export function stageRows(sched: { from: number; to: number; monthly: number; label: string; short?: number }[]): StageRow[] {
+  // The words without the raises, and a part said twice once with its
+  // count ("College, College" is "two in college").
+  const NUMS = ["", "one", "two", "three", "four", "five", "six"];
+  const plain = (label: string) => {
+    const parts = label.split(", ").map((w) => w.trim()).filter((w) => w && !/^after the raise$/i.test(w)), seen: string[] = [];
+    for (const w of parts) if (!seen.includes(w)) seen.push(w);
+    const x = seen.map((w) => { const n = parts.filter((y) => y === w).length; return n > 1 && /^college$/i.test(w) ? (NUMS[n] ?? String(n)) + " in college" : w; }).join(", ");
+    return x ? x.charAt(0).toUpperCase() + x.slice(1) : "Saving";
+  };
+  const out: StageRow[] = [];
+  for (const st of sched) {
+    const label = plain(st.label), paused = st.monthly < 0.5, prev = out[out.length - 1];
+    if (prev && prev.label === label && prev.paused === paused && prev.to === st.from) {
+      prev.to = st.to; prev.last = st.monthly; prev.short = Math.max(prev.short, st.short ?? 0);
+    } else out.push({ from: st.from, to: st.to, label, first: st.monthly, last: st.monthly, short: st.short ?? 0, paused });
+  }
+  return out;
+}
+
 export function dashReport(d: DashData, today = new Date()) {
   const pr = d.profile, entries = d.entries;
   const R: Results = results(pr, entries);
@@ -92,8 +117,18 @@ export function dashReport(d: DashData, today = new Date()) {
 
   const kids = collegeChildren(pr), kidYears = collegeYears(pr), M = mortgage(pr, entries);
   const stops: Stop[] = [{ age: age0, t: "Today", d: two ? who.pair(age0) + "." : "Age " + age0 + "." }];
-  kids.forEach((c) => { if (c.planned && c.bornIn > 0) stops.push({ age: age0 + c.bornIn, t: "A child born", d: "Planned about " + c.bornIn + (c.bornIn === 1 ? " year" : " years") + " from now." }); });
-  if (pr.college.help !== "none") kids.forEach((c, i) => { const s = age0 + kidYears[i]; if (kidYears[i] > 0 && s < end) stops.push({ age: s, t: (c.planned ? "College" : c.name + "'s college") + " begins", d: collegeKid(pr, i).years + " years of it." }); });
+  // Children planned and their colleges: one stop each, or, for more than
+  // one, one stop for them all (the Family page has each), so a big family
+  // doesn't crowd the map and its list.
+  const born = kids.filter((c) => c.planned && c.bornIn > 0);
+  const yrsFrom = (n: number) => n + (n === 1 ? " year" : " years");
+  if (born.length === 1) stops.push({ age: age0 + born[0].bornIn, t: "A child born", d: "Planned about " + yrsFrom(born[0].bornIn) + " from now." });
+  else if (born.length > 1) stops.push({ age: age0 + born[0].bornIn, t: "Children born", d: born.length + " planned, the first about " + yrsFrom(born[0].bornIn) + " from now and the last in about " + yrsFrom(born[born.length - 1].bornIn) + "." });
+  if (pr.college.help !== "none") {
+    const starts = kids.map((c, i) => ({ c, i, s: age0 + kidYears[i], n: collegeKid(pr, i).years })).filter((x) => kidYears[x.i] > 0 && x.s < end).sort((a, b) => a.s - b.s);
+    if (starts.length === 1) { const x = starts[0]; stops.push({ age: x.s, t: (x.c.planned ? "College" : x.c.name + "'s college") + " begins", d: x.n + " years of it." }); }
+    else if (starts.length > 1) { const lastEnd = Math.max(...starts.map((x) => x.s + x.n)); stops.push({ age: starts[0].s, t: "College years begin", d: starts.length + " children's college, through " + yearOf(lastEnd) + "." }); }
+  }
   if (M.payoff != null && M.payoff < yearOf(end)) stops.push({ age: Math.round(age0 + (M.payoff - today.getFullYear())), t: "Mortgage paid off", d: "At today's payment." });
   const r2 = two && pr.p2.retire != null && age2 != null ? who.mine(pr.p2.retire) : null;
   stops.push({ age: retire, t: r2 === retire ? "You both retire" : (two ? who.First + " retires" : "Retire"), d: who.pair(retire) + "." });
@@ -217,8 +252,9 @@ export function dashReport(d: DashData, today = new Date()) {
   const family = kids.length ? {
     kids: kids.map((c, i) => ({ ...c, college: pr.college.help !== "none" ? { from: today.getFullYear() + kidYears[i], ...collegeKid(pr, i) } : null })),
     help: pr.college.help, need: collegeNeedOf(pr), saving: F.college, plan: pr.college.plan ?? null, childcare: pr.childcare, careArea: pr.careArea,
-    sched: S.sched ?? null, now: kidsNow.length,
+    sched: S.sched ? stageRows(S.sched) : null, now: kidsNow.length, stagesOwn: false,
   } : null;
+  if (family?.sched) family.stagesOwn = family.sched.length > 7 || (family.sched.length > 3 && family.kids.length + family.sched.length > 10);
 
   const changeList = liveScenarios(pr.scenarios).filter((s) => !s.id.startsWith("__"));
   const changes = changeList.length ? (() => {
@@ -272,7 +308,13 @@ export function dashReport(d: DashData, today = new Date()) {
   add("spending", "Spending");
   add("saving", "Saving and investing");
   if (homeShown) add("home", home!.own ? "Your home" : "Renting", home!.own ? "On this report because you own your home" : "On this report because you rent");
-  if (family) add("family", family.kids.length > 1 ? "Your children" : "Your child", "On this report because of the children in your plan");
+  if (family) {
+    add("family", family.kids.length > 1 ? "Your children" : "Your child", "On this report because of the children in your plan");
+    // The stages go on a page of their own when the first would be crowded:
+    // many stages, or many children (the household lanes and the children's
+    // table grow with them).
+    if (family.stagesOwn) add("family", (family.kids.length > 1 ? "Your children" : "Your child") + ", continued");
+  }
   if (changes) add("changes", "Changes ahead", "On this report because of the changes in your Calculator");
   add("road", "The road from here");
   add("last", "Will it last?");

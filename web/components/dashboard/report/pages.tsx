@@ -7,6 +7,7 @@
    Letter sheet. The words follow the household: one person or two, owning
    or renting, retiring early, abroad, every history lasting or not. */
 
+import { useLayoutEffect } from "react";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { fraLabel } from "@/tools/social/model";
@@ -393,10 +394,27 @@ function Family({ M, p }: { M: M_; p: PageInfo }) {
         <Fig v={rounded(Fm.kids.reduce((t, k) => t + (k.college ? k.college.cost * k.college.years : 0), 0))}>of college from you, in today&apos;s dollars</Fig>
         <Fig v={money(Fm.need)}>per month to save ahead for it</Fig>
         <Fig v={money(Fm.saving)}>per month set aside today{Fm.saving >= Fm.need - 25 ? ": on pace" : ""}</Fig></div> : null}
-      {Fm.sched && Fm.sched.length > 1 ? (() => { const shorts = Fm.sched.some((s) => (s.short ?? 0) > 0); return <><Sec>Saving through the stages, per month with the match</Sec>
-        <table className="rp-t"><thead><tr><th>{M.who.axis}</th><th className="l">Stage</th><th>Saving per month</th>{shorts ? <th>Short of costs</th> : null}</tr></thead><tbody>
-          {Fm.sched.slice(0, 10).map((s) => <tr key={s.from} className={s.monthly === 0 ? "hl" : undefined}><td>{s.from} to {s.to}</td><td className="l">{s.label}</td><td>{money(s.monthly)}</td>{shorts ? <td>{s.short ? money(s.short) : "–"}</td> : null}</tr>)}</tbody></table>
-        {shorts || Fm.sched.some((s) => s.monthly === 0) ? <p className="rp-small">Shaded: saving paused, when the children cost more than you&apos;d save. The short column is what the budget has to find.</p> : null}</>; })() : null}
+      {Fm.sched && Fm.sched.length > 1 ? Fm.stagesOwn ? <p className="rp-small gap">How saving moves through the {num(Fm.sched.length)} stages is on page {p.n + 1}.</p> : <StageTable M={M} /> : null}
+    </Sheet>
+  );
+}
+/** Saving through the children's stages: one row a stage, saving from its first year to its last. */
+function StageTable({ M }: { M: M_ }) {
+  const sched = M.family!.sched!, shorts = sched.some((s) => s.short > 0);
+  return <><Sec>Saving through the stages, per month with the match</Sec>
+    <table className="rp-t"><thead><tr><th>{M.who.axis}</th><th className="l">Stage</th><th>Saving per month</th>{shorts ? <th>Short of costs</th> : null}</tr></thead><tbody>
+      {sched.map((s) => <tr key={s.from} className={s.paused ? "hl" : undefined}><td>{s.from} to {s.to}</td><td className="l">{s.label}</td><td>{Math.abs(s.last - s.first) < 1 ? money(s.first) : money(s.first) + " to " + money(s.last)}</td>{shorts ? <td>{s.short ? money(s.short) : "–"}</td> : null}</tr>)}</tbody></table>
+    {shorts || sched.some((s) => s.paused) ? <p className="rp-small">Shaded: saving paused, when the children cost more than you&apos;d save. The short column is what the budget has to find.</p> : null}</>;
+}
+/** The children's stages on a page of their own, when the first is crowded. */
+function FamilyStages({ M, p }: { M: M_; p: PageInfo }) {
+  const sched = M.family!.sched!, low = sched.reduce((m, s) => (Math.min(s.first, s.last) < Math.min(m.first, m.last) ? s : m), sched[0]);
+  return (
+    <Sheet M={M} p={p}>
+      <Lead h={<>Saving moves through {num(sched.length)} stages as the children grow.</>}>
+        Each stage is a stretch of years when the household is the same: who&apos;s in childcare, at school, a teenager or in college. Saving is lowest {low.from === low.to - 1 ? "at " + low.from : "from " + low.from + " to " + low.to}, at {money(Math.min(low.first, low.last))} per month with the match, and rises with pay within a stage.
+      </Lead>
+      <div className="gap"><StageTable M={M} /></div>
     </Sheet>
   );
 }
@@ -410,7 +428,7 @@ function Changes({ M, p }: { M: M_; p: PageInfo }) {
         From the Dashboard&apos;s Calculator. Each change is in the whole plan: savings at retirement, the chance of success and the score all count it. Turn one off in the Calculator to see the plan without it.
       </Lead>
       <Sec>The changes</Sec>
-      <ol className="rp-poi plain">{Ch.list.map((c, i) => <li key={i}><span><b>{i + 1}. {c.name}.</b> {c.sentence}</span></li>)}</ol>
+      <ol className={"rp-poi plain" + (Ch.list.length > 8 ? " cols" : "")}>{Ch.list.map((c, i) => <li key={i}><span><b>{i + 1}. {c.name}.</b> {c.sentence}</span></li>)}</ol>
       <Sec>With and without them</Sec>
       <table className="rp-t"><thead><tr><th />{["Without the changes", "With them"].map((t) => <th key={t}>{t}</th>)}</tr></thead><tbody>
         <tr><td>Savings at {M.retire}</td><td>{Ch.without != null ? money(Ch.without) : "–"}</td><td>{money(M.S.fv)}</td></tr>
@@ -783,8 +801,36 @@ function Years({ M, p, part }: { M: M_; p: PageInfo; part: number }) {
   );
 }
 
+/* Every sheet is a fixed US Letter page, so nothing may run under its
+   footer. The model already splits what can grow long (tables over as many
+   sheets as they need, the stages and the stops on pages of their own);
+   past that, each sheet that still reaches its footer is drawn a little
+   smaller, a step at a time, until it clears (down to 80%). A sheet that
+   can't is marked for the report's tests (data-over). */
+const CLEAR = 10, MIN_ZOOM = 0.8;
+function fitSheets() {
+  document.querySelectorAll<HTMLElement>(".rp-page").forEach((page) => {
+    const body = page.querySelector<HTMLElement>(":scope > .rp-in, :scope > .rp-cols"), foot = page.querySelector<HTMLElement>(":scope > .rp-foot");
+    if (!body || !foot) return;
+    // The pages are scaled to the window; measure in the sheet's own pixels.
+    const k = page.getBoundingClientRect().width / page.offsetWidth || 1;
+    const room = () => (foot.getBoundingClientRect().top - body.getBoundingClientRect().bottom) / k;
+    let z = 1;
+    body.style.removeProperty("zoom");
+    while (room() < CLEAR && z > MIN_ZOOM + 1e-6) { z = Math.max(MIN_ZOOM, z - 0.025); body.style.setProperty("zoom", String(z)); }
+    page.toggleAttribute("data-over", room() < 0);
+  });
+}
+
 /** Every page of the report, in order. */
 export function DashPages({ M }: { M: M_ }) {
+  useLayoutEffect(() => {
+    fitSheets();
+    // Once the report's font is in, the lines can wrap differently.
+    let live = true;
+    void document.fonts?.ready.then(() => { if (live) fitSheets(); });
+    return () => { live = false; };
+  }, [M]);
   return <>{M.pages.map((p, i) => {
     const part = M.pages.slice(0, i).filter((x) => x.id === p.id).length;
     switch (p.id) {
@@ -795,7 +841,7 @@ export function DashPages({ M }: { M: M_ }) {
       case "spending": return <Spending key={p.n} M={M} p={p} />;
       case "saving": return <Saving key={p.n} M={M} p={p} />;
       case "home": return <Home key={p.n} M={M} p={p} />;
-      case "family": return <Family key={p.n} M={M} p={p} />;
+      case "family": return part ? <FamilyStages key={p.n} M={M} p={p} /> : <Family key={p.n} M={M} p={p} />;
       case "changes": return <Changes key={p.n} M={M} p={p} />;
       case "road": return <Road key={p.n} M={M} p={p} />;
       case "last": return <Last key={p.n} M={M} p={p} />;
