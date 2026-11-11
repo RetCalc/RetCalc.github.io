@@ -89,21 +89,21 @@ body { font-family: var(--sans); -webkit-font-smoothing: antialiased; }
 .dsh-ri[aria-current]::before { display: none; }
 .dsh-ri .dsh-dot, .dsh-tb .dsh-dot { box-shadow: 0 0 0 2px var(--dsh-rail); }
 
-/* The title bar: a band across the top of the page, warmed at its start,
-   with the tab's icon in an amber tile, the way back over a large title,
+/* The title bar: a plain white band across the top of the page with a
+   hairline under it, the tab's icon in a soft amber square (no gradient, no
+   glow: owner's pick "Tinted", 2026-11-11), the way back over a large title,
    and a status chip where the page has one. */
 .dsh-top {
   position: relative; height: auto; min-height: 64px; flex-wrap: wrap; align-items: center; row-gap: 10px; padding: 26px 36px 22px;
   border-bottom: 1px solid var(--ds-rule);
-  background: radial-gradient(520px 150px at 0 0, var(--dsh-tint-wash), transparent 70%), linear-gradient(var(--ds-surface), color-mix(in srgb, var(--ds-surface) 40%, transparent));
+  background: var(--ds-surface);
 }
 .dsh .dsh-title { display: flex; align-items: center; gap: 16px; flex: 1 1 auto; min-width: 0; }
 .dsh-ico {
-  flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 13px; color: #fff;
-  background: linear-gradient(160deg, #ffb53d, #f08400);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 6px 16px -6px rgba(240, 132, 0, 0.55);
+  flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px;
+  color: var(--ds-amber); background: var(--dsh-tint-wash);
 }
-.dsh-ico svg { width: 24px; height: 24px; stroke-width: 2; }
+.dsh-ico svg { width: 22px; height: 22px; stroke-width: 1.9; }
 .dsh-tt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .dsh-crumb { display: inline-flex; align-items: center; gap: 2px; width: fit-content; font-size: 13px; font-weight: 500; color: var(--dsh-on-page); text-decoration: none; }
 .dsh-crumb svg { width: 14px; height: 14px; opacity: 0.6; }
@@ -615,8 +615,8 @@ a.hm-tile:hover { border-color: transparent; box-shadow: 0 2px 4px rgba(0, 0, 0,
   .dsh-pin { display: none; }
   .dsh-app[data-pinned] { --dsh-pin: 0px; }
   .dsh .dsh-title { flex: 1 1 0; flex-wrap: wrap; gap: 10px 12px; }
-  .dsh-ico { width: 40px; height: 40px; border-radius: 11px; }
-  .dsh-ico svg { width: 21px; height: 21px; }
+  .dsh-ico { width: 38px; height: 38px; border-radius: 10px; }
+  .dsh-ico svg { width: 19px; height: 19px; }
   .dsh .dsh-meta { align-self: auto; margin: 0; }
   .dsh-pagefoot { margin: -72px 16px 0; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 }
