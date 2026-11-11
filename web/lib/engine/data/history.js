@@ -636,4 +636,4 @@ export var HIST_M_SV = [
   1.9118,-3.5186,-6.3221,-4.4015,5.3216,4.6811,2.0821,9.1109,0.7802,-1.5645,3.5508,0.3878
 ];
 /* The latest reading, to set today's market against the record. */
-export var CAPE_NOW = 41.0, CAPE_NOW_ASOF = "30 September 2026";
+export var CAPE_NOW = 39.8, CAPE_NOW_ASOF = "1 November 2026";
