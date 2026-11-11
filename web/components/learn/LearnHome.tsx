@@ -86,6 +86,32 @@ export function LearnHome({ lessons, previews, mode, search: outerSearch, onSear
     setPicked(id); setSearch("");
     if (scroll) toRoute();
   };
+  // The site header's shelf: each book opens its track and scrolls down to
+  // it, as does an address ending #track-<id>.
+  useEffect(() => {
+    const open = (id: TrackId) => {
+      setPicked(id); setQ("");
+      requestAnimationFrame(() => routeH.current?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }));
+    };
+    const isTrack = (id: string | undefined): id is TrackId => !!id && TRACKS.some((t) => t.id === id);
+    const onHash = () => {
+      const id = window.location.hash.match(/^#track-(\w+)$/)?.[1];
+      if (isTrack(id)) open(id);
+    };
+    onHash();
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest<HTMLAnchorElement>("a[data-track]");
+      const id = a?.dataset.track;
+      if (!isTrack(id)) return;
+      e.preventDefault();
+      history.replaceState(null, "", `#track-${id}`);
+      open(id);
+    };
+    document.addEventListener("click", onClick);
+    window.addEventListener("hashchange", onHash);
+    return () => { document.removeEventListener("click", onClick); window.removeEventListener("hashchange", onHash); };
+  }, []);
   // A phone's row of tracks scrolls sideways: keep the chosen one in it.
   useEffect(() => {
     const row = tlist.current, b = row?.querySelector<HTMLElement>('[aria-pressed="true"]');

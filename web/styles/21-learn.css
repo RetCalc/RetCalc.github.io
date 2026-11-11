@@ -40,12 +40,16 @@
 .lrn-shelf-stats dd { margin: 0; font: 700 30px/1 var(--dsh-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .lrn-shelf-stats small { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .7); }
 .lrn-spines { display: flex; align-items: flex-end; gap: 8px; height: 230px; margin: 0; padding: 0 0 10px; list-style: none; border-bottom: 2px solid rgba(255, 255, 255, .22); }
-.lrn-spine { flex: 1; min-width: 0; height: var(--h); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 0 8px; border-radius: 7px 7px 3px 3px;
+.lrn-spines > li { flex: 1; min-width: 0; height: 100%; display: flex; align-items: flex-end; }
+.lrn-spine { flex: 1; min-width: 0; height: var(--h); text-decoration: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 0 8px; border-radius: 7px 7px 3px 3px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--c) 92%, #fff), color-mix(in srgb, var(--c) 70%, #000)); color: #0b1a2b;
   box-shadow: inset 2px 0 0 rgba(255, 255, 255, .25), inset -3px 0 0 rgba(0, 0, 0, .15); transition: transform .18s; }
-.lrn-spine:hover { transform: translateY(-6px); }
-.lrn-spine:nth-child(1) { --c: #4fbf95; } .lrn-spine:nth-child(2) { --c: #7d9fd6; } .lrn-spine:nth-child(3) { --c: #e3a93b; } .lrn-spine:nth-child(4) { --c: #b48ee8; }
-.lrn-spine:nth-child(5) { --c: #f08a6c; } .lrn-spine:nth-child(6) { --c: #4cc2c4; } .lrn-spine:nth-child(7) { --c: #e88ab5; } .lrn-spine:nth-child(8) { --c: #a7c25a; }
+/* Beats the site's rule for links inside list items (22-clear-glass.css). */
+.lrn-shelf .lrn-spines > li > a.lrn-spine { color: #0b1a2b; text-decoration: none; }
+.lrn-spine:hover, .lrn-spine:focus-visible { transform: translateY(-6px); }
+.lrn-spine:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.lrn-spines > li:nth-child(1) { --c: #4fbf95; } .lrn-spines > li:nth-child(2) { --c: #7d9fd6; } .lrn-spines > li:nth-child(3) { --c: #e3a93b; } .lrn-spines > li:nth-child(4) { --c: #b48ee8; }
+.lrn-spines > li:nth-child(5) { --c: #f08a6c; } .lrn-spines > li:nth-child(6) { --c: #4cc2c4; } .lrn-spines > li:nth-child(7) { --c: #e88ab5; } .lrn-spines > li:nth-child(8) { --c: #a7c25a; }
 .lrn-spine b { font-size: 13px; font-weight: 700; }
 .lrn-spine span { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 12.5px; font-weight: 650; white-space: nowrap; }
 .lrn-spine i { font-style: normal; font-size: 12px; font-weight: 600; opacity: .75; }

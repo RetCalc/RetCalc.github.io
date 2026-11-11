@@ -1,7 +1,8 @@
 /* The top of the Learn home on the site (owner's pick of three, 2026-11-11):
    a deep blue stage with the title, a line on what Learn is, the counts,
    and the eight tracks as book spines, each as tall as its number of
-   lessons. The Dashboard's Learn tab keeps the Dashboard's own title bar. */
+   lessons; each opens its track below (LearnHome listens for the click
+   and for a #track-… address). The Dashboard's Learn tab keeps the Dashboard's own title bar. */
 
 import { GraduationCapIcon } from "lucide-react";
 import { TRACKS } from "@/lib/learn/catalog";
@@ -30,9 +31,11 @@ export function LearnShelf({ lessons }: { lessons: LessonSummary[] }) {
       </div>
       <ol className="lrn-spines" aria-label="The tracks">
         {TRACKS.map((t, i) => (
-          <li key={t.id} className="lrn-spine" title={`${t.name}: ${t.lessons.length} lessons`}
-            style={{ "--h": `${42 + 58 * (t.lessons.length / max)}%` } as React.CSSProperties}>
-            <b aria-hidden="true">{i + 1}</b><span>{SPINE[t.id]}</span><i aria-label={`${t.lessons.length} lessons`}>{t.lessons.length}</i>
+          <li key={t.id}>
+            <a className="lrn-spine" href={`#track-${t.id}`} data-track={t.id} aria-label={`${t.name}, ${t.lessons.length} lessons`}
+              style={{ "--h": `${42 + 58 * (t.lessons.length / max)}%` } as React.CSSProperties}>
+              <b aria-hidden="true">{i + 1}</b><span aria-hidden="true">{SPINE[t.id]}</span><i aria-hidden="true">{t.lessons.length}</i>
+            </a>
           </li>
         ))}
       </ol>
