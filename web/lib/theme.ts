@@ -50,8 +50,7 @@ export function useThemeChoice(): ThemeChoice {
    follow these meta tags rather than the page's CSS. */
 export function applyTheme(theme: Theme): void {
   document.documentElement.setAttribute("data-theme", theme);
-  /* One tag per system theme (app/layout.tsx); a picked theme sets both. */
-  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", THEME_COLOR[theme]));
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_COLOR[theme]);
   document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", theme);
 }
 
