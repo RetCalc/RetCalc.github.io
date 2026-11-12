@@ -79,9 +79,12 @@ test("the family HSA limit is shared: each spouse of 55 or older adds their own 
   near(yr(one({ pcStatus: "s", pcHsaFamily: true }, [56, 57]), "hsa"), 9750);
 });
 
-test("a spouse's age does not raise a one-income 401(k) or IRA cap", () => {
+test("one income: a spouse's age does not raise the 401(k) cap, but their spousal IRA counts", () => {
   const pi = one({ pcStatus: "m" }, [45, 58]);
-  near(yr(pi, "k401max"), 24500); near(yr(pi, "rothIra"), 7500);
+  // Your 7,500, and the spouse's 7,500 with the 50 catch-up.
+  near(yr(pi, "k401max"), 24500); near(yr(pi, "rothIra"), 7500 + 8600);
+  const sp = pcSplit(pi, { ...pi.amounts, rothIra: pcCap(pi, "rothIra", pi.amounts) });
+  near(sp.rothIra[0] * pi.p, 7500); near(sp.rothIra[1] * pi.p, 8600);
 });
 
 test("the splits follow each person's own limit", () => {

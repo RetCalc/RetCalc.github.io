@@ -12,8 +12,9 @@
    raise (and changes as a pay change says), the paycheck's own calculator
    figures the taxes on it, and saving follows take-home pay, as the
    profile's "of each raise, how much is saved" says (the same share as now
-   unless set). When your partner stops work, what you spend carries on
-   and saving takes the drop (only your own 401(k) from then on); the
+   unless set). When pay changes other than by a raise (a pay change, or
+   your partner stopping work), what you spend carries on and saving takes
+   the difference, each account within the limits that pay allows; the
    raises after are saved from there. The children's costs, college and the changes come out of
    that saving as above, and what's spent is what's left. From these, the
    plan's saving year by year, account by account (Answers.yearly), so
@@ -194,12 +195,13 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
   const A0 = (pi.gross + pi.gross2) / 12 + other - taxOf(pi, L0).tax;
   /* Saving of `S` a month on lines: today's lines in proportion; over a
      limit, the rest goes to the next line already in use (in the
-     paycheck's order), and the brokerage last. With the two of you as
-     today, no line is held below what goes into it now. */
-  const alloc = (S: number, pk: PcInput): Record<Line, number> => {
-    // With your partner stopped, today's lines as far as one person's
-    // limits go, before anything is cut or added; otherwise in proportion.
-    const same = pk.two === pi.two, r = S0 > 0 ? S / S0 : 0;
+     paycheck's order), and the brokerage last. With pay on its raises
+     alone, no line is held below what goes into it now. `changed`: pay
+     is off its raises (a pay change, or your partner stopped work). */
+  const alloc = (S: number, pk: PcInput, changed: boolean): Record<Line, number> => {
+    // With pay changed, today's lines as far as the limits on that pay go,
+    // before anything is cut or added; otherwise in proportion.
+    const same = !changed, r = S0 > 0 ? S / S0 : 0;
     const out = Object.fromEntries(DASH_ORDER.map((l) => [l, L0[l] * (same ? r : 1)])) as Record<Line, number>;
     if (S0 <= 0) { out.brok = S; return out; }
     // Not held below today, with the two of you as today: a line already
@@ -209,8 +211,8 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
     const floorOf = (l: Line) => (!same ? 0 : l === "k401max" ? Math.max(0, L0.match + L0.k401max - out.match) : L0[l]);
     const capOf = (l: Line) => { const c = (pcCap(pk, l, amountsOf(pk, out)) * pk.p) / 12; return isFinite(c) ? Math.max(c, floorOf(l)) : Infinity; };
     let over = 0;
-    // (The match line first when your partner has stopped: the 401(k)
-    // beyond it gets the room it leaves under your own limit.)
+    // (The match line first with pay changed: the 401(k) beyond it gets
+    // the room it leaves under each one's limit.)
     for (const l of same ? DASH_ORDER : (["match", ...DASH_ORDER.filter((x) => x !== "match")] as Line[])) {
       const c = capOf(l);
       if (out[l] > c) { over += same ? out[l] - c : 0; out[l] = c; }
@@ -253,45 +255,61 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
   const rows: YearSaving[] = [], base: number[] = [], years: CashYear[] = [], pre: YearsOut["pre"] = [];
   // Saving follows take-home pay, which its own pre-tax part lowers the
   // taxes on: worked out until the two agree. `want` is the saving a
-  // take-home pay calls for.
-  const solve = (pk: PcInput, inc: number, want: (A: number) => number) => {
-    let S = S0, lines = alloc(S, pk), tx = taxOf(pk, lines);
+  // take-home pay calls for; below nothing (`raw`), nothing is saved.
+  const solve = (pk: PcInput, inc: number, want: (A: number) => number, changed: boolean) => {
+    let S = S0, lines = alloc(S, pk, changed), tx = taxOf(pk, lines), raw = S;
     for (let it = 0; it < 20; it++) {
-      const next = Math.max(0, want(inc - tx.tax));
+      raw = want(inc - tx.tax);
+      const next = Math.max(0, raw);
       if (Math.abs(next - S) < 0.01) break;
-      S = next; lines = alloc(S, pk); tx = taxOf(pk, lines);
+      S = next; lines = alloc(S, pk, changed); tx = taxOf(pk, lines);
     }
-    return { S, lines, tx };
+    return { S, raw, lines, tx };
   };
   // What's saved of the raises, from a starting take-home pay and saving:
-  // today's, until your partner stops work.
-  let bA = A0, bS = S0, rebased = false;
+  // today's, until pay changes other than by its raises. The saving can
+  // run below nothing here (what's spent is held up by it), so spending
+  // comes back once pay does.
+  let bA = A0, bS = S0;
   const byRaise = (A: number) => (Yr.keep == null ? (bA > 0 ? (bS * A) / bA : bS) : bS + Yr.keep * (A - bA));
+  // The paycheck on each of your pay. One of you at no pay is as good as
+  // stopped: only the other's 401(k) is left, and two self-only HSAs
+  // become one family plan. The IRAs carry on (a spousal IRA counts on
+  // the earner's pay), and each limit goes no further than the pay under it.
+  const pkOf = (g1: number, g2: number, k: number): PcInput => {
+    const out = pi.two && g2 <= 0.5;
+    return { ...pi, gross: g1, gross2: out ? 0 : g2, ...(out ? { two: false, ...(pi.hsa === "self2" ? { hsa: "family" as const } : {}) } : {}),
+      ...(pi.ages ? { ages: [shift(pi.ages[0], k), shift(pi.ages[1], k)] as [number | null, number | null] } : {}) };
+  };
+  // Last year's pay, as it was and on its raises alone (today's to start).
+  let prevPay: [number, number] = [pi.gross, pi.gross2], prevPath: [number, number] = [pi.gross, pi.gross2];
   for (let t = age; t < end; t++) {
     const k = t - age, year = year0 + k;
     const works: [boolean, boolean] = [true, pi.gross2 > 0 && (r2 == null || year < r2)];
-    const P1 = payAt(scen, 0, t, end, typedPay("pay0", year, Yr.raise[0]) ?? pi.gross * Math.pow(1 + Yr.raise[0], k), Yr.raise[0]);
-    const pay2 = () => payAt(scen, 1, t, end, typedPay("pay1", year, Yr.raise[1]) ?? pi.gross2 * Math.pow(1 + Yr.raise[1], k), Yr.raise[1]);
-    const P2 = works[1] ? pay2() : { pay: 0, tags: [] };
-    const ages = pi.ages ? { ages: [shift(pi.ages[0], k), shift(pi.ages[1], k)] as [number | null, number | null] } : {};
-    // Once your partner stops work, only your own 401(k) is left, and your
-    // partner joins your health plan (two self-only HSAs become one family
-    // one). The IRAs carry on: a spousal IRA counts on your pay.
-    const stopped = pi.two && !works[1];
-    const pk: PcInput = { ...pi, gross: P1.pay, gross2: P2.pay, ...(stopped ? { two: false, spousalIra: true, ...(pi.hsa === "self2" ? { hsa: "family" as const } : {}) } : {}), ...ages };
-    const inc = (P1.pay + P2.pay) / 12 + other;
-    let S: number, lines: Record<Line, number>, tx: ReturnType<typeof taxOf>;
-    if (stopped && !rebased) {
-      // The year your partner stops: what you'd spend had they worked on
-      // carries on, and saving takes the drop in pay (down to nothing,
-      // past which spending has to give). The raises from then on are
-      // saved from there. Read as a raise in reverse, losing a paycheck
-      // would cut spending by the share of each raise you spend.
-      const W = pay2(), pkW: PcInput = { ...pi, gross: P1.pay, gross2: W.pay, ...ages }, incW = (P1.pay + W.pay) / 12 + other;
-      const h = solve(pkW, incW, byRaise), spend = incW - h.tx.tax - h.S;
-      ({ S, lines, tx } = solve(pk, inc, (A) => A - spend));
-      bA = inc - tx.tax; bS = S; rebased = true;
-    } else ({ S, lines, tx } = solve(pk, inc, byRaise));
+    // Each of you's pay on its raises (and as typed into the table), then
+    // as the pay changes and stopping work leave it.
+    const path: [number, number] = [typedPay("pay0", year, Yr.raise[0]) ?? pi.gross * Math.pow(1 + Yr.raise[0], k), typedPay("pay1", year, Yr.raise[1]) ?? pi.gross2 * Math.pow(1 + Yr.raise[1], k)];
+    const P1 = payAt(scen, 0, t, end, path[0], Yr.raise[0]);
+    const P2 = works[1] ? payAt(scen, 1, t, end, path[1], Yr.raise[1]) : { pay: 0, tags: [] };
+    const pk = pkOf(P1.pay, P2.pay, k), inc = (P1.pay + P2.pay) / 12 + other;
+    const changed = Math.abs(P1.pay - path[0]) > 0.5 || (pi.two && Math.abs(P2.pay - path[1]) > 0.5);
+    // Pay this year had it only had its raises since last year.
+    const was = [0, 1].map((i) => (prevPath[i] > 0 ? (prevPay[i] * path[i]) / prevPath[i] : prevPay[i])) as [number, number];
+    let lines: Record<Line, number>, tx: ReturnType<typeof taxOf>;
+    if (Math.abs(P1.pay - was[0]) > 0.5 || Math.abs(P2.pay - was[1]) > 0.5) {
+      // Pay changed other than by a raise (a pay change starts, steps or
+      // ends, or your partner stops work): what you'd have spent carries
+      // on, and saving takes the difference (down to nothing, past which
+      // spending has to give). Raises from then on are saved from there.
+      // Read as a raise in reverse, a cut would come out of spending by
+      // the share of each raise you spend.
+      const pkW = pkOf(was[0], was[1], k), incW = (was[0] + was[1]) / 12 + other;
+      const h = solve(pkW, incW, byRaise, true), spend = incW - h.tx.tax - h.raw;
+      const r = solve(pk, inc, (A) => A - spend, changed);
+      ({ lines, tx } = r);
+      bA = inc - tx.tax; bS = r.raw;
+    } else ({ lines, tx } = solve(pk, inc, byRaise, changed));
+    prevPay = [P1.pay, P2.pay]; prevPath = path;
     // Save less: what goes in is held to its ceiling, taken from the
     // account it names first, then in the dashboard's order, the match last.
     const SL = saveLessAt(scen, t, end, total(lines), lines.match);

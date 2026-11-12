@@ -115,7 +115,7 @@ export function YearByYear() {
             {KEEP_CHOICES.map((c) => <option key={String(c.v)} value={c.v == null ? "same" : String(c.v)}>{c.label}</option>)}
           </SelectField>
         </div>
-        <p className="dsh-cap dsh-mt6">Raises are beyond inflation. Taxes come from your paycheck&apos;s own figures each year, and saving follows take-home pay as set here, each account up to its limit with the rest in the next. What&apos;s spent is what&apos;s left. Children&apos;s costs and college come out of saving, as on <To href="/dashboard/profile#children">Profile</To>.{names && years.some((y, i) => i > 0 && years[i - 1].works[1] && !y.works[1]) ? <> When {names[1]} stops work, spending carries on and saving takes the drop in pay: one 401(k) from then on, the HSA on one family plan, and both IRAs (a spousal IRA counts on your pay).</> : null}</p>
+        <p className="dsh-cap dsh-mt6">Raises are beyond inflation. Taxes come from your paycheck&apos;s own figures each year, and saving follows take-home pay as set here, each account up to its limit with the rest in the next. What&apos;s spent is what&apos;s left. Children&apos;s costs and college come out of saving, as on <To href="/dashboard/profile#children">Profile</To>. When pay changes other than by a raise ({names ? `a pay change below, or ${names[1]} stopping work` : "a pay change below"}), spending carries on and saving takes the difference, each account within the limits that pay allows.</p>
         <div className="dsh-yby-changes dsh-mt">
           <div className="dsh-label">Changes ahead</div>
           {changes.length ? (

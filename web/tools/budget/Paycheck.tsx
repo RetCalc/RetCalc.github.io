@@ -39,7 +39,7 @@ import { PERIOD_ADV } from "@/lib/periods";
 import { advancedHasSaving, intoAdvanced, paycheckCopy, taxFromPaycheck } from "./to-calculator";
 import { annualize, type BudgetInputs } from "./model";
 import {
-  PC_LINES, PC_PLANS, PC_STEPS, PC_ZERO, healthRowMonthly, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCatchText, pcCostPer, pcHasLimit, pcMost,
+  PC_LINES, PC_PLANS, PC_STEPS, PC_ZERO, healthRowMonthly, iraBoth, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCatchText, pcCostPer, pcHasLimit, pcMost,
   pcPlanApply, pcPlanOrder, pcRothRoom, pcPreTax, pcRothKey, pcSplit, rowRole, type PcAges, type PcPlan, type PcRun, type PcStep,
 } from "./paycheck-math";
 
@@ -385,12 +385,12 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
             const room = Math.max(0, r.left);
             const max = Math.max(0.01, k === "brok" ? toCents(v + room) : k === "ef" ? toCents(Math.max(cap, v + room)) : toCents(cap));
             const over = pcHasLimit(k) && v > cap + 0.005;
-            const half = two && v > 0 && (k === "match" || k === "k401max" || k === "rothIra" || (k === "hsa" && pi.hsa !== "self")) ? sp[k as "match"] : null;
+            const half = v > 0 && ((two && (k === "match" || k === "k401max" || (k === "hsa" && pi.hsa !== "self"))) || (k === "rothIra" && iraBoth(pi))) ? sp[k as "match"] : null;
             const rothKey = pcRothKey(k), catchUp = pcCatchText(pi, k, pi.amounts);
             const limit = k === "match" ? (two ? "Both full matches " : "Limit ") + cents(toCents(cap))
               : k === "k401max" ? "Limit " + cents(toCents(cap)) + (two ? " for both, with the matches" : "")
               : k === "hsa" && two ? (pi.hsa === "family" ? "Family limit " : pi.hsa === "self2" ? "Two self-only limits " : "Self-only limit ") + cents(toCents(cap))
-              : k === "rothIra" && two ? "Two limits " + cents(toCents(cap))
+              : k === "rothIra" && iraBoth(pi) ? (two ? "Two limits " : "Two limits, with a spousal IRA ") + cents(toCents(cap))
               : k === "brok" ? "Whatever's left" : "Limit " + cents(toCents(cap));
             return (
               <div key={k} data-line={k} className="flex items-center gap-4 border-t border-border py-3 first:border-t-0 max-sm:flex-wrap max-sm:gap-x-3 max-sm:gap-y-2">

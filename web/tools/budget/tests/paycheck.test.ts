@@ -248,7 +248,18 @@ test("one income keeps the spouse's pay and premiums out, whatever was typed", (
   const pi = paycheckInput(budget({ pcStatus: "m", pcGross2: "80,000", pcHealth2: "300" }), "IL");
   assert.equal(pi.gross2, 0);
   assert.equal(pi.health[1], 0);
-  assert.equal(pcCap(pi, "rothIra", pi.amounts), L.ira.base / 26);
+  // A spousal IRA: two limits on your pay.
+  assert.equal(pcCap(pi, "rothIra", pi.amounts), (2 * L.ira.base) / 26);
+});
+
+test("limits go no further than the pay under them", () => {
+  // Nobody defers more than their own pay, and IRAs come to no more than the pay they count on.
+  const low = paycheckInput(budget({ pcGross: "9,000" }), "IL");
+  const mc = pcCap(low, "match", low.amounts), at = { ...low.amounts, match: mc };
+  near(mc + pcCap(low, "k401max", at), 9000 / 26, 1e-6);
+  near(pcCap(low, "rothIra", low.amounts), Math.min(L.ira.base, 9000) / 26, 1e-6);
+  const m = paycheckInput(budget({ pcStatus: "m", pcGross: "10,000" }), "IL");
+  near(pcCap(m, "rothIra", m.amounts), 10000 / 26, 1e-6);
 });
 
 test("the emergency fund is off until added, and a saved amount keeps it on", () => {
