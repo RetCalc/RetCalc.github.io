@@ -1,6 +1,6 @@
 import {open,go,click,sleep,view,CROPS} from './lib.mjs';
 const {browser,page}=await open();
-await go(page,'/calculator'); await click(page,'Sign in'); await sleep(1500);
+await go(page,'/calculator'); await click(page,'Sign in'); await sleep(3500); await page.evaluate(()=>document.activeElement?.blur()); await sleep(400);
 const box=await page.evaluate(()=>{const d=document.querySelector('[role="dialog"]');if(!d)return null;const b=d.getBoundingClientRect();return {x:b.x,y:b.y,width:b.width,height:b.height}});
 console.log(box);
 if(box) await page.screenshot({path:CROPS+'signin_dialog.png',clip:box});

@@ -1,4 +1,4 @@
-import {open,go,click,sleep,view,unstick,allCards,CROPS,BASE} from './lib.mjs';
+import {open,go,click,sleep,view,unstick,allCards,calm,reveal,CROPS,BASE} from './lib.mjs';
 const {browser,page}=await open();
 const a={ status: "m", age: 38, spouseAge: 36, retire: 62, state: "IL", income: 95000, income2: 60000,
       thKnow: "yes", takehome: 9200, bgKnow: "yes", spend: 7000, cash: 30000,
@@ -10,10 +10,17 @@ const done=Object.fromEntries(ids.map(i=>[i,true]));
 const at='2026-10-20T12:00:00Z';
 const src=Object.fromEntries(Object.keys(a).map(k=>[k,{kind:'entered',at}]));
 const mk=(cur)=>({v:2,pace:'full',cur,a,src,done,trip:null,back:null,coachMin:true,snapshots:[],moves:{},lessons:{},startedAt:at});
+// The Guide tab's landing, "Two ways through your plan", with no guide stored (fresh browser).
+await calm(page);
+await page.goto(BASE+'/guide',{waitUntil:'networkidle0'}); await reveal(page); await sleep(3000);
+await view(page,'guide_landing_view'); await allCards(page,'guide_landing');
+await page.screenshot({path:CROPS+'guide_landing_full.png',fullPage:true}); console.log('  guide_landing_full');
+await page.emulateMediaFeatures([]);
+// The Readiness Guide itself, at /guide/readiness, at each results step.
 await page.goto(BASE+'/about',{waitUntil:'networkidle0'});
 for (const cur of ['number','lasting','adjust','strategy','plan']){
   await page.evaluate(s=>localStorage.setItem('retcalc.guide.v2',JSON.stringify(s)), mk(cur));
-  await page.goto(BASE+'/guide',{waitUntil:'networkidle0'}); await sleep(5000);
+  await page.goto(BASE+'/guide/readiness',{waitUntil:'networkidle0'}); await sleep(5000);
   await view(page,'guide_'+cur+'_view'); await allCards(page,'guide_'+cur);
 }
 await page.goto(BASE+'/guide/report',{waitUntil:'networkidle0'}); await sleep(8000);
