@@ -79,6 +79,10 @@ export interface PcInput {
   two: boolean;
   /** Periods a year: paychecks, or 12 with two incomes. */
   p: number;
+  /** Married on one income, with a spousal IRA for the one not working (it
+      counts on the earner's pay, filing jointly): the IRA line holds both
+      limits. The Dashboard's, for the years after your partner stops work. */
+  spousalIra?: boolean;
   /** Each person's paychecks a year (with two incomes, for their own check). */
   pays: [number, number];
   status: "s" | "m";
@@ -184,9 +188,13 @@ export const iraLimit = (age: number | null | undefined, L = limits()): number =
 export const hsaCatchUp = (age: number | null | undefined, L = limits()): number => (age != null && age >= 55 ? L.hsa.catch55 : 0);
 
 const ageOfPerson = (pi: PcInput, i: number): number | null => pi.ages?.[i] ?? null;
-/** Each person's 401(k) and IRA limits (the spouse's counts only with two incomes). */
+/** Each person's 401(k) and IRA limits (the spouse's 401(k) counts only with
+    two incomes; their IRA also with a spousal IRA: see iraBoth). */
 const k401Limits = (pi: PcInput): [number, number] => [k401Limit(ageOfPerson(pi, 0)), k401Limit(ageOfPerson(pi, 1))];
 const iraLimits = (pi: PcInput): [number, number] => [iraLimit(ageOfPerson(pi, 0)), iraLimit(ageOfPerson(pi, 1))];
+/** Whether the IRA line holds two people's limits: with two incomes, or
+    on one with `spousalIra` set. */
+const iraBoth = (pi: PcInput): boolean => pi.two || (pi.status === "m" && !!pi.spousalIra);
 /** Each person's own HSA limit, when each has a self-only plan. */
 const hsaOwn = (pi: PcInput): [number, number] => {
   const self = limits().hsa.self;
@@ -204,7 +212,8 @@ function hsaYearLimit(pi: PcInput): number {
 /** Whose age matters to line `s` (you, and your spouse where their limit counts). */
 function whoCounts(pi: PcInput, s: PcStep): number[] {
   if (s === "hsa") return pi.hsa === "self2" || (pi.hsa === "family" && pi.status === "m") ? [0, 1] : [0];
-  return s === "match" || s === "k401max" || s === "rothIra" ? (pi.two ? [0, 1] : [0]) : [];
+  if (s === "rothIra") return iraBoth(pi) ? [0, 1] : [0];
+  return s === "match" || s === "k401max" ? (pi.two ? [0, 1] : [0]) : [];
 }
 
 /** The catch-up on line `s`: who it applies to (`eligible`, with the age it
@@ -262,7 +271,11 @@ export interface PcSplit {
     people's) and the IRA in proportion to each one's limit (evenly when
     those are the same). */
 export function pcSplit(pi: PcInput, a: PcAmounts = pi.amounts): PcSplit {
-  if (!pi.two) return { match: [a.match, 0], k401max: [a.k401max, 0], hsa: [a.hsa, 0], rothIra: [a.rothIra, 0], hsaFirst: null };
+  if (!pi.two) {
+    // On one income, a spouse's IRA is a spousal IRA, in proportion to each one's limit.
+    const il = iraLimits(pi), ira: [number, number] = iraBoth(pi) ? [(a.rothIra * il[0]) / (il[0] + il[1]), (a.rothIra * il[1]) / (il[0] + il[1])] : [a.rothIra, 0];
+    return { match: [a.match, 0], k401max: [a.k401max, 0], hsa: [a.hsa, 0], rothIra: ira, hsaFirst: null };
+  }
   const mc = matchCaps(pi), lim = k401Limits(pi);
   const first = pi.match[1].rate > pi.match[0].rate ? 1 : 0, second = 1 - first;
   const m: [number, number] = [0, 0];
@@ -303,7 +316,7 @@ export function pcCap(pi: PcInput, s: PcStep, a: PcAmounts): number {
       return Math.max(0, lim[0] / p - m[0]) + (pi.two ? Math.max(0, lim[1] / p - m[1]) : 0);
     }
     case "hsa": return hsaYearLimit(pi) / p;
-    case "rothIra": { const il = iraLimits(pi); return (il[0] + (pi.two ? il[1] : 0)) / p; }
+    case "rothIra": { const il = iraLimits(pi); return (il[0] + (iraBoth(pi) ? il[1] : 0)) / p; }
     case "ef": return pi.efCap;
     case "brok": return Infinity;
   }
@@ -512,7 +525,7 @@ export function pcPlanApply(pi: PcInput, k: PcPlan): { roth: PcInput["roth"]; am
 export function pcRothRoom(pi: PcInput, r: PcRun): { direct: number; limit: number; over: boolean; reduced: boolean } {
   // The IRS worksheet scales the person's whole limit, catch-up included
   // (the lower of the two, when each has their own).
-  const L = limits(), il = iraLimits(pi), limit = pi.two ? Math.min(il[0], il[1]) : il[0], [lo, hi] = L.rothPhase[pi.status];
+  const L = limits(), il = iraLimits(pi), limit = iraBoth(pi) ? Math.min(il[0], il[1]) : il[0], [lo, hi] = L.rothPhase[pi.status];
   const f = Math.min(1, Math.max(0, (r.magi - lo) / (hi - lo)));
   const direct = f >= 1 ? 0 : f <= 0 ? limit : Math.min(limit, Math.max(200, Math.ceil((limit * (1 - f)) / 10) * 10));
   return { direct, limit, over: direct === 0, reduced: direct > 0 && direct < limit };
