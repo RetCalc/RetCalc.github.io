@@ -1,9 +1,10 @@
-// The RetCalc deck: a 14-slide talk, then an appendix with every tool and the
-// whole build. Night (Apple black) slides with one amber accent, as on the site.
+// The RetCalc deck: a 17-slide talk, then an appendix with every tool, Learn,
+// the highlights of My Dashboard and the whole build. Night (Apple black)
+// slides with one amber accent, as on the site.
 // Build: npm run deck (from tooling/). See ../README.md.
 import fs from 'fs';
 import { createRequire } from 'module';
-import { card, shot, icon, coverArt, centurySeries } from './assets.mjs';
+import { card, shot, phone, icon, coverArt, centurySeries } from './assets.mjs';
 const require = createRequire(import.meta.url);
 const pptxgen = require('../tooling/node_modules/pptxgenjs');
 const sharp = require('../tooling/node_modules/sharp');
@@ -19,7 +20,8 @@ const GROUP = {
   calc: { name: 'Calculators', color: X.amber }, income: { name: 'Retirement income', color: X.sky },
   saving: { name: 'Saving and investing', color: X.teal }, everyday: { name: 'Everyday money', color: X.lav },
   guide: { name: 'Guided walkthroughs', color: X.rose }, story: { name: 'Putting it together', color: X.amber },
-  build: { name: 'Under the hood', color: X.gray },
+  build: { name: 'Under the hood', color: X.gray }, dash: { name: 'My Dashboard', color: X.amber },
+  learn: { name: 'Learn', color: X.gain }, site: { name: 'Also on the site', color: X.gain },
 };
 const mix = (hex, t) => { // hex blended toward the ground color: t of hex
   const a = parseInt(hex, 16), g = parseInt(X.ground, 16);
@@ -123,16 +125,16 @@ pres.addSection({ title: MAIN });
   const s = pres.addSlide({ masterName: 'SPLIT', sectionTitle: MAIN });
   kick(s, 'What it is'); title(s, 'A whole retirement plan, in one place');
   T(s, 'From a first paycheck to a last withdrawal: what to save, where to put it, whether it will last, what it costs in tax and health insurance, and when to claim Social Security.', { x: M, y: 2.55, w: 4.5, h: 1.45, fontSize: 15, color: X.muted });
-  const st = [['14', 'planning tools'], ['3', 'calculators'], ['2', 'guided walkthroughs'], ['100 yrs', 'of monthly market data'], ['$0', 'no ads, no account needed']];
-  st.forEach(([n, l], i) => stat(s, M + (i % 2) * 2.3, 4.2 + Math.floor(i / 2) * 0.85, 2.2, n, l, { size: 28, nh: 0.48, lh: 0.3, color: i === 0 ? X.amber : X.text }));
+  const st = [['14', 'planning tools'], ['2', 'calculators'], ['2', 'guided walkthroughs'], ['66', 'lessons in Learn'], ['100 yrs', 'of monthly market data'], ['$0', 'free, with no ads']];
+  st.forEach(([n, l], i) => stat(s, M + (i % 2) * 2.3, 4.1 + Math.floor(i / 2) * 0.88, 2.2, n, l, { size: 28, nh: 0.48, lh: 0.3, color: i === 0 ? X.amber : X.text }));
   rect(s, 5.45, 0, W - 5.45, H, X.surface);
   const rows = [
     [await card('drawdown_1_historicalmonte-carl', { t: 0, b: 0.62 }), await card('incometax_1_after-taxtake-homere', { t: 0.15, b: 1 })],
-    [await card('stages_hist_45000', { t: 0.27, b: 0.8 }), await card('budget_1_where-it-goes', { t: 0, b: 0.535 })],
+    [await card('advanced_chart_hist', { t: 0.2, b: 0.8 }), await card('budget_1_where-it-goes', { t: 0, b: 0.535 })],
     [await card('ss_1_pick-the-age-you-cla', { t: 0, b: 0.8 })],
   ];
   panel(s, rows, 5.85, 0.4, W - 5.85 - 0.4, H - 0.8, 0.22);
-  notes(s, 'These are real results from the live site: the Drawdown Simulator, Income Tax, the Stages calculator against history, the Budget, and Social Security. The whole site runs in the visitor\'s browser and covers the full arc, from saving to drawing it down. 14 tools, 3 calculators and 2 guided walkthroughs, all free, with no ads and no account required.');
+  notes(s, 'These are real results from the site: the Drawdown Simulator, Income Tax, the Advanced calculator against every market since 1926, the Budget, and Social Security. The whole site runs in the visitor\'s browser and covers the full arc, from saving to drawing it down. 14 tools, a calculator with Basic and Advanced modes, 2 guided walkthroughs and 66 short lessons, all free, with no ads. The tools need no account; a free account adds My Dashboard, which we come to later.');
 }
 
 // 3. Three ideas
@@ -142,7 +144,7 @@ pres.addSection({ title: MAIN });
   const cols = [
     ['LuHouse', '01', 'One household, every tool', 'Ages, state, savings, income and spending are entered once and fill in everywhere, and each tool hands its results to the next.'],
     ['LuHistory', '02', 'Tested against history', 'One average return hides the order returns come in, and that order decides whether a retirement lasts. Every plan is replayed through each starting month since January 1926.'],
-    ['LuLock', '03', 'Private by default', 'Every calculation runs in the visitor\'s own browser. An optional account only keeps a household, saved scenarios and the Guide in step across devices.'],
+    ['LuLock', '03', 'Private by default', 'Every calculation runs in the visitor\'s own browser. The tools, guides and lessons work signed out; a free account keeps saved work and My Dashboard in step across devices.'],
   ];
   const cw = (W - 2 * M - 2 * 0.3) / 3;
   for (let i = 0; i < 3; i++) {
@@ -172,7 +174,7 @@ pres.addSection({ title: MAIN });
     const x = M + 2 * (cw + 0.3) + 0.35;
     T(s, '"Nothing leaves your browser unless you sign in to save it."', { x, y: 5.7, w: cw - 0.7, h: 0.8, fontSize: 14, italic: true, color: X.amber });
   }
-  notes(s, 'Three ideas. One: the household is entered once and every tool reads it, and tools hand results to each other. Two: plans are tested against real market history, month by month since 1926, not a single average return. Three: privacy. The math runs in the browser; an account only syncs saved inputs.');
+  notes(s, 'Three ideas. One: the household is entered once and every tool reads it, and tools hand results to each other. Two: plans are tested against real market history, month by month since 1926, not a single average return. Three: privacy. The math runs in the browser. The tools, the guides and Learn all work signed out; a free account keeps saved work in step across devices and is what My Dashboard needs.');
 }
 
 // 4. A century of markets
@@ -198,7 +200,51 @@ pres.addSection({ title: MAIN });
   notes(s, 'This is the data every tool tests against: 1,200 months of stock, bond and inflation history from January 1926 to December 2025, from Robert Shiller at Yale and the BLS. A dollar grew to about $1,140 after inflation, but the falls on the right are what break retirements. A plan that only sees the average never meets them; RetCalc replays every one.');
 }
 
-// 5. A tool for every stage
+/* Feature slide: text on the left, a tinted full-bleed panel of screenshots on the right. */
+async function feature({ group, kicker, name, q, points, note, art }) {
+  const s = pres.addSlide({ masterName: 'SPLIT', sectionTitle: MAIN });
+  const g = GROUP[group];
+  kick(s, kicker || g.name); title(s, name);
+  const qy = underTitle(name), py = qy + qLines(q) * 0.3 + 0.45, step = Math.min(1.25, (6.75 - py) / points.length);
+  T(s, q, { x: M, y: qy, w: 4.5, h: qLines(q) * 0.3 + 0.05, fontSize: 18, bold: true, color: g.color });
+  points.forEach(([n, l], i) => {
+    const y = py + i * step;
+    T(s, n, { x: M, y, w: 4.4, h: 0.5, fontSize: 26, bold: true, color: X.text });
+    T(s, l, { x: M, y: y + 0.5, w: 4.4, h: 0.62, fontSize: 13, color: X.muted });
+  });
+  rect(s, 5.45, 0, W - 5.45, H, mix(g.color, group === 'calc' || group === 'dash' ? 0.12 : 0.2));
+  await art(s, 5.45, W - 5.45);
+  if (note) notes(s, note);
+  return s;
+}
+
+/** Screenshots in a grid, each under a small amber label: items are [label, image]. */
+function labelled(s, items, x0, y0, w, h, cols, gap = 0.3) {
+  const rows = Math.ceil(items.length / cols), cw = (w - gap * (cols - 1)) / cols;
+  const ch = Math.min((h - gap * (rows - 1)) / rows - 0.32, cw / items[0][1].ar);
+  const top = y0 + (h - rows * (ch + 0.32) - gap * (rows - 1)) / 2;
+  items.forEach(([l, im], i) => {
+    const x = x0 + (i % cols) * (cw + gap), y = top + Math.floor(i / cols) * (ch + 0.32 + gap);
+    T(s, l, { x, y, w: cw, h: 0.26, fontSize: 11, bold: true, color: X.amber, charSpacing: 1 });
+    const iw = Math.min(cw, ch * im.ar), ih = iw / im.ar;
+    s.addImage({ path: im.path, x: x + (cw - iw) / 2, y: y + 0.32, w: iw, h: ih, shadow: shadow() });
+  });
+}
+
+// 5. Around the site: the tabs
+await feature({
+  group: 'calc', kicker: 'Around the site', name: 'The site, tab by tab', q: 'Calculator, Tools, Guide, Learn and About.',
+  points: [['Basic | Advanced', 'One Calculator, two modes, switched under its title.'], ['14 tools', 'Retirement income, saving and investing, everyday money.'], ['2 walkthroughs', 'Am I on track? and Where does my paycheck go?'], ['66 lessons', 'In 8 tracks; 39 of them have a chart to try.']],
+  note: 'The site has five tabs. The Calculator is one page with a Basic and an Advanced mode, switched under its title. Tools lists all 14 planning tools. The Guide tab is a landing page for the two walkthroughs. Learn is new: 66 short lessons in 8 tracks, 39 of them with an interactive chart, each ending with a tool to try the idea on your own numbers. About explains the method and the sources.',
+  art: async (s, px, pw) => {
+    labelled(s, [
+      ['CALCULATOR', await shot('calculator_view', { radius: 18 })], ['TOOLS', await shot('tools_view', { radius: 18 })],
+      ['GUIDE', await shot('guide_landing_view', { radius: 18 })], ['LEARN', await shot('learn_view', { radius: 18 })],
+    ], px + 0.45, 0.45, pw - 0.9, H - 0.9, 2, 0.3);
+  },
+});
+
+// 6. A tool for every stage
 {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: MAIN });
   kick(s, 'Where to start'); title(s, 'A tool for every stage of the road');
@@ -217,54 +263,35 @@ pres.addSection({ title: MAIN });
       const y = 2.95 + j * 0.62;
       rect(s, x + 0.08, y, cw - 0.28, 0.5, X.raised, { round: true, r: 0.1 });
       circle(s, x + 0.25, y + 0.18, 0.14, n === 'Calculator' ? X.amber : c);
-      T(s, n === 'Calculator' ? [{ text: 'Calculator  ', options: { bold: true } }, { text: 'Basic · Advanced · Stages', options: { color: X.muted, fontSize: 11 } }] : n, { x: x + 0.52, y, w: cw - 0.8, h: 0.5, fontSize: 13, bold: n !== 'Calculator', valign: 'middle' });
+      T(s, n === 'Calculator' ? [{ text: 'Calculator  ', options: { bold: true } }, { text: 'Basic · Advanced', options: { color: X.muted, fontSize: 11 } }] : n, { x: x + 0.52, y, w: cw - 0.8, h: 0.5, fontSize: 13, bold: n !== 'Calculator', valign: 'middle' });
     });
   });
   rect(s, M, 6.15, W - 2 * M, 0.6, X.surface, { round: true, r: 0.1, line: X.rule });
-  T(s, [{ text: 'Most people start with the Calculator, or with a guide: ', options: { bold: true } }, { text: 'the Readiness Guide and Paycheck to Retirement open the right tools along the way.', options: { color: X.muted } }], { x: M + 0.3, y: 6.15, w: W - 2 * M - 0.6, h: 0.6, fontSize: 14, valign: 'middle' });
+  T(s, [{ text: 'Most people start with the Calculator, or with the Guide: ', options: { bold: true } }, { text: 'the Readiness Guide and Paycheck to Retirement open the right tools along the way.', options: { color: X.muted } }], { x: M + 0.3, y: 6.15, w: W - 2 * M - 0.6, h: 0.6, fontSize: 14, valign: 'middle' });
   notes(s, 'The tools follow the order life brings the questions: the basics today, growing savings, planning the handoff, and making it last. Two walkthroughs stitch them together for people who would rather be guided.');
 }
 
-/* Feature slide: text on the left, a tinted full-bleed panel of screenshots on the right. */
-async function feature({ group, kicker, name, q, points, note, art }) {
-  const s = pres.addSlide({ masterName: 'SPLIT', sectionTitle: MAIN });
-  const g = GROUP[group];
-  kick(s, kicker || g.name); title(s, name);
-  const qy = underTitle(name), py = qy + qLines(q) * 0.3 + 0.45, step = Math.min(1.25, (6.75 - py) / points.length);
-  T(s, q, { x: M, y: qy, w: 4.5, h: qLines(q) * 0.3 + 0.05, fontSize: 18, bold: true, color: g.color });
-  points.forEach(([n, l], i) => {
-    const y = py + i * step;
-    T(s, n, { x: M, y, w: 4.4, h: 0.5, fontSize: 26, bold: true, color: X.text });
-    T(s, l, { x: M, y: y + 0.5, w: 4.4, h: 0.62, fontSize: 13, color: X.muted });
-  });
-  rect(s, 5.45, 0, W - 5.45, H, mix(g.color, group === 'calc' ? 0.12 : 0.2));
-  await art(s, 5.45, W - 5.45);
-  if (note) notes(s, note);
-  return s;
-}
-
-// 6. Stages
+// 7. Advanced: Changes ahead
 await feature({
-  group: 'calc', kicker: 'Calculators', name: 'Stages calculator', q: 'What if my saving changes over the years?',
-  points: [['Any number of stages', 'Each with its own saving, raises, return, volatility and account split, chained into one projection.'], ['Built around children', 'Planning for kids rebuilds the stages around the children you have or plan.'], ['Tested three ways', 'A rate band, every rolling window since 1926, or 5,000 Monte Carlo runs.']],
-  note: 'Stages is the calculator for real life, where saving changes: early career, kids at home, peak earning, coasting. Each stage has its own numbers, and the kids builder can create the stages for you. The chart shows the sample plan against every historical window since 1926, with dashed lines where each stage begins. Basic and Advanced are in the appendix.',
+  group: 'calc', kicker: 'Calculators', name: 'Advanced: Changes ahead', q: 'What if my saving changes over the years?',
+  points: [['Changes ahead', 'Save more or less, a lump sum, different returns or children, each shown with what it does at retirement.'], ['Two answers', 'When you could stop saving, and when you could retire, and still reach your target.'], ['Tested three ways', 'A rate band, every rolling window since 1926, or 5,000 Monte Carlo runs.']],
+  note: 'Real saving changes: a lean stretch with kids at home, a few peak-earning years, an inheritance. On the Advanced calculator each of those is a change ahead, added from four kinds: save more or less, a lump sum, different returns, or children. Each row shows what it does to the balance at retirement in today\'s dollars, and can be switched off to compare. The sample here is 30 years old with three changes, and is on track for $45,000 per year after tax. Reach your target gives two answers: stop saving at 54, or retire at 62. The chart tests the plan against all 781 rolling 35-year windows since 1926, with each change marked.',
   art: async (s, px, pw) => {
-    const chart = await card('stages_hist_45000', { t: 0, b: 0.8 });
-    const list = await card('stages_0_your-stages', { t: 0, b: 0.215 });
-    img(s, chart, px + 0.45, 1.85, pw - 0.9);
-    img(s, list, px + 0.45, 0.45, 3.5);
-    T(s, 'Sample plan: early career, kids at home, peak earning, then coasting', { x: px + 4.25, y: 0.75, w: pw - 4.75, h: 0.9, fontSize: 13, color: X.muted });
+    const big = await card('advanced_changes_dialog', { trim: true });
+    const reach = await card('advanced_2_reach-your-target');
+    const chart = await card('advanced_chart_hist', { t: 0.17, b: 0.8 });
+    panel(s, [[big], [reach, chart]], px + 0.45, 0.45, pw - 0.9, H - 0.9, 0.3);
   },
 });
 
-// 7. Drawdown
+// 8. Drawdown
 await feature({
   group: 'income', kicker: 'Retirement income', name: 'Drawdown Simulator', q: 'Will my money last?',
   points: [['15 strategies', 'From the 4% rule to guardrails, VPW and the Yale endowment rule, in five families.'], ['835 real retirements', 'Every monthly start since 1926, each run for 30 years, with Social Security and pensions.'], ['Ranked at equal risk', 'The strategy showdown tunes all 15 to the same risk, then compares what each spends.']],
   note: 'Most calculators ask how much you will have. This asks whether it lasts once spending starts. The sample here, a million dollars at 4%, lasted in 785 of 835 historical starts; it failed only for retirements beginning in the late 1960s. The success grid on the right shows every withdrawal rate against every stock share.',
   art: async (s, px, pw) => {
     const top = await card('drawdown_1_historicalmonte-carl');
-    const grid = await card('drawdown_safe_4_success-grid', { t: 0.17, b: 0.81 });
+    const grid = await card('drawdown_safe_5_success-grid', { t: 0.17, b: 0.81 });
     const h = img(s, top, px + 0.45, 0.45, pw - 0.9);
     const gw = pw - 2.2, gy = 0.45 + h + 0.3;
     img(s, grid, px + 1.75, gy, gw);
@@ -272,11 +299,11 @@ await feature({
   },
 });
 
-// 8. Income Tax
+// 9. Income Tax
 await feature({
   group: 'everyday', kicker: 'Everyday money', name: 'Income Tax', q: 'How much tax will I owe?',
-  points: [['50 states and DC', '2026 federal, state and FICA tax, with every state\'s retirement-income rules in plain English.'], ['A retirement mode', 'Withdrawals, gains and Social Security stacked the way the return really does it.'], ['A true marginal rate', 'Found by rerunning the whole return with $1,000 more.']],
-  note: 'Income Tax works for a salary or for a year of retirement withdrawals. Retirement mode is the unusual part: it stacks long-term gains on top of ordinary income, taxes Social Security through the 0, 50 and 85 percent tiers, applies the senior deduction, and reports the real marginal rate on the next dollar.',
+  points: [['50 states and DC', '2026 federal, state and FICA tax, local tax where a state has one, and each state\'s retirement rules.'], ['A retirement mode', 'Withdrawals, gains and Social Security stacked the way the return really does it.'], ['A true marginal rate', 'Found by rerunning the whole return with $1,000 more.']],
+  note: 'Income Tax works for a salary or for a year of retirement withdrawals. For a salary it now ends in the paycheck itself, gross pay down to take-home per check and per month, with local income tax in the states that have one. Retirement mode is the unusual part: it stacks long-term gains on top of ordinary income, taxes Social Security through the 0, 50 and 85 percent tiers, applies the senior deduction, and reports the real marginal rate on the next dollar.',
   art: async (s, px, pw) => {
     const work = await card('incometax_1_after-taxtake-homere', { t: 0.15, b: 1 });
     const ret = await card('incometax_ret_1_after-taxtake-homere', { t: 0.15, b: 1 });
@@ -285,11 +312,11 @@ await feature({
   },
 });
 
-// 9. Budget and Paycheck
+// 10. Budget and Paycheck
 await feature({
   group: 'everyday', kicker: 'Everyday money', name: 'Budget and Paycheck', q: 'Where does my money go, and where should the rest go?',
   points: [['Two tabs', 'A budget of 18 lines in six groups, then a paycheck that pays it, line by line.'], ['Taxes rerun live', 'Sliders move money into the 401(k) match, HSA, IRA and brokerage, capped at 2026 limits.'], ['Two incomes', 'Each spouse with their own pay schedule, match and HSA limit.']],
-  note: 'The Budget tab lays out spending. The Paycheck tab turns gross pay into taxes, bills and savings, and every slider reruns the tax math by deduction kind and by earner. Three one-click plans: the usual order, max tax breaks, or stay flexible. It can send the savings split straight into the Advanced or Stages calculator.',
+  note: 'The Budget tab lays out spending. The Paycheck tab turns gross pay into taxes, bills and savings, and every slider reruns the tax math by deduction kind and by earner. Three one-click plans: the usual order, max tax breaks, or stay flexible. Copy to Advanced sends the savings split, by account type, straight into the Advanced calculator.',
   art: async (s, px, pw) => {
     const where = await card('budget_1_where-it-goes', { t: 0, b: 0.72 });
     const donut = await card('budget_pc_1_saved-and-invested-e');
@@ -298,11 +325,11 @@ await feature({
   },
 });
 
-// 10. Readiness Guide
+// 11. Readiness Guide
 await feature({
   group: 'guide', kicker: 'Guided walkthrough', name: 'Retirement Readiness Guide', q: 'How ready am I, and what should I do next?',
-  points: [['A score out of 100', 'Outlook, savings rate, emergency fund, debt and cash flow, weighted.'], ['Ten minutes or an hour', 'A twelve-card quick check, or the full walkthrough with trips into the tools.'], ['A plan on paper', 'Ends in a full-color report of about a dozen pages, built in the browser.']],
-  note: 'The Guide is a check-up. It finds the number to aim for, tests it against history, scores readiness out of 100 and lists the moves that matter. The sample couple here scored 98. It ends in a printable report; the pages on the right are that couple\'s report.',
+  points: [['A score out of 100', 'Outlook, savings rate, emergency fund, debt and cash flow, weighted.'], ['Ten minutes or an hour', 'A quick check, or the full walkthrough with trips into the tools.'], ['A plan on paper', 'Ends in a full-color report of about a dozen pages, built in the browser.']],
+  note: 'The Guide is a check-up. It finds the number to aim for, tests it against history, scores readiness out of 100 and lists the moves that matter. It starts from the Guide tab, which offers the quick check or the full walkthrough. The sample couple here scored 98. It ends in a printable report; the pages on the right are that couple\'s report.',
   art: async (s, px, pw) => {
     const view = await shot('guide_number_view', { t: 0.08, b: 0.92, radius: 22 });
     img(s, view, px + 0.45, 0.45, pw - 0.9);
@@ -314,15 +341,15 @@ await feature({
   },
 });
 
-// 11. Paycheck to Retirement
+// 12. Paycheck to Retirement
 await feature({
   group: 'guide', kicker: 'Guided walkthrough', name: 'Paycheck to Retirement', q: 'Where should each paycheck go?',
-  points: [['Five steps', 'Budget, paycheck, your plan, life stages, summary. About fifteen minutes.'], ['The real tools inside', 'Budget, Advanced and Stages run in the walkthrough on its own copy of the numbers.'], ['Copy into my tools', 'One click sends the results to Income Tax, Budget, Advanced and Stages.']],
-  note: 'For people who would rather get straight to the numbers. Gross pay to take-home, a budget, where each paycheck goes, and where that saving leads by retirement, children included. It runs the real tools inside it and ends with a report.',
+  points: [['Five steps', 'Budget, paycheck, your plan, changes ahead, summary. About fifteen minutes.'], ['The real tools inside', 'Budget and Advanced run in the walkthrough on its own copy of the numbers.'], ['Copy into my tools', 'One click sends the results to Income Tax, Budget and Advanced.']],
+  note: 'For people who would rather get straight to the numbers. Gross pay to take-home, a budget, where each paycheck goes, and where that saving leads by retirement, with any changes they see coming, children included. It runs the real tools inside it and ends with a report.',
   art: async (s, px, pw) => {
     const rest = await card('plan_paycheck_3_where-the-rest-goes');
     const pc = await card('plan_paycheck_2_saved-and-invested-e');
-    const steps = ['Start', 'Budget', 'Paycheck', 'Your plan', 'Life stages', 'Summary'];
+    const steps = ['Start', 'Budget', 'Paycheck', 'Your plan', 'Changes ahead', 'Summary'];
     const sw = (pw - 0.9) / 6;
     steps.forEach((t, i) => {
       s.addShape(i ? pres.ShapeType.chevron : pres.ShapeType.homePlate, { x: px + 0.45 + i * sw - (i ? 0.08 : 0), y: 0.45, w: sw + (i ? 0.08 : 0), h: 0.55, fill: { color: i === 2 ? X.rose : mix(X.rose, 0.45) }, line: { type: 'none' }, adjustPoint: 0.3 });
@@ -332,39 +359,71 @@ await feature({
   },
 });
 
-// 12. One household
+// 13. One household
 {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: MAIN });
   kick(s, 'Putting it together'); title(s, 'One household, from paycheck to retirement');
-  T(s, 'A sample couple, Alex (34, $92,000) and Jordan (32, $68,000) in Illinois, with $60,000 saved and two children planned, carried through four tools by the tools\' own buttons.', { x: M, y: 1.5, w: W - 2 * M, h: 0.55, fontSize: 14, color: X.muted });
+  T(s, 'A sample couple, Alex (34, $92,000) and Jordan (32, $68,000) in Illinois, with $60,000 saved and one child planned, carried through four tools by the tools\' own buttons.', { x: M, y: 1.5, w: W - 2 * M, h: 0.55, fontSize: 14, color: X.muted });
+  // [tool, figure, what it is, picture, the hand-off to the right of this card]
   const steps = [
-    ['Budget', '$1,803', 'saved per month, 13.5% of pay plus $457 from employers', 'st_pc_1_saved-and-invested-e', 'Copy to a calculator', '$832.35 biweekly'],
-    ['Stages', '$743,576', 'at 65 in today\'s dollars, saving paused for 18 years of children', 'st_stg_1_after-tax-income-per', 'Test withdrawals', 'the portfolio'],
-    ['Social Security', '$6,236', 'per month together, both claiming at 67', 'st_ss_1_pick-the-age-you-cla', 'Copy from the calculator', 'both benefits'],
-    ['Drawdown', '100%', 'of 835 historical retirements lasted 30 years', 'st_dd_1_historicalmonte-carl', null, null],
+    ['Budget', '$1,803', 'saved per month, 13.5% of pay, plus $457 in employer matches', 'st_pc_1_saved-and-invested-e', ['Copy to Advanced', '$832.35 every two weeks'], 'right'],
+    ['Advanced', '$1,200,063', 'at 65 in today\'s dollars, with the child added as a change ahead', 'st_adv_1_after-tax-income-per', ['Test withdrawals', 'the balance at 65'], 'right'],
+    ['Drawdown', '100%', 'of 835 historical retirements lasted 30 years; median ending balance $3,611,139', 'st_dd_1_historicalmonte-carl', ['Copy from Social Security Calculator', 'both benefits'], 'left'],
+    ['Social Security', '$6,236', 'per month for the two of them, both claiming at 67', 'st_ss_1_pick-the-age-you-cla', null, null],
   ];
   const cw = 2.72, gap = (W - 2 * M - 4 * cw) / 3;
   for (let i = 0; i < 4; i++) {
-    const [tool, n, l, pic, btn, carried] = steps[i];
-    const x = M + i * (cw + gap), y = 2.25;
+    const [tool, n, l, pic, hand, dir] = steps[i];
+    const x = M + i * (cw + gap), y = 2.2;
     rect(s, x, y, cw, 3.05, X.raised, { round: true, r: 0.14 });
     T(s, `${i + 1}  ${tool.toUpperCase()}`, { x: x + 0.25, y: y + 0.22, w: cw - 0.5, h: 0.3, fontSize: 11, bold: true, color: X.amber, charSpacing: 1 });
-    T(s, n, { x: x + 0.25, y: y + 0.55, w: cw - 0.5, h: 0.65, fontSize: 32, bold: true, color: i === 3 ? X.gain : X.text });
-    T(s, l, { x: x + 0.25, y: y + 1.22, w: cw - 0.5, h: 0.75, fontSize: 12, color: X.muted });
-    const p = await card(pic, { t: 0, b: i === 2 ? 0.8 : 1 });
-    const pw = cw - 0.5, ph = Math.min(pw / p.ar, 0.9);
+    T(s, n, { x: x + 0.25, y: y + 0.55, w: cw - 0.5, h: 0.6, fontSize: 28, bold: true, color: i === 2 ? X.gain : X.text });
+    T(s, l, { x: x + 0.25, y: y + 1.17, w: cw - 0.5, h: 0.8, fontSize: 12, color: X.muted });
+    const p = await card(pic, { t: 0, b: i === 3 ? 0.8 : 1 });
+    const pw = cw - 0.5, ph = Math.min(pw / p.ar, 0.95);
     s.addImage({ path: p.path, x: x + 0.25, y: y + 2.0, w: ph * p.ar, h: ph });
-    if (btn) {
-      s.addShape(pres.ShapeType.rightArrow, { x: x + cw + 0.02, y: y + 1.35, w: gap - 0.04, h: 0.42, fill: { color: X.amber }, line: { type: 'none' } });
-      T(s, [{ text: btn + ': ', options: { bold: true } }, { text: carried, options: { color: X.muted } }], { x: x + cw / 2 + 0.2, y: y + 3.12, w: cw + gap - 0.4, h: 0.55, fontSize: 10, align: 'center', valign: 'middle' });
+    if (hand) {
+      s.addShape(pres.ShapeType[dir === 'left' ? 'leftArrow' : 'rightArrow'], { x: x + cw + 0.02, y: y + 1.35, w: gap - 0.04, h: 0.42, fill: { color: X.amber }, line: { type: 'none' } });
+      T(s, [{ text: hand[0] + ': ', options: { bold: true } }, { text: hand[1], options: { color: X.muted } }], { x: x + cw / 2 + 0.2, y: y + 3.12, w: cw + gap - 0.4, h: 0.55, fontSize: 10, align: 'center', valign: 'middle' });
     }
   }
   rect(s, M, 5.95, W - 2 * M, 0.9, X.amber, { round: true, r: 0.12 });
-  T(s, [{ text: '$104,573 per year in retirement', options: { bold: true, fontSize: 22 } }, { text: '   in today\'s dollars: $29,743 from savings and $74,830 from Social Security, through the Depression and the 1970s', options: { fontSize: 13 } }], { x: M + 0.3, y: 5.95, w: W - 2 * M - 0.6, h: 0.9, color: X.ground, valign: 'middle' });
-  notes(s, 'Every number here is from the live site, carried tool to tool by the hand-off buttons. Their budget and paycheck give $1,803 per month of saving. Stages, with the kids builder, gets them to $743,576 in today\'s dollars at 65. Social Security adds $6,236 per month from 67. The Drawdown Simulator says the plan lasted in all 835 historical retirements. Step-by-step screenshots are in the appendix.');
+  T(s, [{ text: '$96,005 per year to spend in retirement', options: { bold: true, fontSize: 22 } }, { text: '   in today\'s dollars, rising with prices. Social Security pays $74,829 of it once both checks start; savings pay the rest.', options: { fontSize: 13 } }], { x: M + 0.3, y: 5.95, w: W - 2 * M - 0.6, h: 0.9, color: X.ground, valign: 'middle' });
+  notes(s, 'Every number here is from the site, carried tool to tool by the hand-off buttons. Their budget and paycheck save $1,803 per month. Copy to Advanced carries that into the Advanced calculator as $832.35 every two weeks, split by account type. There they add one child as a change ahead, paid for out of saving, brokerage first; that takes them to $1,200,063 at 65 in today\'s dollars. Test withdrawals sends that balance to the Drawdown Simulator, which copies in both Social Security benefits: $6,236 per month from 67. They plan to spend $96,005 per year in today\'s dollars, and Social Security pays $74,829 of it once both checks start. Fixed spending rising with prices lasted in all 835 historical retirements, with a median ending balance of $3,611,139. Step-by-step screenshots are in the appendix.');
 }
 
-// 13. Under the hood
+// 14. My Dashboard: what it is
+{
+  const s = pres.addSlide({ masterName: 'SPLIT', sectionTitle: MAIN });
+  kick(s, 'My Dashboard'); title(s, 'Your whole plan, kept in one place');
+  T(s, 'A free account keeps accounts, pay, taxes, spending and retirement together, all worked out from one profile. Come back each month or quarter, update balances, and see where you stand.', { x: M, y: 2.55, w: 4.5, h: 1.45, fontSize: 15, color: X.muted });
+  const st = [['15', 'tabs, one profile behind them'], ['Up to 8', 'short setup steps, each one skippable'], ['14', 'tools inside, with your numbers in'], ['0', 'bank logins: you type your numbers']];
+  st.forEach(([n, l], i) => stat(s, M + (i % 2) * 2.3, 4.2 + Math.floor(i / 2) * 1.2, 2.2, n, l, { size: 28, nh: 0.48, lh: 0.6, color: i === 0 ? X.amber : X.text }));
+  rect(s, 5.45, 0, W - 5.45, H, mix(X.amber, 0.12));
+  const view = await shot('dk_overview_view', { radius: 18 });
+  const vw = W - 5.45 - 0.9;
+  const vh = img(s, view, 5.9, 0.75, vw);
+  T(s, 'A made-up household, Sam (42) and Jordan (40), with their daughter Nora. On a phone, the same tabs sit in a bar along the bottom.', { x: 5.9, y: 0.75 + vh + 0.3, w: 4.6, h: 0.9, fontSize: 12, color: X.muted });
+  const ph = await phone('dk_ph_overview');
+  const phh = 4.3;
+  s.addImage({ path: ph.path, x: W - 0.35 - phh * ph.ar, y: H - phh - 0.25, w: phh * ph.ar, h: phh });
+  notes(s, 'Everything so far works without an account. My Dashboard is the one part that needs a free account, and it is now the first button on the homepage. Setup asks up to eight short questions, any of which can be skipped. From that one profile it works out net worth, pay and taxes, spending, saving, and a retirement plan tested against every market since 1926, on fifteen tabs. The sample household here is Sam and Jordan: a readiness score of 96 of 100 and $1.9 million at 60. There are no bank logins; people type their own balances, and the plan always starts from the latest entry. It works the same on a phone, with a tab bar along the bottom.');
+}
+
+// 15. My Dashboard: the tabs
+{
+  const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: MAIN });
+  kick(s, 'My Dashboard'); title(s, 'Fifteen tabs, worked out from the same numbers');
+  T(s, 'Profile · Dashboard · Plan summary · Net worth · Your home · Income · Spending · Taxes & Savings · Year by year · Calculator · Retirement · Tools · Next steps · Learn · About', { x: M, y: 1.5, w: W - 2 * M, h: 0.3, fontSize: 12, color: X.muted });
+  const rows = [
+    [await card('dk_savings__taxes-this-year'), await card('dk_x_calc_changes_card'), await card('dk_accounts__when-you-can-spend-it')],
+    [await card('dk_accounts__assets-and-debts'), await card('dk_retirement__at-retirement')],
+  ];
+  panel(s, rows, M, 1.95, W - 2 * M, 4.95, 0.25);
+  notes(s, 'Each tab is one part of the picture, and every tab reads the same profile, so a change anywhere flows everywhere. Taxes & Savings is the Budget\'s paycheck run on the household: taxes this year and where each paycheck goes. The Calculator is the Advanced calculator on the plan\'s numbers, with changes ahead like a part-time stretch or a new car. Net worth is a dated record of balances, with when each dollar can be spent without a penalty. Retirement runs the Drawdown Simulator, the Early Retirement Bridge and the Healthcare Cost Planner on the plan. The appendix has a slide on each of these and on the phone layout.');
+}
+
+// 16. Under the hood
 {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: MAIN });
   kick(s, 'Under the hood'); title(s, 'A static site that does its thinking in the browser');
@@ -376,18 +435,18 @@ await feature({
   rect(s, bx + 2.85, by + 0.8, 2.25, 1.15, X.surface, { round: true, r: 0.1, line: X.amber, lw: 1.5 });
   T(s, [{ text: 'Calculation engine', options: { bold: true, color: X.amber, breakLine: true } }, { text: 'in a Web Worker, with 100 years of data and 2026 tax rules', options: { color: X.muted, fontSize: 11 } }], { x: bx + 3.0, y: by + 0.9, w: 1.95, h: 0.95, fontSize: 14 });
   rect(s, bx + 0.3, by + 2.2, bw - 0.6, 1.1, X.surface, { round: true, r: 0.1, line: X.rule });
-  T(s, [{ text: 'Local storage, first', options: { bold: true, breakLine: true } }, { text: 'household, scenarios and the Guide are saved here before anywhere else', options: { color: X.muted, fontSize: 11 } }], { x: bx + 0.45, y: by + 2.3, w: bw - 0.9, h: 0.9, fontSize: 14 });
+  T(s, [{ text: 'Local storage, first', options: { bold: true, breakLine: true } }, { text: 'household, scenarios, the Guide, the Dashboard and lessons read are saved here before anywhere else', options: { color: X.muted, fontSize: 11 } }], { x: bx + 0.45, y: by + 2.3, w: bw - 0.9, h: 0.9, fontSize: 14 });
   const side = (x, y, name, l, c) => { rect(s, x, y, 2.75, 1.0, X.surface, { round: true, r: 0.12, line: c || X.rule }); T(s, [{ text: name, options: { bold: true, breakLine: true } }, { text: l, options: { color: X.muted, fontSize: 11 } }], { x: x + 0.2, y: y + 0.12, w: 2.4, h: 0.8, fontSize: 14 }); };
   side(M, 2.15, 'Vercel', 'prerendered pages from main'); side(M, 3.55, 'Cloudflare', 'DNS and cookieless page counts');
-  side(W - M - 2.75, 1.85, 'Supabase', 'optional accounts, each user\'s rows locked to them', X.teal); side(W - M - 2.75, 3.05, 'Resend', 'the 6-digit sign-in codes'); side(W - M - 2.75, 4.25, 'Sentry', 'errors only, inputs stripped');
+  side(W - M - 2.75, 1.85, 'Supabase', 'accounts and My Dashboard, each user\'s rows locked to them', X.teal); side(W - M - 2.75, 3.05, 'Resend', 'sign-in codes and the monthly check-in email'); side(W - M - 2.75, 4.25, 'Sentry', 'errors only, inputs stripped');
   const arrow = (x, y, w) => s.addShape(pres.ShapeType.line, { x, y, w, h: 0, line: { color: X.muted, width: 1.25, endArrowType: 'triangle' } });
   arrow(M + 2.75, 2.65, bx - M - 2.75); arrow(bx + bw, 2.35, W - M - 2.75 - bx - bw);
-  const st = [['39', 'page routes'], ['~618', 'automated checks before every commit'], ['22', 'tracked figures, each with a source'], ['0', 'API routes taking your inputs']];
+  const st = [['53', 'page routes'], ['1,322', 'automated checks before every commit'], ['24', 'tracked figures, each with a source'], ['0', 'API routes taking your inputs']];
   st.forEach(([n, l], i) => stat(s, M + i * 3.05, 5.75, 2.9, n, l, { size: 30, nh: 0.5, lh: 0.45, color: i === 1 ? X.amber : X.text }));
-  notes(s, 'Pages are prerendered on Vercel. All the math runs in a Web Worker in the browser, so the page never freezes. Saved data goes to the browser first; an optional Supabase account syncs it, with row-level security. Error reports go to Sentry with every input stripped. The appendix covers the engine, testing, hosting, accounts and every data source.');
+  notes(s, 'Pages are prerendered on Vercel. All the math runs in a Web Worker in the browser, so the page never freezes, and that includes My Dashboard: the server stores a signed-in person\'s data but never computes with it. Saved data goes to the browser first; Supabase syncs it, with row-level security so each person reaches only their own rows. Resend sends the sign-in codes and the monthly check-in email, which never carries figures. Error reports go to Sentry with every input stripped. The appendix covers the engine, testing, hosting, accounts and every data source.');
 }
 
-// 14. Close
+// 17. Close
 {
   const s = pres.addSlide({ masterName: 'COVER', sectionTitle: MAIN });
   const art = await coverArt('close_fan', 1333, 470, { color: '#9aa4b2', hi: '#e3a93b' });
@@ -396,8 +455,8 @@ await feature({
   T(s, 'Find out where you stand.', { x: M, y: 1.75, w: 11, h: 1.2, fontSize: 54, bold: true });
   T(s, 'Free, private, and tested against every market since 1926.', { x: M, y: 2.95, w: 9, h: 0.5, fontSize: 20, color: X.muted });
   T(s, [link('https://retcalc.app', 'retcalc.app')], { x: M, y: 3.7, w: 5, h: 0.7, fontSize: 32, bold: true, color: X.amber });
-  T(s, 'Appendix: every tool, the full build, and where the numbers come from.', { x: M, y: 6.9, w: 9, h: 0.35, fontSize: 12, color: X.muted });
-  notes(s, 'That is RetCalc: free, private, and tested against a century of markets. The appendix that follows has a slide for every tool and the full story of the build.');
+  T(s, 'Appendix: every tool, My Dashboard, the full build, and where the numbers come from.', { x: M, y: 6.9, w: 9, h: 0.35, fontSize: 12, color: X.muted });
+  notes(s, 'That is RetCalc: free, private, and tested against a century of markets. The appendix that follows has a slide for every tool, Learn, a closer look at My Dashboard, and the full story of the build.');
 }
 
 /* =====================================================================
@@ -422,7 +481,7 @@ const tool = (spec) => A(spec.name, async (num) => {
   }
   if (spec.stat) { const sy = Math.max(y + 0.05, 5.6); if (sy <= 6.1) { T(s, spec.stat[0], { x: M, y: sy, w: 4.4, h: 0.6, fontSize: 34, bold: true, color: g.color }); T(s, spec.stat[1], { x: M, y: sy + 0.6, w: 4.4, h: 0.3, fontSize: 12, color: X.muted }); } else console.log('  no room for stat:', spec.name, sy.toFixed(2)); }
   if (spec.route) T(s, [link('https://retcalc.app/' + spec.route, 'retcalc.app/' + spec.route)], { x: M + 4.4 - 2.6, y: 7.02, w: 2.6, h: 0.3, fontSize: 10, align: 'right', color: X.amber });
-  rect(s, 5.45, 0, W - 5.45, H, mix(g.color, 0.18));
+  rect(s, 5.45, 0, W - 5.45, H, mix(g.color, g === GROUP.dash || g === GROUP.calc ? 0.12 : 0.18));
   if (spec.art) await spec.art(s, 5.45, W - 5.45);
   else panel(s, await spec.rows(), 5.9, 0.45, W - 5.45 - 0.9, H - 0.9, 0.28);
   if (spec.cap) T(s, spec.cap, { x: 5.9, y: 7.08, w: W - 6.35, h: 0.3, fontSize: 10, color: X.muted, align: 'right' });
@@ -434,30 +493,39 @@ A('Every tool at a glance', async () => {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: APP });
   kick(s, 'At a glance'); title(s, 'Every tool, and the question it answers');
   const groups = [
-    ['calc', [['Calculator: Basic', 'What will my savings grow to?'], ['Calculator: Advanced', 'Will I reach my target, after fees and tax?'], ['Calculator: Stages', 'What if my saving changes over the years?']]],
+    ['calc', [['Calculator: Basic', 'What will my savings grow to?'], ['Calculator: Advanced', 'Will I reach my target, with the changes ahead?']]],
     ['guide', [['Readiness Guide', 'How ready am I, and what next?'], ['Paycheck to Retirement', 'Where should each paycheck go?']]],
+    ['site', [['Learn', 'How does each part of a plan work?'], ['My Dashboard', 'Where does my whole plan stand?']]],
     ['income', [['Drawdown Simulator', 'Will my money last?'], ['Retirement Plan Optimizer', 'Which plan leaves me the most?'], ['Social Security Calculator', 'When should I claim?'], ['Early Retirement Bridge', 'How do I pay for the years before 59½?'], ['Roth Conversion Calculator', 'Should I convert before RMDs start?'], ['Healthcare Cost Planner', 'What will health insurance cost?']]],
     ['saving', [['FIRE Calculator', 'When does work become optional?'], ['Portfolio Backtest', 'What would this mix have done?'], ['College Savings', 'How much should I save for college?'], ['Rent vs. Buy', 'Should I rent or buy?']]],
     ['everyday', [['Income Tax', 'How much tax will I owe?'], ['Budget', 'Where does my money go?'], ['Debt Payoff', 'Which debt should I pay off first?'], ['Mortgage Calculator', 'What will the house cost each month?']]],
   ];
   const col = (x, w, list, y0) => { let y = y0; for (const [g, xs] of list) { const G = GROUP[g]; circle(s, x, y + 0.08, 0.16, G.color); T(s, G.name.toUpperCase(), { x: x + 0.26, y, w: w - 0.3, h: 0.3, fontSize: 11, bold: true, color: G.color, charSpacing: 1 }); y += 0.34; for (const [n, q] of xs) { rect(s, x, y, w, 0.5, X.raised, { round: true, r: 0.08 }); T(s, [{ text: n, options: { bold: true, breakLine: true } }, { text: q, options: { color: X.muted, fontSize: 10 } }], { x: x + 0.18, y: y + 0.02, w: w - 0.3, h: 0.46, fontSize: 12, valign: 'middle' }); y += 0.56; } y += 0.16; } };
   const cw = (W - 2 * M - 0.6) / 3;
-  col(M, cw, [groups[0], groups[1]], 1.7); col(M + cw + 0.3, cw, [groups[2]], 1.7); col(M + 2 * (cw + 0.3), cw, [groups[3], groups[4]], 1.7);
+  col(M, cw, [groups[0], groups[1], groups[2]], 1.65); col(M + cw + 0.3, cw, [groups[3]], 1.65); col(M + 2 * (cw + 0.3), cw, [groups[4], groups[5]], 1.65);
 });
 
 tool({ group: 'calc', kicker: 'Calculators', name: 'Basic and Advanced', stat: ['5,000', 'Monte Carlo runs on every redraw'], route: 'calculator', q: 'What will my savings grow to, and is it enough?',
-  desc: 'Basic answers in six questions. Advanced adds what a real plan has to carry.', dh: 0.75,
-  sections: [['Advanced adds', ['Traditional, Roth, brokerage and HSA', 'Employer match, fees and a glide path', 'Taxes by filing status and state', 'Reach a target: the contribution or years it takes', 'Rate band, 1926 history or Monte Carlo']]],
-  rows: async () => [[await card('calculator_1_balance-over-time')], [await card('advanced_chart_mc', { t: 0, b: 0.8 })]] });
+  desc: 'One Calculator with a Basic | Advanced switch under its title. Basic answers in six questions; Advanced adds what a real plan carries.', dh: 1.0,
+  sections: [['Advanced adds', ['Traditional, Roth, brokerage and HSA', 'Employer match, fees and taxes by state', 'Changes ahead: saving, lump sums, returns, children', 'When you could stop saving, or retire', 'Rate band, 1926 history or Monte Carlo']]],
+  rows: async () => [[await card('calculator_1_balance-over-time', { t: 0, b: 0.445 })], [await card('advanced_1_after-tax-income-per')], [await card('advanced_chart_mc', { t: 0.26, b: 0.85 })]] });
 
-tool({ group: 'calc', kicker: 'Calculators', name: 'Stages: around children', stat: ['9 stages', 'built from one, around two planned children'], route: 'stages', q: 'Saving that pauses, then comes back',
-  desc: 'The kids builder turned the sample couple\'s single 31-year stage into nine, from Before children to Empty nest, with childcare and the teen years taking the saving for 18 years.', dh: 1.25,
-  sections: [['The builder asks', ['Children you have now, and their ages', 'Children planned, and how far apart', 'Paid childcare before school', 'Monthly cost by age band, or the defaults']]],
-  rows: async () => [[await card('st_stg_0_your-stages', { t: 0, b: 0.215 }), await card('st_stg_1_after-tax-income-per')], [await card('st_stg_7_stage-by-stage')]] });
+tool({ group: 'calc', kicker: 'Calculators', name: 'Advanced: around children', stat: ['5 stages', 'built from one Children change'], route: 'advanced', q: 'Saving that dips while children are home',
+  desc: 'The story couple add one child, the first in two years. Advanced splits their 31 years into stages and takes the costs out of saving, by the rule they pick.', dh: 1.25,
+  sections: [['How will you cover this?', ['Brokerage first (recommended)', 'A bit from each account', 'My own order, by dragging']]],
+  art: async (s, px) => {
+    const cover = await card('st_cover_dialog', { trim: true }), big = await card('st_adv_changes_dialog', { trim: true });
+    const res = await card('st_adv_1_after-tax-income-per'), table = await card('st_adv_stages_dialog', { trim: true });
+    const x = px + 0.45, ch = 3.55, cw = ch * cover.ar, rx = x + cw + 0.25, rw = W - 0.45 - rx;
+    img(s, cover, x, 0.45, cw);
+    const bh = img(s, big, rx, 0.45, rw);
+    img(s, res, rx, 0.45 + bh + 0.2, Math.min(rw, (ch - bh - 0.2) * res.ar));
+    img(s, table, x, 0.45 + ch + 0.3, W - 0.45 - x);
+  } });
 
 tool({ group: 'income', name: 'Drawdown: 15 strategies', stat: ['15', 'strategies, tuned to the same risk and compared'], route: 'drawdown', q: 'Which withdrawal rule spends the most?',
   sections: [['Five families', ['Steady: fixed, Kitces ratchet', 'Share: fixed %, 95% rule, 1/N, RMD, VPW', 'Guardrails: Guyton-Klinger, risk-based', 'Smoothed: floor and ceiling, Vanguard, Yale, Autopilot II, Sensible', 'Valuation: CAPE-based']]],
-  rows: async () => [[await card('drawdown_cmp_3_strategy-showdown', { t: 0.13, b: 0.425 })], [await card('drawdown_2_every-historical-sta', { t: 0.12, b: 0.76 })]] });
+  rows: async () => [[await card('drawdown_cmp_4_strategy-showdown', { t: 0, b: 0.415 })]] });
 
 tool({ group: 'income', name: 'Retirement Plan Optimizer', stat: ['326,106', 'retirements simulated in one search'], route: 'optimizer', q: 'Which plan leaves me the most?',
   desc: 'Claiming ages, withdrawal order, Roth conversions and income guards, crossed and run through every market since 1926.', dh: 1.0,
@@ -474,10 +542,10 @@ tool({ group: 'income', name: 'Early Retirement Bridge', stat: ['6 routes', 'to 
   sections: [['Routes compared', ['Roth conversion ladder', '72(t) payments', 'Brokerage, then Roth contributions', 'Rule of 55 and part-time work', 'Paying the 10% penalty, as a benchmark']]],
   rows: async () => [[await card('bridge_2_ways-to-59', { t: 0, b: 0.72 })], [await card('bridge_4_where-each-year-s-mo')]] });
 
-tool({ group: 'income', name: 'Roth Conversion Calculator', stat: ['+$223,304', 'after-tax net worth from converting, in the sample'], route: 'roth', q: 'Should I convert before RMDs start?',
-  desc: 'Projects required distributions to age 100, then tests a conversion schedule against doing nothing.', dh: 0.95,
+tool({ group: 'income', name: 'Roth Conversion Calculator', stat: ['+$65,102', 'after-tax net worth at 92, against not converting'], route: 'roth', q: 'Should I convert before RMDs start?',
+  desc: 'Projects required distributions through any age up to 100, then tests a conversion schedule against doing nothing.', dh: 0.95,
   sections: [['Strategies', ['Fill a bracket or an IRMAA threshold', 'A fixed amount or a share of the balance', 'None, for comparison']]],
-  rows: async () => [[await card('roth_1_converting-wins-on-b')], [await card('roth_3_traditional-balance')]] });
+  rows: async () => [[await card('roth_1_the-two-measures-dis')], [await card('roth_3_traditional-balance')]] });
 
 tool({ group: 'income', name: 'Healthcare Cost Planner', stat: ['$2,688', 'per month for the ACA, just over the subsidy cliff'], route: 'healthcare', q: 'What will health insurance cost before and after Medicare?',
   desc: 'ACA premiums and subsidies for the gap before 65, then Medicare Part B, Part D, Medigap and IRMAA.', dh: 0.95,
@@ -489,21 +557,21 @@ tool({ group: 'saving', name: 'FIRE Calculator', stat: ['Age 66.6', 'financial i
   sections: [['Historical mode', ['Every rolling window since 1926', 'A success-rate slider gives a second answer: the age reached in, say, 90% of history']]],
   rows: async () => [[await card('fire_hist_1_rate-bandhistoricaly')], [await card('fire_hist_2_portfolio-growth')]] });
 
-tool({ group: 'saving', name: 'Portfolio Backtest', stat: ['9.65%', 'per year for 80/20 stocks and bonds, 1926–2025'], route: 'backtest', q: 'What would this mix have actually done?',
+tool({ group: 'saving', name: 'Portfolio Backtest', stat: ['9.65%', 'per year for 80/20 stocks and bonds, 1926–2025'], route: 'backtest', q: 'What would this mix have done?',
   sections: [['You choose', ['Stocks, small-cap value, bonds and cash', 'How often to rebalance', 'Any span from 1926 to 2025']], ['You see', ['Return, before and after inflation', 'Volatility and the deepest fall', 'Growth of $10,000 and rolling returns']]],
   rows: async () => [[await card('backtest_1_return-per-year9-65-', { t: 0, b: 0.66 })], [await card('backtest_2_growth-of-10-000')]] });
 
 tool({ group: 'saving', name: 'College Savings', stat: ['$558', 'per month for an in-state school, 18 years out'], route: 'college', q: 'How much should I save for college?',
-  sections: [['Presets, per year', ['Public in-state, about $27,000', 'Private non-profit, about $59,000', 'Elite, about $82,000']], ['Also', ['Several children on one account', 'Tuition inflation and years in college']]],
+  sections: [['Presets, per year', ['Public in-state, about $27,000', 'Private non-profit, about $63,000', 'Elite, about $82,000']], ['Also', ['Several children on one account', 'Tuition inflation and years in college']]],
   rows: async () => [[await card('college_1_save-per-month-558fo')], [await card('college_2_savings-over-time')]] });
 
 tool({ group: 'saving', name: 'Rent vs. Buy', stat: ['$811,712', 'how far renting came out ahead after 30 years'], route: 'rentbuy', q: 'Should I rent or buy?',
-  desc: 'Buyer and renter net worth over any horizon, counting what the down payment could have earned.', dh: 0.95,
+  desc: 'Buyer and renter net worth over 1 to 40 years, counting what the down payment could have earned.', dh: 0.95,
   sections: [['It counts', ['Price, down payment, rate and term', 'Tax, insurance, upkeep, closing and selling', 'Rent growth, appreciation and returns']]],
   rows: async () => [[await card('rentbuy_2_net-worth-over-time')], [await card('rentbuy_1_each-month-to-start', { t: 0, b: 0.8 })]] });
 
 tool({ group: 'everyday', name: 'Income Tax: retirement mode', stat: ['4.9%', 'total tax on $100,000 of retirement income'], route: 'incometax', q: 'What does a year of withdrawals cost?',
-  sections: [['It stacks', ['Long-term gains into the 0/15/20% bands', 'The 3.8% net investment income tax', 'Social Security\'s 0/50/85% tiers', 'The 2026 senior deduction', 'State rules for pensions and withdrawals']]],
+  sections: [['It stacks', ['Long-term gains into the 0/15/20% bands', 'The 3.8% net investment income tax', 'Social Security\'s 0/50/85% tiers', 'The 2026 senior deduction', 'State rules for pensions and withdrawals, at each state\'s own age']]],
   rows: async () => [[await card('incometax_ret_2_your-capital-gain-an')], [await card('incometax_ret_3_where-each-dollar-ca', { t: 0, b: 0.74 })]] });
 
 tool({ group: 'everyday', name: 'Budget: the itemized paycheck', stat: ['$0', 'left unassigned: every dollar has a place'], route: 'budget', q: 'Every line of every check', cap: 'The itemized paycheck, in two halves: per check, per month and per year',
@@ -515,14 +583,19 @@ tool({ group: 'everyday', name: 'Budget: the itemized paycheck', stat: ['$0', 'l
     panel(s, [[a], [b2]], px + 0.45, 0.45, pw - 0.9, H - 1.1, 0.3);
   } });
 
-tool({ group: 'everyday', name: 'Debt Payoff', stat: ['Sep 2030', 'debt-free in the sample, $10,167 saved'], route: 'debt', q: 'Which debt should I pay off first?',
+tool({ group: 'everyday', name: 'Debt Payoff', stat: ['Oct 2030', 'debt-free in the sample, $10,167 saved'], route: 'debt', q: 'Which debt should I pay off first?',
   sections: [['You get', ['The debt-free date and total interest', 'Avalanche against snowball, with a verdict', 'The payoff order', 'What $100 more per month would do']]],
-  rows: async () => [[await card('debt_1_debt-freesep-20303y-')], [await card('debt_2_avalanche-vs-snowbal')], [await card('debt_3_what-you-owe-month-b', { t: 0, b: 0.94 })]] });
+  rows: async () => [[await card('debt_1_debt-freeoct-20303y-')], [await card('debt_2_avalanche-vs-snowbal')], [await card('debt_3_what-you-owe-month-b', { t: 0, b: 0.94 })]] });
 
 tool({ group: 'everyday', name: 'Mortgage Calculator', stat: ['$201,179', 'less interest with $300 extra per month'], route: 'mortgage', q: 'What will the house cost each month?',
   desc: 'The full payment, how the balance falls, and amortization year by year.', dh: 0.7,
   sections: [['What-ifs, in the sample', ['$300 extra per month and $10,000 once', 'Paid off 9 years 7 months sooner', '$201,179 less interest', 'A refinance to 6.25%: even in 1 year 7 months']]],
   rows: async () => [[await card('mx_2_extra-payments-and-r')], [await card('mx_3_loan-balance-and-wha', { t: 0, b: 0.9 })]] });
+
+tool({ group: 'learn', name: 'Learn', stat: ['66', 'lessons in 8 tracks, about 14 hours of reading'], route: 'learn', q: 'How does each part of a plan work?',
+  desc: 'Short lessons on saving, investing, taxes, Social Security and withdrawals. Each ends with a tool to try the idea on your own numbers.', dh: 1.0,
+  sections: [['Eight tracks', ['Foundations · Saving and accounts', 'Investing and risk · Withdrawing · Taxes', 'Social Security and health care', 'Retiring early · Big decisions']], ['In 39 lessons', ['A chart to try, read off by hover or touch']]],
+  rows: async () => [[await card('learn_header')], [await card('learn_sequence-risk_widget'), await card('learn_when-to-claim_widget')], [await card('learn_four-percent-rule_widget'), await card('learn_compound-growth_widget')]] });
 
 A('The Guide\'s report', async () => {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: APP });
@@ -535,34 +608,84 @@ A('The Guide\'s report', async () => {
 A('The household, step by step', async () => {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: APP });
   kick(s, 'Putting it together'); title(s, 'The household, step by step');
-  const items = [['1 · Budget, Paycheck tab', await card('st_pc_1_saved-and-invested-e')], ['2 · Stages, after the kids builder', await card('st_stg_4_balance-over-time-in', { t: 0.27, b: 0.8 })], ['3 · Social Security, both at 67', await card('st_ss_1_pick-the-age-you-cla', { t: 0, b: 0.8 })], ['4 · Drawdown, with both benefits', await card('st_dd_1_historicalmonte-carl')]];
+  const items = [['1 · Budget, Paycheck tab: $1,803 per month saved', await card('st_pc_1_saved-and-invested-e')], ['2 · Advanced, with one child as a change ahead', await card('st_adv_4_balance-over-time-in', { t: 0.25, b: 0.8 })], ['3 · Social Security, both claiming at 67', await card('st_ss_1_pick-the-age-you-cla', { t: 0, b: 0.8 })], ['4 · Drawdown, with both benefits copied in', await card('st_dd_1_historicalmonte-carl')]];
   const cw = (W - 2 * M - 0.4) / 2;
   items.forEach(([l, p], i) => { const x = M + (i % 2) * (cw + 0.4), y = 1.65 + Math.floor(i / 2) * 2.7; T(s, l, { x, y, w: cw, h: 0.3, fontSize: 12, bold: true, color: X.amber }); const h = Math.min(cw / p.ar, 2.2); s.addImage({ path: p.path, x, y: y + 0.35, w: h * p.ar, h, shadow: shadow() }); });
+});
+
+// ---- My Dashboard, the highlights (the full tour is in the Dashboard deck) ----
+tool({ group: 'dash', name: 'Dashboard: Net worth', stat: ['9 + 5', 'kinds of assets and debts, tracked by date'], route: 'financial-dashboard', q: 'What do we have, and when can we spend it?',
+  desc: 'Balances typed in by date, never linked to a bank. Each save is a new point on the net worth line, and the plan starts from the latest.', dh: 1.25,
+  sections: [['Beside the lists', ['Assets and debts on one scale', 'When each dollar can be spent without the 10% penalty', 'How it\'s taxed: pre-tax, Roth, brokerage, HSA, cash']]],
+  rows: async () => [[await card('dk_accounts__assets-and-debts')], [await card('dk_accounts__when-you-can-spend-it'), await card('dk_accounts__how-it-s-taxed')]] });
+
+tool({ group: 'dash', name: 'Dashboard: Taxes & Savings', stat: ['6', 'places each paycheck can go, from 3 starting plans'], route: 'financial-dashboard', q: 'Where does each paycheck go?',
+  desc: 'The Budget\'s Paycheck tab, run on the household. Its taxes are the "pay after taxes" on every other tab.', dh: 1.0,
+  sections: [['It shows', ['Taxes this year: federal, state, local, FICA', 'Saving each month, the match and the rate', 'A slider for each place the rest can go', 'The itemized paycheck, with a CSV']]],
+  rows: async () => [[await card('dk_savings__taxes-this-year'), await card('dk_savings__each-month')], [await card('dk_savings__where-the-rest-goes')]] });
+
+tool({ group: 'dash', name: 'Dashboard: Retirement', stat: ['15', 'withdrawal strategies; the chosen one runs the plan'], route: 'financial-dashboard', q: 'Will it last, and how do we bridge the gaps?',
+  desc: 'The Drawdown Simulator, Early Retirement Bridge and Healthcare Cost Planner, run on the plan\'s own figures.', dh: 1.0,
+  sections: [['Three views', ['Drawdown: tested against every month since 1926', 'Bridge to 59½, for anyone retiring early', 'Health cover until Medicare at 65']]],
+  rows: async () => [[await card('dk_retirement__at-retirement')], [await card('dk_x_ret_strategies')]] });
+
+tool({ group: 'dash', name: 'Dashboard: Calculator', stat: ['5', 'kinds of change, each saved to the whole plan'], route: 'financial-dashboard', q: 'What if pay, spending or saving changes?',
+  desc: 'The Advanced calculator on the plan\'s numbers. A change made here flows to every tab, and can be switched off without deleting it.', dh: 1.25,
+  sections: [['Add a change', ['Pay changes · Spend more or less', 'Save less · A lump sum · Different returns']]],
+  rows: async () => [[await card('dk_x_calc_changes_card'), await card('dk_x_calc_kinds')], [await card('dk_x_calc_lanes')]] });
+
+A('Dashboard: report and check-in', async () => {
+  const s = pres.addSlide({ masterName: 'SPLIT', sectionTitle: APP });
+  kick(s, 'My Dashboard'); title(s, 'Dashboard: report and check-in');
+  let y = underTitle('Dashboard: report and check-in');
+  T(s, 'A plan on paper, and a reminder each month', { x: M, y, w: 4.4, h: 0.6, fontSize: 17, bold: true, color: X.amber }); y += 0.85;
+  T(s, [{ text: 'Print your plan', options: { bold: true, color: X.text, breakLine: true } }, { text: 'US Letter sheets built in the browser, nothing sent anywhere to make them: 14 standard pages plus up to 7 that fit the household, such as the home, the children or the bridge to 59½.', options: { breakLine: true } }, { text: ' ', options: { fontSize: 8, breakLine: true } }, { text: 'Monthly check-in email', options: { bold: true, color: X.text, breakLine: true } }, { text: 'Sent only when balances are 30 or more days old. It never carries figures, since the plan is worked out in the browser. One click turns it off.' }], { x: M, y, w: 4.4, h: 3.4, fontSize: 14, color: X.muted });
+  T(s, '14 + 7', { x: M, y: 5.6, w: 4.4, h: 0.6, fontSize: 34, bold: true, color: X.amber });
+  T(s, 'report pages: the standard set, and those that fit', { x: M, y: 6.2, w: 4.4, h: 0.3, fontSize: 12, color: X.muted });
+  rect(s, 5.45, 0, W - 5.45, H, mix(X.amber, 0.12));
+  const pages = ['lt_x_report_p00', 'lt_x_report_p01', 'lt_x_report_p04', 'lt_x_report_p09'];
+  const ph = 2.95, pw = ph * 816 / 1056, px0 = 5.45 + (W - 5.45 - 3 * pw - 0.4) / 2;
+  for (let i = 0; i < 3; i++) { const p = await shot(pages[i], { radius: 6 }); s.addImage({ path: p.path, x: px0 + i * (pw + 0.2), y: 0.45, w: pw, h: ph }); }
+  const em = await card('dk_x_email', { pad: 0, radius: 18, t: 0, b: 0.6 });
+  const eh = 3.4, ew = eh * em.ar, p4w = eh * 816 / 1056, ex = 5.45 + (W - 5.45 - ew - 0.25 - p4w) / 2;
+  img(s, em, ex, 0.45 + ph + 0.3, ew);
+  const p4 = await shot(pages[3], { radius: 6 }); s.addImage({ path: p4.path, x: ex + ew + 0.25, y: 0.45 + ph + 0.3, w: p4w, h: eh });
+});
+
+A('Dashboard: on a phone', async () => {
+  const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: APP });
+  kick(s, 'My Dashboard'); title(s, 'The same Dashboard on a phone');
+  T(s, 'A tab bar along the bottom: Dashboard, Plan summary, Calculator, Retirement and More, which opens every other tab. It can be added to the home screen and opens like an app.', { x: M, y: 1.5, w: W - 2 * M, h: 0.6, fontSize: 14, color: X.muted });
+  const names = [['dk_ph_overview', 'Dashboard'], ['dk_ph_accounts', 'Net worth'], ['dk_ph_savings', 'Taxes & Savings'], ['dk_ph_retirement', 'Retirement'], ['dk_x_ph_more', 'More']];
+  const phh = 4.35, gap = 0.35;
+  const ims = []; for (const [n] of names) ims.push(await phone(n));
+  const pw = phh * ims[0].ar, x0 = (W - (5 * pw + 4 * gap)) / 2;
+  ims.forEach((im, i) => { s.addImage({ path: im.path, x: x0 + i * (pw + gap), y: 2.2, w: pw, h: phh }); T(s, names[i][1], { x: x0 + i * (pw + gap), y: 2.2 + phh + 0.08, w: pw, h: 0.3, fontSize: 12, bold: true, color: X.amber, align: 'center' }); });
 });
 
 // ---- build appendix ----
 A('The stack', async () => {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: APP });
   kick(s, 'Under the hood'); title(s, 'The stack');
-  const rows = [['Framework', 'Next.js 16 (App Router), React 19, TypeScript 5'], ['Look', 'Tailwind CSS v4 and shadcn/ui on Base UI, Lucide icons, IBM Plex Sans served by the site'], ['Engine', 'Plain JavaScript type-checked through JSDoc, behind typed TypeScript bridges, run in a Web Worker'], ['Checks', 'ESLint with zero warnings allowed, tsc, @shadcn/lint, a calculation suite, unit and end-to-end tests'], ['Design', 'A written design system: Graphite (dark, the default) and Paper (light), one amber accent, five chart hues']];
+  const rows = [['Framework', 'Next.js 16 (App Router), React 19, TypeScript 5'], ['Look', 'Tailwind CSS v4 and shadcn/ui on Base UI, Lucide icons; SF Pro on Apple devices, Inter elsewhere'], ['Engine', 'Plain JavaScript type-checked through JSDoc, behind typed TypeScript bridges, run in a Web Worker'], ['Checks', 'ESLint with zero warnings allowed, tsc, @shadcn/lint, a calculation suite, unit and end-to-end tests'], ['Design', '"Clear Glass": a light theme and a true-black dark one, one amber accent, one color per kind of money']];
   s.addTable(rows.map(([a, b]) => [{ text: a, options: { bold: true, color: X.amber } }, { text: b, options: { color: X.text } }]), { x: M, y: 1.75, w: 7.4, colW: [1.5, 5.9], fontSize: 14, border: { type: 'solid', color: X.rule, pt: 0.75 }, fill: { color: X.ground }, margin: [0.12, 0.12, 0.12, 0.1], rowH: 0.62, valign: 'middle' });
-  const st = [['39', 'page routes'], ['~55,600', 'lines of app code'], ['~7,400', 'lines in the engine and its data'], ['29', 'explanatory articles']];
+  const st = [['53', 'page routes'], ['~79,400', 'lines of app code'], ['~8,100', 'lines in the engine and its data'], ['28', 'explanatory articles']];
   st.forEach(([n, l], i) => { const x = 8.5 + (i % 2) * 2.15, y = 1.75 + Math.floor(i / 2) * 1.45; rect(s, x, y, 2.0, 1.3, X.raised, { round: true, r: 0.12 }); stat(s, x + 0.2, y + 0.2, 1.7, n, l, { size: 28, nh: 0.5, lh: 0.5, color: i === 0 ? X.amber : X.text }); });
-  T(s, 'THE PALETTE', { x: 8.5, y: 4.75, w: 4.2, h: 0.3, fontSize: 11, bold: true, color: X.muted, charSpacing: 1 });
+  T(s, 'THE PALETTE: CLEAR GLASS', { x: 8.5, y: 4.75, w: 4.2, h: 0.3, fontSize: 11, bold: true, color: X.muted, charSpacing: 1 });
   [['000000', 'Night'], ['1C1C1E', 'Surface'], ['FF9F0A', 'Amber'], ['F5F5F7', 'Glass'], ['975300', 'Amber, light']].forEach(([c, n], i) => { rect(s, 8.5 + i * 0.84, 5.1, 0.74, 0.74, c, { round: true, r: 0.08, line: X.rule }); T(s, n, { x: 8.5 + i * 0.84, y: 5.9, w: 0.8, h: 0.3, fontSize: 10, color: X.muted }); });
   [X.sky, X.teal, X.rose, X.lav, X.gray, X.gain, X.loss].forEach((c, i) => rect(s, 8.5 + i * 0.6, 6.35, 0.5, 0.22, c, { round: true, r: 0.05 }));
-  T(s, 'Design rules are enforced by the linter: no raw colors, no one-off sizes, no inline styles.', { x: M, y: 5.6, w: 7.4, h: 0.8, fontSize: 14, color: X.muted });
+  T(s, 'Design rules are enforced by the linter: no raw colors, no one-off sizes, no inline styles. This deck is set in Arial so it lays out the same on any computer.', { x: M, y: 5.5, w: 7.4, h: 0.9, fontSize: 14, color: X.muted });
 });
 
 A('The calculation engine', async () => {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: APP });
-  kick(s, 'Under the hood'); title(s, 'About 5,700 lines of finance in one engine');
-  s.addChart(pres.ChartType.bar, [{ name: 'Lines', labels: ['math.js', 'drawdown.js', 'data files', 'plan.js', 'bridge.js', 'calculators.js'], values: [2389, 1435, 1100, 833, 471, 408] }], {
+  kick(s, 'Under the hood'); title(s, 'About 6,100 lines of finance in one engine');
+  s.addChart(pres.ChartType.bar, [{ name: 'Lines', labels: ['math.js', 'drawdown.js', 'data files', 'plan.js', 'bridge.js', 'calculators.js'], values: [2650, 1456, 1326, 897, 528, 408] }], {
     x: M - 0.1, y: 1.65, w: 6.2, h: 3.4, barDir: 'bar', catAxisOrientation: 'maxMin', chartColors: [X.amber], showValue: true, dataLabelPosition: 'outEnd', dataLabelColor: X.text, dataLabelFontSize: 12, dataLabelFontFace: '+mn-lt', dataLabelFormatCode: '#,##0',
     catAxisLabelColor: X.text, catAxisLabelFontSize: 12, catAxisLabelFontFace: '+mn-lt', valAxisHidden: true, valGridLine: { style: 'none' }, catGridLine: { style: 'none' }, showLegend: false, barGapWidthPct: 45, catAxisLineShow: false,
     showTitle: true, title: 'Lines of code, by file', titleColor: X.muted, titleFontSize: 12, titleFontFace: '+mn-lt',
   });
-  T(s, 'Projections, Monte Carlo, federal and state tax, FICA, Social Security, RMDs, Roth conversions, ACA and Medicare, mortgages, debt, rent against buy, college, FIRE, the 72(t) bridge and historical withdrawal backtests.', { x: M, y: 5.2, w: 6.0, h: 1.4, fontSize: 14, color: X.muted });
+  T(s, 'Projections, Monte Carlo, federal, state and local tax, FICA, Social Security, RMDs, Roth conversions, ACA and Medicare, mortgages, debt, rent against buy, college, FIRE, the 72(t) bridge and historical withdrawal backtests.', { x: M, y: 5.2, w: 6.0, h: 1.4, fontSize: 14, color: X.muted });
   const ways = [['Historical replay', 'Every starting month since 1926, run through what actually happened. 835 starts for a 30-year retirement.'], ['Monte Carlo, calculators', '5,000 lognormal runs per redraw, set so zero volatility draws the plain projection exactly.'], ['Monte Carlo, drawdown', 'A block bootstrap of real history: runs of years drawn together, so the 1930s and 1970s keep their streaks.'], ['One seed', 'Every simulation shares a seeded generator, so charts hold still; Re-roll moves them all at once.']];
   ways.forEach(([h, l], i) => { const y = 1.7 + i * 1.28; rect(s, 7.2, y, W - 7.2 - M, 1.13, X.raised, { round: true, r: 0.12 }); T(s, h, { x: 7.45, y: y + 0.15, w: W - 7.7 - M, h: 0.35, fontSize: 16, bold: true, color: i < 3 ? X.amber : X.text }); T(s, l, { x: 7.45, y: y + 0.5, w: W - 7.7 - M, h: 0.6, fontSize: 12, color: X.muted }); });
 });
@@ -570,22 +693,22 @@ A('The calculation engine', async () => {
 A('Checks before anything ships', async () => {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: APP });
   kick(s, 'Under the hood'); title(s, 'A test for every claim, before anything ships');
-  const steps = [['A change', 'to the engine, a tool\'s defaults, an article or page text'], ['Pre-commit gate', '~618 checks in 55 groups. A failure blocks the commit.'], ['On every push', 'the suite again, numbers baselines, lint, typecheck, build, unit and end-to-end tests'], ['Live', 'main deploys to Vercel; every branch gets a preview first']];
+  const steps = [['A change', 'to the engine, a tool\'s defaults, an article, a lesson or page text'], ['Pre-commit gate', '1,322 checks in 62 groups. A failure blocks the commit.'], ['On every push', 'the suite again, the numbers and Guide baselines, unit tests, lint and the build'], ['Live', 'main deploys to Vercel; every branch gets a preview first']];
   const cw = (W - 2 * M - 3 * 0.45) / 4;
   steps.forEach(([h, l], i) => { const x = M + i * (cw + 0.45); rect(s, x, 1.8, cw, 1.75, i === 1 ? X.amber : X.raised, { round: true, r: 0.14 }); T(s, h, { x: x + 0.25, y: 1.98, w: cw - 0.5, h: 0.4, fontSize: 18, bold: true, color: i === 1 ? X.ground : X.text }); T(s, l, { x: x + 0.25, y: 2.45, w: cw - 0.5, h: 1.0, fontSize: 13, color: i === 1 ? X.ground : X.muted }); if (i < 3) s.addShape(pres.ShapeType.rightArrow, { x: x + cw + 0.07, y: 2.5, w: 0.31, h: 0.35, fill: { color: X.muted }, line: { type: 'none' } }); });
-  const st = [['~618', 'checks in the calculation suite'], ['209', 'tie the 29 articles\' worked examples to the engine'], ['7', 'sample households with pinned Guide results'], ['17', 'end-to-end browser specs'], ['1,200', 'months of market history every engine walks']];
+  const st = [['1,322', 'checks in the calculation suite'], ['15', 'groups tie the articles\' worked examples to the engine'], ['7', 'sample households with pinned Guide results'], ['16', 'end-to-end browser specs, run before a release'], ['1,200', 'months of market history every engine walks']];
   const sw = (W - 2 * M) / 5;
   st.forEach(([n, l], i) => stat(s, M + i * sw, 4.3, sw - 0.3, n, l, { size: 44, nh: 0.8, lh: 0.8, lsize: 13, color: i === 0 ? X.amber : X.text }));
-  T(s, 'Worked examples in the articles are checked against the calculator, so the numbers in the writing always match the numbers in the tools.', { x: M, y: 6.25, w: W - 2 * M, h: 0.5, fontSize: 14, color: X.muted });
+  T(s, 'Worked examples in the articles are checked against the calculator, so the numbers in the writing match the numbers in the tools.', { x: M, y: 6.25, w: W - 2 * M, h: 0.5, fontSize: 14, color: X.muted });
 });
 
 A('Hosting and delivery', async () => {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: APP });
   kick(s, 'Under the hood'); title(s, 'Fast because there is almost nothing to serve');
-  const rows = [['Hosting', 'Vercel, building from main, with a preview for every branch'], ['Rendering', 'Prerendered pages. No API routes: the one thing the site\'s own server receives is error reports, stripped of inputs'], ['Domain', 'retcalc.app, DNS on Cloudflare'], ['Analytics', 'Cloudflare and Vercel Web Analytics: cookieless, production only, no ads'], ['Email', 'Sign-in codes through Resend, from the site\'s own domain']];
+  const rows = [['Hosting', 'Vercel, building from main, with a preview for every branch'], ['Rendering', 'Prerendered pages. No API routes: the one thing the site\'s own server receives is error reports, stripped of inputs'], ['Domain', 'retcalc.app, DNS on Cloudflare'], ['Analytics', 'Cloudflare and Vercel Web Analytics: cookieless, production only, no ads'], ['Email', 'Sign-in codes and the monthly check-in through Resend, from the site\'s own domain']];
   s.addTable(rows.map(([a, b]) => [{ text: a, options: { bold: true, color: X.amber } }, { text: b, options: { color: X.text } }]), { x: M, y: 1.7, w: 6.4, colW: [1.35, 5.05], fontSize: 13, border: { type: 'solid', color: X.rule, pt: 0.75 }, fill: { color: X.ground }, margin: [0.1, 0.12, 0.1, 0.1], valign: 'middle' });
   T(s, 'LINK PREVIEWS, DRAWN FOR EVERY PAGE', { x: 7.35, y: 1.7, w: 5.4, h: 0.3, fontSize: 11, bold: true, color: X.muted, charSpacing: 1 });
-  const og = ['drawdown', 'stages', 'incometax', 'guide'];
+  const og = ['drawdown', 'advanced', 'incometax', 'dashboard'];
   const ow = (W - 7.35 - M - 0.2) / 2, oh = ow * 630 / 1200;
   og.forEach((n, i) => s.addImage({ path: new URL(`../../web/public/og/${n}.jpg`, import.meta.url).pathname, x: 7.35 + (i % 2) * (ow + 0.2), y: 2.1 + Math.floor(i / 2) * (oh + 0.2), w: ow, h: oh }));
   rect(s, 7.35, 2.3 + 2 * (oh + 0.2), W - 7.35 - M, 1.55, X.raised, { round: true, r: 0.12 });
@@ -594,20 +717,20 @@ A('Hosting and delivery', async () => {
 
 A('Accounts and privacy', async () => {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: APP });
-  kick(s, 'Under the hood'); title(s, 'Local first. An account is only a way to sync');
+  kick(s, 'Under the hood'); title(s, 'Saved locally first, synced with an account');
   const d = await card('signin_dialog', { pad: 0, radius: 22 });
-  const dh = H - 1.75 - 0.6, dw = dh * d.ar;
+  const dh = 4.6, dw = dh * d.ar;
   s.addImage({ path: d.path, x: W - M - dw, y: 1.75, w: dw, h: dh, shadow: shadow() });
-  const cards = [['What an account stores', X.gain, ['Email, and a first name if given', 'The household', 'Saved scenarios, by tool', 'Guide and Paycheck plan answers']], ['What it never stores', X.loss, ['Numbers typed but not saved', 'Browsing activity', 'Anything for advertisers: there are none', 'Share-link inputs, after the #']], ['Signing in, and out for good', X.amber, ['A 6-digit email code, or Google', 'Download everything, any time', 'Delete: sessions end, then the data goes']]];
+  const cards = [['What an account stores', X.gain, ['Email, and a first name if given', 'The household and saved scenarios', 'Guide and Paycheck plan answers', 'My Dashboard and lessons read', 'The check-in email setting']], ['What it never stores', X.loss, ['Numbers typed but not saved', 'Browsing activity', 'Anything for advertisers: there are none', 'Share-link inputs, after the #']], ['Signing in, and out for good', X.amber, ['A 6-digit email code, or Google', 'Download everything, any time', 'Delete: sessions end, then the data goes']]];
   const area = W - 2 * M - dw - 0.4, cw = (area - 0.5) / 3;
-  cards.forEach(([h, c, xs], i) => { const x = M + i * (cw + 0.25); rect(s, x, 1.75, cw, 3.55, X.raised, { round: true, r: 0.12 }); T(s, h.toUpperCase(), { x: x + 0.2, y: 1.95, w: cw - 0.4, h: 0.5, fontSize: 11, bold: true, color: c, charSpacing: 1 }); T(s, bullets(xs, { gap: 6 }), { x: x + 0.2, y: 2.5, w: cw - 0.4, h: 2.7, fontSize: 14 }); });
-  T(s, 'Changes save to the browser first and push shortly after; a two-way merge runs on sign-in. If both sides changed a scenario, both are kept. Each person reaches only their own rows, and backups run weekly, encrypted.', { x: M, y: 5.5, w: area, h: 1.3, fontSize: 14, color: X.muted });
+  cards.forEach(([h, c, xs], i) => { const x = M + i * (cw + 0.25); rect(s, x, 1.75, cw, 3.75, X.raised, { round: true, r: 0.12 }); T(s, h.toUpperCase(), { x: x + 0.2, y: 1.95, w: cw - 0.4, h: 0.5, fontSize: 11, bold: true, color: c, charSpacing: 1 }); T(s, bullets(xs, { gap: 6 }), { x: x + 0.2, y: 2.5, w: cw - 0.4, h: 2.9, fontSize: 14 }); });
+  T(s, 'The tools, the guides and Learn all work signed out; My Dashboard needs a free account. Changes save to the browser first and push shortly after, and each person reaches only their own rows. Backups run weekly, encrypted.', { x: M, y: 5.65, w: area, h: 1.2, fontSize: 14, color: X.muted });
 });
 
 A('Where the numbers come from', async () => {
   const s = pres.addSlide({ masterName: 'CONTENT', sectionTitle: APP });
-  kick(s, 'Under the hood'); title(s, '22 figures, each with a source and a due date');
-  const groups = [['Taxes', [['Federal brackets', 'IRS Revenue Procedure', 'Yearly'], ['Contribution limits', 'IRS notices', 'Yearly'], ['Social Security figures', 'SSA fact sheet', 'Yearly'], ['State tax, 50 + DC', 'Tax Foundation, states', 'Yearly'], ['RMD tables', 'IRS Pub. 590-B', 'Yearly']]], ['Healthcare', [['Medicare B, IRMAA', 'CMS', 'Yearly'], ['Part D, Medigap', 'CMS, KFF', 'Yearly'], ['ACA premiums', 'KFF, HHS, IRS', 'Yearly']]], ['Markets', [['Stocks, bonds, inflation', 'Shiller (Yale), BLS', 'Yearly'], ['T-bills, small value', 'French Data Library', 'Yearly'], ['Today\'s CAPE', 'multpl.com', 'Monthly']]], ['Housing and defaults', [['Mortgage rate', 'Freddie Mac survey', 'Quarterly'], ['Home price and rent', 'NAR, Census, Zillow', 'Yearly'], ['College, children', 'College Board, USDA', 'Yearly']]]];
+  kick(s, 'Under the hood'); title(s, '24 figures, each with a source and a due date');
+  const groups = [['Taxes', [['Federal brackets', 'IRS Revenue Procedure', 'Yearly'], ['Contribution limits', 'IRS notices', 'Yearly'], ['Social Security figures', 'SSA fact sheet', 'Yearly'], ['State tax, 50 + DC', 'Tax Foundation, states', 'Yearly'], ['Local income tax', 'Tax Foundation, states', 'Yearly']]], ['Healthcare and RMDs', [['Medicare B, IRMAA', 'CMS', 'Yearly'], ['Part D, Medigap', 'CMS, KFF', 'Yearly'], ['ACA premiums', 'KFF, HHS, IRS', 'Yearly'], ['RMD tables', 'IRS Pub. 590-B', 'Yearly']]], ['Markets', [['Stocks, bonds, inflation', 'Shiller (Yale), BLS', 'Yearly'], ['T-bills, small value', 'French Data Library', 'Yearly'], ['Today\'s CAPE', 'multpl.com', 'Monthly']]], ['Housing, defaults, reviews', [['Mortgage rate', 'Freddie Mac survey', 'Quarterly'], ['Home price and rent', 'NAR, Census, Zillow', 'Yearly'], ['College, children', 'College Board, USDA', 'Yearly'], ['Articles and lessons', 'each one re-reviewed', '90 days']]]];
   const cw = (W - 2 * M - 0.6) / 4;
   groups.forEach(([g, xs], i) => { const x = M + i * (cw + 0.2); T(s, g.toUpperCase(), { x, y: 1.7, w: cw, h: 0.3, fontSize: 11, bold: true, color: X.amber, charSpacing: 1 }); xs.forEach(([n, src, how], j) => { const y = 2.1 + j * 0.8; rect(s, x, y, cw, 0.7, X.raised, { round: true, r: 0.08 }); T(s, [{ text: n, options: { bold: true, breakLine: true } }, { text: src, options: { color: X.muted, fontSize: 11 } }], { x: x + 0.15, y: y + 0.08, w: cw - 1.1, h: 0.55, fontSize: 13 }); T(s, how, { x: x + cw - 1.0, y, w: 0.85, h: 0.7, fontSize: 11, color: X.amber, align: 'right', valign: 'middle' }); }); });
   T(s, 'Anything coming due is flagged at the start of every working session. Figures are never invented, each is cited beside it in the code, and a new tax year is added beside the old one, never over it.', { x: M, y: 6.25, w: W - 2 * M, h: 0.55, fontSize: 14, color: X.muted });

@@ -1,6 +1,8 @@
-// Images, icons and chart data for the deck. Screenshots come from ../shots/crops
-// (captured from the live site); each is trimmed of its page margin and given
-// rounded corners so it sits on the dark slides as a card.
+// Images, icons and chart data for the deck. The deck is dark, so its
+// screenshots are the dark-mode set: main-site crops from ../shots/crops-dark
+// and Dashboard shots from ../shots/dash/dk_* (both captured from a local
+// production build). Each is trimmed of its page margin and given rounded
+// corners so it sits on the dark slides as a card.
 import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'module';
@@ -11,20 +13,28 @@ const { renderToStaticMarkup } = require('../tooling/node_modules/react-dom/serv
 const Lu = require('../tooling/node_modules/react-icons/lu');
 import * as H from '../../web/lib/engine/data/history.js';
 import { coverFan } from '../build/charts.mjs';
+import { framePhone } from '../tooling/phone.mjs';
 
-const CROPS = new URL('../shots/crops/', import.meta.url).pathname;
+const CROPS = new URL('../shots/crops-dark/', import.meta.url).pathname;
+const DASH = new URL('../shots/dash/', import.meta.url).pathname;
 const OUT = new URL('./img/', import.meta.url).pathname;
 fs.mkdirSync(OUT, { recursive: true });
 
-/** A screenshot as a rounded card: `pad` px of page margin trimmed, then the
-    slice from fraction t to b of what is left. Returns { path, ar }. */
-export async function card(name, { t = 0, b = 1, pad = 32, radius = 26, out } = {}) {
-  const file = path.join(OUT, (out || name) + `${t || b < 1 ? `_${t}_${b}` : ''}.png`);
-  const img = sharp(path.join(CROPS, name + '.png'));
-  const { width, height } = await img.metadata();
+/** Where a shot lives: `dk_*` names are Dashboard shots (and `lt_x_report_*`
+    its printed report sheets, which are paper either way); the rest are main-site crops. */
+const src = (name) => path.join(/^(dk|lt)_/.test(name) ? DASH : CROPS, name + '.png');
+
+/** A screenshot as a rounded card: `pad` px of page margin trimmed (or, with
+    `trim`, all of the page ground around a dialog), then the slice from
+    fraction t to b of what is left. Returns { path, ar }. */
+export async function card(name, { t = 0, b = 1, pad = 32, radius = 26, trim = false, out } = {}) {
+  const file = path.join(OUT, (out || name) + `${t || b < 1 ? `_${t}_${b}` : ''}${trim ? '_tr' : ''}.png`);
+  let base = await sharp(src(name)).png().toBuffer();
+  if (trim) { base = await sharp(base).trim({ threshold: 6 }).png().toBuffer(); pad = 0; }
+  const { width, height } = await sharp(base).metadata();
   const w = width - 2 * pad, ih = height - 2 * pad;
   const top = pad + Math.round(ih * t), h = Math.round(ih * (b - t));
-  const buf = await sharp(path.join(CROPS, name + '.png')).extract({ left: pad, top, width: w, height: h }).png().toBuffer();
+  const buf = await sharp(base).extract({ left: pad, top, width: w, height: h }).png().toBuffer();
   const mask = Buffer.from(`<svg width="${w}" height="${h}"><rect width="${w}" height="${h}" rx="${radius}" ry="${radius}"/></svg>`);
   await sharp(buf).composite([{ input: mask, blend: 'dest-in' }]).png().toFile(file);
   return { path: file, ar: w / h };
@@ -33,6 +43,14 @@ export async function card(name, { t = 0, b = 1, pad = 32, radius = 26, out } = 
 /** A full screenshot (no margin to trim), optionally cut to fractions of its height. */
 export async function shot(name, { t = 0, b = 1, radius = 0 } = {}) {
   return card(name, { t, b, pad: 0, radius });
+}
+
+/** A Dashboard phone capture (390 wide @3x) inside the drawn iPhone outline. */
+export async function phone(name) {
+  const file = path.join(OUT, name + '_frame.png');
+  await framePhone(src(name), file, { mode: 'dark' });
+  const { width, height } = await sharp(file).metadata();
+  return { path: file, ar: width / height };
 }
 
 /** A Lucide icon (the site's icon set) as a PNG. */

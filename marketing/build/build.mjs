@@ -2,13 +2,17 @@
 // (onepager.html). Rendered to PDF by render.mjs.
 import fs from 'fs';
 import { coverFan, centuryChart, LOGO } from './charts.mjs';
+import { dashboardPart } from './dashboard-pages.mjs';
 
 const C = '../shots/crops/';
 const GROUP = {
+  dash: { name: 'My Dashboard', color: 'var(--amber)' },
   calc: { name: 'Calculators', color: 'var(--amber)' },
   income: { name: 'Retirement income', color: 'var(--sky)' },
   saving: { name: 'Saving and investing', color: 'var(--teal)' },
   everyday: { name: 'Everyday money', color: 'var(--lavender)' },
+  learn: { name: 'Learn', color: 'var(--learn)' },
+  more: { name: 'Learn and My Dashboard', color: 'var(--learn)' },
   guide: { name: 'Guided walkthroughs', color: 'var(--rose)' },
   story: { name: 'Putting it together', color: 'var(--amber)' },
   build: { name: 'Under the hood', color: 'var(--gray)' },
@@ -43,8 +47,9 @@ function page(body, { dark = false, sec = null, sub = '', toc = null, foot = tru
 let toolNo = 0;
 function toolPage(t) {
   const g = GROUP[t.group];
-  const n = t.group === 'calc' || t.group === 'guide' ? t.num : String(++toolNo).padStart(2, '0');
-  const label = t.group === 'calc' || t.group === 'guide' ? t.kicker : `Tool ${n} of 14`;
+  const own = ['calc', 'guide', 'learn'].includes(t.group);
+  const n = own ? t.num : String(++toolNo).padStart(2, '0');
+  const label = own ? t.kicker : `Tool ${n} of 14`;
   const body = `
   <div class="tool-head">
     <div style="flex:1">
@@ -70,11 +75,11 @@ page(`
   <div style="display:flex;flex-direction:column;height:100%;padding-bottom:46px">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <span class="logo" style="font-size:20px;gap:10px">${LOGO(30)}<span>RetCalc</span></span>
-      <span class="mono" style="font-size:10px;color:var(--g-muted);letter-spacing:.08em">PRODUCT OVERVIEW · OCTOBER 2026</span>
+      <span class="mono" style="font-size:10px;color:var(--g-muted);letter-spacing:.08em">PRODUCT OVERVIEW · NOVEMBER 2026</span>
     </div>
     <div style="margin-top:118px">
       <h1 style="font-size:78px;letter-spacing:-0.045em;line-height:.95">The complete<br><span style="color:var(--g-amber)">retirement<br>planning</span> toolkit.</h1>
-      <p style="font-size:16px;color:var(--g-muted);max-width:470px;margin-top:22px;line-height:1.5">A calculator, two guided walkthroughs and fourteen planning tools, each checked against every market since 1926. Free, and you don't need an account.</p>
+      <p style="font-size:16px;color:var(--g-muted);max-width:470px;margin-top:22px;line-height:1.5">A calculator, two guided walkthroughs, fourteen planning tools and 66 lessons, each checked against every market since 1926. Free, and the tools need no account.</p>
     </div>
     <div style="margin-top:auto">
       ${fan.svg}
@@ -111,10 +116,10 @@ page(`
   <div style="margin-top:14px">
     <div class="eyebrow">What it is</div>
     <h1 class="title" style="font-size:44px;max-width:640px">A whole retirement plan, worked out in your own browser.</h1>
-    <p class="lede" style="font-size:14px;max-width:660px">RetCalc is a free retirement planning toolkit at <a href="https://retcalc.app"><b style="color:var(--text)">retcalc.app</b></a>. It takes someone from their first paycheck to their last withdrawal: what to save, where to put it, whether it will last, what it will cost in tax and health insurance, and when to claim Social Security. Every projection is tested against real market history, month by month, back to 1926.</p>
+    <p class="lede" style="font-size:14px;max-width:660px">RetCalc is a free retirement planning toolkit at <a href="https://retcalc.app"><b style="color:var(--text)">retcalc.app</b></a>. It takes someone from their first paycheck to their last withdrawal: what to save, where to put it, whether it will last, what it will cost in tax and health insurance, and when to claim Social Security. Every projection is tested against real market history, month by month, back to 1926. The tools, the guides and the lessons work without an account; a free account adds My Dashboard, which keeps a household's whole picture in one place.</p>
   </div>
-  <div style="margin-top:18px">${browser('home_view', 'retcalc.app', 360)}</div>
-  <div style="margin-top:22px">${stats([['14', 'planning tools, in three groups', 1], ['3', 'calculators: Basic, Advanced and Stages'], ['2', 'guided walkthroughs that end in a printable plan'], ['100', 'years of monthly market history, 1926 to 2025'], ['$0', 'no ads, no paywall, no account needed']])}</div>
+  <div style="margin-top:18px">${browser('home_view', 'retcalc.app', 398)}</div>
+  <div style="margin-top:22px">${stats([['14', 'planning tools in three groups', 1], ['2', 'calculators: Basic and Advanced'], ['2', 'guided walkthroughs'], ['66', 'lessons in 8 tracks'], ['100', 'years of monthly market history'], ['$0', 'no ads, no paywall']])}</div>
   <div class="row" style="margin-top:20px">
     <div class="col"><div class="h3">For someone starting out</div><p class="muted">What a paycheck really takes home, a budget that adds up, and how today's saving grows into a retirement income.</p></div>
     <div class="col"><div class="h3">For someone getting close</div><p class="muted">When to claim, how to cover the years before 59½ and 65, whether to convert to Roth, and what the best plan looks like.</p></div>
@@ -132,7 +137,7 @@ page(`
     <div class="mono amber" style="font-size:26px;font-weight:500">1</div>
     <div>
       <div class="h3" style="font-size:18px">One household, every tool.</div>
-      <p class="muted" style="font-size:11.5px;max-width:600px">Ages, state, savings, income and spending are entered once and fill in everywhere. Results also carry forward: the Calculator hands its balance to the Drawdown Simulator, Income Tax hands its paycheck to the Budget, and the Budget's savings split goes to the Advanced or Stages calculator.</p>
+      <p class="muted" style="font-size:11.5px;max-width:600px">Ages, state, savings, income and spending are entered once and fill in everywhere. Results also carry forward: the Calculator hands its balance to the Drawdown Simulator, Income Tax hands its paycheck to the Budget, and the Budget's savings split goes to the Advanced calculator. Each lesson in Learn ends with the tool that puts it to work.</p>
       ${hubDiagram()}
     </div>
     <div class="mono amber" style="font-size:26px;font-weight:500;margin-top:30px">2</div>
@@ -149,14 +154,14 @@ page(`
     <div class="mono amber" style="font-size:26px;font-weight:500;margin-top:30px">3</div>
     <div style="margin-top:30px">
       <div class="h3" style="font-size:18px">Private by default.</div>
-      <p class="muted" style="font-size:11.5px;max-width:610px">Every calculation runs in the visitor's own browser, and nothing they type is sent anywhere. An account is optional: signing in with a one-time email code or Google simply keeps a household, saved scenarios and Guide answers in step across devices. As the site puts it, <i>"Nothing leaves your browser unless you sign in to save it."</i></p>
+      <p class="muted" style="font-size:11.5px;max-width:610px">Every calculation runs in the visitor's own browser, and nothing they type is sent anywhere. For the tools an account is optional: signing in with a one-time email code or Google keeps a household, saved scenarios, Guide answers and lessons read in step across devices. As the site puts it, <i>"Nothing leaves your browser unless you sign in to save it."</i> My Dashboard is the one area that needs a free account, and it too saves to the browser first.</p>
     </div>
   </div>`, { toc: { group: 'ov', name: 'How it works' } });
 
 function hubDiagram() {
-  const W = 620, H = 180, cx = W / 2, cy = 90, lw = 150, rw = 168;
-  const left = [[24, 'Calculator', 'var(--amber)'], [90, 'Readiness Guide', 'var(--rose)'], [156, 'Paycheck to Retirement', 'var(--rose)']];
-  const right = [[24, 'Retirement income tools', 'var(--sky)'], [90, 'Saving and investing tools', 'var(--teal)'], [156, 'Everyday money tools', 'var(--lavender)']];
+  const W = 620, H = 196, cx = W / 2, cy = 98, lw = 150, rw = 168;
+  const left = [[20, 'Calculator', 'var(--amber)'], [72, 'Readiness Guide', 'var(--rose)'], [124, 'Paycheck to Retirement', 'var(--rose)'], [176, 'My Dashboard', 'var(--amber)']];
+  const right = [[20, 'Retirement income tools', 'var(--sky)'], [72, 'Saving and investing tools', 'var(--teal)'], [124, 'Everyday money tools', 'var(--lavender)'], [176, 'Learn: 66 lessons', 'var(--learn)']];
   let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;margin-top:8px">`;
   for (const [y] of left) s += `<path d="M${lw + 1},${y} C${(lw + cx - 86) / 2},${y} ${(lw + cx - 86) / 2},${cy} ${cx - 86},${cy}" fill="none" stroke="#c7c7cc" stroke-width="1.4" stroke-dasharray="3 3"/>`;
   for (const [y] of right) s += `<path d="M${cx + 86},${cy} C${(cx + 86 + W - rw) / 2},${cy} ${(cx + 86 + W - rw) / 2},${y} ${W - rw - 1},${y}" fill="none" stroke="#c7c7cc" stroke-width="1.4" stroke-dasharray="3 3"/>`;
@@ -175,33 +180,33 @@ page(`
   <div style="margin-top:14px">
     <div class="eyebrow">Where to start</div>
     <h1 class="title" style="font-size:38px">A tool for every stage of the road.</h1>
-    <p class="lede">The tools follow the order life brings the questions. Most people start with the Calculator or one of the two guided walkthroughs, which open the right tools along the way.</p>
+    <p class="lede">The tools follow the order life brings the questions. Most people start with the Calculator or a guided walkthrough, which opens the right tools along the way; the Guide tab offers both.</p>
   </div>
   ${journey()}
   <div class="row" style="margin-top:22px;gap:18px">
     <div class="col card">
       <div class="label" style="color:var(--rose)">Guided walkthrough</div>
       <div class="h3">Retirement Readiness Guide</div>
-      <p class="muted">A check-up in twelve short cards (about ten minutes) or a full walkthrough. It finds the number to aim for, tests it against history, scores readiness out of 100, and ends in a full-color report of about a dozen pages.</p>
+      <p class="muted">"Am I on track?" A ten-minute Quick check or a full walkthrough that finds the number to aim for, tests it against history, scores readiness out of 100 and ends in a full-color report.</p>
     </div>
     <div class="col card">
       <div class="label" style="color:var(--rose)">Guided walkthrough</div>
       <div class="h3">Paycheck to Retirement</div>
-      <p class="muted">Five steps, about fifteen minutes: from gross pay to take-home, a budget, where each paycheck goes (401(k), HSA, IRA, brokerage), and where that saving leads by retirement, children included.</p>
+      <p class="muted">"Where does my paycheck go?" Five steps, about fifteen minutes: take-home pay, a budget, where each paycheck goes (401(k), HSA, IRA, brokerage) and where that leads by retirement.</p>
     </div>
     <div class="col card">
       <div class="label" style="color:var(--amber)">Calculator</div>
-      <div class="h3">Basic, Advanced and Stages</div>
-      <p class="muted">Six questions for a quick answer; then fees, taxes, account types and a target; then a plan in stages, each with its own saving, return and length.</p>
+      <div class="h3">Basic and Advanced</div>
+      <p class="muted">One Calculator with a switch under its title. Basic asks six questions; Advanced adds fees, taxes, account types, a target and the changes you see coming.</p>
     </div>
   </div>
-  <div style="margin-top:20px">${browserRegion('tools_compact_full', 'retcalc.app/tools', 0.165, 0.665)}</div>
+  <div style="margin-top:20px">${browserRegion('tools_compact_full', 'retcalc.app/tools', 0.135, 0.645)}</div>
   ${cap('The tool list, compact view.', 'All fourteen tools in their three groups, each with the question it answers.')}`, { toc: { group: 'ov', name: 'A tool for every stage' } });
 
 function journey() {
   const cols = [
     ['Today', 'Get the basics right', 'var(--lavender)', ['Income Tax', 'Budget', 'Debt Payoff', 'Mortgage Calculator', 'Rent vs. Buy']],
-    ['Saving years', 'Grow it', 'var(--teal)', ['Calculator<br><span style="font-weight:400;color:var(--muted)">Basic · Advanced · Stages</span>', 'FIRE Calculator', 'Portfolio Backtest', 'College Savings']],
+    ['Saving years', 'Grow it', 'var(--teal)', ['Calculator<br><span style="font-weight:400;color:var(--muted)">Basic · Advanced</span>', 'FIRE Calculator', 'Portfolio Backtest', 'College Savings']],
     ['Getting close', 'Plan the handoff', 'var(--sky)', ['Social Security Calculator', 'Healthcare Cost Planner', 'Early Retirement Bridge', 'Roth Conversion Calculator', 'Retirement Plan Optimizer']],
     ['Retired', 'Make it last', 'var(--sky)', ['Drawdown Simulator', 'Roth Conversion Calculator', 'Healthcare Cost Planner']],
   ];
@@ -227,10 +232,10 @@ page(`
     <h1 class="title" style="font-size:38px">Six places to see what it can do.</h1>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;margin-top:16px">
-    ${hl('Stages calculator', 'A savings plan in stretches: early career, kids at home, peak earning, coasting. Each stage has its own saving, return and volatility, chained into one projection and tested three ways.', crop('stages_chart_mc', 160, '', 'center 62%'))}
+    ${hl('Advanced calculator: Changes ahead', 'Add what you see coming, such as children, a raise or an inheritance, and see what each does to the balance at retirement. Then two answers: when you could stop saving, and when you could retire.', crop('advanced_chart_hist', 160, '', 'center 58%'))}
     ${hl('Drawdown Simulator', 'Fifteen withdrawal strategies replayed through every retirement since 1926, then ranked against each other at the same level of risk.', crop('drawdown_1_historicalmonte-carl', 160, '', 'left center'))}
     ${hl('Income Tax', '2026 federal, state (all 50 plus DC) and FICA tax on a salary, or a retirement mode that stacks withdrawals, gains and Social Security the way the return really does.', cropAt('incometax_1_after-taxtake-homere', 160, 314, 0.205))}
-    ${hl('Budget and Paycheck', 'A budget, then a paycheck that pays it: taxes rerun live as sliders move money into the 401(k) match, HSA, IRA and brokerage, in the order you choose.', cropAt('budget_1_where-it-goes', 160, 314, 0.345))}
+    ${hl('Budget and Paycheck', 'A budget, then a paycheck that pays it: taxes rerun live as sliders move money into the 401(k) match, HSA, IRA and brokerage, in the order you choose.', cropAt('budget_1_where-it-goes', 160, 314, 0.318))}
     ${hl('Retirement Readiness Guide', 'A check-up that scores readiness out of 100, tests the plan against history and prints a report of about a dozen pages.', reportFan(160))}
     ${hl('Paycheck to Retirement', 'Gross pay to retirement in five steps, running the real tools inside it and copying the results into them at the end.', crop('plan_paycheck_3_where-the-rest-goes', 160, '', 'left top'))}
   </div>`, { toc: { group: 'ov', name: 'Highlights' } });
@@ -251,16 +256,51 @@ page(`
     <h1 class="title" style="font-size:38px">Every tool, and the question it answers.</h1>
   </div>
   <div style="margin-top:14px">
-    ${glanceGroup('calc', [['Calculator: Basic', 'What will my savings grow to?'], ['Calculator: Advanced', 'Will I reach my target, after fees and tax?'], ['Calculator: Stages', 'What if my saving changes over the years?']])}
+    ${glanceGroup('calc', TOOLS.calc)}
     ${glanceGroup('income', TOOLS.income)}
     ${glanceGroup('saving', TOOLS.saving)}
     ${glanceGroup('everyday', TOOLS.everyday)}
-    ${glanceGroup('guide', [['Retirement Readiness Guide', 'How ready am I, and what should I do next?'], ['Paycheck to Retirement', 'Where should each paycheck go?']])}
+    ${glanceGroup('guide', TOOLS.guide)}
+    ${glanceGroup('more', [['Learn', 'How does a retirement plan work?'], ['My Dashboard', 'Where does my whole plan stand today?']])}
   </div>
   <div class="card raised" style="margin-top:4px">
     <div class="label">Also on the site</div>
-    <p style="font-size:11px;margin:0">29 plain-English articles, each with worked examples the test suite checks against the calculator, so the numbers in the writing always match the numbers in the tools.</p>
+    <p style="font-size:11px;margin:0">66 lessons in Learn, and 28 plain-English articles whose worked examples the test suite checks against the calculator, so the numbers in the writing match the numbers in the tools.</p>
   </div>`, { toc: { group: 'ov', name: 'Every tool at a glance' } });
+
+// O6: Learn, and My Dashboard (Part 2 is the Dashboard; its page number is filled in at the end)
+page(`
+  <div style="margin-top:14px">
+    <div class="eyebrow">Two more ways in</div>
+    <h1 class="title" style="font-size:38px">Learn, and My Dashboard.</h1>
+  </div>
+  <div class="row" style="margin-top:14px;gap:20px">
+    <div style="width:236px;flex:none">
+      <div class="label" style="color:var(--learn)">Learn · retcalc.app/learn</div>
+      <div class="h3">Retirement planning, explained.</div>
+      <p class="muted" style="font-size:10.5px">66 lessons in 8 tracks, from Foundations to Big decisions, about 14 hours of reading. 39 of them have a chart to try: move the claiming age, or put the bad years first, and watch what changes.</p>
+      <p class="muted" style="font-size:10.5px">Each lesson ends with the tool that puts it to work on your own numbers. Lessons can be marked as read, and a signed-in reader's progress follows them to every device.</p>
+    </div>
+    <div class="col">
+      ${img('learn_header', 'width:100%;border-radius:12px')}
+      <div class="row" style="gap:12px;margin-top:10px">
+        <div class="col">${region('learn_when-to-claim_widget', 0, 0.78)}${cap('When to claim.', 'Total collected by age at death, claiming at 62, 67 or 70.')}</div>
+        <div class="col">${region('learn_sequence-risk_widget', 0, 0.84)}${cap('Sequence risk.', 'The same returns in a different order, bad years first or last.')}</div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:14px">${stats([['66', 'lessons', 1], ['8', 'tracks, Foundations to Big decisions'], ['39', 'charts to try'], ['~14 hrs', 'of reading in all']])}</div>
+  <div class="row" style="gap:20px;margin-top:22px">
+    <div style="width:236px;flex:none">
+      <div class="label" style="color:var(--amber)">My Dashboard · retcalc.app/dashboard</div>
+      <div class="h3">The whole plan, kept in one place.</div>
+      <p class="muted" style="font-size:10.5px">A free account adds a personal hub: net worth, pay, taxes, spending, saving and retirement, all worked out from one profile and revisited each month or quarter to update balances.</p>
+      <p class="muted" style="font-size:10.5px">Fifteen tabs, with the site's own tools running inside it and your numbers filled in. No bank logins: you type your own numbers.</p>
+      <div class="card raised" style="margin-top:10px;padding:10px 12px"><div class="label" style="margin-bottom:2px">Part 2</div><p style="font-size:10.5px;margin:0">The Dashboard, tab by tab, starts on <a href="#p-__P2N__"><b style="color:var(--amber)">page __P2__</b></a>.</p></div>
+    </div>
+    <div class="col">${region('home_2_your-whole-plan-in-o', 0.0, 0.94)}${cap('The Dashboard on the homepage,', 'with the made-up household of Sam and Jordan.')}</div>
+  </div>
+  <div style="margin-top:14px">${stats([['15', 'tabs, one profile behind them', 1], ['14', 'tools inside it, with your numbers filled in'], ['$0', 'a free account, no ads'], ['0', 'bank logins: you type your own numbers']])}</div>`, { toc: { group: 'ov', name: 'Learn, and My Dashboard' } });
 
 function glanceGroup(g, xs) {
   const G = GROUP[g];
@@ -269,59 +309,81 @@ function glanceGroup(g, xs) {
 }
 
 /* =====================================================================
-   PART 2: DEEP DIVE
+   PART 2: THE DASHBOARD (build/dashboard-pages.mjs)
    ===================================================================== */
 const OPEN2 = pages.length;
 pages.push(null);
+dashboardPart({ page, GROUP, cap, ticks, stats, side, logo, LOGO });
 
-// Calculators: Basic and Advanced
+/* =====================================================================
+   PART 3: DEEP DIVE
+   ===================================================================== */
+const OPEN3 = pages.length;
+pages.push(null);
+
+// Calculator: Basic and Advanced, then Advanced's Changes ahead
 toolPage({
-  group: 'calc', num: 'B·A', kicker: 'Calculator 1 and 2 of 3', name: 'Basic and Advanced', route: 'calculator', q: 'What will my savings grow to, and will it be enough?',
-  desc: 'The Calculator comes in three depths. Basic answers in six questions; Advanced adds what a real plan has to carry: fees, inflation, account types, an employer match, 2026 taxes and a target to reach.',
+  group: 'calc', num: 'B·A', kicker: 'Calculator · page 1 of 2', name: 'Basic and Advanced', route: 'calculator', q: 'What will my savings grow to, and will it be enough?',
+  desc: 'One Calculator, with a Basic | Advanced switch under its title. Basic answers in six questions. Advanced adds what a real plan has to carry: fees, inflation, account types, an employer match, 2026 taxes, a target to reach and the changes you see coming.',
   body: `
   <div class="row" style="margin-top:16px;gap:20px">
-    <div style="width:250px;flex:none">
+    <div style="width:236px;flex:none">
       <div class="label">Basic · six questions</div>
       ${img('calculator_0_how-old-are-you-yrs-', 'width:100%')}
-      <p class="muted" style="font-size:10px;margin-top:8px">Age, retirement age, savings, how much and how often, and one of five risk levels. Out comes the balance at retirement in today's dollars and the income it could pay.</p>
+      <p class="muted" style="font-size:10px;margin-top:8px">Age, retirement age, savings, how much and how often, and one of five risk levels. Out comes the balance at retirement in today's dollars and the income it could pay. <b style="color:var(--text)">Open these numbers in Advanced</b> carries the answers over.</p>
     </div>
     <div class="col">
-      ${img('calculator_1_balance-over-time', 'width:100%')}
-      ${cap('Basic.', 'The answer, what built it, and a band for better and worse returns with milestones along the line.')}
+      ${region('calculator_1_balance-over-time', 0, 0.212)}
+      <div style="margin-top:8px">${region('calculator_1_balance-over-time', 0.418, 0.995)}</div>
+      ${cap('Basic.', 'The answer, what built it, and a band for better and worse returns. Sample: aged 30, $10,000 saved, $500 per month.')}
     </div>
   </div>
-  <div class="rule" style="margin:14px 0 12px"></div>
+  <div class="rule" style="margin:10px 0 10px"></div>
   <div class="row" style="gap:20px">
-    <div style="width:250px;flex:none">
+    <div style="width:236px;flex:none">
       <div class="label">Advanced · the whole plan</div>
-      ${ticks(['Traditional, Roth, brokerage and HSA balances, each with its own contribution', 'Employer match, contribution growth, fees and a glide path', 'Filing status and state set the tax in retirement', 'Solve for an after-tax income or a portfolio value', '<b>Reach your target:</b> the contribution or the years it would take, applied in one click', 'Chart three ways: a rate band, every historical window since 1926, or 5,000 Monte Carlo runs'], 'sm')}
+      ${ticks(['Traditional, Roth, brokerage and HSA balances, each with its own contribution', 'Employer match, contribution growth, fees and a glide path', 'Solve for an after-tax income or a portfolio value', '<b>Changes ahead:</b> children, a raise, saving less, a lump sum or different returns, each from an age on (next page)', '<b>Reach your target:</b> when you could stop saving, and when you could retire, each put into the plan in one click', 'A chart three ways: a rate band, every historical window since 1926, or 5,000 Monte Carlo runs, with a full-screen view'], 'sm')}
     </div>
     <div class="col">
-      ${region('advanced_chart_mc', 0, 0.8)}
-      ${cap('Advanced, Monte Carlo.', 'Percentile bands across 5,000 runs, against the plan without volatility.')}
+      ${region('advanced_1_after-tax-income-per', 0, 0.355)}
+      <div style="margin-top:8px">${img('advanced_2_reach-your-target', 'width:100%')}</div>
+      ${cap('Advanced, with three changes ahead.', '$55,731 per year after tax against a $45,000 target. Reach your target: stop saving at 54, or retire at 62, three years early.')}
     </div>
   </div>`,
 });
 
-// Stages
 toolPage({
-  group: 'calc', num: 'S', kicker: 'Calculator 3 of 3', fav: true, name: 'Stages calculator', route: 'stages', q: 'What if my saving changes over the years?',
-  desc: 'Real plans come in stretches. Stages chains them into one projection: each stage has its own length, contribution, raises, return, volatility, glide path and account split.',
+  group: 'calc', num: 'A', kicker: 'Calculator · page 2 of 2', fav: true, name: 'Advanced: Changes ahead', route: 'advanced', q: 'What do the changes I see coming do to my plan?',
+  desc: 'Plans change along the way: a child, a raise, a few years of saving less, an inheritance. Changes ahead adds each one from an age on, shows what it does to the balance at retirement, and turns them into the stages the calculator runs.',
   body: `
-  <div style="margin-top:16px">${browser('stages_view', 'retcalc.app/stages', 200)}</div>
   <div class="row" style="margin-top:16px;gap:20px">
     <div style="width:236px;flex:none">
       ${side([
-        ['What makes it different', ['Any number of named stages, sized by their years on a stage bar', 'A <b>Planning for kids</b> builder rebuilds the stages around the children you have or plan', 'Stage boundaries drawn right on the chart', 'Solves the final stage for you: the contribution, or the length, that reaches the target']],
-        ['Tested three ways', 'A ±rate band, every rolling window since 1926 with a stock mix that can glide, and 5,000 Monte Carlo runs with volatility set per stage.'],
-        ['Hands off to', 'The Drawdown Simulator, to see how long the balance lasts once spending starts.'],
+        ['Four kinds of change', ['<b>Save more or less</b>, from an age on', '<b>A lump sum:</b> an inheritance, a home sale or a big expense', '<b>Different returns</b>, higher or lower from an age on', '<b>Children:</b> what they cost as they grow, then which accounts give up the saving']],
+        ['Each change', 'Gets a number, a switch to try the plan without it, and its effect on the balance at retirement in today\'s dollars.'],
       ])}
     </div>
     <div class="col">
-      ${img('stages_hist_45000', 'width:100%')}
-      ${cap('Sample plan, every historical window since 1926.', 'Early career, kids at home, peak earning, then coasting. Dashed lines mark each new stage.')}
-      <div style="margin-top:10px">${img('stages_6_stage-by-stage', 'width:100%')}</div>
+      ${img('advanced_changes_dialog', 'width:100%')}
+      ${cap('View or edit.', 'Each change as a lane across the ages, with its sentence. Sample: 30 now, retiring at 65, with $60,000 saved and $1,000 per month.')}
     </div>
+  </div>
+  <div class="row" style="margin-top:14px;gap:20px">
+    <div style="width:236px;flex:none">
+      ${side([
+        ['Tested three ways', 'A rate band, every rolling window since 1926 (781 of them for this 35-year plan) or 5,000 Monte Carlo runs. A dashed line marks where each change starts.'],
+        ['Full screen', 'The chart opens to the size of the window, here and on Basic, and on charts in six of the tools.'],
+        ['Hands off to', '<b>Test withdrawals</b> carries the balance, in today\'s dollars, into the Drawdown Simulator.'],
+      ])}
+    </div>
+    <div class="col">
+      ${browser('advanced_fullscreen_view', 'retcalc.app/advanced', 238)}
+      ${cap('Historical, in full screen.', '88.9% of windows reach the $1,278,409 the target needs; the median finishes at $1,724,096.')}
+    </div>
+  </div>
+  <div class="row" style="margin-top:14px;gap:20px">
+    <div style="width:236px;flex:none"><p class="muted" style="font-size:10.5px;margin:0"><b style="color:var(--text)">The stages behind this.</b> The starting figures and the changes, as the five stages the calculator runs: years, saving per month, rises and return, with a CSV.</p></div>
+    <div class="col">${img('advanced_stages_dialog', 'width:100%')}</div>
   </div>`,
 });
 
@@ -334,11 +396,11 @@ T({ group: 'income', fav: true, name: 'Drawdown Simulator', route: 'drawdown', q
   <div style="margin-top:14px">${img('drawdown_1_historicalmonte-carl', 'width:100%')}</div>
   <div class="row" style="margin-top:12px;gap:18px;align-items:flex-start">
     <div style="width:236px;flex:none"><div class="label">15 strategies, five families</div>${strategies()}</div>
-    <div class="col">${region('drawdown_2_every-historical-sta', 0.125, 0.76)}${cap('Every historical starting month.', 'Percentile bands across 835 real 30-year retirements, each start drawn in gray.')}</div>
+    <div class="col">${region('drawdown_3_every-historical-sta', 0.125, 0.79)}${cap('Every historical starting month.', 'Percentile bands across 835 real 30-year retirements, each start drawn in gray.')}</div>
   </div>
   <div class="row" style="margin-top:12px;gap:14px">
-    <div class="col">${region('drawdown_cmp_3_strategy-showdown', 0.2, 0.425)}${cap('Strategy showdown.', 'All 15 tuned to the same risk, then compared on lifetime spending and what is left.')}</div>
-    <div class="col">${region('drawdown_safe_4_success-grid', 0.18, 0.80)}${cap('Success grid.', 'Withdrawal rate against stock share. Click a cell to use it.')}</div>
+    <div class="col">${region('drawdown_cmp_4_strategy-showdown', 0.222, 0.42)}${cap('Strategy showdown.', 'All 15 tuned to the same risk, then compared on lifetime spending and what is left.')}</div>
+    <div class="col">${region('drawdown_safe_5_success-grid', 0.207, 0.80)}${cap('Success grid.', 'Withdrawal rate against stock share. Click a cell to use it.')}</div>
   </div>` });
 
 function strategies() {
@@ -412,9 +474,9 @@ T({ group: 'income', name: 'Early Retirement Bridge', route: 'bridge', q: 'How d
   </div>` });
 
 T({ group: 'income', name: 'Roth Conversion Calculator', route: 'roth', q: 'Should I convert to Roth before RMDs start?',
-  desc: 'Projects required minimum distributions to age 100, then tests a conversion schedule against doing nothing: lifetime tax, after-tax net worth, IRMAA surcharges and the survivor\'s higher bracket.',
+  desc: 'Projects required minimum distributions through any age up to 100, then tests a conversion schedule against doing nothing: lifetime tax, after-tax net worth, IRMAA surcharges and the survivor\'s higher bracket.',
   body: `
-  <div style="margin-top:14px">${img('roth_1_converting-wins-on-b', 'width:100%')}</div>
+  <div style="margin-top:14px">${region('roth_1_the-two-measures-dis', 0, 0.772)}${cap('When the measures disagree, it says so.', 'In the sample, converting leaves $65,102 more after-tax net worth at 92 and trims the peak RMD to $0, but costs $1,073 more in lifetime tax and IRMAA, discounted at 3% real.')}</div>
   <div class="row" style="margin-top:12px;gap:18px">
     <div style="width:236px;flex:none">
       ${side([
@@ -439,7 +501,7 @@ T({ group: 'income', name: 'Healthcare Cost Planner', route: 'healthcare', q: 'W
   </div>
   ${cap('Sample couple retiring at 60,', 'with $95,000 of income: just over the subsidy cliff, so the full ACA premium until 65, then Medicare.')}
   <div class="row" style="margin-top:14px;gap:20px;align-items:flex-start">
-    <div style="width:236px;flex:none">${region('hc95_0_income', 0, 0.64)}</div>
+    <div style="width:222px;flex:none">${region('hc95_0_income', 0, 0.683)}</div>
     <div class="col">${side([['You enter', ['Retirement age, status and household size', 'State and income in retirement (MAGI)', 'Social Security, if any, and your own quote']]])}${side([['Why it matters', 'Before 65, the subsidy depends on income, so how a retiree draws money down can change the premium by thousands. The planner shows the household\'s share of the poverty line, warns near the subsidy cliff, and compares plan tiers. From 65 it prices Part B, Part D and Medigap, with the IRMAA tier income puts you in.']])}</div>
   </div>` });
 
@@ -447,7 +509,7 @@ T({ group: 'income', name: 'Healthcare Cost Planner', route: 'healthcare', q: 'W
 T({ group: 'saving', name: 'FIRE Calculator', route: 'fire', q: 'When does work become optional?',
   desc: 'Finds the age a portfolio reaches financial independence. Coast FIRE mode finds the moment you could stop contributing and let growth carry you the rest of the way.',
   body: `
-  <div style="margin-top:14px">${img('fire_hist_1_rate-bandhistoricaly', 'width:100%')}</div>
+  <div style="margin-top:14px">${region('fire_hist_1_rate-bandhistoricaly', 0, 0.831)}</div>
   <div class="row" style="margin-top:12px;gap:18px">
     <div style="width:236px;flex:none">
       ${side([
@@ -461,8 +523,8 @@ T({ group: 'saving', name: 'FIRE Calculator', route: 'fire', q: 'When does work 
     </div>
   </div>` });
 
-T({ group: 'saving', name: 'Portfolio Backtest', route: 'backtest', q: 'What would this mix have actually done?',
-  desc: 'Pick a mix of stocks, small-cap value, bonds and cash, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.',
+T({ group: 'saving', name: 'Portfolio Backtest', route: 'backtest', q: 'What would this mix have done?',
+  desc: 'Pick a mix of stocks, small-cap value, bonds and cash, then see what it did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.',
   body: `
   <div style="margin-top:14px">${region('backtest_1_return-per-year9-65-', 0, 0.66)}</div>
   <div class="row" style="margin-top:12px;gap:18px">
@@ -484,13 +546,13 @@ T({ group: 'saving', name: 'College Savings', route: 'college', q: 'How much sho
   <div style="margin-top:14px">${img('college_1_save-per-month-558fo', 'width:100%')}</div>
   <div style="margin-top:10px">${img('college_2_savings-over-time', 'width:100%')}${cap('Savings over time', 'against the cost when college starts. Sample: one child, 18 years away, public in-state preset.')}</div>
   <div class="row" style="margin-top:14px;gap:20px">
-    <div class="col">${side([['Presets, per year', ['Public in-state, about $27,000', 'Private non-profit, about $59,000', 'Elite, about $82,000', 'Or a custom figure']]])}</div>
+    <div class="col">${side([['Presets, per year', ['Public in-state, about $27,000', 'Private non-profit, about $63,000', 'Elite, about $82,000', 'Or a custom figure']]])}</div>
     <div class="col">${side([['You enter', ['Years until college, and years in it', 'What is already saved', 'Return and tuition inflation', 'Each child, if there is more than one']]])}</div>
     <div class="col">${side([['You get', ['The monthly saving needed, stepping down for younger children', 'The total projected cost', 'What is needed today, or when college starts']], ['Source', 'College Board, Trends in College Pricing, updated each year.']])}</div>
   </div>` });
 
 T({ group: 'saving', name: 'Rent vs. Buy', route: 'rentbuy', q: 'Should I rent or buy?',
-  desc: 'Compares a buyer\'s and a renter\'s net worth over any horizon, counting what the down payment could have earned invested and what the home gains in value.',
+  desc: 'Compares a buyer\'s and a renter\'s net worth over 1 to 40 years, counting what the down payment could have earned invested and what the home gains in value.',
   body: `
   <div style="margin-top:14px">${img('rentbuy_2_net-worth-over-time', 'width:100%')}</div>
   <div style="margin-top:10px">${region('rentbuy_1_each-month-to-start', 0, 0.8)}${cap('Each month, to start:', 'the buyer\'s costs beside the renter\'s, and which side is ahead.')}</div>
@@ -511,7 +573,7 @@ T({ group: 'everyday', fav: true, name: 'Income Tax', route: 'incometax', q: 'Ho
   <div class="row" style="margin-top:12px;gap:18px">
     <div style="width:236px;flex:none">
       ${side([
-        ['Covers', ['Federal brackets, standard or itemized deduction', 'Social Security tax per earner up to the $184,500 wage base, Medicare and the 0.9% surtax', 'All 50 states plus DC, with their retirement-income rules', 'Pre-tax deductions by kind and by earner: 401(k), IRA, HSA, premiums']],
+        ['Covers', ['Federal brackets, standard or itemized deduction', 'Social Security tax per earner up to the $184,500 wage base, Medicare and the 0.9% surtax', 'All 50 states plus DC, with their retirement-income rules', 'Pre-tax deductions by kind and by earner: 401(k), IRA, HSA, premiums', 'Optional local income tax, in the states that have one', '<b>Your paycheck:</b> gross pay down to take-home, per check and per month']],
         ['Retirement mode adds', ['Long-term gains stacked into the 0/15/20% bands', 'The 3.8% net investment income tax', 'Taxable Social Security (the 0/50/85% tiers)', 'The 2026 senior deduction', 'A true marginal rate, from rerunning the whole return with $1,000 more']],
       ])}
     </div>
@@ -525,7 +587,7 @@ T({ group: 'everyday', fav: true, name: 'Budget', route: 'budget', q: 'Where doe
   desc: 'Lay out the expenses, then see how each paycheck covers them and where the rest goes. Two tabs: a Budget, and a Paycheck that turns gross pay into taxes, bills and savings, line by line.',
   body: `
   <div class="row" style="margin-top:14px;gap:14px;align-items:flex-start">
-    <div style="width:250px;flex:none">${crop('budget_1_where-it-goes', 300, '', 'top')}${cap('Budget tab.', '18 lines in six groups, monthly or yearly.')}</div>
+    <div style="width:250px;flex:none">${crop('budget_1_where-it-goes', 398, '', 'top')}${cap('Budget tab.', 'Each line monthly or yearly, grouped by kind, with an emergency fund sized from it.')}</div>
     <div class="col">${img('budget_pc_1_saved-and-invested-e', 'width:100%')}${cap('Paycheck tab.', 'Each check split into saving, taxes and expenses.')}
       <div style="margin-top:10px">${side([
         ['Three one-click plans', ['<b>The usual order:</b> match, emergency fund, HSA, Roth IRA, more 401(k), brokerage', '<b>Max tax breaks:</b> everything pre-tax first', '<b>Stay flexible:</b> money reachable before retirement']],
@@ -533,17 +595,17 @@ T({ group: 'everyday', fav: true, name: 'Budget', route: 'budget', q: 'Where doe
     </div>
   </div>
   <div class="row" style="margin-top:8px;gap:14px">
-    <div class="col">${img('budget_pc_2_where-the-rest-goes', 'width:100%')}${cap('Where the rest goes.', 'Six lines, each capped at its 2026 limit; taxes rerun as the sliders move.')}</div>
+    <div class="col">${region('budget_pc_2_where-the-rest-goes', 0, 0.905)}${cap('Where the rest goes.', 'Six lines, each capped at its 2026 limit; taxes rerun as the sliders move.')}</div>
     <div style="width:236px;flex:none">${side([
       ['Two incomes', 'Married with two incomes plans by the month, taxes the couple jointly, and gives each spouse their own pay schedule, 401(k) match and HSA limit.'],
-      ['Connected', 'Opens in Income Tax; sends the savings split, by account type, to the Advanced or Stages calculator.'],
+      ['Connected', 'Opens in Income Tax; <b>Copy to Advanced</b> sends the savings split, by account type, to the Advanced calculator.'],
     ])}</div>
   </div>` });
 
 T({ group: 'everyday', name: 'Debt Payoff', route: 'debt', q: 'Which debt should I pay off first?',
-  desc: 'List what you owe, then watch avalanche and snowball race each other: payoff date, total interest, and exactly what ordering by motivation instead of rate costs.',
+  desc: 'List what you owe, then compare avalanche (highest rate first) and snowball (smallest balance first) on payoff date and total interest, against paying only the minimums.',
   body: `
-  <div style="margin-top:14px">${img('debt_1_debt-freesep-20303y-', 'width:100%')}</div>
+  <div style="margin-top:14px">${img('debt_1_debt-freeoct-20303y-', 'width:100%')}</div>
   <div class="row" style="margin-top:12px;gap:18px">
     <div style="width:236px;flex:none">
       ${side([
@@ -559,7 +621,7 @@ T({ group: 'everyday', name: 'Mortgage Calculator', route: 'mortgage', q: 'What 
   body: `
   <div style="margin-top:14px">${img('mx_2_extra-payments-and-r', 'width:100%')}${cap('Sample:', '$450,000 at 7.25%, plus $300 per month, $10,000 in month 24, and a refinance to 6.25%.')}</div>
   <div class="row" style="margin-top:12px;gap:18px">
-    <div style="width:236px;flex:none">
+    <div style="width:290px;flex:none">
       ${side([
         ['What-ifs', ['Extra every month, or a lump sum', 'Recast, or keep the payment and finish early', 'Refinance, with the break-even']],
         ['Defaults', 'The rate starts at Freddie Mac\'s weekly survey, checked each quarter.'],
@@ -570,10 +632,10 @@ T({ group: 'everyday', name: 'Mortgage Calculator', route: 'mortgage', q: 'What 
 
 // --- Guides ---
 toolPage({
-  group: 'guide', num: 'G1', kicker: 'Walkthrough 1 of 2 · page 1', fav: true, name: 'Retirement Readiness Guide', route: 'guide', q: 'How ready am I, and what should I do next?',
+  group: 'guide', num: 'G1', kicker: 'Walkthrough 1 of 2 · page 1', fav: true, name: 'Retirement Readiness Guide', route: 'guide/readiness', q: 'How ready am I, and what should I do next?',
   desc: 'A guided check-up. It finds the number to aim for, tests the plan against every market since 1926, scores readiness out of 100 and lists the moves that matter, in the order that matters.',
   body: `
-  <div style="margin-top:14px">${browser('guide_number_view', 'retcalc.app/guide', 330)}</div>
+  <div style="margin-top:14px">${browser('guide_number_view', 'retcalc.app/guide/readiness', 330)}</div>
   <div class="row" style="margin-top:16px;gap:20px">
     <div class="col">
       <div class="h3">Two paces</div>
@@ -581,6 +643,7 @@ toolPage({
         <div class="col card raised"><div class="label amber">Quick check · about 10 min</div><p style="font-size:10px">Twelve short cards, three questions at most on each. The number by the sixth card, then a test of whether it lasts. Defaults stand in for the details, and every one says so.</p></div>
         <div class="col card raised"><div class="label amber">Full walkthrough · an hour or more</div><p style="font-size:10px">Every card, with trips into the tools that find the numbers you don't know: children, raises, a paid-off mortgage. It saves as you go.</p></div>
       </div>
+      <p class="muted" style="font-size:10px;margin-top:8px">Both start from the Guide tab, which opens on "Two ways through your plan": this check-up, or Paycheck to Retirement. Someone already retired can <b style="color:var(--text)">Start from what you have</b>.</p>
       <div class="h3" style="margin-top:14px">Seven chapters</div>
       ${chapters()}
     </div>
@@ -605,14 +668,14 @@ toolPage({
   group: 'guide', num: 'G1', kicker: 'Walkthrough 1 of 2 · page 2', name: 'The plan, on paper', route: 'guide/report', q: 'A full-color report in your own numbers.',
   desc: 'The Guide ends in a report of about a dozen US Letter pages, built in the browser and saved as a PDF: what you will have, how it holds up against every market since 1926, Social Security, taxes and health insurance, and the next moves. Below, the report for a sample couple, 38 and 36, retiring at 62.',
   body: `
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px 12px;margin-top:18px">
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:30px 12px;margin-top:26px">
     ${Array.from({ length: 12 }, (_, i) => `<img src="${C}report_p${String(i).padStart(2, '0')}.png" style="width:100%;display:block;border-radius:3px;${'border:1px solid rgba(23,25,28,.14)'}">`).join('')}
   </div>`,
 });
 
 toolPage({
   group: 'guide', num: 'G2', kicker: 'Walkthrough 2 of 2', fav: true, name: 'Paycheck to Retirement', route: 'guide/paycheck', q: 'Where should each paycheck go?',
-  desc: 'For anyone who would rather get straight to the numbers. Five steps, about fifteen minutes: take-home pay after tax, a budget, where each paycheck goes, and where that saving leads by retirement, children included.',
+  desc: 'For anyone who would rather get straight to the numbers. Five steps, about fifteen minutes: take-home pay after tax, a budget, where each paycheck goes, and where that saving leads by retirement, with any changes you see coming.',
   body: `
   <div style="margin-top:14px">${steps5()}</div>
   <div style="margin-top:8px">${img('plan_paycheck_0_gross-pay-3-654per-p', 'width:100%')}${cap('The running totals', 'stay pinned above every step: pay per check, taxes, spending, saving and what is left.')}</div>
@@ -622,15 +685,38 @@ toolPage({
     </div>
     <div class="col">${img('plan_paycheck_3_where-the-rest-goes', 'width:100%')}${cap('Where the rest goes.', 'Pick a plan or move the sliders.')}
       <div style="margin-top:10px">${side([
-        ['It runs the real tools', 'Budget, Advanced and Stages run inside the walkthrough on its own copy of the numbers, so nothing in the standalone tools changes until <b>Copy into my tools</b> sends the results to Income Tax, Budget, Advanced and Stages.'],
-        ['It ends in a report', 'Cover, the paycheck, the spending, the saving, the road to retirement, life stages if used, and the assumptions.'],
+        ['It runs the real tools', 'Budget and Advanced, with Income Tax\'s math, run inside the walkthrough on its own copy of the numbers, so nothing in the standalone tools changes until <b>Copy into my tools</b> sends the results to Income Tax, Budget and Advanced.'],
+        ['It ends in a report', 'Cover, the paycheck, the spending, the saving, the road to retirement, the changes ahead if used, and the assumptions.'],
       ])}</div>
     </div>
   </div>`,
 });
 
+// Learn: a section of the site, not one of the 14 tools
+toolPage({
+  group: 'learn', num: 'L', kicker: '66 lessons in 8 tracks', name: 'Learn', route: 'learn', q: 'How does a retirement plan work?',
+  desc: 'Short lessons on how saving, investing, taxes and Social Security fit into a retirement plan, one idea at a time, about 14 hours of reading in all. Each lesson ends with a tool to try it on your own numbers.',
+  body: `
+  <div style="margin-top:16px">${img('learn_header', 'width:100%;border-radius:12px')}</div>
+  <div class="row" style="margin-top:14px;gap:20px">
+    <div style="width:150px;flex:none">${img('learn_1_foundations0-of-9-re', 'width:100%;border-radius:12px')}${cap('The eight tracks,', 'with what has been read.')}</div>
+    <div class="col">
+      ${side([
+        ['Eight tracks', 'Foundations (9 lessons), Saving and accounts (9), Investing and risk (10), Withdrawing (10), Taxes (8), Social Security and health care (7), Retiring early (4) and Big decisions (9). "Start here" opens with what a retirement plan answers.'],
+        ['In a lesson', ['The text beside <b>Your numbers</b>, <b>Key terms</b> and <b>Go deeper</b>', '<b>Try it</b>: the tool that applies the lesson, one click away', '<b>Mark as read</b> and <b>Next lesson</b>; progress follows a signed-in reader to every device']],
+        ['39 charts to try', 'One in each of 39 lessons. Every chart reads off its values on hover or touch.'],
+        ['Kept current', 'Each lesson shows the month it was last reviewed and is checked again every 90 days, and whenever a figure it quotes changes.'],
+      ])}
+    </div>
+  </div>
+  <div class="row" style="margin-top:12px;gap:14px">
+    <div class="col">${img('learn_four-percent-rule_widget', 'width:100%')}${cap('The 4% rule.', 'The highest first-year rate that lasted 30 years, for every year retired from 1927 to 1996.')}</div>
+    <div class="col">${img('learn_compound-growth_widget', 'width:100%')}${cap('Compound growth.', 'The balance at 65 by the age saving starts, for the investment mix picked.')}</div>
+  </div>`,
+});
+
 function steps5() {
-  const xs = [['Start', 'Ages, filing status, pay and state'], ['Budget', 'Spending, line by line'], ['Paycheck', 'Tax, then 401(k), HSA, IRA, brokerage'], ['Your plan', 'The Advanced calculator, seeded'], ['Life stages', 'Optional: Stages, with children'], ['Summary', 'Copy into my tools']];
+  const xs = [['Start', 'Ages, filing status, pay and state'], ['Budget', 'Spending, line by line'], ['Paycheck', 'Tax, then 401(k), HSA, IRA, brokerage'], ['Your plan', 'The Advanced calculator, seeded'], ['Changes ahead', 'Optional: kids, a raise or a bigger house'], ['Summary', 'Copy into my tools']];
   return `<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:0">${xs.map(([t, d], i) => `<div style="padding:10px 10px 10px 0;border-top:3px solid ${i ? 'var(--rose)' : 'var(--rule-strong)'};margin-right:6px"><div class="mono" style="font-size:9px;color:var(--rose)">${i ? 'STEP ' + i : 'START'}</div><div style="font-weight:700;font-size:12px;margin:2px 0">${t}</div><div class="muted" style="font-size:9.5px;line-height:1.35">${d}</div></div>`).join('')}</div>`;
 }
 
@@ -667,25 +753,28 @@ page(`
   <div style="margin-top:14px">
     <div class="eyebrow">One household, start to finish</div>
     <h1 class="title" style="font-size:38px">From a paycheck to a retirement that lasts.</h1>
-    <p class="lede">A sample couple, carried through four tools by the tools' own buttons. Nothing was typed twice: each tool handed its answer to the next. Every figure on these two pages is from the live site.</p>
+    <p class="lede">A sample couple, carried through four tools by the tools' own buttons. Nothing was typed twice: each tool handed its answer to the next. Every figure on these two pages is from the site.</p>
   </div>
-  <div style="margin-top:14px">${stats([['34 and 32', 'Alex and Jordan, in Illinois'], ['$160,000', '$92,000 and $68,000 pay, per year', 1], ['$60,000', 'saved so far'], ['2', 'children planned, the first in two years'], ['65', 'when Alex retires, 31 years out']])}</div>
+  <div style="margin-top:14px">${stats([['34 and 32', 'Alex and Jordan, in Illinois'], ['$160,000', '$92,000 and $68,000 pay, per year', 1], ['$60,000', 'saved so far'], ['1', 'child planned, in two years'], ['65', 'when Alex retires, 31 years out']])}</div>
   <div class="row" style="margin-top:18px;gap:20px">
     <div style="width:236px;flex:none">
       ${step(1, 'Budget', 'budget', 'Where each paycheck goes')}
       <p class="muted" style="font-size:10.5px">Their budget goes in line by line, then both paychecks on the Paycheck tab. One click on <b style="color:var(--text)">The usual order</b> fills both 401(k) matches, an HSA, two Roth IRAs and more 401(k), and reruns their taxes as it goes.</p>
-      <p class="muted" style="font-size:10.5px">They can save <b style="color:var(--text)">$1,803 per month</b>, 13.5% of pay, plus $457 per month from their employers.</p>
+      <p class="muted" style="font-size:10.5px">They can save <b style="color:var(--text)">$1,803 per month</b>, 13.5% of pay, plus $457 per month in employer matches.</p>
     </div>
     <div class="col">${img('st_pc_1_saved-and-invested-e', 'width:100%')}</div>
   </div>
-  ${handoff('Copy to a calculator → Stages', 'carries <b>$832.35 every two weeks</b>, split by account type, with the salaries and the match.')}
+  ${handoff('Copy to Advanced', 'carries <b>$832.35 every two weeks</b>, split by account type: $316.92 traditional, $346.20 Roth and $169.23 HSA, plus the match.')}
   <div class="row" style="gap:20px">
     <div style="width:236px;flex:none">
-      ${step(2, 'Stages', 'stages', 'Saving around the children')}
-      <p class="muted" style="font-size:10.5px">The <b style="color:var(--text)">Planning for kids</b> builder turns one 31-year stage into nine, from <i>Before children</i> to <i>Empty nest</i>. Childcare and the teen years take the saving to nothing for 18 years; it comes back as the children leave.</p>
-      <p class="muted" style="font-size:10.5px">At 65 that is <b style="color:var(--text)">$743,576 in today's dollars</b>, from $487,735 put in over 31 years.</p>
+      ${step(2, 'Advanced calculator', 'advanced', 'Saving around the child')}
+      <p class="muted" style="font-size:10.5px">Under <b style="color:var(--text)">Changes ahead</b>, <b style="color:var(--text)">Add a change</b> and <b style="color:var(--text)">Children</b>: one child in two years, costing $1,300 to $1,500 per month as they grow. <b style="color:var(--text)">How will you cover this?</b> Brokerage first, the recommended order.</p>
+      <p class="muted" style="font-size:10.5px">The child's costs come out of saving until the child is grown. At 65 that leaves <b style="color:var(--text)">$1,200,063 in today's dollars</b>, about $47,514 per year after tax, against their $40,000 target: On track.</p>
     </div>
-    <div class="col">${region('st_stg_0_your-stages', 0.02, 0.214)}</div>
+    <div class="col">
+      ${img('st_adv_changes_dialog', 'width:100%')}
+      <div style="margin-top:8px">${region('st_adv_1_after-tax-income-per', 0, 0.835)}</div>
+    </div>
   </div>
 `, { sec: 'story', sub: 'Page 1 of 2', toc: { group: 'story', name: 'One household, start to finish' } });
 
@@ -693,11 +782,11 @@ page(`
   <div class="row" style="gap:20px;margin-top:14px">
     <div style="width:236px;flex:none">
       <div class="label">Step 2, tested against history</div>
-      <p class="muted" style="font-size:10.5px">The same plan run through all 829 31-year windows since 1926, with a dashed line where each stage begins. The median finish is <b style="color:var(--text)">$993,511</b>; the worst window, starting in 1951, still reaches $488,459.</p>
+      <p class="muted" style="font-size:10.5px">The same plan run through all 829 31-year windows since 1926, with a dashed line where the child's costs begin. 83.4% of windows reach the $1,000,000 the target needs; the median finishes at <b style="color:var(--text)">$1,546,552</b>, and the worst window, starting in August 1951, at $715,227.</p>
     </div>
-    <div class="col">${region('st_stg_4_balance-over-time-in', 0.27, 0.8)}</div>
+    <div class="col">${region('st_adv_4_balance-over-time-in', 0.27, 0.8)}</div>
   </div>
-  ${handoff('Test withdrawals → Drawdown Simulator', 'carries the portfolio: <b>$743,576</b>, the balance in today\'s dollars.')}
+  ${handoff('Test withdrawals → Drawdown Simulator', 'carries the portfolio: <b>$1,200,063</b>, the balance in today\'s dollars.')}
   <div class="row" style="gap:20px;margin-top:4px">
     <div style="width:236px;flex:none">
       ${step(3, 'Social Security Calculator', 'social-security', 'When to claim')}
@@ -706,26 +795,26 @@ page(`
     </div>
     <div class="col">${region('st_ss_1_pick-the-age-you-cla', 0, 0.8)}</div>
   </div>
-  ${handoff('Copy from Social Security Calculator', 'carries both benefits into the Drawdown Simulator: <b>$40,506 and $34,323 per year</b>, starting at 67.')}
+  ${handoff('Copy from Social Security Calculator', 'carries both benefits into the Drawdown Simulator: <b>$74,829 per year</b> once both checks run.')}
   <div class="row" style="gap:20px">
     <div style="width:236px;flex:none">
       ${step(4, 'Drawdown Simulator', 'drawdown', 'Will it last?')}
-      <p class="muted" style="font-size:10.5px">From 65, the 4% rule draws <b style="color:var(--text)">$29,743 per year</b>, rising with inflation, and Social Security joins at 67. The plan is replayed through every monthly start since 1926, 835 of them, for 30 years each.</p>
+      <p class="muted" style="font-size:10.5px">The spending here is the whole household's: <b style="color:var(--text)">$96,005 per year</b> ($8,000 per month), rising with inflation. Social Security pays $74,829 of it once both checks run; savings pay about $62,000 in the first two years and about $22,000 after. The plan is replayed through every monthly start since 1926, 835 of them, for 30 years each.</p>
     </div>
     <div class="col">${img('st_dd_1_historicalmonte-carl', 'width:100%')}</div>
   </div>
-  <div style="margin-top:20px;padding:20px 22px;border-radius:14px;background:var(--g-ground);color:var(--g-text)">
+  <div style="margin-top:14px;padding:18px 22px;border-radius:14px;background:var(--g-ground);color:var(--g-text)">
     <div class="label" style="color:var(--g-amber)">Where Alex and Jordan land</div>
     <div class="row" style="gap:0;margin-top:8px">
-      ${[['$104,573', 'per year in retirement, in today\'s dollars: $29,743 from savings and $74,830 from Social Security'], ['835 of 835', 'historical retirements lasted the full 30 years, the Depression and the 1970s included'], ['$1.5M', 'left at the end in the worst of them, in today\'s dollars']].map(([n, l], i) => `<div class="col" style="${i ? 'padding-left:18px;border-left:1px solid var(--g-rule);' : ''}padding-right:18px"><div style="font-size:30px;font-weight:700;letter-spacing:-0.03em;color:${i ? 'var(--g-text)' : 'var(--g-amber)'}">${n}</div><div style="font-size:10px;color:var(--g-muted);margin-top:4px;line-height:1.4">${l}</div></div>`).join('')}
+      ${[['$96,005', 'per year to spend in retirement, in today\'s dollars, with $74,829 of it from Social Security'], ['835 of 835', 'historical retirements lasted the full 30 years, the Depression and the 1970s included'], ['$3.6M', 'the median left after 30 years, in today\'s dollars; $1.6M in the worst start']].map(([n, l], i) => `<div class="col" style="${i ? 'padding-left:18px;border-left:1px solid var(--g-rule);' : ''}padding-right:18px"><div style="font-size:30px;font-weight:700;letter-spacing:-0.03em;color:${i ? 'var(--g-text)' : 'var(--g-amber)'}">${n}</div><div style="font-size:10px;color:var(--g-muted);margin-top:4px;line-height:1.4">${l}</div></div>`).join('')}
     </div>
   </div>
   <p class="muted" style="font-size:9.5px;margin-top:10px">A sample household, not advice. Returns before retirement are the plan's own assumptions; the historical tests use real monthly returns from 1926 to 2025.</p>`, { sec: 'story', sub: 'Page 2 of 2', toc: { group: 'story', name: 'From claiming to drawdown' } });
 
 /* =====================================================================
-   PART 3: UNDER THE HOOD
+   PART 4: UNDER THE HOOD
    ===================================================================== */
-const OPEN3 = pages.length;
+const OPEN4 = pages.length;
 pages.push(null);
 const B = fs.readFileSync(new URL('./build-pages.html', import.meta.url), 'utf8').replace('__CALENDAR__', calendar()).split('<!--PAGE-->').filter((x) => x.trim());
 const BUILD_TITLES = ['The stack', 'The calculation engine', 'Hosting and delivery', 'Accounts and privacy', 'Where the numbers come from'];
@@ -738,7 +827,7 @@ page(`
     <h2 style="font-size:46px;margin-top:30px;letter-spacing:-0.035em">Find out where you stand.</h2>
     <p style="font-size:15px;color:var(--g-muted);margin-top:14px;max-width:460px">Free, private, and tested against every market since 1926.</p>
     <a class="mono" style="display:block;font-size:22px;color:var(--g-amber);margin-top:34px" href="https://retcalc.app">retcalc.app</a>
-    <div style="margin-top:auto;font-size:9.5px;color:var(--g-muted);max-width:560px;line-height:1.55">RetCalc is an educational tool, not financial, tax or legal advice. Past returns don't predict future ones, and tax figures are estimates. Screenshots are from the live site on 22 October 2026 with sample households. Contact: <a href="mailto:contact@retcalc.app">contact@retcalc.app</a></div>
+    <div style="margin-top:auto;font-size:9.5px;color:var(--g-muted);max-width:560px;line-height:1.55">RetCalc is an educational tool, not financial, tax or legal advice. Past returns don't predict future ones, and tax figures are estimates. Screenshots are from the site as it stood on 11 November 2026, with sample households. Contact: <a href="mailto:contact@retcalc.app">contact@retcalc.app</a></div>
   </div>`, { dark: true, foot: false });
 
 /* ---------- fill in the openers and contents ---------- */
@@ -754,26 +843,30 @@ function fillOpener(at, k, title, intro, list) {
   op.html = op.html.replace(/<span class="pn">\d+<\/span>/, `<span class="pn">${num}</span>`);
   pages[at] = op;
 }
-const deepAll = pages.filter((p) => p && p.toc && ['calc', 'income', 'saving', 'everyday', 'guide', 'story'].includes(p.toc.group));
+for (const p of pages) if (p && p.html) p.html = p.html.replace(/__P2N__/g, String(pn(OPEN2))).replace(/__P2__/g, String(pn(OPEN2)).padStart(2, '0'));
+const deepAll = pages.filter((p) => p && p.toc && ['calc', 'income', 'saving', 'everyday', 'guide', 'learn', 'story'].includes(p.toc.group));
 fillOpener(OPEN1, 1, 'The<br>overview.', 'Free, private, and tested against a hundred years of real markets.', items(tocOf('ov')));
-fillOpener(OPEN2, 2, 'The<br>deep dive.', 'Every tool on the site, what it asks for and what it gives back.', items(deepAll));
-fillOpener(OPEN3, 3, 'Under<br>the hood.', 'Next.js on Vercel, an engine that runs in the browser, accounts that only sync, and figures that each carry a source and a due date.', items(tocOf('build')));
+fillOpener(OPEN2, 2, 'Your<br>Dashboard.', 'One free account keeps a household\'s whole picture and turns it into one retirement plan: fifteen tabs, one profile behind all of them.', items(tocOf('dash')));
+fillOpener(OPEN3, 3, 'The<br>deep dive.', 'Every tool on the site, what it asks for and what it gives back, then the guides, Learn and one household from paycheck to drawdown.', items(deepAll));
+fillOpener(OPEN4, 4, 'Under<br>the hood.', 'Next.js on Vercel, an engine that runs in the browser, accounts that sync and hold the Dashboard, and figures that each carry a source and a due date.', items(tocOf('build')));
 
 // Contents
-const groupsDeep = ['calc', 'income', 'saving', 'everyday', 'guide', 'story'];
-function tocBlock(k, title, startPn, xs, showDots) {
-  return `<div class="grp"><a class="grp-h" href="#p-${startPn}"><span class="k">${k}</span><h3>${title}</h3><span class="pg">${String(startPn).padStart(2, '0')}</span></a><div class="items">${xs.map((p) => `<a class="it" href="#p-${p.pn}">${showDots ? `<span class="d" style="background:${GROUP[p.toc.group].color}"></span>` : ''}<span>${p.toc.name}</span><span class="lead"></span><span class="pg">${String(p.pn).padStart(2, '0')}</span></a>`).join('')}</div></div>`;
+const groupsDeep = ['calc', 'income', 'saving', 'everyday', 'guide', 'learn', 'story'];
+function tocBlock(k, title, startPn, xs, showDots, cols = 2) {
+  return `<div class="grp"><a class="grp-h" href="#p-${startPn}"><span class="k">${k}</span><h3>${title}</h3><span class="pg">${String(startPn).padStart(2, '0')}</span></a><div class="items${cols === 3 ? ' c3' : ''}">${xs.map((p) => `<a class="it" href="#p-${p.pn}">${showDots ? `<span class="d" style="background:${GROUP[p.toc.group].color}"></span>` : ''}<span>${p.toc.name}</span><span class="lead"></span><span class="pg">${String(p.pn).padStart(2, '0')}</span></a>`).join('')}</div></div>`;
 }
 const deep = pages.filter((p) => p && p.toc && groupsDeep.includes(p.toc.group));
-const tocHtml = `
+// Four parts on one page: the two long ones in three columns, every row a little tighter.
+const tocHtml = `<style>.toc .grp { margin-bottom: 18px; } .toc .it { padding: 4.5px 0; font-size: 11.5px; } .toc .items.c3 { columns: 3; column-gap: 22px; } .toc .items.c3 .it { font-size: 11px; }</style>
   <div style="margin-top:14px">
     <div class="eyebrow">Contents</div>
     <h1 class="title" style="font-size:40px">What's inside.</h1>
   </div>
   <div class="toc">
     ${tocBlock('01', 'The overview', pn(OPEN1), tocOf('ov'), false)}
-    ${tocBlock('02', 'The deep dive', pn(OPEN2), deep, true)}
-    ${tocBlock('03', 'Under the hood', pn(OPEN3), tocOf('build'), false)}
+    ${tocBlock('02', 'Your Dashboard', pn(OPEN2), tocOf('dash'), false, 3)}
+    ${tocBlock('03', 'The deep dive', pn(OPEN3), deep, true, 3)}
+    ${tocBlock('04', 'Under the hood', pn(OPEN4), tocOf('build'), false)}
   </div>
   <div style="display:flex;gap:16px;margin-top:4px;font-size:9.5px" class="muted">${groupsDeep.map((g) => `<span style="display:flex;align-items:center;gap:6px"><span class="dot" style="background:${GROUP[g].color};width:7px;height:7px"></span>${GROUP[g].name}</span>`).join('')}</div>`;
 const tocPn = pn(TOC_AT);
@@ -783,14 +876,14 @@ pages[TOC_AT] = { pn: tocPn, html: `<section class="page">${tocHtml}<div class="
 const head = `<!doctype html><html><head><meta charset="utf-8"><title>RetCalc — Product Overview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css"></head><body>`;
+<link rel="stylesheet" href="styles.css"><style>:root { --learn: #4f52c9; }</style></head><body>`;
 // The PDF's bookmark sidebar: each part, with its pages under it (tooling/outline.py reads this).
 const outline = [
   { title: 'Cover', page: 1 }, { title: 'Contents', page: tocPn },
   { title: 'Part 1 · The overview', page: pn(OPEN1), kids: tocOf('ov').map((p) => ({ title: p.toc.name, page: p.pn })) },
-  { title: 'Part 2 · The deep dive', page: pn(OPEN2), kids: deep.map((p) => ({ title: p.toc.name, page: p.pn })) },
-  ...(typeof STORY_GROUP !== 'undefined' ? [] : []),
-  { title: 'Part 3 · Under the hood', page: pn(OPEN3), kids: tocOf('build').map((p) => ({ title: p.toc.name, page: p.pn })) },
+  { title: 'Part 2 · Your Dashboard', page: pn(OPEN2), kids: tocOf('dash').map((p) => ({ title: p.toc.name, page: p.pn })) },
+  { title: 'Part 3 · The deep dive', page: pn(OPEN3), kids: deep.map((p) => ({ title: p.toc.name, page: p.pn })) },
+  { title: 'Part 4 · Under the hood', page: pn(OPEN4), kids: tocOf('build').map((p) => ({ title: p.toc.name, page: p.pn })) },
   { title: 'Back cover', page: pages.length },
 ];
 fs.writeFileSync(new URL('./outline.json', import.meta.url), JSON.stringify(outline, null, 1));
@@ -808,17 +901,17 @@ const one = `<section class="page" style="padding:0">
     <div style="position:relative">
       <div style="display:flex;justify-content:space-between;align-items:center"><span class="logo" style="font-size:17px;gap:9px">${LOGO(26)}<span>RetCalc</span></span><a class="mono" style="font-size:11px;color:var(--g-amber)" href="https://retcalc.app">retcalc.app</a></div>
       <h1 style="font-size:40px;letter-spacing:-0.04em;line-height:1;margin-top:22px">The complete <span style="color:var(--g-amber)">retirement planning</span> toolkit.</h1>
-      <p style="font-size:12px;color:var(--g-muted);max-width:440px;margin:12px 0 0;line-height:1.5">A calculator, two guided walkthroughs and fourteen planning tools for saving, withdrawals, taxes, Social Security and healthcare, each checked against every market since 1926. Free, private, and no account needed.</p>
+      <p style="font-size:12px;color:var(--g-muted);max-width:440px;margin:12px 0 0;line-height:1.5">A calculator, two guided walkthroughs, fourteen planning tools and 66 lessons on saving, withdrawals, taxes, Social Security and healthcare, tested against every market since 1926. Free, private, and no account needed.</p>
     </div>
   </div>
   <div style="padding:14px 44px 0" class="op">
-    ${stats([['14', 'planning tools', 1], ['3', 'calculators'], ['2', 'guided walkthroughs'], ['100 yrs', 'of monthly market history'], ['5,000', 'Monte Carlo runs per redraw'], ['$0', 'no ads, no account']])}
+    ${stats([['14', 'planning tools', 1], ['2', 'calculators, Basic and Advanced'], ['2', 'guided walkthroughs'], ['66', 'lessons in Learn'], ['100 yrs', 'of monthly market history'], ['$0', 'no ads, no account']])}
     <div class="row" style="gap:16px;margin-top:14px">
-      ${[['One household, every tool', 'Ages, state, savings, income and spending are entered once and fill in everywhere; results carry from tool to tool.'], ['Tested against history', 'Plans are replayed through every real starting month since January 1926, the Depression and the 1970s included.'], ['Private by default', 'Every calculation runs in the browser. An optional account only syncs a household, scenarios and Guide answers.']].map(([h, t], i) => `<div class="col"><div style="display:flex;gap:8px;align-items:baseline"><span class="mono amber" style="font-size:15px;font-weight:500">${i + 1}</span><b style="font-size:11.5px">${h}</b></div><p class="muted" style="font-size:9.5px;margin:3px 0 0">${t}</p></div>`).join('')}
+      ${[['One household, every tool', 'Ages, state, savings, income and spending are entered once and fill in everywhere; results carry from tool to tool.'], ['Tested against history', 'Plans are replayed through every real starting month since January 1926, the Depression and the 1970s included.'], ['Private by default', 'Every calculation runs in the browser. An optional account keeps a household, scenarios, Guide answers and lessons read in step across devices.']].map(([h, t], i) => `<div class="col"><div style="display:flex;gap:8px;align-items:baseline"><span class="mono amber" style="font-size:15px;font-weight:500">${i + 1}</span><b style="font-size:11.5px">${h}</b></div><p class="muted" style="font-size:9.5px;margin:3px 0 0">${t}</p></div>`).join('')}
     </div>
     <div class="label" style="margin-top:12px">Highlights</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px 14px">
-      ${opTile('Stages calculator', 'A savings plan in stretches, each with its own saving, return and volatility, tested three ways.', crop('stages_chart_mc', 80, '', 'center 62%'))}
+      ${opTile('Advanced: Changes ahead', 'Children, a raise, saving less or an inheritance, from an age on, each shown in the balance at retirement and tested against history.', crop('advanced_chart_hist', 80, '', 'center 58%'))}
       ${opTile('Drawdown Simulator', '15 withdrawal strategies replayed through every retirement since 1926, and ranked at equal risk.', crop('drawdown_1_historicalmonte-carl', 80, '', 'left center'))}
       ${opTile('Income Tax', '2026 federal, state (50 + DC) and FICA tax, or a retirement mode that stacks withdrawals, gains and Social Security.', cropAt('incometax_1_after-taxtake-homere', 80, 206, 0.205))}
       ${opTile('Budget and Paycheck', 'A budget, then a paycheck that pays it, with taxes rerun live as money moves into the 401(k), HSA and IRA.', cropAt('budget_1_where-it-goes', 80, 206, 0.345))}
@@ -828,12 +921,12 @@ const one = `<section class="page" style="padding:0">
     <div class="label" style="margin-top:12px">Every tool</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
       <div style="display:flex;flex-direction:column;gap:10px">${opGroup('income', TOOLS.income)}</div>
-      <div style="display:flex;flex-direction:column;gap:10px">${opGroup('saving', TOOLS.saving)}${opGroup('calc', [['Basic', 'six questions'], ['Advanced', 'fees, tax, accounts, a target'], ['Stages', 'saving that changes']])}</div>
+      <div style="display:flex;flex-direction:column;gap:10px">${opGroup('saving', TOOLS.saving)}${opGroup('calc', [['Basic', 'six questions'], ['Advanced', 'fees, tax, accounts, changes ahead']])}${opGroup('learn', [['Learn', '66 lessons in 8 tracks, 39 with a chart to try']])}</div>
       <div style="display:flex;flex-direction:column;gap:10px">${opGroup('everyday', TOOLS.everyday)}${opGroup('guide', [['Readiness Guide', 'score and report'], ['Paycheck to Retirement', 'five steps']])}</div>
     </div>
   </div>
   <div style="position:absolute;left:0;right:0;bottom:0;height:40px;padding:0 44px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--rule);font-size:9px" class="muted">
-    <span>Built on Next.js and a 5,700-line calculation engine; 2026 tax rules; market data from Shiller (Yale), BLS and the French Data Library.</span>
+    <span>Built on Next.js and a 6,800-line calculation engine; 2026 tax rules; market data from Shiller (Yale), BLS and the French Data Library.</span>
     <a class="mono" style="color:var(--amber);font-weight:500;font-size:10.5px" href="https://retcalc.app">retcalc.app</a>
   </div>
 </section>`;

@@ -2,7 +2,7 @@
 <div style="margin-top:14px">
   <div class="eyebrow" style="color:var(--gray)">The stack</div>
   <h1 class="title" style="font-size:38px">A static site that does its thinking in the browser.</h1>
-  <p class="lede">Pages are prerendered and served from a CDN. Every number on them is worked out on the visitor's own machine, by a calculation engine that runs off the main thread. Accounts, when someone wants one, only hold their saved inputs.</p>
+  <p class="lede">Pages are prerendered and served from a CDN. Every number on them is worked out on the visitor's own machine, by a calculation engine that runs off the main thread. Accounts hold what people choose to save: their inputs, and My Dashboard, which needs one.</p>
 </div>
 <svg viewBox="0 0 708 300" width="100%" style="display:block;margin-top:14px">
   <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#818995"/></marker></defs>
@@ -21,7 +21,7 @@
   <path d="M350,131 L360,131" stroke="#818995" stroke-width="1.4" marker-end="url(#ar)"/>
   <rect x="210" y="176" width="292" height="66" rx="10" fill="#1c1c1e" stroke="#38383a"/>
   <text x="222" y="196" font-size="10" font-weight="700" fill="#f5f5f7">Local storage</text>
-  <text x="222" y="211" font-size="8.5" fill="#a1a1a6">household, saved scenarios and Guide answers, saved first, here</text>
+  <text x="222" y="211" font-size="8.5" fill="#a1a1a6">household, scenarios, Guide, lessons read, the Dashboard</text>
   <text x="222" y="224" font-size="8.5" fill="#a1a1a6">share links carry inputs after the #, which never reaches a server</text>
   <!-- left: vercel + cloudflare -->
   <rect x="0" y="60" width="150" height="70" rx="12" fill="#fff" stroke="#e3e3e8"/>
@@ -37,65 +37,66 @@
   <!-- right: supabase, sentry, resend -->
   <rect x="558" y="30" width="150" height="80" rx="12" fill="#fff" stroke="#1f8f7e"/>
   <text x="572" y="52" font-size="10.5" font-weight="700" fill="#1d1d1f">Supabase</text>
-  <text x="572" y="67" font-size="8.5" fill="#6e6e73">optional accounts: sign-in</text>
-  <text x="572" y="79" font-size="8.5" fill="#6e6e73">and sync, each user's rows</text>
-  <text x="572" y="91" font-size="8.5" fill="#6e6e73">locked to that user</text>
+  <text x="572" y="67" font-size="8.5" fill="#6e6e73">accounts: sign-in, sync and</text>
+  <text x="572" y="79" font-size="8.5" fill="#6e6e73">the Dashboard, each user's</text>
+  <text x="572" y="91" font-size="8.5" fill="#6e6e73">data locked to that user</text>
   <path d="M522,110 L556,80" stroke="#1f8f7e" stroke-width="1.4" marker-end="url(#ar)" marker-start="url(#ar)"/>
   <rect x="558" y="130" width="150" height="60" rx="12" fill="#fff" stroke="#e3e3e8"/>
   <text x="572" y="152" font-size="10.5" font-weight="700" fill="#1d1d1f">Resend</text>
-  <text x="572" y="167" font-size="8.5" fill="#6e6e73">the 6-digit sign-in codes,</text>
-  <text x="572" y="179" font-size="8.5" fill="#6e6e73">from the site's own domain</text>
+  <text x="572" y="167" font-size="8.5" fill="#6e6e73">sign-in codes and the</text>
+  <text x="572" y="179" font-size="8.5" fill="#6e6e73">monthly check-in email</text>
   <path d="M556,160 L524,150" stroke="#818995" stroke-width="1.4" stroke-dasharray="3 3"/>
   <rect x="558" y="210" width="150" height="60" rx="12" fill="#fff" stroke="#e3e3e8"/>
   <text x="572" y="232" font-size="10.5" font-weight="700" fill="#1d1d1f">Sentry</text>
   <text x="572" y="247" font-size="8.5" fill="#6e6e73">errors only, no inputs,</text>
   <text x="572" y="259" font-size="8.5" fill="#6e6e73">through the site's own route</text>
   <path d="M522,230 L556,238" stroke="#818995" stroke-width="1.4" marker-end="url(#ar)"/>
-  <text x="354" y="290" font-size="8.5" fill="#6e6e73" text-anchor="middle">Solid lines carry data. Dashed lines are supporting services. There are no API routes: the only thing the site's own server receives is error reports, with every input stripped out.</text>
+  <text x="354" y="290" font-size="8.5" fill="#6e6e73" text-anchor="middle">Solid lines carry data. Dashed lines are supporting services. No API routes: the site's own server receives only error reports, stripped of every input.</text>
 </svg>
 <div class="row" style="margin-top:18px;gap:22px">
   <div class="col">
     <table class="t">
       <tr><th style="width:96px">Layer</th><th>What it uses</th></tr>
       <tr><td>Framework</td><td>Next.js 16 (App Router), React 19, TypeScript 5</td></tr>
-      <tr><td>Look</td><td>Tailwind CSS v4 and shadcn/ui on Base UI primitives, Lucide icons; IBM Plex Sans, served by the site itself</td></tr>
+      <tr><td>Look</td><td>Tailwind CSS v4 and shadcn/ui on Base UI primitives, Lucide icons; SF Pro on Apple devices and Inter, served by the site itself, elsewhere</td></tr>
+      <tr><td>Accounts</td><td>Supabase (Postgres with row-level security), reached from the browser with no app server between; Google or a 6-digit email code to sign in, no passwords</td></tr>
       <tr><td>Engine</td><td>Plain JavaScript, type-checked through JSDoc, behind typed TypeScript bridges</td></tr>
-      <tr><td>Checks</td><td>ESLint with zero warnings allowed, <span class="mono">tsc</span>, @shadcn/lint, a calculation suite, unit and end-to-end tests</td></tr>
-      <tr><td>Design</td><td>A written design system: Graphite (dark, the default) and Paper (light) themes, one amber accent, gain and loss colors, five chart hues</td></tr>
+      <tr><td>Checks</td><td>ESLint with zero warnings allowed, <span class="mono">tsc</span>, @shadcn/lint, a calculation suite, unit tests, and end-to-end tests run by hand</td></tr>
+      <tr><td>Design</td><td>A written design system, Clear Glass: a light glass theme and a true-black night theme that follow the device, one amber accent, and one color for each kind of money</td></tr>
     </table>
   </div>
   <div style="width:250px;flex:none">
     <div class="label">By the numbers</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule)"><div style="padding:10px 0 10px 0px;"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">39</div><div class="muted" style="font-size:9.5px;margin-top:5px">page routes</div></div><div style="padding:10px 0 10px 14px;border-left:1px solid var(--rule);"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">~55,600</div><div class="muted" style="font-size:9.5px;margin-top:5px">lines of app code</div></div><div style="padding:10px 0 10px 0px;border-top:1px solid var(--rule);"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">~7,400</div><div class="muted" style="font-size:9.5px;margin-top:5px">lines in the engine and its data</div></div><div style="padding:10px 0 10px 14px;border-left:1px solid var(--rule);border-top:1px solid var(--rule);"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">29</div><div class="muted" style="font-size:9.5px;margin-top:5px">explanatory articles</div></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule)"><div style="padding:10px 0 10px 0px;"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">53</div><div class="muted" style="font-size:9.5px;margin-top:5px">page routes, 10 of them the Dashboard</div></div><div style="padding:10px 0 10px 14px;border-left:1px solid var(--rule);"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">~79,400</div><div class="muted" style="font-size:9.5px;margin-top:5px">lines of app code</div></div><div style="padding:10px 0 10px 0px;border-top:1px solid var(--rule);"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">~8,100</div><div class="muted" style="font-size:9.5px;margin-top:5px">lines in the engine and its data</div></div><div style="padding:10px 0 10px 14px;border-left:1px solid var(--rule);border-top:1px solid var(--rule);"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">66</div><div class="muted" style="font-size:9.5px;margin-top:5px">lessons in Learn, plus 28 articles</div></div></div>
     <p class="muted" style="font-size:9.5px;margin-top:6px">The design rules are enforced, not just written: the linter rejects raw colors, one-off sizes and inline styles, and a new look has to be a component variant.</p>
   </div>
 </div>
-<div class="label" style="margin-top:16px">The palette, from the design system</div>
+<div class="label" style="margin-top:16px">Clear Glass, from the design system</div>
 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
-  <div style="display:flex;border-radius:10px;overflow:hidden;height:62px">
-    <div style="flex:1;background:#000000;color:#f5f5f7;padding:8px;font-size:8.5px">Graphite<br><span class="mono" style="color:#a1a1a6">#000000</span></div>
-    <div style="flex:1;background:#1c1c1e;color:#f5f5f7;padding:8px;font-size:8.5px">Surface<br><span class="mono" style="color:#a1a1a6">#1c1c1e</span></div>
-    <div style="flex:1;background:#1c1c1e;color:#f5f5f7;padding:8px;font-size:8.5px">Raised<br><span class="mono" style="color:#a1a1a6">#1c1c1e</span></div>
-    <div style="flex:1;background:#ffb340;color:#000000;padding:8px;font-size:8.5px;font-weight:600">Amber<br><span class="mono">#ffb340</span></div>
-  </div>
   <div style="display:flex;border-radius:10px;overflow:hidden;height:62px;border:1px solid #e3e3e8">
-    <div style="flex:1;background:#f5f5f7;padding:8px;font-size:8.5px">Paper<br><span class="mono muted">#f5f5f7</span></div>
-    <div style="flex:1;background:#f3f1ec;padding:8px;font-size:8.5px">Raised<br><span class="mono muted">#f3f1ec</span></div>
-    <div style="flex:1;background:#1d1d1f;color:#fff;padding:8px;font-size:8.5px">Ink<br><span class="mono" style="color:#a1a1a6">#1d1d1f</span></div>
+    <div style="flex:1;background:#f5f5f7;padding:8px;font-size:8.5px">Glass<br><span class="mono muted">#f5f5f7</span></div>
+    <div style="flex:1;background:#ffffff;padding:8px;font-size:8.5px">Surface<br><span class="mono muted">#ffffff</span></div>
+    <div style="flex:1;background:#1d1d1f;color:#fff;padding:8px;font-size:8.5px">Text<br><span class="mono" style="color:#a1a1a6">#1d1d1f</span></div>
     <div style="flex:1;background:#975300;color:#fff;padding:8px;font-size:8.5px;font-weight:600">Amber<br><span class="mono">#975300</span></div>
+  </div>
+  <div style="display:flex;border-radius:10px;overflow:hidden;height:62px">
+    <div style="flex:1;background:#000000;color:#f5f5f7;padding:8px;font-size:8.5px">Night<br><span class="mono" style="color:#a1a1a6">#000000</span></div>
+    <div style="flex:1;background:#1c1c1e;color:#f5f5f7;padding:8px;font-size:8.5px">Surface<br><span class="mono" style="color:#a1a1a6">#1c1c1e</span></div>
+    <div style="flex:1;background:#2c2c2e;color:#f5f5f7;padding:8px;font-size:8.5px">Raised<br><span class="mono" style="color:#a1a1a6">#2c2c2e</span></div>
+    <div style="flex:1;background:#ffb340;color:#000000;padding:8px;font-size:8.5px;font-weight:600">Amber<br><span class="mono">#ffb340</span></div>
   </div>
 </div>
 <div style="display:flex;gap:6px;margin-top:8px;align-items:center;font-size:8.5px" class="muted">
-  <span>Chart series</span>
-  <span style="width:40px;height:10px;border-radius:3px;background:#2f7fc4"></span><span style="width:40px;height:10px;border-radius:3px;background:#1f8f7e"></span><span style="width:40px;height:10px;border-radius:3px;background:#c2467a"></span><span style="width:40px;height:10px;border-radius:3px;background:#7541b8"></span><span style="width:40px;height:10px;border-radius:3px;background:#808a99"></span>
-  <span style="margin-left:12px">Gain and loss</span><span style="width:40px;height:10px;border-radius:3px;background:#17704a"></span><span style="width:40px;height:10px;border-radius:3px;background:#b02f29"></span>
-  <span style="margin-left:auto">Typeface: <b style="color:var(--text)">IBM Plex Sans</b></span>
+  <span>Money map</span>
+  <span title="pay" style="width:28px;height:10px;border-radius:3px;background:#1f6fd1"></span><span title="tax" style="width:28px;height:10px;border-radius:3px;background:#e8335f"></span><span title="spending" style="width:28px;height:10px;border-radius:3px;background:#5856d6"></span><span title="saving" style="width:28px;height:10px;border-radius:3px;background:#1f9d55"></span><span title="traditional" style="width:28px;height:10px;border-radius:3px;background:#146c43"></span><span title="hsa" style="width:28px;height:10px;border-radius:3px;background:#11998e"></span><span title="debt" style="width:28px;height:10px;border-radius:3px;background:#c4512a"></span>
+  <span style="margin-left:4px">pay · tax · spending · saving · 401(k) · HSA · debt</span>
+  <span style="margin-left:auto">Type: <b style="color:var(--text)">SF Pro · Inter</b></span>
 </div>
 
 <!--PAGE-->
 <div style="margin-top:14px">
   <div class="eyebrow" style="color:var(--gray)">The calculation engine</div>
-  <h1 class="title" style="font-size:38px">About 5,700 lines of finance, and a test for every claim.</h1>
+  <h1 class="title" style="font-size:38px">About 6,100 lines of finance, and a test for every claim.</h1>
   <p class="lede">One engine serves every page: projections, Monte Carlo, federal and state income tax, FICA, Social Security, RMDs, Roth conversions, ACA subsidies, Medicare and IRMAA, mortgages, debt, rent against buy, college, FIRE, the 72(t) bridge and historical withdrawal backtests.</p>
 </div>
 <div class="row" style="margin-top:16px;gap:22px">
@@ -103,12 +104,12 @@
     <div class="label">The engine, by file (lines)</div>
     <svg viewBox="0 0 340 150" width="100%" style="display:block">
       <g font-size="9.5">
-        <text x="0" y="14" fill="#1d1d1f" font-weight="600">math.js</text><rect x="82" y="5" width="216" height="12" rx="3" fill="#975300"/><text x="304" y="15" fill="#6e6e73">2,389</text>
-        <text x="0" y="38" fill="#1d1d1f" font-weight="600">drawdown.js</text><rect x="82" y="29" width="130" height="12" rx="3" fill="#2f7fc4"/><text x="218" y="39" fill="#6e6e73">1,435</text>
-        <text x="0" y="62" fill="#1d1d1f" font-weight="600">data files</text><rect x="82" y="53" width="100" height="12" rx="3" fill="#808a99"/><text x="188" y="63" fill="#6e6e73">~1,100</text>
-        <text x="0" y="86" fill="#1d1d1f" font-weight="600">plan.js</text><rect x="82" y="77" width="75" height="12" rx="3" fill="#c2467a"/><text x="163" y="87" fill="#6e6e73">833</text>
-        <text x="0" y="110" fill="#1d1d1f" font-weight="600">bridge.js</text><rect x="82" y="101" width="43" height="12" rx="3" fill="#1f8f7e"/><text x="131" y="111" fill="#6e6e73">471</text>
-        <text x="0" y="134" fill="#1d1d1f" font-weight="600">calculators.js</text><rect x="82" y="125" width="37" height="12" rx="3" fill="#7541b8"/><text x="125" y="135" fill="#6e6e73">408</text>
+        <text x="0" y="14" fill="#1d1d1f" font-weight="600">math.js</text><rect x="82" y="5" width="216" height="12" rx="3" fill="#975300"/><text x="304" y="15" fill="#6e6e73">2,650</text>
+        <text x="0" y="38" fill="#1d1d1f" font-weight="600">drawdown.js</text><rect x="82" y="29" width="119" height="12" rx="3" fill="#2f7fc4"/><text x="207" y="39" fill="#6e6e73">1,456</text>
+        <text x="0" y="62" fill="#1d1d1f" font-weight="600">data files</text><rect x="82" y="53" width="108" height="12" rx="3" fill="#808a99"/><text x="196" y="63" fill="#6e6e73">~1,330</text>
+        <text x="0" y="86" fill="#1d1d1f" font-weight="600">plan.js</text><rect x="82" y="77" width="73" height="12" rx="3" fill="#c2467a"/><text x="161" y="87" fill="#6e6e73">897</text>
+        <text x="0" y="110" fill="#1d1d1f" font-weight="600">bridge.js</text><rect x="82" y="101" width="43" height="12" rx="3" fill="#1f8f7e"/><text x="131" y="111" fill="#6e6e73">528</text>
+        <text x="0" y="134" fill="#1d1d1f" font-weight="600">calculators.js</text><rect x="82" y="125" width="33" height="12" rx="3" fill="#7541b8"/><text x="121" y="135" fill="#6e6e73">408</text>
       </g>
     </svg>
     <div class="label" style="margin-top:14px">Three ways to ask "what if markets don't cooperate?"</div>
@@ -133,20 +134,21 @@
   <g font-size="8.5">
     <rect x="0" y="10" width="120" height="104" rx="12" fill="#fff" stroke="#e3e3e8"/><text x="12" y="32" font-size="10.5" font-weight="700">A change</text><text x="12" y="48" fill="#6e6e73">to the engine, a tool's</text><text x="12" y="60" fill="#6e6e73">defaults, an article,</text><text x="12" y="72" fill="#6e6e73">page text or the tests</text>
     <path d="M122,62 L146,62" stroke="#818995" stroke-width="1.4" marker-end="url(#ar2)"/>
-    <rect x="148" y="10" width="170" height="104" rx="12" fill="#1d1d1f"/><text x="160" y="32" font-size="10.5" font-weight="700" fill="#ffb340">Pre-commit gate</text><text x="160" y="48" fill="#f5f5f7">~618 checks in 55 groups</text><text x="160" y="61" fill="#a1a1a6">209 of them hold the worked</text><text x="160" y="73" fill="#a1a1a6">examples in all 29 articles to</text><text x="160" y="85" fill="#a1a1a6">what the calculator produces</text><text x="160" y="103" fill="#f5f5f7">A failure blocks the commit.</text>
+    <rect x="148" y="10" width="170" height="104" rx="12" fill="#1d1d1f"/><text x="160" y="32" font-size="10.5" font-weight="700" fill="#ffb340">Pre-commit gate</text><text x="160" y="48" fill="#f5f5f7">1,322 checks in 62 groups</text><text x="160" y="61" fill="#a1a1a6">15 groups hold the articles' worked</text><text x="160" y="73" fill="#a1a1a6">examples to what the calculator</text><text x="160" y="85" fill="#a1a1a6">produces</text><text x="160" y="103" fill="#f5f5f7">A failure blocks the commit.</text>
     <path d="M320,62 L344,62" stroke="#818995" stroke-width="1.4" marker-end="url(#ar2)"/>
-    <rect x="346" y="10" width="200" height="104" rx="12" fill="#fff" stroke="#e3e3e8"/><text x="358" y="32" font-size="10.5" font-weight="700">On every push</text><text x="358" y="48" fill="#6e6e73">the calculation suite again, plus</text><text x="358" y="60" fill="#6e6e73">numbers baselines: each tool's headline</text><text x="358" y="72" fill="#6e6e73">figures and seven Guide sample households</text><text x="358" y="88" fill="#6e6e73">lint · typecheck · production build</text><text x="358" y="100" fill="#6e6e73">unit tests · 17 end-to-end browser specs</text>
+    <rect x="346" y="10" width="200" height="104" rx="12" fill="#fff" stroke="#e3e3e8"/><text x="358" y="32" font-size="10.5" font-weight="700">On every push</text><text x="358" y="48" fill="#6e6e73">the calculation suite again, plus</text><text x="358" y="60" fill="#6e6e73">numbers baselines: each tool's headline</text><text x="358" y="72" fill="#6e6e73">figures and seven Guide sample households</text><text x="358" y="88" fill="#6e6e73">unit tests: Guide, Budget, Tax, Dashboard,</text><text x="358" y="100" fill="#6e6e73">Advanced · lint · typed production build</text>
     <path d="M548,62 L572,62" stroke="#818995" stroke-width="1.4" marker-end="url(#ar2)"/>
     <rect x="574" y="10" width="134" height="104" rx="12" fill="#fff" stroke="#1f8f7e"/><text x="586" y="32" font-size="10.5" font-weight="700">Live</text><text x="586" y="48" fill="#6e6e73">main deploys to</text><text x="586" y="60" fill="#6e6e73">Vercel; previews</text><text x="586" y="72" fill="#6e6e73">deploy for every</text><text x="586" y="84" fill="#6e6e73">branch first</text>
   </g>
 </svg>
 <div style="margin-top:16px"><div class="stats">
-  <div class="stat"><div class="n amber">~618</div><div class="l">checks in the calculation suite, in 55 groups</div></div>
-  <div class="stat"><div class="n">209</div><div class="l">of them tie the 29 articles' worked examples to the engine</div></div>
+  <div class="stat"><div class="n amber">1,322</div><div class="l">checks in the calculation suite, in 62 groups</div></div>
+  <div class="stat"><div class="n">15</div><div class="l">of the groups tie the articles' worked examples to the engine</div></div>
   <div class="stat"><div class="n">7</div><div class="l">sample households whose Guide results are pinned</div></div>
-  <div class="stat"><div class="n">17</div><div class="l">end-to-end browser specs</div></div>
+  <div class="stat"><div class="n">16</div><div class="l">end-to-end browser specs of the public tools, run by hand</div></div>
   <div class="stat"><div class="n">1,200</div><div class="l">months of market history every engine walks</div></div>
 </div></div>
+<div class="card raised" style="margin-top:14px;display:flex;gap:16px;align-items:baseline"><div class="h3" style="margin:0;white-space:nowrap">The Dashboard, too</div><p style="font-size:10px;margin:0">33 unit tests in CI cover its changes, assumption ratings, bridge budget and cover rule; 13 recorded Dashboard plans are re-run against their saved results; 41 tests cover sync and merging, including a whole sync against a fake account.</p></div>
 
 <!--PAGE-->
 <div style="margin-top:14px">
@@ -158,11 +160,11 @@
   <div class="col">
     <table class="t">
       <tr><th style="width:110px">Piece</th><th>How it is done</th></tr>
-      <tr><td>Hosting</td><td>Vercel. Production builds from main; every branch gets its own preview. Before 5 October 2026 the site was a hand-built static site; it now lives on in a private archive for comparison.</td></tr>
+      <tr><td>Hosting</td><td>Vercel. Production builds from main; every branch gets its own preview.</td></tr>
       <tr><td>Rendering</td><td>Prerendered pages and articles. There are no API routes: all calculation happens in the browser, and the one thing the site's own server receives is error reports, stripped of inputs, which it passes on to Sentry.</td></tr>
       <tr><td>Domain</td><td><a href="https://retcalc.app">retcalc.app</a>, with DNS on Cloudflare; www redirects to the bare domain.</td></tr>
       <tr><td>Analytics</td><td>Cloudflare and Vercel Web Analytics: cookieless page counts, production only. No ads and no ad trackers.</td></tr>
-      <tr><td>Email</td><td>Sign-in codes go out through Resend from the site's own domain. Mail to <a href="mailto:contact@retcalc.app">contact@retcalc.app</a> is forwarded separately.</td></tr>
+      <tr><td>Email</td><td>Sign-in codes and the Dashboard's monthly check-in go out through Resend from the site's own domain. The check-in comes from a daily job on the account service and carries no figures.</td></tr>
       <tr><td>Installable</td><td>A web app manifest and icons, so it can be added to a phone's home screen, with a bottom tab bar there.</td></tr>
     </table>
   </div>
@@ -182,21 +184,21 @@
 <div class="label" style="margin-top:18px">Link previews, drawn for every page</div>
 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
   <img src="../../web/public/og/drawdown.jpg" style="width:100%;border-radius:8px;display:block">
-  <img src="../../web/public/og/stages.jpg" style="width:100%;border-radius:8px;display:block">
+  <img src="../../web/public/og/advanced.jpg" style="width:100%;border-radius:8px;display:block">
   <img src="../../web/public/og/incometax.jpg" style="width:100%;border-radius:8px;display:block">
   <img src="../../web/public/og/budget.jpg" style="width:100%;border-radius:8px;display:block">
 </div>
-<p class="muted" style="font-size:9.5px;margin-top:8px">Each page has its own 1200×630 card: a title, a line of text and one of about 21 illustration types. A development-only page draws them and a headless browser saves them as static images, so sharing a link to any tool shows that tool.</p>
+<p class="muted" style="font-size:9.5px;margin-top:8px">31 cards of 1200×630, one for each tool, guide and main page, in about 21 illustration types, so a link to any tool shows that tool.</p>
 <!--PAGE-->
 <div style="margin-top:14px">
   <div class="eyebrow" style="color:var(--gray)">Accounts and privacy</div>
-  <h1 class="title" style="font-size:38px">Local first. An account is only a way to sync.</h1>
-  <p class="lede">Everything works without signing in. A signed-in visitor gets the same site, with their household, saved scenarios and Guide kept in step across devices. Saving never waits on the network, and a sync never throws anything away.</p>
+  <h1 class="title" style="font-size:38px">Local first. An account syncs, and holds the Dashboard.</h1>
+  <p class="lede">The tools, both guides and Learn all work without signing in; a signed-in visitor gets the same site, with their household, scenarios, Guide and lessons read kept in step across devices. My Dashboard needs a free account, and it too is written to the browser first. Saving never waits on the network, and a sync never throws anything away.</p>
 </div>
 <svg viewBox="0 0 708 170" width="100%" style="display:block;margin-top:14px">
   <defs><marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#818995"/></marker></defs>
   <g font-size="8.5">
-    <rect x="0" y="40" width="130" height="80" rx="12" fill="#fff" stroke="#e3e3e8"/><text x="14" y="64" font-size="10.5" font-weight="700">A change</text><text x="14" y="80" fill="#6e6e73">a new household figure,</text><text x="14" y="92" fill="#6e6e73">a saved scenario, a</text><text x="14" y="104" fill="#6e6e73">Guide answer</text>
+    <rect x="0" y="40" width="130" height="80" rx="12" fill="#fff" stroke="#e3e3e8"/><text x="14" y="64" font-size="10.5" font-weight="700">A change</text><text x="14" y="80" fill="#6e6e73">a household figure, a</text><text x="14" y="92" fill="#6e6e73">scenario, a Guide answer,</text><text x="14" y="104" fill="#6e6e73">a Dashboard balance</text>
     <path d="M132,80 L170,80" stroke="#818995" stroke-width="1.4" marker-end="url(#ar3)"/>
     <rect x="172" y="30" width="170" height="100" rx="12" fill="#1d1d1f"/><text x="186" y="54" font-size="10.5" font-weight="700" fill="#ffb340">This browser, first</text><text x="186" y="70" fill="#f5f5f7">written at once, under</text><text x="186" y="82" fill="#f5f5f7">versioned keys</text><text x="186" y="100" fill="#a1a1a6">works offline; in a private</text><text x="186" y="112" fill="#a1a1a6">window it simply isn't kept</text>
     <path d="M344,64 L452,64" stroke="#1f8f7e" stroke-width="1.4" marker-end="url(#ar3)"/><text x="398" y="56" text-anchor="middle" fill="#1f8f7e" font-weight="600">pushed shortly after</text>
@@ -204,28 +206,28 @@
     <rect x="454" y="30" width="150" height="100" rx="12" fill="#fff" stroke="#1f8f7e"/><text x="468" y="54" font-size="10.5" font-weight="700">The account</text><text x="468" y="70" fill="#6e6e73">Supabase, US-hosted</text><text x="468" y="82" fill="#6e6e73">row-level security: each</text><text x="468" y="94" fill="#6e6e73">person reaches only their</text><text x="468" y="106" fill="#6e6e73">own rows</text>
     <path d="M606,80 L626,80" stroke="#818995" stroke-width="1.4" stroke-dasharray="3 3"/>
     <rect x="628" y="50" width="80" height="60" rx="12" fill="#fff" stroke="#e3e3e8"/><text x="640" y="72" font-size="9.5" font-weight="700">Backups</text><text x="640" y="86" fill="#6e6e73">weekly,</text><text x="640" y="98" fill="#6e6e73">encrypted</text>
-    <text x="354" y="160" text-anchor="middle" fill="#6e6e73">If both sides changed a scenario with the same name, both are kept. If two different Guides meet, one becomes a saved plan. The merge is pure functions, unit-tested.</text>
+    <text x="354" y="160" text-anchor="middle" fill="#6e6e73">A scenario changed on both sides is kept twice; a profile deleted on one device can't return. The merge is pure functions, unit-tested.</text>
   </g>
 </svg>
 <div class="row" style="margin-top:14px;gap:18px">
   <div class="col card">
     <div class="label" style="color:var(--gain)">What an account stores</div>
-    <ul class="ticks sm"><li>Email, and a first name if given</li><li>The household: ages, retirement age, state, savings, monthly saving, income, spending</li><li>Saved scenarios, by tool</li><li>Guide answers and plan, and the Paycheck plan</li><li>When each was last changed</li></ul>
+    <ul class="ticks sm"><li>Email, and a first name if given</li><li>The household: ages, retirement age, state, savings, monthly saving, income, spending</li><li>Saved scenarios, by tool</li><li>Guide answers and plan, and the Paycheck plan</li><li>The Dashboard, one or more profiles, and which lessons were read</li><li>Whether the check-in email is off, and when each went out</li></ul>
   </div>
   <div class="col card">
     <div class="label" style="color:var(--loss)">What it never stores</div>
-    <ul class="ticks sm"><li>Numbers typed into a tool but not saved (they stay in the tab, and survive a reload)</li><li>Browsing activity</li><li>Anything for advertisers: there are none, and no data is sold or shared</li><li>Share-link inputs, which ride after the # and never reach a server</li></ul>
+    <ul class="ticks sm"><li>Numbers typed into a tool but not saved (they stay in the tab, and survive a reload)</li><li>Browsing activity</li><li>Bank logins: Dashboard balances are typed in by hand</li><li>Anything for advertisers: there are none, and no data is sold or shared</li><li>Share-link inputs, which ride after the # and never reach a server</li></ul>
   </div>
   <div class="col card">
     <div class="label">Signing in, and out for good</div>
-    <ul class="ticks sm"><li>A 6-digit code by email, or Continue with Google (whose script loads only when the sign-in box opens)</li><li>Download everything, any time</li><li>Delete the account: every session is signed out first, then the account and its synced data are deleted. It can't be undone</li></ul>
+    <ul class="ticks sm"><li>A 6-digit code by email, or Continue with Google (whose script loads only when the sign-in box opens)</li><li>Download everything, any time</li><li>Delete the account: every device is signed out first, then the account and everything synced, the Dashboard included, is deleted. It can't be undone</li></ul>
   </div>
 </div>
-<div class="row" style="margin-top:16px;gap:22px;align-items:center"><div style="width:250px;flex:none"><img src="../shots/crops/signin_dialog.png" style="width:100%;border-radius:14px;border:1px solid rgba(23,25,28,.14)"></div><div class="col"><div class="h3" style="font-size:17px">Signing in, as it looks on the site.</div><p class="muted" style="font-size:11px">No password to remember: a code by email, or Google. The dialog says up front that an account is optional and that data is never sold or shared.</p><p class="muted" style="font-size:11px">The privacy page names every service that touches data (Supabase, Google, Resend, Vercel, Cloudflare and Sentry) and what each one sees. A dedicated test script checks the row-level security rules.</p></div></div>
+<div class="row" style="margin-top:16px;gap:22px;align-items:center"><div style="width:210px;flex:none"><img src="../shots/crops/signin_dialog.png" style="width:100%;border-radius:14px;border:1px solid rgba(23,25,28,.14)"></div><div class="col"><div class="h3" style="font-size:17px">Signing in, as it looks on the site.</div><p class="muted" style="font-size:11px">No password to remember: a code by email, or Google. The dialog says up front that an account is optional and that data is never sold or shared.</p><p class="muted" style="font-size:11px">The privacy page names every service that touches data (Supabase, Google, Resend, Vercel, Cloudflare and Sentry) and what each one sees. A dedicated test script checks the row-level security rules.</p></div></div>
 <!--PAGE-->
 <div style="margin-top:14px">
   <div class="eyebrow" style="color:var(--gray)">Where the numbers come from</div>
-  <h1 class="title" style="font-size:36px">22 figures, each with a source and a due date.</h1>
+  <h1 class="title" style="font-size:36px">24 figures, each with a source and a due date.</h1>
   <p class="lede" style="max-width:680px">Tax rules, Medicare and ACA prices, market history and sensible defaults all go stale. Each one is tracked in a list with its source, how often it changes, when it was last updated and when it is next due. Anything coming due is flagged at the start of every working session.</p>
 </div>
 <div class="row" style="margin-top:12px;gap:20px">
@@ -237,6 +239,7 @@
       <tr><td>Contribution limits</td><td>IRS notices, incl. HSA limits</td><td>Yearly</td></tr>
       <tr><td>Social Security figures</td><td>SSA's October fact sheet</td><td>Yearly</td></tr>
       <tr><td>State income tax, 50 + DC</td><td>Tax Foundation's January survey, state revenue departments</td><td>Yearly</td></tr>
+      <tr><td>Local income tax</td><td>Tax Foundation; each state's revenue department</td><td>Yearly</td></tr>
       <tr><td>State retirement rules</td><td>State revenue departments, checked against Tax Foundation and AARP</td><td>Yearly</td></tr>
       <tr><td>RMD tables</td><td>IRS Publication 590-B</td><td>Yearly check</td></tr>
       <tr class="grp"><td colspan="3">Healthcare</td></tr>
@@ -260,9 +263,9 @@
     <div class="label" style="margin-top:12px">The rules for every update</div>
     <ul class="ticks sm">
       <li>Figures are never invented. Each is cited in a comment beside it.</li>
-      <li>A new tax year is added beside the old one, never over it. Income Tax lets you pick the year.</li>
+      <li>A new tax year is added beside the old one, never over it, and Income Tax will then let you pick the year.</li>
       <li>After an update the whole check suite runs, and every expected move is reviewed before baselines are re-recorded.</li>
-      <li>Articles are re-reviewed every 90 days and show the month.</li>
+      <li>Articles and the 66 lessons are re-reviewed every 90 days and show the month.</li>
     </ul>
   </div>
 </div>

@@ -1,16 +1,17 @@
 {
   "name": "retcalc-marketing",
   "version": "1.0.0",
-  "description": "Builds the RetCalc marketing package, one-pager and deck. See ../README.md.",
+  "description": "Builds the RetCalc marketing package, the two one-pagers and the two decks. See ../README.md.",
   "scripts": {
     "setup": "npm ci && python3 -m venv .venv && .venv/bin/pip install -q -r requirements.txt",
-    "capture": "node shoot2.mjs && node recap.mjs && node guide.mjs && node rp.mjs && node plan.mjs && node story.mjs && node signin.mjs && node logo.mjs",
+    "capture": "rm -f ../.preview/capture/texts-*.jsonl && node shoot2.mjs && node recap.mjs && node guide.mjs && node rp.mjs && node plan.mjs && node story.mjs && node signin.mjs && node logo.mjs && THEME=dark node shoot2.mjs && THEME=dark node recap.mjs && THEME=dark node guide.mjs && THEME=dark node rp.mjs && THEME=dark node plan.mjs && THEME=dark node story.mjs && THEME=dark node signin.mjs && python3 captures.py",
     "prune": ".venv/bin/python prune.py",
-    "pdf": "node ../build/build.mjs && node render.mjs ../build/package.html ../RetCalc-Marketing-Package.pdf ../.preview/pdf && node render.mjs ../build/onepager.html ../RetCalc-One-Pager.pdf ../.preview/onepager && .venv/bin/python outline.py ../RetCalc-Marketing-Package.pdf ../build/outline.json",
-    "measure": "node measure.mjs ../build/package.html && node measure.mjs ../build/onepager.html",
-    "deck": "node ../deck/build-deck.mjs",
-    "deck:check": "mkdir -p ../.preview && cp ../RetCalc-Deck.pptx ../.preview/deck.pptx && osascript ppt2pdf.applescript \"$PWD/../.preview/deck.pptx\" \"$PWD/../.preview/deck.pdf\" && .venv/bin/python pdf2png.py ../.preview/deck.pdf ../.preview/deck 1.6",
-    "sheet": "node sheet.mjs"
+    "pdf": "node ../build/build.mjs && node render.mjs ../build/package.html ../RetCalc-Marketing-Package.pdf ../.preview/pdf && node render.mjs ../build/onepager.html ../RetCalc-One-Pager.pdf ../.preview/onepager && node ../build/build-dash-onepager.mjs && node render.mjs ../build/dash-onepager.html ../RetCalc-Dashboard-One-Pager.pdf ../.preview/dashone && .venv/bin/python outline.py ../RetCalc-Marketing-Package.pdf ../build/outline.json",
+    "measure": "node measure.mjs ../build/package.html && node measure.mjs ../build/onepager.html && node measure.mjs ../build/dash-onepager.html",
+    "deck": "node ../deck/build-deck.mjs && node ../deck/build-dash-deck.mjs",
+    "deck:check": "mkdir -p ../.preview && cp ../RetCalc-Deck.pptx ../.preview/deck.pptx && osascript ppt2pdf.applescript \"$PWD/../.preview/deck.pptx\" \"$PWD/../.preview/deck.pdf\" && .venv/bin/python pdf2png.py ../.preview/deck.pdf ../.preview/deck 1.6 && cp ../RetCalc-Dashboard-Deck.pptx ../.preview/dash-deck.pptx && osascript ppt2pdf.applescript \"$PWD/../.preview/dash-deck.pptx\" \"$PWD/../.preview/dash-deck.pdf\" && .venv/bin/python pdf2png.py ../.preview/dash-deck.pdf ../.preview/dash-deck 1.6",
+    "sheet": "node sheet.mjs",
+    "capture:dash": "node dash.mjs light desk,phone,landing,setup,report && node dash.mjs dark desk,phone,landing,setup && node pdfdash-extra.mjs && node dashone-extra.mjs && node dashdeck-extra.mjs"
   },
   "license": "UNLICENSED",
   "dependencies": {
