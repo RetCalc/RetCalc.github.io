@@ -18,7 +18,7 @@ function realPath(startMonth, months, stock = 1) {
 }
 
 /** Every 30-year stretch starting each January, 1926 to 1996, for a 60/40 mix: the cover art. */
-export function coverFan(w, h, { color = '#9aa4b2', hi = '#e3a93b' } = {}) {
+export function coverFan(w, h, { color = '#a1a1a6', hi = '#ffb340' } = {}) {
   const paths = [];
   for (let y = 0; y + 30 <= 100; y++) paths.push(realPath(y * 12, 360, 0.6));
   const max = 12; // y scale: 0..12x after inflation
@@ -53,18 +53,18 @@ export function centuryChart(w, h) {
     s += `<rect x="${xa}" y="${pad.t}" width="${Math.max(xb - xa, 3)}" height="${ih}" fill="#c2467a" fill-opacity=".09"/>`;
   }
   for (const v of [1, 10, 100, 1000]) {
-    s += `<line x1="${pad.l}" x2="${w - pad.r}" y1="${y(v)}" y2="${y(v)}" stroke="#e3e0d8"/>`;
-    s += `<text x="${pad.l - 6}" y="${y(v) + 3}" font-size="8.5" fill="#5b636e" text-anchor="end">$${fmt(v)}</text>`;
+    s += `<line x1="${pad.l}" x2="${w - pad.r}" y1="${y(v)}" y2="${y(v)}" stroke="#e3e3e8"/>`;
+    s += `<text x="${pad.l - 6}" y="${y(v) + 3}" font-size="8.5" fill="#6e6e73" text-anchor="end">$${fmt(v)}</text>`;
   }
-  for (const [a, , t] of eras) s += `<text x="${x((a - 1926) * 12) + 3}" y="${pad.t + 11 + (t === '2008 crash' ? 12 : 0)}" font-size="8.5" fill="#c2467a" font-weight="600" stroke="#faf9f6" stroke-width="3" paint-order="stroke">${t}</text>`;
-  for (let yr = 1930; yr <= 2020; yr += 10) s += `<text x="${x((yr - 1926) * 12)}" y="${h - 8}" font-size="8.5" fill="#5b636e" text-anchor="middle">${yr}</text>`;
+  for (const [a, , t] of eras) s += `<text x="${x((a - 1926) * 12) + 3}" y="${pad.t + 11 + (t === '2008 crash' ? 12 : 0)}" font-size="8.5" fill="#c2467a" font-weight="600" stroke="#f5f5f7" stroke-width="3" paint-order="stroke">${t}</text>`;
+  for (let yr = 1930; yr <= 2020; yr += 10) s += `<text x="${x((yr - 1926) * 12)}" y="${h - 8}" font-size="8.5" fill="#6e6e73" text-anchor="middle">${yr}</text>`;
   const d = p.filter((_, i) => i % 2 === 0).map((v, i) => `${i ? 'L' : 'M'}${x(i * 2).toFixed(1)},${y(v).toFixed(1)}`).join('');
-  s += `<path d="${d}" fill="none" stroke="#9a6200" stroke-width="2"/>`;
+  s += `<path d="${d}" fill="none" stroke="#975300" stroke-width="2"/>`;
   const end = p.at(-1);
-  s += `<circle cx="${x(N)}" cy="${y(end)}" r="3.5" fill="#9a6200"/>`;
-  s += `<text x="${x(N) + 7}" y="${y(end) - 2}" font-size="13" font-weight="700" fill="#17191c">$${fmt(Math.round(end))}</text>`;
-  s += `<text x="${x(N) + 7}" y="${y(end) + 10}" font-size="8.5" fill="#5b636e">by 2025</text>`;
-  s += `<text x="${x(0) + 4}" y="${y(1) - 6}" font-size="8.5" fill="#5b636e">$1 in Jan 1926</text>`;
+  s += `<circle cx="${x(N)}" cy="${y(end)}" r="3.5" fill="#975300"/>`;
+  s += `<text x="${x(N) + 7}" y="${y(end) - 2}" font-size="13" font-weight="700" fill="#1d1d1f">$${fmt(Math.round(end))}</text>`;
+  s += `<text x="${x(N) + 7}" y="${y(end) + 10}" font-size="8.5" fill="#6e6e73">by 2025</text>`;
+  s += `<text x="${x(0) + 4}" y="${y(1) - 6}" font-size="8.5" fill="#6e6e73">$1 in Jan 1926</text>`;
   s += '</svg>';
   return { svg: s, end };
 }

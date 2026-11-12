@@ -49,7 +49,7 @@ export async function icon(name, color, size = 256) {
 export async function coverArt(name, w, h, opts = {}) {
   const file = path.join(OUT, name + '.png');
   const f = coverFan(w, h, opts);
-  const svg = f.svg.replace('<svg ', `<svg style="background:#0e1116" `).replace('style="display:block;overflow:visible"', '');
+  const svg = f.svg.replace('<svg ', `<svg style="background:#000000" `).replace('style="display:block;overflow:visible"', '');
   await sharp(Buffer.from(svg), { density: 216 }).resize(w * 3, h * 3).png().toFile(file);
   return { path: file, ...f };
 }

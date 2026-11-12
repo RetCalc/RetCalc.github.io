@@ -1,5 +1,5 @@
 // One household through the real hand-offs: Budget/Paycheck -> Stages -> Social Security -> Drawdown.
-import {open,go,click,card,view,sleep,allCards,unstick,share} from './lib.mjs';
+import {open,go,click,card,view,sleep,allCards,unstick,share,CROPS,BASE} from './lib.mjs';
 import fs from 'fs';
 const {browser,page}=await open();
 page.on('dialog', d=>{console.log('  dialog:',d.message().slice(0,80)); d.accept();});
@@ -32,8 +32,8 @@ await view(page,P+'stages_copied');
 await page.evaluate(()=>document.querySelector('#btnKidsS')?.click()); await sleep(1200);
 console.log('3 kids dialog', await page.evaluate(()=>!!document.querySelector('#kdPlanned')));
 await typeIn('#kdPlanned','2'); await typeIn('#kdFirst','2'); await typeIn('#kdSpacing','3');
-await page.screenshot({path:'../shots/crops/'+P+'kids_dialog_view.png'});
-for (const t of ['Next: how you\'ll cover it','Build the stages','Use these','Build the stages']) { if (await page.evaluate(t=>[...document.querySelectorAll('button')].some(b=>b.getClientRects().length&&b.textContent.trim()===t),t)) { if(t==='Build the stages') await page.screenshot({path:'../shots/crops/'+P+'cover_dialog_view.png'}); await btn(t); } }
+await page.screenshot({path:CROPS+''+P+'kids_dialog_view.png'});
+for (const t of ['Next: how you\'ll cover it','Build the stages','Use these','Build the stages']) { if (await page.evaluate(t=>[...document.querySelectorAll('button')].some(b=>b.getClientRects().length&&b.textContent.trim()===t),t)) { if(t==='Build the stages') await page.screenshot({path:CROPS+''+P+'cover_dialog_view.png'}); await btn(t); } }
 await sleep(2500);
 console.log('3 stages', (await ss('retcalc.tool-stages.v1'))?.match(/"stages":\[.*?\]\]?/)?.[0]?.slice(0,900));
 await click(page,'Historical','Balance over time'); await sleep(1500);
@@ -44,7 +44,7 @@ const person=(birth,pay,start)=>({birth,src:'pay',pay,pia:'',start,stop:'65',cla
 await go(page,'/social-security','social',{status:'m',you:person('1992','92,000','22'),spouse:{...person('1994','68,000','23'),through:'92'},other:'40,000'});
 await view(page,P+'ss_view'); await allCards(page,P+'ss');
 // 5. Back to Stages, then Test withdrawals
-await page.goto('https://retcalc.app/stages',{waitUntil:'networkidle0'}); await sleep(3000);
+await page.goto(BASE+'/stages',{waitUntil:'networkidle0'}); await sleep(3000);
 await page.evaluate(()=>{const b=document.querySelector('#toDrawdownS');b.scrollIntoView({block:'center'});b.click()}); await sleep(4000);
 console.log('5 url',page.url().slice(0,40),'| toast',await toast());
 // Drawdown: 30 years from 65, with Social Security copied in

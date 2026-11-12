@@ -1,4 +1,4 @@
-import {open,go,click,card,view,sleep,allCards,unstick,share} from './lib.mjs';
+import {open,go,click,card,view,sleep,allCards,unstick,share,CROPS} from './lib.mjs';
 import fs from 'fs';
 const {browser,page}=await open();
 const src=fs.readFileSync('shoot2.mjs','utf8');
@@ -17,7 +17,7 @@ await go(page,'/mortgage','mortgage',{price:'450,000',downPct:'20',downAmt:'90,0
 await allCards(page,'mx');
 // tools compact
 await go(page,'/tools'); await click(page,'Compact'); await sleep(3000);
-await page.screenshot({path:'../shots/crops/tools_compact_full.png',fullPage:true});
+await page.screenshot({path:CROPS+'tools_compact_full.png',fullPage:true});
 await go(page,'/tools'); await sleep(6000);
-await page.screenshot({path:'../shots/crops/tools_charts_full.png',fullPage:true});
+await page.screenshot({path:CROPS+'tools_charts_full.png',fullPage:true});
 await browser.close();

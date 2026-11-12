@@ -1,6 +1,13 @@
 import puppeteer from 'puppeteer-core';
+// THEME=dark captures the site in dark mode into shots/crops-dark (same file
+// names), for the decks; the default is light into shots/crops, for the PDFs.
+// BASE points the captures at another copy of the site (default retcalc.app).
+export const THEME = process.env.THEME === 'dark' ? 'dark' : 'light';
+export const CROPS = new URL(THEME === 'dark' ? '../shots/crops-dark/' : '../shots/crops/', import.meta.url).pathname;
+(await import('fs')).mkdirSync(CROPS, { recursive: true });
+export const BASE = process.env.BASE || 'https://retcalc.app';
 export const sleep = ms => new Promise(s=>setTimeout(s,ms));
-export async function open(theme='light'){
+export async function open(theme=THEME){
   const browser = await puppeteer.launch({executablePath:(process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'), headless:true});
   const page = await browser.newPage();
   await page.setViewport({width:1440,height:900,deviceScaleFactor:2});
@@ -10,7 +17,7 @@ export async function open(theme='light'){
 export const share=(id,d)=>'#s='+Buffer.from(JSON.stringify({t:id,d})).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 export async function go(page, route, id, data){
   await page.goto('about:blank');
-  await page.goto('https://retcalc.app'+route+(id?share(id,data):''),{waitUntil:'networkidle0',timeout:60000});
+  await page.goto(BASE+route+(id?share(id,data):''),{waitUntil:'networkidle0',timeout:60000});
   await sleep(2500);
 }
 // click the first visible button/role=tab etc whose trimmed text equals txt (within optional card heading scope)
@@ -32,11 +39,11 @@ export async function card(page, heading, file, pad=16, idx=0){
     const c=cs[idx]; if(!c) return null; const b=c.getBoundingClientRect(); return {x:b.x+scrollX,y:b.y+scrollY,width:b.width,height:b.height};
   },heading,idx);
   if(!box){console.log('  ! no card', heading); return}
-  await page.screenshot({path:`../shots/crops/${file}.png`, clip:{x:box.x-pad,y:box.y-pad,width:box.width+2*pad,height:box.height+2*pad}, captureBeyondViewport:true});
+  await page.screenshot({path:`${CROPS}${file}.png`, clip:{x:box.x-pad,y:box.y-pad,width:box.width+2*pad,height:box.height+2*pad}, captureBeyondViewport:true});
   console.log('  card', file, Math.round(box.width)+'x'+Math.round(box.height));
 }
 export async function view(page, file, y=0, h=900){
-  await page.screenshot({path:`../shots/crops/${file}.png`, clip:{x:0,y,width:1440,height:h}, captureBeyondViewport:true});
+  await page.screenshot({path:`${CROPS}${file}.png`, clip:{x:0,y,width:1440,height:h}, captureBeyondViewport:true});
   console.log('  view', file);
 }
 export async function unstick(page){await page.evaluate(()=>{for(const e of document.querySelectorAll('body *')){const p=getComputedStyle(e).position;if(p==='sticky'||p==='fixed'){e.style.setProperty('position','static','important')}}; for(const e of document.querySelectorAll('body *')){const o=getComputedStyle(e);if((o.overflowY==='auto'||o.overflowY==='scroll')&&e.scrollHeight>e.clientHeight+4){e.style.setProperty('max-height','none','important');e.style.setProperty('overflow','visible','important')}}}); await sleep(500);}
@@ -46,7 +53,7 @@ export async function allCards(page, prefix, pad=16){
   let i=0;
   for(const b of boxes){
     const slug=b.t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,20);
-    await page.screenshot({path:`../shots/crops/${prefix}_${i}_${slug}.png`, clip:{x:b.x-pad,y:b.y-pad,width:b.w+2*pad,height:b.h+2*pad}, captureBeyondViewport:true});
+    await page.screenshot({path:`${CROPS}${prefix}_${i}_${slug}.png`, clip:{x:b.x-pad,y:b.y-pad,width:b.w+2*pad,height:b.h+2*pad}, captureBeyondViewport:true});
     i++;
   }
   console.log('  ',prefix, boxes.length,'cards');

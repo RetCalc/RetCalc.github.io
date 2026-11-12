@@ -158,13 +158,13 @@ function hubDiagram() {
   const left = [[24, 'Calculator', 'var(--amber)'], [90, 'Readiness Guide', 'var(--rose)'], [156, 'Paycheck to Retirement', 'var(--rose)']];
   const right = [[24, 'Retirement income tools', 'var(--sky)'], [90, 'Saving and investing tools', 'var(--teal)'], [156, 'Everyday money tools', 'var(--lavender)']];
   let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;margin-top:8px">`;
-  for (const [y] of left) s += `<path d="M${lw + 1},${y} C${(lw + cx - 86) / 2},${y} ${(lw + cx - 86) / 2},${cy} ${cx - 86},${cy}" fill="none" stroke="#cfcac0" stroke-width="1.4" stroke-dasharray="3 3"/>`;
-  for (const [y] of right) s += `<path d="M${cx + 86},${cy} C${(cx + 86 + W - rw) / 2},${cy} ${(cx + 86 + W - rw) / 2},${y} ${W - rw - 1},${y}" fill="none" stroke="#cfcac0" stroke-width="1.4" stroke-dasharray="3 3"/>`;
-  s += `<rect x="${cx - 86}" y="${cy - 34}" width="172" height="68" rx="12" fill="#f3e6cc" stroke="#e9d3a8"/>`;
-  s += `<text x="${cx}" y="${cy - 9}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#17191c">Your household</text>`;
-  s += `<text x="${cx}" y="${cy + 7}" text-anchor="middle" font-size="8.5" fill="#5b636e">ages · state · savings</text>`;
-  s += `<text x="${cx}" y="${cy + 19}" text-anchor="middle" font-size="8.5" fill="#5b636e">income · spending</text>`;
-  const pill = (x, y, w, t, c) => `<rect x="${x + 0.5}" y="${y - 13}" width="${w - 1}" height="26" rx="13" fill="#fff" stroke="#e3e0d8"/><circle cx="${x + 14}" cy="${y}" r="4" fill="${c}"/><text x="${x + 24}" y="${y + 3.5}" font-size="9.5" font-weight="600" fill="#17191c">${t}</text>`;
+  for (const [y] of left) s += `<path d="M${lw + 1},${y} C${(lw + cx - 86) / 2},${y} ${(lw + cx - 86) / 2},${cy} ${cx - 86},${cy}" fill="none" stroke="#c7c7cc" stroke-width="1.4" stroke-dasharray="3 3"/>`;
+  for (const [y] of right) s += `<path d="M${cx + 86},${cy} C${(cx + 86 + W - rw) / 2},${cy} ${(cx + 86 + W - rw) / 2},${y} ${W - rw - 1},${y}" fill="none" stroke="#c7c7cc" stroke-width="1.4" stroke-dasharray="3 3"/>`;
+  s += `<rect x="${cx - 86}" y="${cy - 34}" width="172" height="68" rx="12" fill="#fcf1e0" stroke="#f8dcb2"/>`;
+  s += `<text x="${cx}" y="${cy - 9}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">Your household</text>`;
+  s += `<text x="${cx}" y="${cy + 7}" text-anchor="middle" font-size="8.5" fill="#6e6e73">ages · state · savings</text>`;
+  s += `<text x="${cx}" y="${cy + 19}" text-anchor="middle" font-size="8.5" fill="#6e6e73">income · spending</text>`;
+  const pill = (x, y, w, t, c) => `<rect x="${x + 0.5}" y="${y - 13}" width="${w - 1}" height="26" rx="13" fill="#fff" stroke="#e3e3e8"/><circle cx="${x + 14}" cy="${y}" r="4" fill="${c}"/><text x="${x + 24}" y="${y + 3.5}" font-size="9.5" font-weight="600" fill="#1d1d1f">${t}</text>`;
   for (const [y, t, c] of left) s += pill(0, y, lw, t, c);
   for (const [y, t, c] of right) s += pill(W - rw, y, rw, t, c);
   return s + '</svg>';
@@ -207,9 +207,9 @@ function journey() {
   ];
   const W = 708;
   let s = `<div style="position:relative;margin-top:26px">`;
-  s += `<svg viewBox="0 0 ${W} 40" width="100%" style="display:block"><defs><linearGradient id="road" x1="0" x2="1"><stop offset="0" stop-color="#7541b8"/><stop offset=".35" stop-color="#1f8f7e"/><stop offset=".7" stop-color="#2f7fc4"/><stop offset="1" stop-color="#9a6200"/></linearGradient></defs>
-    <rect x="0" y="17" width="${W - 14}" height="6" rx="3" fill="url(#road)"/><path d="M${W - 16},8 L${W},20 L${W - 16},32 Z" fill="#9a6200"/>
-    ${[0, 1, 2, 3].map((i) => `<circle cx="${12 + i * 180}" cy="20" r="9" fill="#faf9f6" stroke="#17191c" stroke-width="2"/><text x="${12 + i * 180}" y="23.5" text-anchor="middle" font-size="9.5" font-weight="700">${i + 1}</text>`).join('')}
+  s += `<svg viewBox="0 0 ${W} 40" width="100%" style="display:block"><defs><linearGradient id="road" x1="0" x2="1"><stop offset="0" stop-color="#7541b8"/><stop offset=".35" stop-color="#1f8f7e"/><stop offset=".7" stop-color="#2f7fc4"/><stop offset="1" stop-color="#975300"/></linearGradient></defs>
+    <rect x="0" y="17" width="${W - 14}" height="6" rx="3" fill="url(#road)"/><path d="M${W - 16},8 L${W},20 L${W - 16},32 Z" fill="#975300"/>
+    ${[0, 1, 2, 3].map((i) => `<circle cx="${12 + i * 180}" cy="20" r="9" fill="#f5f5f7" stroke="#1d1d1f" stroke-width="2"/><text x="${12 + i * 180}" y="23.5" text-anchor="middle" font-size="9.5" font-weight="700">${i + 1}</text>`).join('')}
     </svg>`;
   s += `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:8px">`;
   for (const [t, sub, c, xs] of cols) {
@@ -643,17 +643,17 @@ function calendar() {
   ];
   const lw = 82, cw = 12.6, rh = 15, W = lw + cw * 12, H = 16 + rows.length * rh;
   let s = `<svg viewBox="0 0 ${W} ${H + 14}" width="100%" style="display:block">`;
-  'JFMAMJJASOND'.split('').forEach((m, i) => { s += `<text x="${lw + i * cw + cw / 2}" y="10" font-size="7.5" fill="#5b636e" text-anchor="middle">${m}</text>`; });
+  'JFMAMJJASOND'.split('').forEach((m, i) => { s += `<text x="${lw + i * cw + cw / 2}" y="10" font-size="7.5" fill="#6e6e73" text-anchor="middle">${m}</text>`; });
   rows.forEach(([l, light, strong], r) => {
     const y = 16 + r * rh;
-    s += `<text x="0" y="${y + 9.5}" font-size="8" fill="#17191c">${l}</text>`;
+    s += `<text x="0" y="${y + 9.5}" font-size="8" fill="#1d1d1f">${l}</text>`;
     for (let i = 0; i < 12; i++) {
-      const c = strong.includes(i) ? '#9a6200' : light.includes(i) ? '#e9d3a8' : '#f0ede6';
+      const c = strong.includes(i) ? '#975300' : light.includes(i) ? '#f8dcb2' : '#f2f2f4';
       s += `<rect x="${lw + i * cw + 1}" y="${y}" width="${cw - 2}" height="${rh - 3}" rx="2" fill="${c}"/>`;
     }
   });
-  s += `<rect x="${lw}" y="${H + 4}" width="8" height="8" rx="2" fill="#e9d3a8"/><text x="${lw + 11}" y="${H + 11}" font-size="7.5" fill="#5b636e">prepare</text>`;
-  s += `<rect x="${lw + 52}" y="${H + 4}" width="8" height="8" rx="2" fill="#9a6200"/><text x="${lw + 63}" y="${H + 11}" font-size="7.5" fill="#5b636e">update or switch</text>`;
+  s += `<rect x="${lw}" y="${H + 4}" width="8" height="8" rx="2" fill="#f8dcb2"/><text x="${lw + 11}" y="${H + 11}" font-size="7.5" fill="#6e6e73">prepare</text>`;
+  s += `<rect x="${lw + 52}" y="${H + 4}" width="8" height="8" rx="2" fill="#975300"/><text x="${lw + 63}" y="${H + 11}" font-size="7.5" fill="#6e6e73">update or switch</text>`;
   return s + '</svg>';
 }
 
@@ -782,7 +782,7 @@ pages[TOC_AT] = { pn: tocPn, html: `<section class="page">${tocHtml}<div class="
 /* ---------- write ---------- */
 const head = `<!doctype html><html><head><meta charset="utf-8"><title>RetCalc — Product Overview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css"></head><body>`;
 // The PDF's bookmark sidebar: each part, with its pages under it (tooling/outline.py reads this).
 const outline = [

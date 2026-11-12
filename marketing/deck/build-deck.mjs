@@ -1,5 +1,5 @@
 // The RetCalc deck: a 14-slide talk, then an appendix with every tool and the
-// whole build. Dark Graphite slides with one amber accent, as on the site.
+// whole build. Night (Apple black) slides with one amber accent, as on the site.
 // Build: npm run deck (from tooling/). See ../README.md.
 import fs from 'fs';
 import { createRequire } from 'module';
@@ -9,12 +9,12 @@ const pptxgen = require('../tooling/node_modules/pptxgenjs');
 const sharp = require('../tooling/node_modules/sharp');
 import { applyTheme } from './apply-theme.mjs';
 
-/* ---------- theme: the site's Graphite palette ---------- */
+/* ---------- theme: the site's Clear Glass night palette (DESIGN.md) ---------- */
 const THEME = {
-  name: 'RetCalc Graphite', headFontFace: 'Arial', bodyFontFace: 'Arial',
-  colors: { dk1: '0E1116', lt1: 'FFFFFF', dk2: '1C222B', lt2: 'E8EBF0', accent1: 'E3A93B', accent2: '5AA9E6', accent3: '46B9A6', accent4: '9670EC', accent5: 'E0749B', accent6: '8A94A3', hlink: 'E3A93B', folHlink: '9AA4B2' },
+  name: 'RetCalc Clear Glass Night', headFontFace: 'Arial', bodyFontFace: 'Arial',
+  colors: { dk1: '000000', lt1: 'FFFFFF', dk2: '1C1C1E', lt2: 'F5F5F7', accent1: 'FFB340', accent2: '5AA9E6', accent3: '46B9A6', accent4: '9670EC', accent5: 'E0749B', accent6: '8A94A3', hlink: 'FFB340', folHlink: 'A1A1A6' },
 };
-const X = { ground: '0E1116', surface: '151A21', raised: '1C222B', rule: '2A313C', text: 'E8EBF0', muted: '9AA4B2', amber: 'E3A93B', sky: '5AA9E6', teal: '46B9A6', lav: '9670EC', rose: 'E0749B', gray: '8A94A3', gain: '4CC38A', loss: 'F0716A', paper: 'F3F1EC' };
+const X = { ground: '000000', surface: '1C1C1E', raised: '2C2C2E', rule: '38383A', text: 'F5F5F7', muted: 'A1A1A6', amber: 'FFB340', sky: '5AA9E6', teal: '46B9A6', lav: '9670EC', rose: 'E0749B', gray: '8A94A3', gain: '30D158', loss: 'FF6961', paper: 'F5F5F7' };
 const GROUP = {
   calc: { name: 'Calculators', color: X.amber }, income: { name: 'Retirement income', color: X.sky },
   saving: { name: 'Saving and investing', color: X.teal }, everyday: { name: 'Everyday money', color: X.lav },
@@ -549,7 +549,7 @@ A('The stack', async () => {
   const st = [['39', 'page routes'], ['~55,600', 'lines of app code'], ['~7,400', 'lines in the engine and its data'], ['29', 'explanatory articles']];
   st.forEach(([n, l], i) => { const x = 8.5 + (i % 2) * 2.15, y = 1.75 + Math.floor(i / 2) * 1.45; rect(s, x, y, 2.0, 1.3, X.raised, { round: true, r: 0.12 }); stat(s, x + 0.2, y + 0.2, 1.7, n, l, { size: 28, nh: 0.5, lh: 0.5, color: i === 0 ? X.amber : X.text }); });
   T(s, 'THE PALETTE', { x: 8.5, y: 4.75, w: 4.2, h: 0.3, fontSize: 11, bold: true, color: X.muted, charSpacing: 1 });
-  [['0E1116', 'Graphite'], ['1C222B', 'Raised'], ['E3A93B', 'Amber'], ['FAF9F6', 'Paper'], ['9A6200', 'Amber, light']].forEach(([c, n], i) => { rect(s, 8.5 + i * 0.84, 5.1, 0.74, 0.74, c, { round: true, r: 0.08, line: X.rule }); T(s, n, { x: 8.5 + i * 0.84, y: 5.9, w: 0.8, h: 0.3, fontSize: 10, color: X.muted }); });
+  [['000000', 'Night'], ['1C1C1E', 'Surface'], ['FF9F0A', 'Amber'], ['F5F5F7', 'Glass'], ['975300', 'Amber, light']].forEach(([c, n], i) => { rect(s, 8.5 + i * 0.84, 5.1, 0.74, 0.74, c, { round: true, r: 0.08, line: X.rule }); T(s, n, { x: 8.5 + i * 0.84, y: 5.9, w: 0.8, h: 0.3, fontSize: 10, color: X.muted }); });
   [X.sky, X.teal, X.rose, X.lav, X.gray, X.gain, X.loss].forEach((c, i) => rect(s, 8.5 + i * 0.6, 6.35, 0.5, 0.22, c, { round: true, r: 0.05 }));
   T(s, 'Design rules are enforced by the linter: no raw colors, no one-off sizes, no inline styles.', { x: M, y: 5.6, w: 7.4, h: 0.8, fontSize: 14, color: X.muted });
 });
