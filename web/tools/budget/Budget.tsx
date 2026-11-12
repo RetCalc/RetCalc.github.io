@@ -53,7 +53,8 @@ export function Budget() {
   const fixed = (r: BudgetRow) => lockedRows.has("row:" + (r.slot ?? r.desc));
   // An emergency budget, once built: a second column, the budget cut back
   // for living on the emergency fund.
-  const dash = scope?.name === "dashboard", emerg = !!s.efEmerg;
+  // It can be hidden from the list and still size the emergency fund.
+  const dash = scope?.name === "dashboard", emerg = !!s.efEmerg, emCol = emerg && !s.efHide;
   // A phone has room for one amount a line: which budget it shows.
   const [emView, setEmView] = useState<"normal" | "emergency">("normal");
   // On its own, or in the Dashboard's Tools (saved scenarios, nothing kept
@@ -161,9 +162,9 @@ export function Budget() {
             <CardAction><CsvButton id="bgCsv" label="budget" title="Download your budget as a CSV" rows={csvRows} filename="retcalc-budget.csv" /></CardAction>
           </CardHeader>
           <CardContent>
-            <div id="bgList" ref={listRef} data-emerg={emerg ? "" : undefined} data-emview={emerg ? emView : undefined}>
-              {emerg ? <div className="bgcols" aria-hidden="true"><span>Normal</span><span>In an emergency</span></div> : null}
-              {emerg ? <div className="bgview"><Segmented attr="data-emview" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={emView} onChange={setEmView} /></div> : null}
+            <div id="bgList" ref={listRef} data-emerg={emCol ? "" : undefined} data-emview={emCol ? emView : undefined}>
+              {emCol ? <div className="bgcols" aria-hidden="true"><span>Normal</span><span>In an emergency</span></div> : null}
+              {emCol ? <div className="bgview"><Segmented attr="data-emview" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={emView} onChange={setEmView} /></div> : null}
               {groups.map((g) => (
                 <div className="bggroup" key={g.name}>
                   <div className="bggroup-h">
@@ -217,7 +218,7 @@ export function Budget() {
                         </span>
                       )}
                       <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} readOnly={fixed(r)} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount" + (fixed(r) ? ", set on Home" : "")} /></Affixed>
-                      {emerg ? <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="emerg" data-i={i} value={r.emerg ?? r.amount} onValueChange={(v) => setRow(i, { emerg: v })} aria-label={r.desc + " in an emergency"} /></Affixed> : null}
+                      {emCol ? <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="emerg" data-i={i} value={r.emerg ?? r.amount} onValueChange={(v) => setRow(i, { emerg: v })} aria-label={r.desc + " in an emergency"} /></Affixed> : null}
                       <Segmented size="compact" attr="data-fv" options={dash ? ([[12, "Per month"], [1, "Per year"]] as const) : ([[12, "/mo"], [1, "/yr"]] as const)} value={r.freq} onChange={(f) => { if (!fixed(r)) setRow(i, { freq: f }); }} />
                       {isLockedRow(r, i) || fixed(r) ? <span className="delspace"></span> : (
                         <Button variant="ghost" size="icon-sm" title="Remove this line" aria-label={"Remove " + (r.desc || "this line")} onClick={() => removeLine(i)}><XIcon aria-hidden="true" /></Button>
@@ -292,10 +293,13 @@ export function Budget() {
                     <>
                       <div className="flex"><Segmented id="efBasis" attr="data-efb" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={s.efBasis} onChange={set("efBasis")} /></div>
                       <p className="hint m-0">{s.efBasis === "emergency" ? "Sized on the emergency budget: " + money(emergencyYear(s) / 12) + " per month." : "Sized on your normal budget. Switch to size it on the emergency one."}</p>
-                      <div className="flex"><Button variant="link" size="inline-xs" onClick={() => setState((c) => ({ ...c, efEmerg: false, efBasis: "normal" }))}>Remove the emergency budget</Button></div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1">
+                        <Button variant="link" size="inline-xs" aria-pressed={!!s.efHide} onClick={() => setState((c) => ({ ...c, efHide: !c.efHide }))}>{s.efHide ? "Show the emergency column" : "Hide the emergency column"}</Button>
+                        <Button variant="link" size="inline-xs" onClick={() => setState((c) => ({ ...c, efEmerg: false, efBasis: "normal", efHide: false }))}>Remove the emergency budget</Button>
+                      </div>
                     </>
                   ) : (
-                    <Button variant="outline" size="sm" onClick={() => setState((c) => ({ ...c, efEmerg: true, efBasis: "emergency", rows: c.rows.map((r) => ({ ...r, emerg: r.emerg ?? r.amount })) }))}>
+                    <Button variant="outline" size="sm" onClick={() => setState((c) => ({ ...c, efEmerg: true, efBasis: "emergency", efHide: false, rows: c.rows.map((r) => ({ ...r, emerg: r.emerg ?? r.amount })) }))}>
                       <PlusIcon data-icon="inline-start" aria-hidden="true" />Build an emergency budget
                     </Button>
                   )}

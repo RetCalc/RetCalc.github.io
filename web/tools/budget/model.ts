@@ -123,6 +123,9 @@ export const BUDGET_DEFAULTS = {
       fund is sized on it rather than the budget itself. */
   efEmerg: false,
   efBasis: "normal" as "normal" | "emergency",
+  /** The emergency budget's column hidden from the list: still kept, and
+      still what the emergency fund is sized on when chosen. */
+  efHide: false,
   ...PAYCHECK_DEFAULTS,
 };
 export type BudgetInputs = typeof BUDGET_DEFAULTS;
