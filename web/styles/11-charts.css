@@ -145,7 +145,8 @@ svg{display:block;width:100%;height:auto}
     border-top:1px solid var(--line);border-bottom:0;
     background:var(--panel);
     padding-bottom:env(safe-area-inset-bottom,0px);
-    box-shadow:var(--ds-float-up)}
+    box-shadow:var(--ds-float-up);
+    view-transition-name:tabbar} /* steady through page changes: 03-navigation.css */
   /* With the rail at the bottom, the Guide's progress card pins to the top. */
   html.pwa .gd-top{top:var(--sb-clear)}
   /* On a fixed-bottom bar the scroll shadow shouldn't change, so keep it. */

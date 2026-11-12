@@ -1,7 +1,8 @@
 "use client";
 
 /* The header's account button. Signed out: "Sign in". Signed in: the first
-   name (or email) and a menu with Account and Sign out. On a phone the
+   name (or email) and a menu with Home (off the homepage), Dashboard,
+   Account and Sign out. On a phone the
    header has no room for both this and the theme button, so this one takes
    the theme button's place and the theme switch moves into its menu, with
    the household (whose header button a phone hides). With
@@ -9,8 +10,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { CircleUserRoundIcon, HomeIcon, LayoutGridIcon, LogOutIcon, MoonIcon, SunIcon, UserRoundIcon } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { CircleUserRoundIcon, HomeIcon, LayoutGridIcon, LogOutIcon, MoonIcon, SunIcon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { useAccount } from "./AccountProvider";
 import { usePopup } from "@/components/shell/Popup";
@@ -39,14 +40,21 @@ export function AccountButton({ inDashboard = false }: { inDashboard?: boolean }
   const { configured, ready, account, sync, setStep, signOut } = useAccount();
   const showPopup = usePopup();
   const router = useRouter();
+  const path = usePathname();
   const theme = useTheme();
   const phone = usePhone();
   const { setPanelOpen } = useHousehold();
   if (!configured) return null;
 
+  /* A way back to the homepage: the header's logo is the other, but the
+     home-screen app hides it, which left no way home from a tab. */
+  const homeItem = inDashboard || path === "/" ? null : (
+    <DropdownMenuItem render={<Link href="/" />}><HomeIcon />Home</DropdownMenuItem>
+  );
+
   const themeItem = !phone ? null : (
     <>
-      {inDashboard ? null : <DropdownMenuItem onClick={() => setPanelOpen(true)}><HomeIcon />Your household</DropdownMenuItem>}
+      {inDashboard ? null : <DropdownMenuItem onClick={() => setPanelOpen(true)}><UsersRoundIcon />Your household</DropdownMenuItem>}
       <DropdownMenuItem onClick={() => setThemeChoice(theme === "dark" ? "light" : "dark")}>
         {theme === "dark" ? <SunIcon /> : <MoonIcon />}{theme === "dark" ? "Light theme" : "Dark theme"}
       </DropdownMenuItem>
@@ -63,6 +71,7 @@ export function AccountButton({ inDashboard = false }: { inDashboard?: boolean }
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56" data-acct-menu="">
             <DropdownMenuItem onClick={() => setStep({ at: "start" })}><UserRoundIcon />Sign in</DropdownMenuItem>
+            {homeItem}
             {themeItem}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -88,6 +97,7 @@ export function AccountButton({ inDashboard = false }: { inDashboard?: boolean }
             </DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
+          {homeItem}
           {inDashboard ? null : <DropdownMenuItem render={<Link href="/dashboard" />}><LayoutGridIcon />Dashboard</DropdownMenuItem>}
           <DropdownMenuItem render={<Link href="/account" />} onClick={() => router.prefetch("/account")}><UserRoundIcon />Account</DropdownMenuItem>
           {themeItem}

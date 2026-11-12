@@ -528,7 +528,8 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
   .dsh { --pin-top: calc(8px + env(safe-area-inset-top)); }
   .dsh-tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
     padding: 0 max(4px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(4px, env(safe-area-inset-left));
-    background: var(--ds-surface); border-top: 1px solid var(--ds-rule); }
+    background: var(--ds-surface); border-top: 1px solid var(--ds-rule);
+    view-transition-name: dsh-tabbar; /* steady through page changes: 03-navigation.css */ }
   /* Wider screens keep the tabs together in the middle. */
   @media (min-width: 600px) { .dsh-tabbar { grid-template-columns: repeat(5, 120px); justify-content: center; } }
   /* A Help guide has its own Back and Next along the bottom: the bar
