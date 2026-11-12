@@ -194,6 +194,13 @@ Every file uses the site's Clear Glass design system (`../DESIGN.md`).
   on Apple devices and Inter elsewhere; Inter embeds in a PDF anywhere). The
   decks use Arial so they lay out the same on any computer; the site's type
   appears only inside the screenshots.
+- **Motion:** both decks fade between slides (0.3 s), and a few talk slides
+  build click by click where the order is the point: the main deck's
+  household story, and the Dashboard deck's profile hub, month in the life,
+  and where your numbers live. `deck/motion.mjs` adds them after the build;
+  a shape joins a build by its name (`objectName: 'build:N'`, or `BUILD.n`
+  in the Dashboard deck). Nothing else animates, and the appendices don't.
+  PDF exports show each slide as it ends, so check builds in a slideshow.
 - **Phones:** phone captures are 390 points wide and sit in a drawn iPhone
   outline (`tooling/phone.mjs`, `framePhone()`), with a status bar and home
   bar added around the page.

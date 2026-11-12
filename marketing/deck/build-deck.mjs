@@ -9,6 +9,7 @@ const require = createRequire(import.meta.url);
 const pptxgen = require('../tooling/node_modules/pptxgenjs');
 const sharp = require('../tooling/node_modules/sharp');
 import { applyTheme } from './apply-theme.mjs';
+import { applyMotion } from './motion.mjs';
 
 /* ---------- theme: the site's Clear Glass night palette (DESIGN.md) ---------- */
 const THEME = {
@@ -372,23 +373,27 @@ await feature({
     ['Social Security', '$6,236', 'per month for the two of them, both claiming at 67', 'st_ss_1_pick-the-age-you-cla', null, null],
   ];
   const cw = 2.72, gap = (W - 2 * M - 4 * cw) / 3;
+  // Click by click, in the story's order: Budget is there, then Advanced,
+  // Social Security, Drawdown (with both hand-offs into it), then the result.
+  const stepAt = [0, 1, 3, 2], arrowAt = [1, 3, 3];
   for (let i = 0; i < 4; i++) {
     const [tool, n, l, pic, hand, dir] = steps[i];
     const x = M + i * (cw + gap), y = 2.2;
-    rect(s, x, y, cw, 3.05, X.raised, { round: true, r: 0.14 });
-    T(s, `${i + 1}  ${tool.toUpperCase()}`, { x: x + 0.25, y: y + 0.22, w: cw - 0.5, h: 0.3, fontSize: 11, bold: true, color: X.amber, charSpacing: 1 });
-    T(s, n, { x: x + 0.25, y: y + 0.55, w: cw - 0.5, h: 0.6, fontSize: 28, bold: true, color: i === 2 ? X.gain : X.text });
-    T(s, l, { x: x + 0.25, y: y + 1.17, w: cw - 0.5, h: 0.8, fontSize: 12, color: X.muted });
+    const name = stepAt[i] ? 'build:' + stepAt[i] : undefined, an = 'build:' + arrowAt[i];
+    rect(s, x, y, cw, 3.05, X.raised, { round: true, r: 0.14, name });
+    T(s, `${i + 1}  ${tool.toUpperCase()}`, { x: x + 0.25, y: y + 0.22, w: cw - 0.5, h: 0.3, fontSize: 11, bold: true, color: X.amber, charSpacing: 1, objectName: name });
+    T(s, n, { x: x + 0.25, y: y + 0.55, w: cw - 0.5, h: 0.6, fontSize: 28, bold: true, color: i === 2 ? X.gain : X.text, objectName: name });
+    T(s, l, { x: x + 0.25, y: y + 1.17, w: cw - 0.5, h: 0.8, fontSize: 12, color: X.muted, objectName: name });
     const p = await card(pic, { t: 0, b: i === 3 ? 0.8 : 1 });
     const pw = cw - 0.5, ph = Math.min(pw / p.ar, 0.95);
-    s.addImage({ path: p.path, x: x + 0.25, y: y + 2.0, w: ph * p.ar, h: ph });
+    s.addImage({ path: p.path, x: x + 0.25, y: y + 2.0, w: ph * p.ar, h: ph, objectName: name });
     if (hand) {
-      s.addShape(pres.ShapeType[dir === 'left' ? 'leftArrow' : 'rightArrow'], { x: x + cw + 0.02, y: y + 1.35, w: gap - 0.04, h: 0.42, fill: { color: X.amber }, line: { type: 'none' } });
-      T(s, [{ text: hand[0] + ': ', options: { bold: true } }, { text: hand[1], options: { color: X.muted } }], { x: x + cw / 2 + 0.2, y: y + 3.12, w: cw + gap - 0.4, h: 0.55, fontSize: 10, align: 'center', valign: 'middle' });
+      s.addShape(pres.ShapeType[dir === 'left' ? 'leftArrow' : 'rightArrow'], { x: x + cw + 0.02, y: y + 1.35, w: gap - 0.04, h: 0.42, fill: { color: X.amber }, line: { type: 'none' }, objectName: an });
+      T(s, [{ text: hand[0] + ': ', options: { bold: true } }, { text: hand[1], options: { color: X.muted } }], { x: x + cw / 2 + 0.2, y: y + 3.12, w: cw + gap - 0.4, h: 0.55, fontSize: 10, align: 'center', valign: 'middle', objectName: an });
     }
   }
-  rect(s, M, 5.95, W - 2 * M, 0.9, X.amber, { round: true, r: 0.12 });
-  T(s, [{ text: '$96,005 per year to spend in retirement', options: { bold: true, fontSize: 22 } }, { text: '   in today\'s dollars, rising with prices. Social Security pays $74,829 of it once both checks start; savings pay the rest.', options: { fontSize: 13 } }], { x: M + 0.3, y: 5.95, w: W - 2 * M - 0.6, h: 0.9, color: X.ground, valign: 'middle' });
+  rect(s, M, 5.95, W - 2 * M, 0.9, X.amber, { round: true, r: 0.12, name: 'build:4' });
+  T(s, [{ text: '$96,005 per year to spend in retirement', options: { bold: true, fontSize: 22 } }, { text: '   in today\'s dollars, rising with prices. Social Security pays $74,829 of it once both checks start; savings pay the rest.', options: { fontSize: 13 } }], { x: M + 0.3, y: 5.95, w: W - 2 * M - 0.6, h: 0.9, color: X.ground, valign: 'middle', objectName: 'build:4' });
   notes(s, 'Every number here is from the site, carried tool to tool by the hand-off buttons. Their budget and paycheck save $1,803 per month. Copy to Advanced carries that into the Advanced calculator as $832.35 every two weeks, split by account type. There they add one child as a change ahead, paid for out of saving, brokerage first; that takes them to $1,200,063 at 65 in today\'s dollars. Test withdrawals sends that balance to the Drawdown Simulator, which copies in both Social Security benefits: $6,236 per month from 67. They plan to spend $96,005 per year in today\'s dollars, and Social Security pays $74,829 of it once both checks start. Fixed spending rising with prices lasted in all 835 historical retirements, with a median ending balance of $2,943,319. Step-by-step screenshots are in the appendix.');
 }
 
@@ -754,4 +759,5 @@ for (const a of appendix) await a.fn();
 const out = new URL('../RetCalc-Deck.pptx', import.meta.url).pathname;
 await pres.writeFile({ fileName: out });
 await applyTheme(out, THEME);
+console.log('builds on', await applyMotion(out), 'slide(s); a fade between every slide');
 console.log('slides', pres.slides.length, '->', out);

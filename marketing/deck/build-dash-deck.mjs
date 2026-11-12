@@ -10,6 +10,7 @@ import { createRequire } from 'module';
 import { icon } from './assets.mjs';
 import { dcard, dview, phone, reportPages, OUT } from './dash/kit.mjs';
 import { applyTheme } from './apply-theme.mjs';
+import { applyMotion } from './motion.mjs';
 const require = createRequire(import.meta.url);
 const pptxgen = require('../tooling/node_modules/pptxgenjs');
 const sharp = require('../tooling/node_modules/sharp');
@@ -34,6 +35,19 @@ const tint = (g) => mix(GROUP[g].color, g === 'dash' ? 0.12 : 0.17);
 const W = 13.333, H = 7.5, M = 0.6;
 
 const pres = new pptxgen();
+/* Click builds (deck/motion.mjs): while BUILD.n is above 0, every shape a
+   slide draws is named build:N and fades in on click N in the slideshow. */
+const BUILD = { n: 0 };
+{
+  const addSlide = pres.addSlide.bind(pres);
+  pres.addSlide = (o) => {
+    const sl = addSlide(o);
+    const tag = (opts) => (BUILD.n && opts && !opts.objectName ? { ...opts, objectName: 'build:' + BUILD.n } : opts);
+    const t = sl.addText.bind(sl), sh = sl.addShape.bind(sl), im = sl.addImage.bind(sl);
+    sl.addText = (a, o2) => t(a, tag(o2)); sl.addShape = (a, o2) => sh(a, tag(o2)); sl.addImage = (o2) => im(tag(o2));
+    return sl;
+  };
+}
 pres.layout = 'LAYOUT_WIDE';
 pres.theme = { headFontFace: THEME.headFontFace, bodyFontFace: THEME.bodyFontFace };
 pres.title = 'RetCalc: My Dashboard'; pres.author = 'RetCalc'; pres.company = 'RetCalc';
@@ -86,7 +100,7 @@ const link = (url, text) => ({ text: text || url.replace('https://', ''), option
 const bullets = (items, o = {}) => items.map((t, i) => ({ text: t, options: { bullet: { indent: 14 }, breakLine: i < items.length - 1, paraSpaceAfter: o.gap ?? 6 } }));
 const kick = (s, text) => s.addText(text.toUpperCase(), { placeholder: 'kicker' });
 const title = (s, text) => s.addText(text, { placeholder: 'title' });
-const notes = (s, text) => s.addNotes(text);
+const notes = (s, text) => { BUILD.n = 0; s.addNotes(text); };
 const label = (s, text, x, y, w, color = X.muted) => T(s, text.toUpperCase(), { x, y, w, h: 0.28, fontSize: 11, bold: true, color, charSpacing: 1 });
 const stat = (s, x, y, w, n, l, o = {}) => {
   T(s, n, { x, y, w, h: o.nh || 0.62, fontSize: o.size || 34, bold: true, color: o.color || X.text });
@@ -194,18 +208,22 @@ pres.addSection({ title: MAIN });
     ...[...side].reverse().map((y) => [x0, y]),
   ];
   const cx = (x0 + x1) / 2, cy = (top + bot + ch) / 2;
+  BUILD.n = 1; // the tabs and their links, after the profile
   pos.forEach(([x, y]) => line(s, cx, cy, x + cw / 2, y + ch / 2, X.muted, { w: 1, dash: 'dash' }));
+  BUILD.n = 0;
   const bw = 4.1, bh = 3.0, bx = cx - bw / 2, by = cy - bh / 2;
   rect(s, bx, by, bw, bh, X.amber, { round: true, r: 0.2 });
   T(s, 'Your profile', { x: bx + 0.28, y: by + 0.2, w: bw - 0.56, h: 0.5, fontSize: 24, bold: true, color: X.ground });
   T(s, 'Household and ages · where you live · pay · savings and accounts · spending · home · children · assumptions · Social Security · strategy · changes ahead', { x: bx + 0.28, y: by + 0.75, w: bw - 0.56, h: 1.35, fontSize: 14, color: X.ground });
   rect(s, bx + 0.28, by + bh - 0.78, bw - 0.56, 0.56, mix(X.amber, 0.8), { round: true, r: 0.1 });
   T(s, '+ your dated balances from Net worth', { x: bx + 0.42, y: by + bh - 0.78, w: bw - 0.84, h: 0.56, fontSize: 13, bold: true, color: X.ground, valign: 'middle' });
+  BUILD.n = 1;
   for (let i = 0; i < nodes.length; i++) {
     const [n, l, host] = nodes[i], [x, y] = pos[i];
     rect(s, x, y, cw, ch, X.raised, { round: true, r: 0.1, line: host ? X.amber : X.rule, lw: host ? 1.5 : 1, dash: n === 'The report' ? 'dash' : undefined });
     T(s, [{ text: n, options: { bold: true, breakLine: true } }, { text: l, options: { fontSize: 11, color: host ? X.amber : X.muted } }], { x: x + 0.16, y: y + 0.05, w: cw - 0.26, h: ch - 0.1, fontSize: 13.5, valign: 'middle' });
   }
+  BUILD.n = 2; // then what it means
   const rx = 9.95, rw = W - rx - M;
   const blocks = [
     ['Set once', 'Each figure is set in one place. Other tabs show it as a fact with a link to where it\'s set, so two tabs can\'t disagree.'],
@@ -253,13 +271,14 @@ pres.addSection({ title: MAIN });
   line(s, M + cw / 2, 1.88, W - M - cw / 2, 1.88, X.rule, { w: 2 });
   for (let i = 0; i < 4; i++) {
     const x = M + i * (cw + 0.32), [h, l, im] = cards[i];
+    BUILD.n = i; // one step per click
     circle(s, x + cw / 2 - 0.2, 1.68, 0.4, X.amber);
     T(s, String(i + 1), { x: x + cw / 2 - 0.2, y: 1.68, w: 0.4, h: 0.4, fontSize: 15, bold: true, color: X.ground, align: 'center', valign: 'middle' });
     rect(s, x, y0, cw, 6.85 - y0, X.surface, { round: true, r: 0.14 });
     T(s, h, { x: x + 0.22, y: y0 + 0.18, w: cw - 0.44, h: 0.36, fontSize: 15, bold: true });
     T(s, l, { x: x + 0.22, y: y0 + 0.56, w: cw - 0.44, h: 0.95, fontSize: 12, color: X.muted });
     fit(s, im, x + 0.2, y0 + 1.5, cw - 0.4, 6.85 - y0 - 1.7, { bottom: true });
-    if (i < 3) s.addShape(pres.ShapeType.rightArrow, { x: x + cw + 0.04, y: 1.72, w: 0.24, h: 0.32, fill: { color: X.muted }, line: { type: 'none' } });
+    if (i < 3) s.addShape(pres.ShapeType.rightArrow, { x: x + cw + 0.04, y: 1.72, w: 0.24, h: 0.32, fill: { color: X.muted }, line: { type: 'none' }, objectName: 'build:' + (i + 1) });
   }
   notes(s, 'The Dashboard is built to be revisited, and it works the same on a phone, as here. When your balances are a month old, a short check-in email arrives. It never carries figures: those are only ever worked out in your browser. You open Net worth, press Update balances and type today\'s numbers. The plan reruns from that entry, so the home tab shows where you stand, and Next steps lists what to do, ordered by how much each would move the plan.');
 }
@@ -493,14 +512,18 @@ await tab({
   inB.forEach(([h, l], i) => { const y = 2.55 + i * 1.05; rect(s, M + 0.25, y, 3.6, 0.88, X.raised, { round: true, r: 0.1 }); T(s, [{ text: h, options: { bold: true, breakLine: true } }, { text: l, options: { color: X.muted, fontSize: 12 } }], { x: M + 0.42, y: y + 0.08, w: 3.3, h: 0.72, fontSize: 14, valign: 'middle' }); });
   // the account and the email
   const ax = 5.55, aw = 3.3;
+  BUILD.n = 1; // then the account
   rect(s, ax, 1.72, aw, 2.05, X.surface, { round: true, r: 0.14, line: X.teal, lw: 1.5 });
   T(s, [{ text: 'Your account', options: { bold: true, fontSize: 17, breakLine: true } }, { text: 'A synced copy, so the Dashboard is on every device you sign in on. Only you can read it. The server stores it and never computes with it.', options: { color: X.muted, fontSize: 12.5 } }], { x: ax + 0.22, y: 1.82, w: aw - 0.44, h: 1.85, fontSize: 14, valign: 'middle' });
   arrow(s, M + 4.1, 2.75, ax, 2.75, X.teal, { begin: 'triangle', w: 1.5 });
   T(s, 'syncs', { x: M + 4.15, y: 2.4, w: 0.8, h: 0.3, fontSize: 11, color: X.teal, align: 'center' });
+  BUILD.n = 2; // the email
   rect(s, ax, 4.0, aw, 1.45, X.surface, { round: true, r: 0.14, line: X.rule });
   T(s, [{ text: 'The check-in email', options: { bold: true, fontSize: 15, breakLine: true } }, { text: 'Knows your email, first name and the date of your last balances. No figures.', options: { color: X.muted, fontSize: 12.5 } }], { x: ax + 0.22, y: 4.08, w: aw - 0.44, h: 1.3, fontSize: 14, valign: 'middle' });
+  BUILD.n = 3; // what's never connected
   rect(s, ax, 5.68, aw, 1.17, null, { round: true, r: 0.14, line: X.loss, dash: 'dash' });
   T(s, [{ text: 'Never connected', options: { bold: true, color: X.loss, breakLine: true } }, { text: 'Bank logins, advertisers, anyone buying data', options: { color: X.muted, fontSize: 12.5 } }], { x: ax + 0.22, y: 5.78, w: aw - 0.44, h: 0.95, fontSize: 15, valign: 'middle' });
+  BUILD.n = 4; // and what it costs
   // the stats
   const sx = 9.35, sw = W - sx - M;
   [['$0', 'Free, with a free account. Sign in with Google or a code emailed to you; no passwords.'], ['0', 'bank logins: you type your own numbers'], ['0', 'ads. Your data is never sold or shared with advertisers.']].forEach(([n, l], i) => {
@@ -761,4 +784,5 @@ for (const a of appendix) await a.fn();
 const out = new URL('../RetCalc-Dashboard-Deck.pptx', import.meta.url).pathname;
 await pres.writeFile({ fileName: out });
 await applyTheme(out, THEME);
+console.log('builds on', await applyMotion(out), 'slide(s); a fade between every slide');
 console.log('slides', pres.slides.length, '->', out);
