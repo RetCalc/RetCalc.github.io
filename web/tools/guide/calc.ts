@@ -247,6 +247,7 @@ export function planIn(a: Answers, over: Over = {}): (PlToday & { monthly: numbe
     household: hasChanges(a) && !over.flat ? householdAtRetire(a, retire) : mar(a) ? 2 : 1, rule55: a.rule55 === "yes", heirRate: PL_HEIR, mix: a.retMixAll ? { ...a.retMixAll } : retMix(a),
     years: yearsFor(a, retire), target: target(a), strategy: "fixed", minSpend: 0, fromYear: HIST_START as number,
     ...(a.work2 && a.work2.pay > 0 && a.work2.years > 0 ? { work2: { ...a.work2 } } : {}),
+    ...(a.retExtra?.length ? { extra: a.retExtra } : {}),
     monthly,
   };
 }

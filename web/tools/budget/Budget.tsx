@@ -51,6 +51,7 @@ export function Budget() {
   // the Dashboard's housing, from its Home): shown, not changed here.
   const lockedRows = new Set(scope?.locked ?? []);
   const fixed = (r: BudgetRow) => lockedRows.has("row:" + (r.slot ?? r.desc));
+  const debtRow = (r: BudgetRow) => !!r.slot?.startsWith("debt:");
   // An emergency budget, once built: a second column, the budget cut back
   // for living on the emergency fund.
   // It can be hidden from the list and still size the emergency fund.
@@ -180,8 +181,10 @@ export function Budget() {
                       {isSavingsRow(r) ? (
                         <span className="desc"><Tipped text={r.desc} k="bgsavings" /></span>
                       ) : fixed(r) ? (
-                        /* Set by the page this runs in (the Dashboard's Home). */
-                        <span className="desc">{r.desc} <span className="text-muted-foreground">· from your home</span>{scope?.slots?.fromHome ? <TipDot k="" title="From your home" text={scope.slots.fromHome} /> : null}</span>
+                        /* Set by the page this runs in (the Dashboard's Home, or its
+                           Net worth for a debt being paid off). */
+                        debtRow(r) ? <span className="desc">{r.desc} <span className="text-muted-foreground">· from your debts</span>{scope?.slots?.fromDebts ? <TipDot k="" title="From your debts" text={scope.slots.fromDebts} /> : null}</span>
+                          : <span className="desc">{r.desc} <span className="text-muted-foreground">· from your home</span>{scope?.slots?.fromHome ? <TipDot k="" title="From your home" text={scope.slots.fromHome} /> : null}</span>
                       ) : isLockedRow(r, i) ? (
                         /* Fixed: the Paycheck tab reads this line as your premiums. */
                         <span className="desc" title="The Paycheck tab reads this line as your health premiums, so it keeps its name">{r.desc}</span>
@@ -217,7 +220,7 @@ export function Budget() {
                           <PencilIcon className="ml-1.5 inline size-3 shrink-0 align-baseline text-muted-foreground opacity-0 transition-opacity group-hover/name:opacity-100 group-focus-within/name:opacity-100 pointer-coarse:opacity-70" aria-hidden="true" />
                         </span>
                       )}
-                      <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} readOnly={fixed(r)} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount" + (fixed(r) ? ", set on Home" : "")} /></Affixed>
+                      <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} readOnly={fixed(r)} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount" + (fixed(r) ? (debtRow(r) ? ", set on Net worth" : ", set on Home") : "")} /></Affixed>
                       {emCol ? <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="emerg" data-i={i} value={r.emerg ?? r.amount} onValueChange={(v) => setRow(i, { emerg: v })} aria-label={r.desc + " in an emergency"} /></Affixed> : null}
                       <Segmented size="compact" attr="data-fv" options={dash ? ([[12, "Per month"], [1, "Per year"]] as const) : ([[12, "/mo"], [1, "/yr"]] as const)} value={r.freq} onChange={(f) => { if (!fixed(r)) setRow(i, { freq: f }); }} />
                       {isLockedRow(r, i) || fixed(r) ? <span className="delspace"></span> : (

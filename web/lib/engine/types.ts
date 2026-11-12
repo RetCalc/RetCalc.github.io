@@ -212,6 +212,10 @@ export interface PlToday {
       b brokerage), for the plan's first `years` (a fraction counts part of
       a year). Their job's health plan covers the household meanwhile. */
   work2?: PlWork | null;
+  /** Fixed payments still being made once retired (a debt, the mortgage),
+      a year in today's dollars from the first year retired: spent on top of
+      `spend` until they end. */
+  extra?: number[] | null;
 }
 export interface PlWork { pay: number; t: number; r: number; b: number; years: number }
 /** The plan at retirement, as plPrep() and plOptimize() take it. */

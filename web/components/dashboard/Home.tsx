@@ -90,7 +90,7 @@ export function Home() {
               : M.payoff == null ? "Add the rate and the monthly payment (without taxes and insurance) to see when it's paid off. It shows on Your timeline."
               : drop && retYear != null ? (pr.retSpend != null ? `Your spending once retired is the figure in Profile, so it stays as you set it when the mortgage is paid off.`
                 : drop.year <= retYear ? `It's paid off before you retire, so your spending once retired leaves out its ${money(drop.monthly)} per month.`
-                : `It's paid off after you retire, in ${Math.floor(drop.year)}: your plan keeps counting its ${money(drop.monthly)} per month through retirement. Set your spending once retired in Profile to plan otherwise.`)
+                : `It's paid off after you retire, in ${Math.floor(drop.year)}: your plan counts its ${money(drop.monthly)} per month on top of your spending until then, and not after.`)
               : "At this payment. Paying extra brings it sooner: try it below."}</p>
           </>
         ) : <p className="dsh-cap dsh-mt">No mortgage in your latest entry. If you have one, add it in <To href="/dashboard/accounts#debts">Net worth</To>.</p>}

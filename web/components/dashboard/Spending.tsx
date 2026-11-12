@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import type { BudgetInputs } from "@/tools/budget/model";
 import { Frame } from "./Frame";
-import { budgetFor, flow, fromBudget, taxFor, withCollegeLine } from "./flows";
+import { budgetFor, debtLines, flow, fromBudget, taxFor, withCollegeLine } from "./flows";
 import { collegeNeedOf } from "./college";
 import { money } from "./format";
 import { Hosted, TOOL_VIEWS, toolHref } from "./host";
@@ -69,8 +69,9 @@ export function Spending() {
       </Tile>
       <div className="dsh-r4" id="budget">
         {/* What "from your home" means is the tip beside each such line. */}
-        <Hosted key={rev} household={null} locked={housing.map((n) => "row:" + n)}
-          slots={{ fromHome: `Your ${pr.home === "rent" ? "rent and renter's insurance" : "mortgage and what owning costs"}, set on Your home.` }}
+        <Hosted key={rev} household={null} locked={[...housing, ...debtLines(pr).map((l) => l.slot)].map((n) => "row:" + n)}
+          slots={{ fromHome: `Your ${pr.home === "rent" ? "rent and renter's insurance" : "mortgage and what owning costs"}, set on Your home.`,
+            fromDebts: "A debt you're paying off, set with Plan payments on Net worth. Once it's paid off it comes out of your spending, and what you paid goes to saving." }}
           seed={(id) => (id === "budget" ? ({ ...budgetFor(pr), view: "budget" } as unknown as ToolInputs) : id === "tax" ? (taxFor(pr) as unknown as ToolInputs) : undefined)}
           keep={(id, d) => { if (id === "budget") setProfile((p) => fromBudget(p, d as unknown as BudgetInputs)); }}>
           <Budget />

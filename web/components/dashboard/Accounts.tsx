@@ -29,7 +29,11 @@ import { ASSET_GROUPS, ASSET_KINDS, BASIS_KINDS, DEBT_GROUPS, DEBT_KINDS, groupO
 import { Tile, TipLabel } from "./ui";
 import { ReadyToSpend, TaxMix, WhoseFilter, WorthOverTime, only, touchRead, whoName, type Who } from "./networth";
 import { pctTxt, useTyped } from "./fields";
-import { entryFrom, netWorth, newId, sum, today, useDashboard, withEntry, type Entry, type Item } from "./store";
+import { entryFrom, netWorth, newId, sum, today, useDashboard, withEntry, type Entry, type Item, type Profile } from "./store";
+import { DebtPlanDialog, monthName, plannable, type DebtPlanSave } from "./DebtPlan";
+import { budgetFor, debtLines, fromBudget } from "./flows";
+import { payoff, planLines } from "./debts";
+import { slotRow } from "@/tools/budget/model";
 
 const byGroup = (items: Item[], side: Item["side"]) => {
   const out: Partial<Record<Group, number>> = {};
@@ -224,9 +228,28 @@ export function Accounts() {
   const saveEntry = () => {
     if (!draft) return;
     const kept = draft.items.filter((i) => i.value > 0 || i.name.trim());
-    update((d) => ({ ...d, entries: withEntry(d.entries, { date: draft.date || today(), items: kept, from: "accounts" }) }));
+    // A planned debt that's paid off (or gone) leaves the plan, and its line the budget.
+    update((d) => ({ ...d, profile: withoutPaid(d.profile, kept), entries: withEntry(d.entries, { date: draft.date || today(), items: kept, from: "accounts" }) }));
     setDraft(null);
   };
+  // Plan payments: open, and what it saves.
+  const [planning, setPlanning] = useState(false);
+  const pr = data.profile;
+  const ownDebtLines = PRESET_DEBT_LINES.flatMap((name) => { const r = slotRow(budgetFor(pr).rows, name), v = r ? (parseNum(r.amount) * r.freq) / 12 : 0; return v > 0.5 ? [{ slot: name, name: r!.desc, monthly: v }] : []; });
+  const savePlan = (s: DebtPlanSave) => {
+    update((d) => {
+      const p0: Profile = { ...d.profile, debtPlan: s.plan ?? undefined };
+      const b = budgetFor(p0), rows = b.rows.map((r) => (r.slot && s.clear.includes(r.slot) ? { ...r, amount: "0" } : r));
+      const entries = Object.keys(s.rates).length && d.entries.length
+        ? [...d.entries.slice(0, -1), { ...d.entries[d.entries.length - 1], items: d.entries[d.entries.length - 1].items.map((i) => (s.rates[i.id] != null ? { ...i, rate: s.rates[i.id] } : i)) }]
+        : d.entries;
+      return { ...d, entries, profile: fromBudget(p0, { ...b, rows }) };
+    });
+    setPlanning(false);
+  };
+  const planned = planLines(pr, data.entries), planPay = debtLines(pr).reduce((t, l) => t + l.monthly, 0);
+  const planOut = planned.length ? payoff(planned, pr.debtPlan?.roll ?? true) : null;
+  const planLast = planOut && planned.every((l) => planOut.paid[l.id] != null) ? Math.max(...planned.map((l) => planOut.paid[l.id]!)) : null;
   const shown = draft ? items : view(items);
   const have = sum(shown, "asset"), owe = sum(shown, "debt");
   const prev = data.entries[data.entries.length - 2];
@@ -237,7 +260,8 @@ export function Accounts() {
   const nwOf = (e: Entry) => sum(view(e.items), "asset") - sum(view(e.items), "debt");
   const actions = draft
     ? <><Button variant="outline" onClick={() => setDraft(null)}>Cancel</Button><Button onClick={saveEntry}>Save as new entry</Button></>
-    : <Button onClick={startEdit}><PencilIcon aria-hidden="true" />Update balances</Button>;
+    : <>{plannable(last?.items ?? []).length ? <Button variant="outline" onClick={() => setPlanning(true)}><ReceiptIcon aria-hidden="true" />{pr.debtPlan ? "Change payment plan" : "Plan payments"}</Button> : null}
+      <Button onClick={startEdit}><PencilIcon aria-hidden="true" />Update balances</Button></>;
 
   /* Leaving with changes not saved: asked first, inside the site; the
      browser asks on a reload or a closed tab. */
@@ -301,6 +325,7 @@ export function Accounts() {
         <div>
           <Tile id="debts" icon={LandmarkIcon} title="Debts" right={<span className="dsh-cap">{money(sum(items, "debt"))}</span>}>
             {draft ? <EditList items={draft.items} side="debt" names={names} onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="debt" names={names} />}
+            {!draft && planPay > 0 ? <p className="dsh-cap dsh-mt6">Paying {money(planPay)} a month in your budget{planned.length ? (planLast != null ? `; ${planned.length === 1 ? planned[0].name : "everything planned"} paid off by ${monthName(planLast)}` : "; not all of it gets paid off at these payments") : ""}.</p> : null}
           </Tile>
           {draft ? null : <div className="dsh-editbar">{actions}</div>}
         </div>
@@ -347,6 +372,7 @@ export function Accounts() {
           </table></div>
         </Tile>
       ) : null}
+      {planning ? <DebtPlanDialog items={last?.items ?? []} plan={pr.debtPlan} budgetLines={ownDebtLines} onSave={savePlan} onClose={() => setPlanning(false)} /> : null}
       <Dialog open={!!removing} onOpenChange={(o) => { if (!o) setRemoving(null); }}>
         <DialogContent aria-labelledby="dshDelTitle">
           <h2 id="dshDelTitle" className="dsh-dlg-h">Delete the entry from {removing ? longDate(removing) : ""}?</h2>
@@ -359,6 +385,20 @@ export function Accounts() {
       </Dialog>
     </Frame>
   );
+}
+
+/** The budget's own lines a payment plan can stand in for. */
+const PRESET_DEBT_LINES = ["Other debt payments", "Car payment"];
+
+/** The profile once a new entry is saved: a planned debt that's paid off
+    or gone leaves the plan (and its line the budget). */
+function withoutPaid(pr: Profile, items: Item[]): Profile {
+  const P = pr.debtPlan;
+  if (!P) return pr;
+  const debts = P.debts.filter((d) => items.some((i) => i.id === d.id && i.side === "debt" && i.value > 0));
+  if (debts.length === P.debts.length) return pr;
+  const next: Profile = { ...pr, debtPlan: debts.length ? { ...P, debts } : undefined };
+  return fromBudget(next, budgetFor(next));
 }
 
 /** A debt's interest rate, in percent, keeping a half-typed "6." as typed. */

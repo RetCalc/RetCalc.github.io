@@ -17,6 +17,7 @@ import { calcFvOf } from "./calc";
 import { kidsOff, type Scenario } from "./scenarios";
 import { childCost, children } from "@/tools/guide/schedule";
 import { payoffDrop } from "./housing";
+import { fixedYears, planLines, type FixedYears } from "./debts";
 import { BRIDGE_DOCK, hasBridgePlan, needsBridge } from "./bridge";
 import { drawdownSetup } from "@/tools/drawdown/model";
 import { DD_STRAT_NAMES } from "@/tools/drawdown/text";
@@ -144,6 +145,14 @@ export function planYearsOf(pr: Profile, entries: Entry[] = []): { years: CashYe
   return { years: YEARS.get(a) ?? [], a };
 }
 
+/** The planned debts' and the mortgage's payments, year by year (debts.ts). */
+export function fixedOf(pr: Profile, entries: Entry[]): FixedYears {
+  const M = mortgage(pr, entries), drop = payoffDrop(pr, entries);
+  const mort = drop && M.months != null ? { pay: drop.monthly, months: M.months } : null;
+  return fixedYears(planLines(pr, entries), pr.debtPlan?.roll ?? true, mort, pr.assume.inflation);
+}
+const trimZeros = (x: number[]) => { let n = x.length; while (n > 0 && x[n - 1] < 0.5) n--; return x.slice(0, n).map((v) => Math.round(v)); };
+
 /** The profile and latest entry as the Guide's answers. */
 export function answers(pr: Profile, entries: Entry[] = []): Answers {
   if (kidsOff(pr.scenarios)) return answersWithoutKids(pr, entries);
@@ -151,12 +160,13 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   const F = flow(pr);
   const spend = F.spendPaid > 0 ? F.spendPaid : pr.spend;
   const saved = H.trad + H.roth + H.brok;
-  // Spending once retired, left blank, follows today's, which pays the
-  // mortgage: paid off by retirement, the payment comes out of it.
-  const drop = pr.retSpend == null ? payoffDrop(pr, entries) : null;
-  const retYear = pr.p1.by != null && pr.p1.retire != null ? pr.p1.by + pr.p1.retire : null;
-  const paidOff = drop && retYear != null && drop.year <= retYear ? drop.monthly : 0;
-  const retSpend = pr.retSpend ?? (spend == null ? null : Math.max(0, spend - paidOff));
+  // Fixed payments (the debts being paid off, the mortgage) year by year
+  // in today's dollars: what they free goes to saving until retirement.
+  // Spending once retired, left blank, follows today's without them, and
+  // a payment still being made then is spent on top until it ends.
+  const fixed = fixedOf(pr, entries), age0 = ageOf(pr.p1), R = age0 != null && pr.p1.retire != null ? Math.round(pr.p1.retire) - Math.round(age0) : null;
+  const retSpend = pr.retSpend ?? (spend == null ? null : Math.max(0, spend - fixed.today));
+  const retExtra = pr.retSpend == null && fixed.today > 0 && R != null && R >= 0 ? Array.from({ length: 80 }, (_, j) => fixed.realAt(R + j) * 12) : null;
   const a: Answers = {
     status: two ? "m" : "s",
     // Outside the US the plan still needs a state to run; its taxes are
@@ -172,6 +182,8 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
     contrib: F.hasPay ? F.invested : contribMonth(pr), employer: F.hasPay ? F.match : 0,
     match: F.fullMatch == null ? "none" : F.fullMatch ? "full" : "partial",
     spend, retSpend: retSpend == null ? null : retSpend * 12,
+    ...(retExtra && retExtra.some((v) => v > 0.5) ? { retExtra: trimZeros(retExtra) } : {}),
+    ...(fixed.today > 0 && R != null && R > 0 ? { debtFreed: Array.from({ length: R }, (_, k) => Math.max(0, fixed.today - fixed.realAt(k))), paidOff: fixed.paidOff.filter((x) => x.k < R) } : {}),
     home: pr.home, risk: realGrowth(pr), retMix: stocksOf(retireMix(pr)),
     ssClaim: pr.ss.claim, ssOwn: pr.ss.own1, ssOwn2: two ? pr.ss.own2 : null,
   };
@@ -347,7 +359,7 @@ export function drawdownPlan(S: Sim | null, ss1: number | null, ss2: number | nu
   // simulator's ages are the first person's): their own start year.
   const P = S.P as unknown as { age1?: number; age2?: number | null };
   const claim2 = ss2 && P.age1 != null && P.age2 != null ? S.ss.claim2 + (P.age1 - P.age2) : null;
-  return { fv: S.fv, spendYr: S.spend, taxYr: S.taxYr, years: S.years, ss1: ss1 ?? 0, ss2: ss2 ?? 0, claim: claim ?? 67, claim2, retire: S.retire };
+  return { fv: S.fv, spendYr: S.spend, taxYr: S.taxYr, years: S.years, ss1: ss1 ?? 0, ss2: ss2 ?? 0, claim: claim ?? 67, claim2, retire: S.retire, extra: S.I.extra ?? null };
 }
 
 export function results(pr: Profile, entries: Entry[]): Results {

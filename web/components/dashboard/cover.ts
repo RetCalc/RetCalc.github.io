@@ -153,6 +153,9 @@ export interface CashYear {
   kids: number; college: number; change: number; short: number;
   /** The changes at work that year (their ids), and who's working. */
   tags: string[]; works: [boolean, boolean];
+  /** Debts paid off that year, by name, and what paying them (and the
+      mortgage) off has freed for saving by then, a month. */
+  paidOff: string[]; freed: number;
   /** The figures typed into the table for this year. */
   edits: YearEdit[];
 }
@@ -161,7 +164,7 @@ export interface CashYear {
     account, and each year in full (`years`). */
 export function yearlySaving(pr: Profile, F: Flow, a: Answers, opts: { college: number[] } = { college: [] }): YearsOut {
   // Worked out once for each profile: every tab asks for it.
-  const key = JSON.stringify([pr, a.age, a.retire, opts.college]), hit = CACHE.get(key);
+  const key = JSON.stringify([pr, a.age, a.retire, opts.college, a.debtFreed, a.paidOff]), hit = CACHE.get(key);
   if (hit) return hit;
   const out = yearlyRun(pr, F, a, opts);
   if (CACHE.size > 16) CACHE.delete(CACHE.keys().next().value!);
@@ -198,12 +201,15 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
      paycheck's order), and the brokerage last. With pay on its raises
      alone, no line is held below what goes into it now. `changed`: pay
      is off its raises (a pay change, or your partner stopped work). */
-  const alloc = (S: number, pk: PcInput, changed: boolean): Record<Line, number> => {
+  const alloc = (S0in: number, pk: PcInput, changed: boolean, fr = 0): Record<Line, number> => {
+    // `fr` of it is what paid-off debts free: added on top in the
+    // paycheck's order, as more to save goes.
+    const add = Math.min(Math.max(0, fr), S0in), S = S0in - add;
     // With pay changed, today's lines as far as the limits on that pay go,
     // before anything is cut or added; otherwise in proportion.
     const same = !changed, r = S0 > 0 ? S / S0 : 0;
     const out = Object.fromEntries(DASH_ORDER.map((l) => [l, L0[l] * (same ? r : 1)])) as Record<Line, number>;
-    if (S0 <= 0) { out.brok = S; return out; }
+    if (S0 <= 0) { out.brok = S + add; return out; }
     // Not held below today, with the two of you as today: a line already
     // over its limit stays as it is. The 401(k) beyond the match shares the
     // limit with the line up to it, so as that one grows with pay, this one
@@ -225,6 +231,7 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
       for (const l of DASH_ORDER) { if (cut <= 0.005) break; const m = Math.min(out[l], cut); out[l] -= m; cut -= m; }
       over = Math.max(0, -cut);
     }
+    over += add;
     const order = [...pk.order.filter((x): x is Line => x !== "ef" && x !== "brok" && L0[x as Line] > 0), "brok" as const];
     for (const l of order) {
       if (over <= 0.005) break;
@@ -256,13 +263,13 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
   // Saving follows take-home pay, which its own pre-tax part lowers the
   // taxes on: worked out until the two agree. `want` is the saving a
   // take-home pay calls for; below nothing (`raw`), nothing is saved.
-  const solve = (pk: PcInput, inc: number, want: (A: number) => number, changed: boolean) => {
-    let S = S0, lines = alloc(S, pk, changed), tx = taxOf(pk, lines), raw = S;
+  const solve = (pk: PcInput, inc: number, want: (A: number) => number, changed: boolean, fr: number) => {
+    let S = S0, lines = alloc(S, pk, changed, fr), tx = taxOf(pk, lines), raw = S;
     for (let it = 0; it < 20; it++) {
       raw = want(inc - tx.tax);
       const next = Math.max(0, raw);
       if (Math.abs(next - S) < 0.01) break;
-      S = next; lines = alloc(S, pk, changed); tx = taxOf(pk, lines);
+      S = next; lines = alloc(S, pk, changed, fr); tx = taxOf(pk, lines);
     }
     return { S, raw, lines, tx };
   };
@@ -295,6 +302,9 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
     const changed = Math.abs(P1.pay - path[0]) > 0.5 || (pi.two && Math.abs(P2.pay - path[1]) > 0.5);
     // Pay this year had it only had its raises since last year.
     const was = [0, 1].map((i) => (prevPath[i] > 0 ? (prevPay[i] * path[i]) / prevPath[i] : prevPay[i])) as [number, number];
+    // What paid-off debts free this year (and fixed payments shrinking in
+    // today's dollars): saved on top, as the plan's other saving is.
+    const fr = Math.max(0, a.debtFreed?.[k] ?? 0), byRaiseFr = (A: number) => byRaise(A) + fr;
     let lines: Record<Line, number>, tx: ReturnType<typeof taxOf>;
     if (Math.abs(P1.pay - was[0]) > 0.5 || Math.abs(P2.pay - was[1]) > 0.5) {
       // Pay changed other than by a raise (a pay change starts, steps or
@@ -304,11 +314,11 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
       // Read as a raise in reverse, a cut would come out of spending by
       // the share of each raise you spend.
       const pkW = pkOf(was[0], was[1], k), incW = (was[0] + was[1]) / 12 + other;
-      const h = solve(pkW, incW, byRaise, true), spend = incW - h.tx.tax - h.raw;
-      const r = solve(pk, inc, (A) => A - spend, changed);
+      const h = solve(pkW, incW, byRaiseFr, true, fr), spend = incW - h.tx.tax - h.raw;
+      const r = solve(pk, inc, (A) => A - spend, changed, fr);
       ({ lines, tx } = r);
-      bA = inc - tx.tax; bS = r.raw;
-    } else ({ lines, tx } = solve(pk, inc, byRaise, changed));
+      bA = inc - tx.tax; bS = r.raw - fr;
+    } else ({ lines, tx } = solve(pk, inc, byRaiseFr, changed, fr));
     prevPay = [P1.pay, P2.pay]; prevPath = path;
     // Save less: what goes in is held to its ceiling, taken from the
     // account it names first, then in the dashboard's order, the match last.
@@ -361,6 +371,7 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
     const taxes = tx.tax + (abroad ? 0 : c?.taxUp ?? 0), saved = total(left);
     years.push({ k, age: t, year, pay: [P1.pay / 12, P2.pay / 12], other, income: inc, taxes, spending: inc - taxes - saved - ef,
       saved: { ...left }, match: emp, ef, kids: kidsCost, college, change: Y.cut - total(Y.add), short: c?.short ?? 0, tags: [...P1.tags, ...P2.tags, ...Y.tags], works,
+      paidOff: (a.paidOff ?? []).filter((x) => x.k === k).map((x) => x.name), freed: fr,
       edits: edits.filter((e) => e.year === year && (e.what !== "pay1" || works[1])) });
   }
   return { rows, base, years, pre };

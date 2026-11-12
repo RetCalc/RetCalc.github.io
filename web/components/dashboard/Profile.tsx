@@ -263,7 +263,7 @@ function ProfilePage() {
             </div>
             <div className="dsh-row">
               <MoneyField id="dshPRetSpend" label={<TipLabel text="Spending once retired" id="retSpend" />} unit="per month" value={txt(pr.retSpend)} placeholder={txt(spendMonth(pr))} onValueChange={(v) => set((p) => ({ ...p, retSpend: num(v) }))} />
-              <div className="dsh-hint dsh-self-end">{pr.ddOwn?.rate != null ? "Your goal. The plan spends what your starting rate on Retirement gives." : pr.retSpend == null ? (pr.home === "own" ? "Leave blank to use what you spend today, less the mortgage payment if it's paid off by then." : "Leave blank to use what you spend today.") : "Today's spending is " + money(spendMonth(pr) ?? 0) + " per month."}</div>
+              <div className="dsh-hint dsh-self-end">{pr.ddOwn?.rate != null ? "Your goal. The plan spends what your starting rate on Retirement gives." : pr.retSpend == null ? (pr.home === "own" || pr.debtPlan ? "Leave blank to use what you spend today, less your mortgage and planned debt payments: any still being paid once you retire are counted until they're paid off." : "Leave blank to use what you spend today.") : "Today's spending is " + money(spendMonth(pr) ?? 0) + " per month."}</div>
             </div></div>
           </Tile>
           <Tile id="saving" icon={WalletIcon} title="Saving">

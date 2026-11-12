@@ -243,6 +243,11 @@ export function plPrep(P){
     var part = Math.min(1, W2.years - wy);
     C.work[wy] = W2.pay * part; C.workT[wy] = (W2.t || 0) * part; C.workR[wy] = (W2.r || 0) * part; C.workB[wy] = (W2.b || 0) * part;
   }
+  /* Fixed payments still being made once retired (P.extra: a debt, the
+     mortgage), a year in today's dollars from the first year retired:
+     spent on top of what the strategy spends, until they end. */
+  C.extra = new Float64Array(n);
+  if (P.extra) for (var ey = 0; ey < n && ey < P.extra.length; ey++) C.extra[ey] = Math.max(0, +P.extra[ey] || 0);
   C.early = new Uint8Array(n); C.seniors = new Uint8Array(n);
   C.rmdDiv = new Float64Array(n); C.acaGross = new Float64Array(n);
   C.med = new Float64Array(n);
@@ -471,6 +476,7 @@ export function plRun(C, K, R, PI, off, out){
     var bal = trad + roth + brok;
     var w = plSpend(C, y, bal, prev);
     prev = w;
+    w += C.extra[y];
     // A partner's pay: taxed as wages (less what goes into their 401(k) before
     // tax), Social Security and Medicare tax off it, and what they save from
     // it isn't there to spend.

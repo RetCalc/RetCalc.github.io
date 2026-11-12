@@ -19,6 +19,7 @@ import { DRAWDOWN_DEF, ddWrite, drawdownSetup, type DdItem, type DrawdownState }
 import { ddQuick } from "@/lib/engine/drawdown";
 import { ddWindows, runDrawdown } from "@/lib/engine/typed-drawdown";
 import { OUTSIDE_US, PER_YEAR, type Per, type Person, type Profile } from "./store";
+import { loanItems } from "./debts";
 import { housingLines } from "./housing";
 
 /** The budget line setup's one spending number lives on, until the budget
@@ -49,7 +50,7 @@ function overlay(b: BudgetInputs, pr: Profile): BudgetInputs {
   const abroad = pr.state === OUTSIDE_US;
   const g1 = grossOf(pr.p1, abroad), g2 = two ? grossOf(pr.p2, abroad) : null;
   return {
-    ...withHousing(b, pr), pcNoTax: abroad,
+    ...withDebts(withHousing(b, pr), pr), pcNoTax: abroad,
     ...(g1 != null ? { pcGross: dollarsField(g1), pcFreq: payFreq(pr.p1) } : {}),
     ...(g2 != null ? { pcGross2: dollarsField(g2), pcFreq2: payFreq(pr.p2) } : {}),
     pcStatus: pr.who !== "couple" ? "s" : two ? "m2" : "m",
@@ -69,6 +70,28 @@ function withHousing(b: BudgetInputs, pr: Profile): BudgetInputs {
       : [...rows.slice(0, lastHousing(rows) + 1), { group: "Housing", desc: name, amount, freq: 12, custom: true, slot: name }, ...rows.slice(lastHousing(rows) + 1)];
   }
   return { ...b, rows };
+}
+/** The debts Net worth's Plan payments covers, each its own line by name
+    (slot "debt:" and the debt's id): car loans under Transportation, the
+    rest under Debt. Shown in the budget, changed on Net worth; a debt no
+    longer planned gives its line up. A card paid in full each month has
+    none (what's charged is spending already). */
+export const DEBT_SLOT = "debt:";
+export function debtLines(pr: Profile): { slot: string; name: string; group: string; monthly: number }[] {
+  return (pr.debtPlan?.debts ?? []).filter((d) => !d.full && d.pay > 0)
+    .map((d) => ({ slot: DEBT_SLOT + d.id, name: d.name, group: d.kind === "car" ? "Transportation" : "Debt", monthly: d.pay }));
+}
+function withDebts(b: BudgetInputs, pr: Profile): BudgetInputs {
+  const lines = debtLines(pr), want = new Set(lines.map((l) => l.slot));
+  let rows = b.rows.filter((r) => !r.slot?.startsWith(DEBT_SLOT) || want.has(r.slot));
+  for (const l of lines) {
+    const amount = groupDigits(Math.round(l.monthly), true), i = rows.findIndex((r) => r.slot === l.slot);
+    if (i >= 0) { rows = rows.map((r, j) => (j === i ? { ...r, desc: l.name, group: l.group, amount, freq: 12 } : r)); continue; }
+    const at = rows.reduce((k, r, j) => (r.group === l.group ? j : k), -1);
+    const row: BudgetRow = { group: l.group, desc: l.name, amount, freq: 12, custom: true, slot: l.slot };
+    rows = at >= 0 ? [...rows.slice(0, at + 1), row, ...rows.slice(at + 1)] : [...rows, row];
+  }
+  return rows === b.rows ? b : { ...b, rows };
 }
 const lastHousing = (rows: BudgetRow[]) => rows.reduce((at, r, i) => (r.group === "Housing" ? i : at), -1);
 
@@ -268,7 +291,7 @@ export const DD_OWN = ["rate", "years"] as const;
 /** The simulator's inputs the plan sets, which Retirement locks. */
 export const DD_LOCKED = ["initial", "retireAge", "ss"];
 
-export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; taxYr: number; years: number; ss1: number; ss2: number; claim: number; claim2?: number | null; retire: number } | null, own = true): DrawdownState {
+export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; taxYr: number; years: number; ss1: number; ss2: number; claim: number; claim2?: number | null; retire: number; extra?: number[] | null } | null, own = true): DrawdownState {
   const cur = withDefaults(DRAWDOWN_DEF, pr.tools.drawdown ?? {});
   if (!plan) return cur;
   const couple = pr.who === "couple" && plan.ss2 > 0;
@@ -293,6 +316,10 @@ export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; ta
   const items = ((cur.incomeItems ?? []) as DdItem[]).filter((x) => !x.name.endsWith(FROM_PLAN));
   const w2 = partnerIncome(pr);
   next.incomeItems = w2 ? [w2, ...items] : items;
+  // Loan payments still being made once retired, as future expenses: fixed
+  // amounts (they don't rise with inflation), each stretch at one amount.
+  const spent = ((cur.expenseItems ?? []) as DdItem[]).filter((x) => !x.name.endsWith(FROM_PLAN));
+  next.expenseItems = [...loanItems(plan.extra ?? [], pr.assume.inflation, plan.years, FROM_PLAN), ...spent];
   // Only the figures that can be your own (older profiles kept others).
   const saved = (own ? pr.ddOwn : undefined) ?? {};
   const mine = Object.fromEntries(DD_OWN.filter((k) => saved[k] != null).map((k) => [k, saved[k]]));

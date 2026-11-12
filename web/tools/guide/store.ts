@@ -55,6 +55,14 @@ export interface Answers {
   splitTrad?: number | null; splitRoth?: number | null; splitBrok?: number | null;
   /** The four-way choice the split replaced; read from guides saved before it, then dropped. */
   saveTo?: string | null;
+  /** Fixed payments still being made once retired (debts, the mortgage),
+      a year in today's dollars, from the first year retired: spending on
+      top of retSpend while they last (the Dashboard's, debts.ts). */
+  retExtra?: number[] | null;
+  /** What paying off debts frees each year from now to retirement (and
+      fixed payments shrinking in today's dollars), a month: it goes to
+      saving. And what's paid off each year. (The Dashboard's, debts.ts.) */
+  debtFreed?: number[] | null; paidOff?: { k: number; name: string }[] | null;
   retSpend?: number | null; ssOwn?: number | null; ssOwn2?: number | null; ssClaim?: number | null;
   pension?: number | null; pensionAge?: number | null; pensionCola?: string | null;
   stopAge?: number | null; target?: number | null; retMix?: number | null; minSpend?: number | null; strategy?: string | null;

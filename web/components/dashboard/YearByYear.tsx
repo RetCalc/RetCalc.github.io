@@ -115,7 +115,7 @@ export function YearByYear() {
             {KEEP_CHOICES.map((c) => <option key={String(c.v)} value={c.v == null ? "same" : String(c.v)}>{c.label}</option>)}
           </SelectField>
         </div>
-        <p className="dsh-cap dsh-mt6">Raises are beyond inflation. Taxes come from your paycheck&apos;s own figures each year, and saving follows take-home pay as set here, each account up to its limit with the rest in the next. What&apos;s spent is what&apos;s left. Children&apos;s costs and college come out of saving, as on <To href="/dashboard/profile#children">Profile</To>. When pay changes other than by a raise ({names ? `a pay change below, or ${names[1]} stopping work` : "a pay change below"}), spending carries on and saving takes the difference, each account within the limits that pay allows.</p>
+        <p className="dsh-cap dsh-mt6">Raises are beyond inflation. Taxes come from your paycheck&apos;s own figures each year, and saving follows take-home pay as set here, each account up to its limit with the rest in the next. What&apos;s spent is what&apos;s left. Children&apos;s costs and college come out of saving, as on <To href="/dashboard/profile#children">Profile</To>. Debt payments you&apos;ve planned on <To href="/dashboard/accounts#debts">Net worth</To>, and your mortgage, stay the same in dollars, so they take a little less each year after inflation; what they free, and all of it once they&apos;re paid off, goes to saving. When pay changes other than by a raise ({names ? `a pay change below, or ${names[1]} stopping work` : "a pay change below"}), spending carries on and saving takes the difference, each account within the limits that pay allows.</p>
         <div className="dsh-yby-changes dsh-mt">
           <div className="dsh-label">Changes ahead</div>
           {changes.length ? (
@@ -215,6 +215,8 @@ function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend }: {
     if (prev) for (const id of prev.tags) if (!y.tags.includes(id)) { const s = live.find((x) => x.id === id); if (s && !id.startsWith("__")) out.push({ text: scenarioName(s) + " ends" }); }
     if (kids.length && prev && stage(y) !== stage(prev)) out.push({ text: stage(y) + (y.kids > 0.5 ? `: children ${money(Math.round(yr(y.kids) * f(y.k)))} more than today` : "") });
     if (y.college > 0.5 && (!prev || prev.college < 0.5)) out.push({ text: "College starts" });
+    // A debt paid off: what it took a month goes to saving from then on.
+    for (const name of y.paidOff ?? []) out.push({ text: `${name} paid off` });
     if (y.short > 0.5) out.push({ text: `${m(y.short, y.k)} more than saving covers`, warn: true });
     return out;
   };

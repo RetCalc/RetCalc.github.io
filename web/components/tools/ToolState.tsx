@@ -254,6 +254,8 @@ export interface ToolScope {
     /** The Budget's lines the page sets itself ("from your home"): what
         its tip says they are. */
     fromHome?: string;
+    /** The same for the lines of debts being paid off ("from your debts"). */
+    fromDebts?: string;
     /** Said at the top of a tool's inputs: the figures the scope sets itself
         (`locked`), in its own words, with where each is changed. */
     facts?: ReactNode;

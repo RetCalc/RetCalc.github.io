@@ -76,6 +76,10 @@ export interface Profile {
   budget: BudgetLine[]; useBudget: boolean;
   /** Per month once retired; null means the same as today. */
   retSpend: number | null;
+  /** Debts being paid off (Net worth's Plan payments; debts.ts): what's
+      paid on each a month, and whether a paid-off debt's payment goes on to
+      the next. Each is a line in the budget until it's paid off. */
+  debtPlan?: DebtPlan;
   home: "own" | "rent" | null;
   /** Setup's home answers, until accounts hold the home and the mortgage. */
   value: number | null; owed: number | null; rent: number | null;
@@ -181,6 +185,11 @@ export interface YearEdit { what: "pay0" | "pay1" | "spend"; year: number; amoun
 
 /** What the household had and owed on a day (YYYY-MM-DD). One a day:
     saving again the same day replaces it. */
+/** One debt's payment plan, by the debt's id on Net worth. `full`: a card
+    paid off in full each month (nothing to plan: it's spending). `replace`:
+    a car loan whose payment goes on to the next car once it's paid off. */
+export interface DebtPay { id: string; name: string; kind: DebtKind; pay: number; full?: boolean; replace?: boolean }
+export interface DebtPlan { roll: boolean; debts: DebtPay[] }
 export interface Entry { date: string; items: Item[]; from: "setup" | "accounts" }
 
 export interface DashData {
