@@ -227,13 +227,17 @@ export function cumulative(p: Person, age: number, to: number): { year: number; 
 /** What the Drawdown Simulator takes from this tool: each person's yearly
     benefit once both have claimed (today's dollars, any spousal top-up
     included), and the claiming ages. */
-export function forDrawdown(s: SocialInputs): { couple: boolean; annual: number; annual2: number; claim: number; claim2: number } {
+export function forDrawdown(s: SocialInputs): { couple: boolean; annual: number; annual2: number; claim: number; claim2: number; claim2At: number } {
   const S = social(s);
+  const claim2 = S.spouse?.claim ?? S.you.claim;
   return {
     couple: S.married,
     annual: Math.round((S.H.you.laterMonthly + S.H.top1) * 12),
     annual2: S.H.spouse ? Math.round((S.H.spouse.laterMonthly + S.H.top2) * 12) : 0,
-    claim: S.you.claim, claim2: S.spouse?.claim ?? S.you.claim,
+    claim: S.you.claim, claim2,
+    // The spouse's claiming age in your years (the simulator's ages are
+    // yours): a spouse born two years after you claims at 67 when you're 69.
+    claim2At: claim2 + (S.spouse ? S.spouse.birth - S.you.birth : 0),
   };
 }
 

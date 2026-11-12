@@ -73,7 +73,10 @@ export function Inputs({ v, fromNote, periods, open }: {
     if (!saved) { toast("Open the Social Security Calculator first, then copy from it"); return; }
     const f = forDrawdown(saved);
     setState((c) => ({ ...c, ssMode: "manual", ssFrom: "social", ssWho: f.couple ? "couple" : "single",
-      ssAmount: groupDigits(f.annual, true), ssAmount2: groupDigits(f.annual2, true), ssDelay: age != null ? String(f.claim) : c.ssDelay }));
+      ssAmount: groupDigits(f.annual, true), ssAmount2: groupDigits(f.annual2, true), ssDelay: age != null ? String(f.claim) : c.ssDelay,
+      // Each check from its own start: the spouse's in your years. Without a
+      // retirement age the starts are years from now, so both share one.
+      ssDelay2: f.couple && f.annual2 > 0 && age != null ? String(f.claim2At) : "" }));
   };
   const socialNow = fromSocial ? socialSaved() : null;
   const copied = socialNow ? forDrawdown(socialNow) : null;
@@ -465,7 +468,7 @@ export function Inputs({ v, fromNote, periods, open }: {
             <GroupHead>Income in retirement</GroupHead>
             {locked.has("ss") ? scope?.slots?.ssFacts : <>
             <SelectField id="ddSSMode" label="Social Security" value={fromSocial ? "social" : ssMode}
-              onChange={(m) => m === "social" ? copySocial() : setState((c) => ({ ...c, ssMode: m, ssFrom: "" }))}>
+              onChange={(m) => m === "social" ? copySocial() : setState((c) => ({ ...c, ssMode: m, ssFrom: "", ssDelay2: "" }))}>
               <option value="none">Not included</option>
               <option value="est">Estimate it for me</option>
               <option value="manual">I know my benefit</option>
@@ -492,13 +495,13 @@ export function Inputs({ v, fromNote, periods, open }: {
               {fromSocial ? (
                 <div className="hint" id="ddSSFromNote">
                   {copied ? <>From the Social Security Calculator: you claiming at {copied.claim}{copied.couple ? <>, your spouse at {copied.claim2}</> : null}.
-                    {age == null ? <> Fill in <b>Age at retirement</b> to start the checks at {copied.claim}.</> : copied.couple && copied.claim2 !== copied.claim ? <> Here both start at {copied.claim}.</> : null} </> : <>From the Social Security Calculator. </>}
+                    {age == null ? <> Fill in <b>Age at retirement</b> to start the checks at {copied.claim}.</> : copied.couple && copied.annual2 > 0 && copied.claim2At !== copied.claim ? <> Your spouse&apos;s check starts when you&apos;re {copied.claim2At}.</> : null} </> : <>From the Social Security Calculator. </>}
                   <Button variant="link" size="inline" id="ddSSCopyAgain" onClick={copySocial}>Copy again</Button>
                 </div>
               ) : null}
             </div>
             <Field id="ddSSDelay" wrapId="ddSSDelayWrap" hidden={ssMode === "none" || (ssMode === "est" && age != null)}
-              label={<span id="ddSSDelayLabel"><Tipped text={ssAgeMode ? "Starts at age" : "Starts after"} k={ssAgeMode ? "ssdelayage" : "ssdelay"} /></span>}>
+              label={<span id="ddSSDelayLabel"><Tipped text={ssAgeMode ? (ssCouple && str("ssDelay2").trim() !== "" ? "Yours starts at age" : "Starts at age") : "Starts after"} k={ssAgeMode ? "ssdelayage" : "ssdelay"} /></span>}>
               <Affixed suffix="yrs"><NumberInput id="ddSSDelay" nonNeg max={ssAgeMode ? 120 : 30} value={str("ssDelay")} onValueChange={set("ssDelay")}
                 onBlur={() => ssAgeMode && setState(clampSSAge)} /></Affixed>
             </Field>

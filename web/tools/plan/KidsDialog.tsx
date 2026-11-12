@@ -24,6 +24,9 @@ const ACCT: Record<CoverLine, string> = { brok: "Brokerage", roth: "Roth", trad:
 const ages = (from: number, to: number) => (to - from <= 1 && Number.isInteger(from) && Number.isInteger(to) ? "Age " : "Ages ") + ageSpan(from, to);
 /** A stage's span: your ages, or (in the Stages calculator, which has no
     age) years from now, counted from `base`. */
+
+/** A box's unit, singular when exactly 1 is typed ("1 child", "2 children"). */
+const unit = (typed: string, one: string, many: string) => (parseNum(typed) === 1 ? one : many);
 export const spanText = (from: number, to: number, base?: number) => base == null ? ages(from, to)
   : (to - from <= 1 && Number.isInteger(from) && Number.isInteger(to) ? "Year " : "Years ") + ageSpan(from - base, to - base);
 /** To the half year: 2.5 years stays 2.5. */
@@ -85,22 +88,22 @@ export function KidsDialog({ kids, age, retire, base, cover = true, close, save,
         The costs below are typical ones, in today&apos;s dollars. Change any of them to your own. Up to {MAX_KIDS} children in all.</div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-3 max-sm:grid-cols-1">
         {costsOnly ? <div className="col-span-full text-note">{costsOnly}</div> : <>
-        <CountedBoxes id="kdNow" countLabel="Children you have now" countAffix="children" max={MAX_KIDS} values={now} onChange={setNow}
+        <CountedBoxes id="kdNow" countLabel="Children you have now" countAffix={now.length === 1 ? "child" : "children"} max={MAX_KIDS} values={now} onChange={setNow}
           boxLabel={(i) => "Child " + (i + 1) + "'s age"} boxAffix="yrs" boxMax={29} half />
         <div>
           <Label className="mb-1.5" htmlFor="kdPlanned"><span>Children planned</span></Label>
-          <Affixed suffix="children"><NumberInput id="kdPlanned" nonNeg max={room} value={planned} onValueChange={setPlanned} /></Affixed>
+          <Affixed suffix={unit(planned, "child", "children")}><NumberInput id="kdPlanned" nonNeg max={room} value={planned} onValueChange={setPlanned} /></Affixed>
         </div>
         {nPlanned > 0 ? (
           <div>
             <Label className="mb-1.5" htmlFor="kdFirst"><span>The first in</span></Label>
-            <Affixed suffix="years"><NumberInput id="kdFirst" nonNeg max={30} value={firstIn} onValueChange={setFirstIn} /></Affixed>
+            <Affixed suffix={unit(firstIn, "year", "years")}><NumberInput id="kdFirst" nonNeg max={30} value={firstIn} onValueChange={setFirstIn} /></Affixed>
           </div>
         ) : null}
         {nPlanned > 1 && !gaps ? (
           <div>
             <Label className="mb-1.5" htmlFor="kdSpacing"><span>Then one every</span></Label>
-            <Affixed suffix="years"><NumberInput id="kdSpacing" nonNeg max={15} value={spacing} onValueChange={setSpacing} /></Affixed>
+            <Affixed suffix={unit(spacing, "year", "years")}><NumberInput id="kdSpacing" nonNeg max={15} value={spacing} onValueChange={setSpacing} /></Affixed>
             <Button variant="quiet" size="inline-xs" className="mt-1.5" onClick={() => setGaps(gapBoxes)}>Space them differently</Button>
           </div>
         ) : null}
