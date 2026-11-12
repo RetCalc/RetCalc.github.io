@@ -148,7 +148,7 @@ export function About({ states }: { states: StateOption[] }) {
               conversions, drawdown, retiring early, healthcare, a mortgage, college savings,
               rent vs. buy, debt, your budget and more. Each is described in its own section
               below.</li>
-              <li><b>Learn</b> has 56 short lessons on the ideas behind a plan, from the 4%
+              <li><b>Learn</b> has 66 short lessons on the ideas behind a plan, from the 4%
               rule and sequence risk to when to claim Social Security and Medicare&apos;s
               IRMAA surcharges.</li>
             </ul>
