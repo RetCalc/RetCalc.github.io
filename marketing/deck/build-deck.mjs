@@ -368,7 +368,7 @@ await feature({
   const steps = [
     ['Budget', '$1,803', 'saved per month, 13.5% of pay, plus $457 in employer matches', 'st_pc_1_saved-and-invested-e', ['Copy to Advanced', '$832.35 every two weeks'], 'right'],
     ['Advanced', '$1,200,063', 'at 65 in today\'s dollars, with the child added as a change ahead', 'st_adv_1_after-tax-income-per', ['Test withdrawals', 'the balance at 65'], 'right'],
-    ['Drawdown', '100%', 'of 835 historical retirements lasted 30 years; median ending balance $3,611,139', 'st_dd_1_historicalmonte-carl', ['Copy from Social Security Calculator', 'both benefits'], 'left'],
+    ['Drawdown', '100%', 'of 835 historical retirements lasted 30 years; median ending balance $2,943,319', 'st_dd_1_historicalmonte-carl', ['Copy from Social Security Calculator', 'both benefits'], 'left'],
     ['Social Security', '$6,236', 'per month for the two of them, both claiming at 67', 'st_ss_1_pick-the-age-you-cla', null, null],
   ];
   const cw = 2.72, gap = (W - 2 * M - 4 * cw) / 3;
@@ -389,7 +389,7 @@ await feature({
   }
   rect(s, M, 5.95, W - 2 * M, 0.9, X.amber, { round: true, r: 0.12 });
   T(s, [{ text: '$96,005 per year to spend in retirement', options: { bold: true, fontSize: 22 } }, { text: '   in today\'s dollars, rising with prices. Social Security pays $74,829 of it once both checks start; savings pay the rest.', options: { fontSize: 13 } }], { x: M + 0.3, y: 5.95, w: W - 2 * M - 0.6, h: 0.9, color: X.ground, valign: 'middle' });
-  notes(s, 'Every number here is from the site, carried tool to tool by the hand-off buttons. Their budget and paycheck save $1,803 per month. Copy to Advanced carries that into the Advanced calculator as $832.35 every two weeks, split by account type. There they add one child as a change ahead, paid for out of saving, brokerage first; that takes them to $1,200,063 at 65 in today\'s dollars. Test withdrawals sends that balance to the Drawdown Simulator, which copies in both Social Security benefits: $6,236 per month from 67. They plan to spend $96,005 per year in today\'s dollars, and Social Security pays $74,829 of it once both checks start. Fixed spending rising with prices lasted in all 835 historical retirements, with a median ending balance of $3,611,139. Step-by-step screenshots are in the appendix.');
+  notes(s, 'Every number here is from the site, carried tool to tool by the hand-off buttons. Their budget and paycheck save $1,803 per month. Copy to Advanced carries that into the Advanced calculator as $832.35 every two weeks, split by account type. There they add one child as a change ahead, paid for out of saving, brokerage first; that takes them to $1,200,063 at 65 in today\'s dollars. Test withdrawals sends that balance to the Drawdown Simulator, which copies in both Social Security benefits: $6,236 per month from 67. They plan to spend $96,005 per year in today\'s dollars, and Social Security pays $74,829 of it once both checks start. Fixed spending rising with prices lasted in all 835 historical retirements, with a median ending balance of $2,943,319. Step-by-step screenshots are in the appendix.');
 }
 
 // 14. My Dashboard: what it is

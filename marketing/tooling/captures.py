@@ -231,7 +231,7 @@ One browser session, the site's own buttons between steps. Alex is 34 and Jordan
    it and the portfolio would never be touched). In the year-by-year table the portfolio pays about
    $62,000 of it at 65 and 66 and about $22,000 once both checks run.
    - Result: **Success rate 100.0%, 835 of 835 monthly starts lasted 30 years**; median ending
-     balance **$3,611,139**; worst case **$1,597,254** (never ran out). Spending scorecard: never below
+     balance **$2,943,319**; worst case **$1,212,457** (never ran out). Spending scorecard: never below
      the $76,804 comfort line; typical lifetime spending $2.88M. Return sensitivity: 100.0% even at
      −2% per year (median $1,807,862).
 

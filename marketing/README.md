@@ -175,7 +175,7 @@ Re-check each on a refresh:
   on each appendix tool slide (`stat:`), the Dashboard figures ($610,500 net
   worth, $1,891,000 at 60, readiness 96, 751 of 751), and the household
   story ($1,803 per month, $832.35 every two weeks, $1,200,063, $6,236 per
-  month, $96,005 per year, 835 of 835).
+  month, $96,005 per year, 835 of 835, median $2,943,319 left).
 - **Tax year** (2026) wherever it is named.
 
 ## Design

@@ -799,14 +799,14 @@ page(`
   <div class="row" style="gap:20px">
     <div style="width:236px;flex:none">
       ${step(4, 'Drawdown Simulator', 'drawdown', 'Will it last?')}
-      <p class="muted" style="font-size:10.5px">The spending here is the whole household's: <b style="color:var(--text)">$96,005 per year</b> ($8,000 per month), rising with inflation. Social Security pays $74,829 of it once both checks run; savings pay about $62,000 in the first two years and about $22,000 after. The plan is replayed through every monthly start since 1926, 835 of them, for 30 years each.</p>
+      <p class="muted" style="font-size:10.5px">The spending here is the whole household's: <b style="color:var(--text)">$96,005 per year</b> ($8,000 per month), rising with inflation. Savings pay all of it until Alex claims at 67, then about $55,500, then $21,200 once Jordan claims at 67, two years later. The plan is replayed through every monthly start since 1926, 835 of them, for 30 years each.</p>
     </div>
     <div class="col">${img('st_dd_1_historicalmonte-carl', 'width:100%')}</div>
   </div>
   <div style="margin-top:14px;padding:18px 22px;border-radius:14px;background:var(--g-ground);color:var(--g-text)">
     <div class="label" style="color:var(--g-amber)">Where Alex and Jordan land</div>
     <div class="row" style="gap:0;margin-top:8px">
-      ${[['$96,005', 'per year to spend in retirement, in today\'s dollars, with $74,829 of it from Social Security'], ['835 of 835', 'historical retirements lasted the full 30 years, the Depression and the 1970s included'], ['$3.6M', 'the median left after 30 years, in today\'s dollars; $1.6M in the worst start']].map(([n, l], i) => `<div class="col" style="${i ? 'padding-left:18px;border-left:1px solid var(--g-rule);' : ''}padding-right:18px"><div style="font-size:30px;font-weight:700;letter-spacing:-0.03em;color:${i ? 'var(--g-text)' : 'var(--g-amber)'}">${n}</div><div style="font-size:10px;color:var(--g-muted);margin-top:4px;line-height:1.4">${l}</div></div>`).join('')}
+      ${[['$96,005', 'per year to spend in retirement, in today\'s dollars, with $74,829 of it from Social Security'], ['835 of 835', 'historical retirements lasted the full 30 years, the Depression and the 1970s included'], ['$2.9M', 'the median left after 30 years, in today\'s dollars; $1.2M in the worst start']].map(([n, l], i) => `<div class="col" style="${i ? 'padding-left:18px;border-left:1px solid var(--g-rule);' : ''}padding-right:18px"><div style="font-size:30px;font-weight:700;letter-spacing:-0.03em;color:${i ? 'var(--g-text)' : 'var(--g-amber)'}">${n}</div><div style="font-size:10px;color:var(--g-muted);margin-top:4px;line-height:1.4">${l}</div></div>`).join('')}
     </div>
   </div>
   <p class="muted" style="font-size:9.5px;margin-top:10px">A sample household, not advice. Returns before retirement are the plan's own assumptions; the historical tests use real monthly returns from 1926 to 2025.</p>`, { sec: 'story', sub: 'Page 2 of 2', toc: { group: 'story', name: 'From claiming to drawdown' } });
