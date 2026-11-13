@@ -30,7 +30,7 @@ async function stored(page: Page, items: Record<string, unknown>) {
 }
 async function seeded(page: Page, state: unknown) {
   await stored(page, state ? { "retcalc.guide.v2": state } : {});
-  await page.goto(NEW + "/guide");
+  await page.goto(NEW + "/guide/readiness");
   await expect(page.locator("#gdCard .gd-q")).toBeVisible();
 }
 /** The route: in the rail, or on a phone in the strip's sheet. */
@@ -242,7 +242,7 @@ test("a second visit shows what moved since the snapshot", async ({ page }) => {
   expect(saved.finishedAt).toBeTruthy();
   // come back: Welcome back, bring the cash up to date, see what moved
   await page.goto(NEW + "/robots.txt");
-  await page.goto(NEW + "/guide");
+  await page.goto(NEW + "/guide/readiness");
   await expect(page.locator("#gdCard .gd-q")).toHaveText("Welcome back");
   await page.fill("#gdf-cash", "12000");
   await page.locator('[data-gd="moved"]').click();
@@ -279,7 +279,7 @@ test("Changes ahead: two children planned turn into a schedule, and the number m
   // four years apart, the second child's college years run past 60, and the plan card asks about them
   await page.locator("#gdCard [data-more]").click();
   await page.fill("#gdf-spacing", "4");
-  await expect(page.locator("#gdCard .gd-means")).toContainText("starts college at 57, 3 years before you retire: those years overlap your retirement");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("starts college at 57, 3 years before you retire. Those years overlap your retirement");
   await page.evaluate(() => { const g = JSON.parse(localStorage.getItem("retcalc.guide.v2")!); g.cur = "plan"; localStorage.setItem("retcalc.guide.v2", JSON.stringify(g)); });
   await page.reload();
   await expect(page.locator('[data-move="college-overlap"]')).toBeVisible({ timeout: 30_000 });
@@ -310,7 +310,7 @@ test("the Quick check hands off to Basic from Your number", async ({ page }) => 
 test("a guide saved by v1 isn't carried over: its key is cleared and the guide starts fresh", async ({ page }) => {
   const v1 = { v: 1, cur: "outlook", a: { ...MAYA, spendSrc: "budget" }, done: { about: true, income: true, takehome: true }, trip: null, back: null, coachMin: false };
   await stored(page, { "retcalc.guide.v1": v1 });
-  await page.goto(NEW + "/guide");
+  await page.goto(NEW + "/guide/readiness");
   await expect(page.locator("#gdCard .gd-q")).not.toHaveText("Your number");
   await expect.poll(() => page.evaluate(() => localStorage.getItem("retcalc.guide.v1"))).toBeNull();
   const v2 = await page.evaluate(() => localStorage.getItem("retcalc.guide.v2"));
@@ -319,7 +319,7 @@ test("a guide saved by v1 isn't carried over: its key is cleared and the guide s
 
 test("a shared link opens the plan on its results, after asking in the site's dialog", async ({ page, context }) => {
   await seeded(page, { ...stateWith("quick", "income"), done: { about: true } });
-  const url = NEW + "/guide#g=" + Buffer.from(JSON.stringify({ v: 2, pace: "full", a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full",
+  const url = NEW + "/guide/readiness#g=" + Buffer.from(JSON.stringify({ v: 2, pace: "full", a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full",
     retSpend: 60000, cash: 20000, spend: 5000, takehome: 6500, debtHas: "no" } })).toString("base64url");
   const other = await context.newPage();
   let native = false;
@@ -329,13 +329,13 @@ test("a shared link opens the plan on its results, after asking in the site's di
   expect(native).toBe(false);
   await expect(other.locator(".gd-q")).toHaveText("Your plan");
   await expect(other.locator("#gdScoreNum")).not.toHaveText("");
-  await expect(other).toHaveURL(NEW + "/guide");
+  await expect(other).toHaveURL(NEW + "/guide/readiness");
 });
 
 test("a v2 link opens on the plan card with its pace", async ({ page }) => {
   await stored(page, {});
   const link = { v: 2, a: MAYA, src: { spend: { kind: "tool", tool: "budget", at: "2026-10-07T00:00:00.000Z" } }, pace: "quick" };
-  await page.goto(NEW + "/guide#g=" + Buffer.from(JSON.stringify(link)).toString("base64url"));
+  await page.goto(NEW + "/guide/readiness#g=" + Buffer.from(JSON.stringify(link)).toString("base64url"));
   await expect(page.locator(".gd-q")).toHaveText("Your plan");
   await expect(page.locator('.gd-top [data-pace="quick"].on')).toHaveCount(1);
   const v2 = JSON.parse((await page.evaluate(() => localStorage.getItem("retcalc.guide.v2")))!);
@@ -345,7 +345,7 @@ test("a v2 link opens on the plan card with its pace", async ({ page }) => {
 test("the plan prints on one page", async ({ page }) => {
   const plan = { v: 2, pace: "full", a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full", retSpend: 60000, cash: 20000, spend: 5000, takehome: 6500, debtHas: "no" } };
   await stored(page, {});
-  await page.goto(NEW + "/guide#g=" + Buffer.from(JSON.stringify(plan)).toString("base64url"));
+  await page.goto(NEW + "/guide/readiness#g=" + Buffer.from(JSON.stringify(plan)).toString("base64url"));
   await expect(page.locator(".gd-q")).toHaveText("Your plan");
   await page.evaluate(() => { (window as unknown as { printed: number }).printed = 0; window.print = () => { (window as unknown as { printed: number }).printed++; }; });
   await page.locator('[data-gd="print"]').click();
@@ -357,7 +357,7 @@ test("the plan prints on one page", async ({ page }) => {
 test("the full report opens from the plan card, every page under the band with RetCalc on it", async ({ page }) => {
   const plan = { v: 2, pace: "full", a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full", retSpend: 60000, cash: 20000, spend: 5000, takehome: 6500, debtHas: "no" } };
   await stored(page, {});
-  await page.goto(NEW + "/guide#g=" + Buffer.from(JSON.stringify(plan)).toString("base64url"));
+  await page.goto(NEW + "/guide/readiness#g=" + Buffer.from(JSON.stringify(plan)).toString("base64url"));
   await expect(page.locator(".gd-q")).toHaveText("Your plan");
   await page.locator('[data-gd="report"]').click();
   await expect(page).toHaveURL(NEW + "/guide/report");
