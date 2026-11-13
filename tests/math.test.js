@@ -433,6 +433,50 @@ group("Plan engine: Medicare premiums from 65 when the plan prices coverage");
   near(C.med[4], (202.90 + 35) * 24, .01, "both from the year the younger turns 65");
 })();
 
+group("Plan engine: a withdrawal budget (the Dashboard's tax plan)");
+(function () {
+  function prep(over) {
+    return plPrep(Object.assign({ status: "m", state: "TX", age1: 62, age2: 62, years: 20, trad: 900000, roth: 100000,
+      rothBasis: 100000, brok: 200000, brokBasis: 150000, spend: 60000, pia1: 2000, pia2: 1500, claim1: 67, claim2: 67,
+      pension: 0, pensionAge: null, pensionCola: false, aca: false, household: 2, rule55: false,
+      heirRate: .24, mix: 60, rmdAge: 75, fromYear: 1926, strategy: "fixed", minSpend: 0 }, over || {}));
+  }
+  var n = 20, W = [];
+  for (var i = 0; i < n; i++) W.push(i < 5 ? 70000 : 45000);
+  var r = new Float64Array(n).fill(0.04), pi = new Float64Array(n).fill(0.03);
+  function run(T) {
+    var C = prep(), K = plTactics(C, Object.assign({ c1: 67, c2: 67, f: 0, u: 0, im: 0, ac: 0 }, T)), out = { rows: [] };
+    var res = plRunBudget(C, K, r, pi, 0, W, out);
+    return { res: res, rows: out.rows, C: C };
+  }
+  // The single pot the strategy sees: withdraw W, then grow.
+  var pot = 1200000;
+  for (i = 0; i < n; i++) pot = (pot - W[i]) * 1.04;
+  var none = run({}), conv = run({ f: 4, u: 2 });
+  near(none.res.end, pot, 1, "no conversions: the accounts end where the strategy's single pot does");
+  near(conv.res.end, pot, 1, "converting moves money between accounts, so the total still follows the strategy");
+  ok(none.rows.every(function (x, k) { return Math.abs(x.out - W[k]) < 0.5; }), "each year takes exactly the budget out");
+  ok(conv.res.conv > 0, "filling the 22% bracket until required withdrawals converts", "conv " + conv.res.conv);
+  eq(none.res.conv, 0, "no fill, no conversions");
+  ok(conv.rows[0].tax > none.rows[0].tax, "converting costs tax in the year it's done");
+  ok(conv.rows[0].left < none.rows[0].left, "and the tax comes out of that year's withdrawal");
+  var y = conv.rows[3];
+  near(y.left, y.ss + y.out - y.tax - y.irmaa - y.aca, 1, "spending is the withdrawal and Social Security, less the year's costs");
+  // A required distribution bigger than the budget is reinvested, not spent.
+  var C2 = prep({ age1: 76, age2: 76, trad: 2000000, roth: 0, rothBasis: 0, brok: 0, brokBasis: 0 });
+  var K2 = plTactics(C2, { c1: 70, c2: 70, f: 0, u: 0, im: 0, ac: 0 }), o2 = { rows: [] };
+  plRunBudget(C2, K2, r, pi, 0, new Array(n).fill(30000), o2);
+  ok(o2.rows[0].rmd > 30000 && Math.abs(o2.rows[0].reinvest - (o2.rows[0].rmd - 30000)) < 0.5, "the RMD beyond the budget goes to the brokerage", JSON.stringify([o2.rows[0].rmd, o2.rows[0].reinvest]));
+  near(o2.rows[0].out, 30000, 0.5, "and only the budget leaves the accounts");
+  // A floor under spending: conversions use only the room left above it.
+  var FL = W.map(function (w) { return w * 0.9; });
+  var C3 = prep(), K3 = plTactics(C3, { c1: 67, c2: 67, f: 5, u: 2, im: 0, ac: 0 }), o3 = { rows: [] };
+  var r3 = plRunBudget(C3, K3, r, pi, 0, W, o3, FL);
+  ok(o3.rows.every(function (x, k) { return x.conv < 1 || x.left >= FL[k] - 2; }), "a converting year still spends the floor");
+  ok(r3.conv > 0 && r3.conv < conv.res.conv + run({ f: 5, u: 2 }).res.conv, "and converts less than without the floor", r3.conv);
+  near(r3.end, pot, 1, "still on the strategy's path");
+})();
+
 /* ---------------- Social Security ---------------- */
 group("Social Security: 2026 bend points, claiming ages, spousal benefits");
 (function () {

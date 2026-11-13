@@ -604,6 +604,170 @@ export function plRun(C, K, R, PI, off, out){
     legacy:roth + brok + trad * (1 - C.heir)};
 }
 
+/* ---- one retirement on a withdrawal budget ----
+   The Dashboard's tax plan. A withdrawal strategy has already decided what
+   comes out of savings each year (W[y], today's dollars, from this run's
+   first year); this decides only which accounts it comes from and what to
+   convert to Roth, as the tactics say (the fill, how long to convert, the
+   income guards). The year's tax, the 10% additional tax, and the premiums
+   that follow income (the ACA premium after its credit, Medicare's
+   surcharge) are paid out of it, and what's left, with Social Security, a
+   pension and a partner's pay, is the year's spending (`left`). A required
+   distribution larger than the budget is reinvested in the brokerage, so
+   what leaves the accounts each year is always the budget (or all there is)
+   and the total follows the strategy's own path; a conversion only moves
+   money from traditional to Roth. Medicare's standard premiums are the same
+   whatever the plan, so they're left out of the costs. */
+export function plRunBudget(C, K, R, PI, off, W, out, FL){
+  var n = C.years, st = C.status;
+  var trad = C.trad, roth = C.roth, rAcc = C.rothBasis, brok = C.brok, bBasis = C.brokBasis;
+  var pend = C.pend; pend.fill(0);
+  var m1 = -1, m2 = -1;
+  var irmLine = yearData().medicare.irmaa.tiers[0][st] - 2000;
+  var cum = 1, lastGain = 0;
+  var tax = 0, pen = 0, aca = 0, irm = 0, conv = 0, spent = 0, shortSum = 0, owed = 0, depleted = 0;
+  var rows = out && out.rows;
+  var Y = plY, RE = R === C.mix.r && C.mix.rEnd ? C.mix.rEnd : null;
+  for (var y = 0; y < n; y++){
+    var a1 = C.age1 + y, early = C.early[y] === 1;
+    var slot = y % 5;
+    rAcc += pend[slot]; pend[slot] = 0;
+    var ss = K.ss[y];
+    var pension = C.pension > 0 && a1 >= C.pensionAge ? (C.cola ? C.pension : C.pension / cum) : 0;
+    var budget = Math.max(0, +W[y] || 0);
+    var wage = C.work[y], wT = C.workT[y], wR = C.workR[y], wB = C.workB[y];
+    var wOrd = wage > 0 ? Math.max(0, wage - wT) : 0, wCash = wage > 0 ? wage - wT - wR - wB - wage * PL_FICA : 0;
+    var M = C.rmdDiv[y] > 0 && trad > 0 ? Math.min(trad, trad / C.rmdDiv[y]) : 0;
+    var seniors = C.seniors[y];
+    var pn = early && !C.rule55;
+    var D = M, lvl = K.fill[y], convY = K.conv[y] === 1;
+    var fillOn = lvl >= 0 && trad > M && (convY || !pn);
+    var gs0 = brok > 0 ? Math.max(0, 1 - bBasis / brok) : 0;
+    var g0 = y > 0 ? lastGain : Math.min(brok, Math.max(0, budget - M)) * gs0;
+    if (fillOn){
+      D = M + plLargest(function(t){ return plOrdTaxable(pension + wOrd + M + t, g0, ss, st, seniors) - lvl; }, trad - M);
+      if (K.capIr[y]){
+        var lim = irmLine;
+        D = Math.min(D, M + plLargest(function(t){ return plAgi(pension + wOrd + M + t, g0, ss, st) - lim; }, trad - M));
+      }
+      if (K.capAca[y]) D = Math.min(D, Math.max(M, C.fpl * 4 - 1500 - pension - wOrd - ss - g0));
+      if (D < M) D = M;
+    }
+    var flex = D - M;
+    plAv[0] = pn ? 0 : flex;
+    plAv[1] = brok;
+    plAv[2] = Math.max(0, trad - D);
+    var rOpen = early ? Math.min(roth, rAcc) : roth;
+    plAv[3] = rOpen;
+    plAv[4] = early ? Math.max(0, roth - rOpen) : 0;
+    var total = plAv[0] + plAv[1] + plAv[2] + plAv[3] + plAv[4];
+    Y.y = y; Y.order = (fillOn || pn) ? PL_ORDER_FILL : PL_ORDER_DEF;
+    Y.conv = convY && flex > 0 ? 1 : 0;
+    Y.pen = pn ? 1 : 0;
+    Y.gs = brok > 0 ? Math.max(0, 1 - bBasis / brok) : 0;
+    Y.baseOrd = pension + (Y.conv ? D : M) + wOrd;
+    Y.seniors = seniors; Y.ss = ss;
+    Y.a1 = a1; Y.a2 = C.age2 == null ? null : C.age2 + y;
+    Y.aca = C.acaGross[y] > 0 ? 1 : 0;
+    Y.med = C.med[y];
+    Y.people = seniors;
+    Y.look = m2;
+    Y.cash = ss + pension + M + wCash;
+    Y.w = 0;
+    // What the budget takes beyond the required distribution, down the list.
+    var want = Math.max(0, budget - M), x = Math.min(total, want);
+    plEv(C, Y, x);
+    // A guarded line crossed anyway (the brokerage's gain came in higher than
+    // expected): pull the fill back by the overshoot.
+    if (fillOn && flex > 0 && (K.capAca[y] || K.capIr[y])){
+      for (var it = 0; it < 3; it++){
+        var over = 0;
+        if (K.capAca[y] && Y.aca) over = Math.max(over, plE.magi - (C.fpl * 4 - 1500));
+        if (K.capIr[y]) over = Math.max(over, plE.agi - irmLine);
+        if (!(over > 1)) break;
+        var cut = Math.min(flex, over + 250);
+        D -= cut; flex -= cut;
+        plAv[0] = pn ? 0 : flex;
+        plAv[2] = Math.max(0, trad - D);
+        Y.conv = convY && flex > 0 ? 1 : 0;
+        Y.baseOrd = pension + (Y.conv ? D : M) + wOrd;
+        total = plAv[0] + plAv[1] + plAv[2] + plAv[3] + plAv[4];
+        x = Math.min(total, want);
+        plEv(C, Y, x);
+        if (!(flex > 0)) break;
+      }
+    }
+    // A floor under the year's spending (FL[y], optional): a conversion only
+    // uses the room the plan budgets for tax, so it's cut back until the year
+    // still spends that much (to none, when the year's tax is already more).
+    if (FL && Y.conv && flex > 0){
+      var fl = +FL[y] || 0, cash0 = ss + pension + wCash, Dmax = D;
+      var setD = function(dd){
+        D = dd; flex = D - M;
+        plAv[0] = pn ? 0 : flex; plAv[2] = Math.max(0, trad - D);
+        Y.conv = convY && flex > 0 ? 1 : 0;
+        Y.baseOrd = pension + (Y.conv ? D : M) + wOrd;
+        total = plAv[0] + plAv[1] + plAv[2] + plAv[3] + plAv[4];
+        x = Math.min(total, want);
+        plEv(C, Y, x);
+        return cash0 + Math.min(M, budget) + x - (plE.tax + plE.pen + plE.irm + plE.health - Y.med);
+      };
+      if (setD(Dmax) < fl - 1){
+        var keep = plLargest(function(t){ return fl - setD(M + t); }, Dmax - M);
+        setD(M + keep);
+      }
+    }
+    var short = want - x > 1 ? want - x : 0;
+    var rem = x, o = Y.order;
+    for (var k = 0; k < PL_SRC_N; k++) plTk[k] = 0;
+    for (k = 0; k < o.length && rem > 0; k++){
+      var s = o[k], t = plAv[s] < rem ? plAv[s] : rem;
+      if (t > 0){ plTk[s] = t; rem -= t; }
+    }
+    var Cv = Y.conv ? flex - plTk[0] : 0;
+    var reinvest = M > budget ? M - budget : 0;
+    var outflow = Math.min(M, budget) + x;
+    trad -= M + plTk[0] + Cv + plTk[2];
+    var gs = Y.gs;
+    bBasis -= plTk[1] * (1 - gs); brok -= plTk[1];
+    if (early){ rAcc -= plTk[3]; if (rAcc < 0) rAcc = 0; }
+    roth += Cv - plTk[3] - plTk[4];
+    if (Cv > 0) pend[slot] = Cv;
+    if (reinvest > 0){ brok += reinvest; bBasis += reinvest; }
+    if (wage > 0){ trad += wT; roth += wR; rAcc += wR; brok += wB; bBasis += wB; }
+    if (trad < 0) trad = 0;
+    if (roth < 0) roth = 0;
+    if (brok < 0) brok = 0;
+    if (bBasis < 0) bBasis = 0;
+    var acaY = plE.health - Y.med, costs = plE.tax + plE.pen + plE.irm + acaY;
+    var left = ss + pension + wCash + outflow - costs, owe = left < 0 ? -left : 0;
+    if (left < 0) left = 0;
+    tax += plE.tax + plE.pen; pen += plE.pen; aca += acaY; irm += plE.irm; conv += Cv; spent += left; owed += owe;
+    if (short > 0){ shortSum += short; if (!depleted) depleted = y + 1; }
+    lastGain = plE.gain;
+    m2 = m1; m1 = plE.agi;
+    if (rows){
+      rows.push({y:y, age:a1, age2:C.age2 == null ? null : C.age2 + y, budget:budget, out:outflow, left:left, owe:owe,
+        ss:ss, pension:pension, work:wage, rmd:M, trad:M + plTk[0] + plTk[2] - reinvest, reinvest:reinvest, conv:Cv, brok:plTk[1],
+        roth:plTk[3] + plTk[4], tax:plE.tax, pen:plE.pen, aca:acaY, irmaa:plE.irm,
+        agi:plE.agi, magi:plE.magi, ord:plE.ord, gain:plE.gain,
+        taxable:plOrdTaxable(plE.ord, plE.gain, ss, st, seniors), seniors:seniors,
+        short:short, endTrad:0, endRoth:0, endBrok:0, end:0});
+    }
+    var rr = R[off + y];
+    if (RE) rr += (n > 1 ? y / (n - 1) : 1) * (RE[off + y] - rr);
+    var g = 1 + rr, d = 1 + PI[off + y];
+    trad *= g; roth *= g; brok *= g;
+    bBasis /= d; rAcc /= d; cum *= d;
+    for (var q = 0; q < 5; q++) pend[q] /= d;
+    if (bBasis > brok) bBasis = brok;
+    if (rows){ var last = rows[rows.length - 1]; last.endTrad = trad; last.endRoth = roth; last.endBrok = brok; last.end = trad + roth + brok; }
+  }
+  return {ok:!depleted, depleted:depleted, short:shortSum, owed:owed, tax:tax, pen:pen, aca:aca,
+    irmaa:irm, conv:conv, spent:spent, end:trad + roth + brok, trad:trad, roth:roth, brok:brok,
+    legacy:roth + brok + trad * (1 - C.heir)};
+}
+
 /* ---- testing a plan ----
    The steady path: every year at the mix's long-run average. */
 export function plSteady(C){
