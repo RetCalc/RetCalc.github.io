@@ -168,7 +168,7 @@ function AssumeDialog({ id, onClose }: { id: StressId; onClose: () => void }) {
         <h2 id="dshStTitle" className="dsh-dlg-h">{STRESS_NAMES[id]}</h2>
         <form className="dsh-cellform" onSubmit={(e) => { e.preventDefault(); save(); }}>
           {(id === "death" || id === "work") && two ? (
-            <Segmented aria-label={id === "death" ? "Who dies" : "Whose pay stops"}>
+            <Segmented size="fill" aria-label={id === "death" ? "Who dies" : "Whose pay stops"}>
               <SegmentedItem pressed={who === 0} onPressedChange={() => setWho(0)}>{names[0]}</SegmentedItem>
               <SegmentedItem pressed={who === 1} onPressedChange={() => setWho(1)}>{names[1]}</SegmentedItem>
               {id === "work" ? <SegmentedItem pressed={who === 2} onPressedChange={() => setWho(2)}>Both</SegmentedItem> : null}

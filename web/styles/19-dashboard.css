@@ -967,6 +967,7 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-yby-dot { display: inline-block; width: 6px; height: 6px; margin-left: 5px; border-radius: 50%; background: var(--ds-amber); vertical-align: 2px; }
 .dsh-yby-flash { color: var(--ds-text); }
 .dsh-cellform { display: grid; gap: 12px; margin-top: 10px; }
+.dsh-cellform .field, .dsh-cellform > .dsh-cap { margin: 0; }
 .dsh-cellform [data-slot="segmented"] { width: 100%; }
 .dsh-cellform .dsh-navbtns { margin-top: 2px; }
 .dsh-yby-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
