@@ -7,10 +7,12 @@
 
 import type { Workbook } from "exceljs";
 import { kindName, groupOf, ownerOf } from "../kinds";
+import { parseNum } from "@/lib/format";
+import { ALL_TOGETHER, COLLEGE_LINE } from "../flows";
 import { nameOf } from "../model";
 import { STRESS_NAMES } from "../stress-plan";
 import type { WorkbookData } from "./data";
-import { C, Sheet, col, fx, ref, type Col, type Val } from "./style";
+import { C, Sheet, col, fx, ref, setFlavor, theme, type Col, type Val } from "./style";
 
 const N = {
   overview: "Overview", worth: "Net Worth", income: "Income & Saving", spending: "Spending", years: "Year by Year",
@@ -24,10 +26,14 @@ const TREAT: Record<string, string> = {
 const TREATS = ["Tax-deferred", "Roth (tax-free)", "HSA", "Taxable", "Cash", "Home", "Other"];
 
 const r0 = (v: number) => Math.round(v);
+/** A budget line's amount per month. */
+const monthOf = (amount: string, freq: number) => ((parseNum(amount) || 0) * (freq || 12)) / 12;
 const pctOf = (a: number, b: number) => (b > 0 ? a / b : 0);
 
-export function buildWorkbook(wb: Workbook, D: WorkbookData) {
+export function buildWorkbook(wb: Workbook, D: WorkbookData, o: { flavor?: "excel" | "sheets"; logo?: ArrayBuffer | Uint8Array | null } = {}) {
   const { M } = D;
+  setFlavor(o.flavor ?? "excel");
+  const logo = o.logo ? wb.addImage({ buffer: o.logo as never, extension: "png" }) : null;
   const two = M.who.two, names: [string, string] = [M.who.First, M.who.Second];
   const sub = `${M.who.title} · Prepared ${M.date} with RetCalc · Today's dollars unless noted`;
   wb.creator = "RetCalc"; wb.lastModifiedBy = "RetCalc"; wb.created = M.today; wb.modified = M.today;
@@ -55,7 +61,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
   /* ======================= Net Worth ======================= */
   {
     const s = S.worth;
-    s.title(N.worth, sub, 8);
+    s.title(N.worth, sub, 8, logo);
     const last = M.entries[M.entries.length - 1];
     const items = (last?.items ?? []).filter((i) => i.value > 0);
     const assets = items.filter((i) => i.side === "asset").sort((a, b) => groupOf(a.kind).localeCompare(groupOf(b.kind)) || b.value - a.value);
@@ -103,7 +109,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
         { key: "sh", h: "Share", fmt: "pct", f: (r, L) => `IF(${assetsTot}=0,0,${L("v")}${r}/${assetsTot})`, res: (t) => pctOf(assets.filter((i) => (TREAT[i.kind] ?? "Other") === t).reduce((a, i) => a + i.value, 0), M.worth.assets) },
       ], TREATS.filter((t) => assets.some((i) => (TREAT[i.kind] ?? "Other") === t)));
       link.cash = T.first ? `SUMIF(${ref(N.worth, A.c("treat"), A.first)}:${ref(N.worth, A.c("treat"), A.last).replace(/^'[^']*'!/, "")},"Cash",${ref(N.worth, A.c("bal"), A.first)}:${ref(N.worth, A.c("bal"), A.last).replace(/^'[^']*'!/, "")})` : "0";
-      s.ws.addConditionalFormatting({ ref: `${T.L("sh")}${T.first}:${T.L("sh")}${T.last}`, rules: [{ type: "dataBar", priority: 1, cfvo: [{ type: "num", value: 0 }, { type: "num", value: 1 }], color: { argb: "FF46B9A6" } } as never] });
+      s.bars(`${T.L("sh")}${T.first}:${T.L("sh")}${T.last}`, "FF46B9A6", C.tealSoft, 1);
     }
     // Every entry, with the plan as it stood then.
     const hist = M.entries.slice().sort((a, b) => a.date.localeCompare(b.date));
@@ -121,13 +127,13 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
         { key: "ch2", h: "Chance of success", fmt: "pct0", v: (e) => e.plan?.chance ?? null },
       ], hist, { headHeight: 44 });
     }
-    s.freeze(5);
+    s.freeze(s.top);
   }
 
   /* ======================= Income & Saving ======================= */
   {
     const s = S.income, Fl = M.F, T = Fl.tax;
-    s.title(N.income, sub, 7);
+    s.title(N.income, sub, 7, logo);
     s.section("Pay", 7, M.abroad ? "Living outside the US, pay is entered after taxes, and the plan counts no US taxes or Social Security." : "Pay before taxes, per year.");
     const payT = s.table([
       { key: "who", h: "Who", v: (p: (typeof M.pay)[number]) => p.name },
@@ -152,11 +158,10 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
         { key: "t", h: "Tax", v: (x) => x[0] },
         { key: "y", h: "Per year", fmt: "money", v: (x) => r0(x[1]), total: "sum" },
         { key: "m", h: "Per month", fmt: "money", f: (r, L) => `${L("y")}${r}/12`, res: (x) => x[1] / 12, total: "sum" },
-        { key: "rate", h: "Share of pay", fmt: "pct", f: (r, L) => `IF(${payYear}=0,0,${L("y")}${r}/${payYear})`, res: (x) => pctOf(x[1], Fl.gross * 12), total: "Share" },
+        { key: "rate", h: "Share of pay", fmt: "pct", f: (r, L) => `IF(${payYear}=0,0,${L("y")}${r}/${payYear})`, res: (x) => pctOf(x[1], Fl.gross * 12),
+          total: (_a, b, L) => `IF(${payYear}=0,0,${L("y")}${b + 1}/${payYear})`, totalRes: pctOf(T.total, Fl.gross * 12) },
       ], rows, { totalLabel: "All taxes" });
       taxTot = ref(N.income, tt.c("y"), tt.total!);
-      // The total's rate refers to its own row.
-      s.cell(tt.c("rate"), tt.total!).value = { formula: `IF(${payYear}=0,0,${tt.L("y")}${tt.total}/${payYear})`, result: pctOf(T.total, Fl.gross * 12) };
     }
     s.section("Where each month's pay goes", 7, "Change any line below and Left over follows; Left over is money not yet given a job.");
     type Ln = { t: string; v: number; out: boolean };
@@ -180,7 +185,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
     s.put(ft.c("m"), fx(`SUM(${ft.L("m")}${ft.first}:${ft.L("m")}${ft.last})`, Fl.left), { fmt: "money", font: { bold: true }, align: { horizontal: "right" } });
     s.put(ft.c("y"), fx(`${ft.L("m")}${lr}*12`, Fl.left * 12), { fmt: "money", font: { bold: true }, align: { horizontal: "right" } });
     s.put(ft.c("sh"), fx(`IF(${ft.L("m")}${ft.first}=0,0,${ft.L("m")}${lr}/${ft.L("m")}${ft.first})`, pctOf(Fl.left, M.abroad ? Fl.afterTax : Fl.gross)), { fmt: "pct", font: { bold: true }, align: { horizontal: "right" } });
-    for (let c = s.c0; c <= ft.c("sh"); c++) s.cell(c, lr).border = { top: { style: "thin", color: { argb: C.ink } }, bottom: { style: "double", color: { argb: C.ink } } };
+    for (let c = s.c0; c <= ft.c("sh"); c++) s.cell(c, lr).border = { top: { style: "thin", color: { argb: C.ink } }, bottom: { style: "thin", color: { argb: C.rule } } };
     for (let r = ft.first; r <= ft.last; r++) s.cell(ft.c("sh"), r).value = { formula: `IF($${ft.L("m")}$${ft.first}=0,0,ABS(${ft.L("m")}${r})/$${ft.L("m")}$${ft.first})`, result: pctOf(flowRows[r - ft.first].v, flowRows[0].v) };
     s.r = lr + 2;
     link.left = ref(N.income, ft.c("m"), lr);
@@ -199,16 +204,18 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
     s.kv("Savings rate (saving and match, as a share of pay)", fx(M.abroad ? `0` : `IF(${payYear}=0,0,${savedM}*12/${payYear})`, M.save.rate ?? 0), "pct", { bold: true, note: "About 15% of pay is a common goal." });
     link.rate = ref(N.income, s.c0 + 2, s.r - 1);
     link.taxTot = taxTot;
-    s.freeze(5);
+    s.freeze(s.top);
   }
 
   /* ======================= Spending ======================= */
   {
     const s = S.spending, sp = M.spend;
-    s.title(N.spending, sub, 6);
+    s.title(N.spending, sub, 6, logo);
     s.section("Your budget", 6, "Per month, in today's dollars. Change any line: totals, the groups, the emergency fund and the Overview follow.");
-    type Bl = (typeof sp.lines)[number];
-    const lines = sp.lines.slice().sort((a, b) => a.group.localeCompare(b.group) || b.month - a.month);
+    type Bl = { group: string; desc: string; month: number };
+    // In the budget's own order, as Spending shows it.
+    const lines = M.F.b.rows.filter((r) => monthOf(r.amount, r.freq) > 0 && r.desc !== COLLEGE_LINE)
+      .map((r) => ({ group: r.desc === ALL_TOGETHER ? ALL_TOGETHER : r.group || "Custom", desc: r.desc, month: monthOf(r.amount, r.freq) }));
     const bt = s.table<Bl>([
       { key: "g", h: "Group", v: (x) => x.group },
       { key: "d", h: "Item", v: (x) => x.desc },
@@ -219,8 +226,8 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
     const tot = `$${bt.L("m")}$${bt.total ?? bt.first}`;
     const totalMonth = lines.reduce((a, x) => a + x.month, 0);
     for (let r = bt.first; r <= bt.last; r++) s.cell(bt.c("sh"), r).value = { formula: `IF(${tot}=0,0,${bt.L("m")}${r}/${tot})`, result: pctOf(lines[r - bt.first].month, totalMonth) };
-    if (bt.total) s.cell(bt.c("sh"), bt.total).value = { formula: `IF(${tot}=0,0,1)`, result: 1 };
-    s.ws.addConditionalFormatting({ ref: `${bt.L("sh")}${bt.first}:${bt.L("sh")}${bt.last}`, rules: [{ type: "dataBar", priority: 1, cfvo: [{ type: "num", value: 0 }, { type: "max" }], color: { argb: "FF9B87D9" } } as never] });
+    if (bt.total) s.setF(bt.c("sh"), bt.total, `IF(${tot}=0,0,1)`, 1, "pct");
+    s.bars(`${bt.L("sh")}${bt.first}:${bt.L("sh")}${bt.last}`, "FF9B87D9", C.lavSoft);
     link.spendMonth = ref(N.spending, bt.c("m"), bt.total ?? bt.first);
     const groups = Array.from(new Set(lines.map((x) => x.group)));
     if (groups.length > 1) {
@@ -231,7 +238,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
         { key: "m", h: "Per month", fmt: "money", f: (_r, _L, g) => `SUMIF(${gr("g")},"${g.replace(/"/g, '""')}",${gr("m")})`, res: (g) => lines.filter((x) => x.group === g).reduce((a, x) => a + x.month, 0), total: "sum" },
         { key: "y", h: "Per year", fmt: "money", f: (r, L) => `${L("m")}${r}*12`, res: (g) => lines.filter((x) => x.group === g).reduce((a, x) => a + x.month, 0) * 12, total: "sum" },
         { key: "sh", h: "Share", fmt: "pct", f: (r, L) => `IF(${tot}=0,0,${L("m")}${r}/${tot})`, res: (g) => pctOf(lines.filter((x) => x.group === g).reduce((a, x) => a + x.month, 0), totalMonth) },
-      ], groups.sort((a, b) => lines.filter((x) => x.group === b).reduce((t, x) => t + x.month, 0) - lines.filter((x) => x.group === a).reduce((t, x) => t + x.month, 0)));
+      ], groups);
     }
     s.section("Emergency fund", 6, "Cash set aside for a job loss or a big surprise bill, counted in months of spending.");
     const basis = sp.efMonths > 0 ? sp.efTarget / sp.efMonths : totalMonth;
@@ -245,13 +252,13 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
     s.section("Once retired", 6);
     if (sp.goal != null) link.goal = s.kv("You plan to spend, per month", r0(sp.goal), "money", { note: sp.own ? "Your goal; your strategy's starting rate sets what the plan spends." : "After taxes, in today's dollars." });
     if (sp.own && sp.planSpend != null) s.kv("Your strategy spends, per month", r0(sp.planSpend), "money");
-    s.freeze(5);
+    s.freeze(s.top);
   }
 
   /* ======================= Year by Year ======================= */
   {
     const s = S.years, Y = D.years.filter((y) => y.age < M.retire);
-    s.title(N.years, sub, 16);
+    s.title(N.years, sub, 16, logo);
     s.section("Every year until you retire", 16, "Per year, in today's dollars: pay, its taxes, what's spent and what's saved, by account. Spending is everything not taxed or saved, money not yet given a job included. Income, total saved and the savings rate are formulas.");
     const path = new Map(M.save.path.map((p) => [p.age, p.v]));
     type Yr = (typeof Y)[number];
@@ -275,7 +282,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
         total: (a, b, L) => `IF(SUM(${L("inc")}${a}:${L("inc")}${b})=0,0,SUM(${L("sv")}${a}:${L("sv")}${b})/SUM(${L("inc")}${a}:${L("inc")}${b}))` },
       { key: "bal", h: "Savings at year's start", fmt: "money", v: (y) => (path.has(y.age) ? r0(path.get(y.age)!) : null) },
     ], Y, { totalLabel: `All ${Y.length} years`, group: [{ label: "Coming in", from: "p1", to: "inc" }, { label: "Going out", from: "tax", to: "sp" }, { label: "Saved", from: "t", to: "rt" }], headHeight: 34 });
-    s.ws.addConditionalFormatting({ ref: `${t.L("bal")}${t.first}:${t.L("bal")}${t.last}`, rules: [{ type: "dataBar", priority: 1, cfvo: [{ type: "num", value: 0 }, { type: "max" }], color: { argb: "FF5AA9E6" } } as never] });
+    s.bars(`${t.L("bal")}${t.first}:${t.L("bal")}${t.last}`, "FF5AA9E6", C.skySoft);
     s.freeze(t.first, 3);
     if (Y.length) link.firstYearSaved = ref(N.years, t.c("sv"), t.first);
   }
@@ -283,7 +290,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
   /* ======================= Retirement ======================= */
   {
     const s = S.retire, H = M.hist, at = M.save.atRetire;
-    s.title(N.retire, sub, 15);
+    s.title(N.retire, sub, 15, logo);
     s.section("When you retire", 15);
     s.kv("Retirement starts", M.yearOf(M.retire), "year", { note: two ? M.who.pair(M.retire) : "Age " + M.retire });
     const tr = s.kv("Traditional 401(k)s and IRAs", r0(at.trad), "money", { note: "Taxed as income when it comes out." });
@@ -302,16 +309,16 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
     link.chance = s.kv("Chance of success", fx(`IF(${of}=0,0,${ok}/${of})`, H.ok / Math.max(1, H.of)), "pct", { bold: true });
     s.skip();
     // Year by year: the spread across past markets, and the plan's steady path.
-    s.section("Year by year in retirement", 15, "Balances at each year's end across every past market (10th, middle, 90th percentile), and the steady path: the plan with average returns, where each year's money comes from and goes.");
+    s.section("Year by year in retirement", 15, "Balances at each year's end across every past market (10th, median, 90th percentile), and the steady path: the plan with average returns, where each year's money comes from and goes.");
     const band = new Map(H.band.map((b) => [b.age, b])), spB = new Map(H.spendBand.map((b) => [b.age, b]));
     type Rw = (typeof M.rows)[number];
     const rt = s.table<Rw>([
       { key: "age", h: "Age", fmt: "int", align: "center", v: (r) => r.age },
       { key: "yr", h: "Year", fmt: "year", v: (r) => M.yearOf(r.age) },
       { key: "lo", h: "10th", fmt: "money", v: (r) => (band.get(r.age + 1) ? r0(band.get(r.age + 1)!.lo) : null) },
-      { key: "mid", h: "Middle", fmt: "money", v: (r) => (band.get(r.age + 1) ? r0(band.get(r.age + 1)!.mid) : null), bold: true },
+      { key: "mid", h: "Median", fmt: "money", v: (r) => (band.get(r.age + 1) ? r0(band.get(r.age + 1)!.mid) : null), bold: true },
       { key: "hi", h: "90th", fmt: "money", v: (r) => (band.get(r.age + 1) ? r0(band.get(r.age + 1)!.hi) : null) },
-      { key: "sp", h: "Spending, middle", fmt: "money", v: (r) => (spB.get(r.age + 1) ? r0(spB.get(r.age + 1)!.mid) : null) },
+      { key: "sp", h: "Spending, median", fmt: "money", v: (r) => (spB.get(r.age + 1) ? r0(spB.get(r.age + 1)!.mid) : null) },
       { key: "ss", h: "Social Security", fmt: "money", v: (r) => r0(r.ss), total: "sum" },
       { key: "pen", h: "Pension and pay", fmt: "money", v: (r) => r0(r.pension + (r.work ?? 0)), total: "sum" },
       { key: "tr", h: "From traditional", fmt: "money", v: (r) => r0(r.trad), total: "sum" },
@@ -321,7 +328,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
       { key: "hl", h: "Health premiums", fmt: "money", v: (r) => r0(r.health), total: "sum" },
       { key: "bal", h: "Savings at year's end", fmt: "money", v: (r) => r0(r.end) },
     ], M.rows, { totalLabel: "All years", group: [{ label: "Savings across past markets", from: "lo", to: "sp" }, { label: "The steady path", from: "ss", to: "bal" }], headHeight: 34 });
-    s.ws.addConditionalFormatting({ ref: `${rt.L("mid")}${rt.first}:${rt.L("mid")}${rt.last}`, rules: [{ type: "dataBar", priority: 1, cfvo: [{ type: "num", value: 0 }, { type: "max" }], color: { argb: "FF4FBF95" } } as never] });
+    s.bars(`${rt.L("mid")}${rt.first}:${rt.L("mid")}${rt.last}`, "FF4FBF95", C.jadeSoft);
     // Every January start.
     s.section("Every past start", 15, "Retiring in January of each year the record covers: the lowest the savings fell, and what was left at the end (or the age it ran out).");
     type Rn = (typeof M.runs)[number];
@@ -334,13 +341,13 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
       { key: "out", h: "Ran out at", fmt: "int", v: (r) => r.outAge ?? null },
     ], M.runs);
     s.ws.addConditionalFormatting({ ref: `${pr.L("end")}${pr.first}:${pr.L("end")}${pr.last}`, rules: [{ type: "colorScale", priority: 1, cfvo: [{ type: "min" }, { type: "percentile", value: 50 }, { type: "max" }], color: [{ argb: "FFFDE8EA" }, { argb: "FFFFFFFF" }, { argb: "FFE6F4EA" }] } as never] });
-    s.freeze(5);
+    s.freeze(s.top);
   }
 
   /* ======================= Retirement Taxes ======================= */
   if (S.taxes && D.tax) {
     const s = S.taxes, T = D.tax, rows = T.run.rows;
-    s.title(N.taxes, sub, 15);
+    s.title(N.taxes, sub, 15, logo);
     s.section("Your tax plan", 15, "Your withdrawal strategy sets how much comes out of savings each year; the tax plan decides which accounts pay and how much traditional money to convert to Roth. Each year's tax comes out of that year's withdrawal.");
     s.kv("The plan", T.words, "text");
     s.kv("Market shown", `The median past market, like retiring in ${T.year}`, "text");
@@ -385,13 +392,13 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
         total: (a, b, L) => `IF(SUM(${L("w")}${a}:${L("w")}${b})+SUM(${L("ss")}${a}:${L("ss")}${b})+SUM(${L("oi")}${a}:${L("oi")}${b})=0,0,SUM(${L("tx")}${a}:${L("tx")}${b})/(SUM(${L("w")}${a}:${L("w")}${b})+SUM(${L("ss")}${a}:${L("ss")}${b})+SUM(${L("oi")}${a}:${L("oi")}${b})))` },
     ], rows, { totalLabel: "All years", group: [{ label: "Where the withdrawal comes from", from: "br", to: "ro" }, { label: "Tax", from: "ti", to: "pm" }], headHeight: 34 });
     link.taxRet = ref(N.taxes, t.c("tx"), t.total ?? t.first);
-    s.freeze(5);
+    s.freeze(s.top);
   }
 
   /* ======================= Stress Tests ======================= */
   if (S.stress && M.stress) {
     const s = S.stress, X = M.stress;
-    s.title(N.stress, sub, 6);
+    s.title(N.stress, sub, 6, logo);
     s.section("If things go wrong", 6, "Your plan run again with one hard event added: the same strategy and every past market. Change the threshold and the verdicts follow.");
     const base = s.kv("Chance of success, as planned", X.base.rate, "pct", { bold: true });
     const thr = s.kv("Holds up if no more than this far below", 0.1, "pct0", { input: true });
@@ -405,7 +412,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
       { key: "w", h: "When, or how much", v: (t) => when(t) },
       { key: "c", h: "Chance of success", fmt: "pct", v: (t) => t.event?.rate ?? null },
       { key: "d", h: "Change", fmt: "pts", f: (r, L) => `ROUND((${L("c")}${r}-${base})*100,0)`, res: (t) => Math.round(((t.event?.rate ?? 0) - X.base.rate) * 100) },
-      { key: "m", h: "Middle market", v: (t) => (t.event ? mid(t.event.mid) : "") },
+      { key: "m", h: "Median market", v: (t) => (t.event ? mid(t.event.mid) : "") },
       { key: "h", h: "Verdict", align: "center", f: (r, L) => `IF(${L("c")}${r}>=${base}-${thr}-0.0000001,"Holds up","Falls short")`, res: (t) => (t.holds ? "Holds up" : "Falls short") },
     ], tests);
     s.ws.addConditionalFormatting({ ref: `${tt.L("h")}${tt.first}:${tt.L("h")}${tt.last}`, rules: [
@@ -431,7 +438,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
   /* ======================= Social Security ======================= */
   if (S.social && M.social) {
     const s = S.social, Ss = M.social;
-    s.title(N.social, sub, 7);
+    s.title(N.social, sub, 7, logo);
     s.section("Your benefits", 7, `Per month, in today's dollars${Ss.pct < 100 ? `, at the ${Ss.pct}% of the full benefit your plan expects` : ""}.`);
     const people = [{ n: names[0], fra: Ss.fra1, pia: Ss.pia1, claim: Ss.claim1, a: Ss.a1 }, ...(two ? [{ n: names[1], fra: Ss.fra2 ?? 67, pia: Ss.pia2, claim: Ss.claim2, a: Ss.a2 }] : [])];
     s.table<(typeof people)[number]>([
@@ -466,7 +473,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
   /* ======================= Assumptions ======================= */
   {
     const s = S.assume, pr = M.pr;
-    s.title(N.assume, sub, 4);
+    s.title(N.assume, sub, 4, logo);
     s.section("Your household", 4);
     const ppl = [pr.p1, ...(two ? [pr.p2] : [])];
     ppl.forEach((p, i) => {
@@ -506,12 +513,12 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
   }
 
   /* ======================= What If ======================= */
-  buildWhatIf(S.whatif, M, link);
+  buildWhatIf(S.whatif, M, link, logo);
 
   /* ======================= Overview (last: it reads the others) ======================= */
   {
     const s = S.overview, R = M.R;
-    s.title(M.who.title, `Your retirement plan · Prepared ${M.date} with RetCalc · Today's dollars`, 8);
+    s.title(M.who.title, `Your retirement plan · Prepared ${M.date} with RetCalc · Today's dollars`, 8, logo);
     // Key figures: four cards a row, each a link to where it's worked out.
     type Card = { t: string; v: Val; fmt: "money" | "pct" | "months" | "text" | "int"; note: string };
     const cards: Card[] = [
@@ -524,18 +531,25 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
       { t: "Savings rate", v: fx(link.rate, M.save.rate ?? 0), fmt: "pct", note: "Income & Saving" },
       { t: "Emergency fund", v: fx(link.efMonths, M.spend.efMonths > 0 && M.spend.efTarget > 0 ? (M.spend.cash ?? 0) / (M.spend.efTarget / M.spend.efMonths) : 0), fmt: "months", note: "Spending" },
     ];
+    // Cards like the Dashboard's tiles: a colored band on top, the label,
+    // the figure in the card's color, and where it's worked out.
+    const tint = [[C.amber, C.goldSoft], [C.amber, C.goldSoft], [C.jade, C.jadeSoft], [C.sky, C.skySoft], [C.lav, C.lavSoft], [C.sky, C.skySoft], [C.teal, C.tealSoft], [C.jade, C.jadeSoft]];
+    let scoreAt: [number, number] | null = null;
     for (let row = 0; row < 2; row++) {
-      const lr = s.r, vr = s.r + 1, nr = s.r + 2;
-      s.ws.getRow(lr).height = 18; s.ws.getRow(vr).height = 30; s.ws.getRow(nr).height = 16;
+      const br = s.r, lr = s.r + 1, vr = s.r + 2, nr = s.r + 3;
+      s.ws.getRow(br).height = 5; s.ws.getRow(lr).height = 20; s.ws.getRow(vr).height = 32; s.ws.getRow(nr).height = 18;
       for (let k = 0; k < 4; k++) {
-        const c = cards[row * 4 + k], c1 = s.c0 + k * 2;
-        s.ws.mergeCells(lr, c1, lr, c1 + 1); s.ws.mergeCells(vr, c1, vr, c1 + 1); s.ws.mergeCells(nr, c1, nr, c1 + 1);
-        s.put(c1, c.t, { r: lr, font: { size: 9.5, color: { argb: C.muted } }, fill: C.amberSoft });
-        s.put(c1, c.v, { r: vr, fmt: c.fmt === "text" ? undefined : c.fmt, font: { size: 18, bold: true, color: { argb: row === 0 && k < 2 ? C.amber : C.ink } }, fill: C.amberSoft, align: { horizontal: "left" } });
-        s.put(c1, c.note, { r: nr, font: { size: 9, color: { argb: C.faint } }, fill: C.amberSoft });
-        for (const r of [lr, vr, nr]) for (const cc of [c1, c1 + 1]) s.cell(cc, r).border = { left: cc === c1 ? { style: "medium", color: { argb: C.headInk } } : undefined, right: cc === c1 + 1 ? { style: "medium", color: { argb: C.headInk } } : undefined };
+        const c = cards[row * 4 + k], c1 = s.c0 + k * 2, [ink, soft] = tint[row * 4 + k];
+        for (const r of [br, lr, vr, nr]) s.ws.mergeCells(r, c1, r, c1 + 1);
+        s.put(c1, null, { r: br, fill: ink });
+        s.put(c1, c.t, { r: lr, font: { size: 9.5, bold: true, color: { argb: C.muted } }, fill: soft, align: { indent: 1 } });
+        s.put(c1, c.v, { r: vr, fmt: c.fmt === "text" ? undefined : c.fmt, font: { name: theme.display, size: 20, bold: true, color: { argb: ink } }, fill: soft, align: { horizontal: "left", indent: 1 } });
+        s.put(c1, c.note, { r: nr, font: { size: 9, color: { argb: C.faint } }, fill: soft, align: { indent: 1 } });
+        if (row === 0 && k === 3) scoreAt = [c1, vr];
+        // A white gutter between cards.
+        for (const r of [br, lr, vr, nr]) s.cell(c1 + 1, r).border = { right: { style: "thick", color: { argb: C.white } } };
       }
-      s.r += 4;
+      s.r += 5;
     }
     // The plan in a few lines.
     s.section("Your plan in brief", 8);
@@ -544,7 +558,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
       two ? `${names[0]} retires at ${M.retire} in ${M.yearOf(M.retire)}${M.r2 != null && M.r2 !== M.retire ? `, and ${names[1]} at ${p2Age(M.r2)} in ${M.yearOf(M.r2)}` : `, and ${names[1]} at ${p2Age(M.retire)}`}; the plan runs to ${names[0]}'s ${M.end}.`
         : `You retire at ${M.retire} in ${M.yearOf(M.retire)}; the plan runs to ${M.end}.`,
       `Withdrawals follow ${M.hist.strat?.name ?? "a fixed amount rising with prices"}; the money lasted in ${M.hist.ok} of ${M.hist.of} past starts.`,
-      ...(D.tax ? [`Tax plan in retirement: ${D.tax.words.charAt(0).toLowerCase() + D.tax.words.slice(1)}.`] : []),
+      ...(D.tax ? [D.tax.converts ? `Tax plan in retirement: ${D.tax.words.charAt(0).toLowerCase() + D.tax.words.slice(1)}.` : "No Roth conversions in retirement: withdrawals come from the brokerage first, then traditional accounts, then Roth."] : []),
       ...(M.stress ? [`It holds up in ${M.stress.held} of ${M.stress.of} stress tests.`] : []),
     ];
     for (const b of brief) { s.ws.mergeCells(s.r, s.c0, s.r, s.c0 + 7); s.put(s.c0, "•  " + b, { font: { size: 11 } }); s.r++; }
@@ -570,9 +584,9 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
         { key: "s", h: "Score", fmt: "pct0", f: (r, L) => `IF(${L("w")}${r}="","",${L("p")}${r}/${L("w")}${r})`, res: (a) => (a.part ? a.part.p : ""), total: (a, b, L) => `IF(SUM(${L("w")}${a}:${L("w")}${b})=0,0,SUM(${L("p")}${a}:${L("p")}${b})/SUM(${L("w")}${a}:${L("w")}${b}))`, totalRes: (M.score ?? 0) / 100 },
         { key: "h", h: "What would raise it", v: (a) => a.why.how[0] ?? (a.part ? "Full marks" : a.why.why), span: 3, wrap: true },
       ], M.areas);
-      s.ws.addConditionalFormatting({ ref: `${at2.L("s")}${at2.first}:${at2.L("s")}${at2.last}`, rules: [{ type: "dataBar", priority: 1, cfvo: [{ type: "num", value: 0 }, { type: "num", value: 1 }], color: { argb: "FFE9B872" } } as never] });
+      s.bars(`${at2.L("s")}${at2.first}:${at2.L("s")}${at2.last}`, "FFE9B872", C.goldSoft, 1);
       // The card shows the formula total.
-      if (at2.total) s.cell(s.c0 + 6, 6).value = { formula: `${at2.L("p")}${at2.total}`, result: M.score };
+      if (at2.total && scoreAt) s.setF(scoreAt[0], scoreAt[1], `${at2.L("p")}${at2.total}`, M.score, "int");
     }
     // Next steps.
     const steps = M.steps.filter((x) => !x.done).slice(0, 6);
@@ -600,7 +614,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
     ];
     for (const [n, d] of toc) {
       s.ws.mergeCells(s.r, s.c0, s.r, s.c0 + 1);
-      s.put(s.c0, { text: n, hyperlink: `#'${n}'!A1` } as unknown as Val, { font: { color: { argb: C.inInk }, underline: true } });
+      s.put(s.c0, theme.links ? { text: n, hyperlink: `#'${n}'!A1` } : n, { font: { color: { argb: C.amber }, bold: true, underline: theme.links } });
       s.ws.mergeCells(s.r, s.c0 + 2, s.r, s.c0 + 7);
       s.put(s.c0 + 2, d, { font: { color: { argb: C.muted } } });
       s.r++;
@@ -611,8 +625,8 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData) {
 }
 
 /* ======================= What If ======================= */
-function buildWhatIf(s: Sheet, M: WorkbookData["M"], link: Record<string, string>) {
-  s.title("What If", "A model of your own: change any blue input and everything below follows · Today's dollars", 11);
+function buildWhatIf(s: Sheet, M: WorkbookData["M"], link: Record<string, string>, logo: number | null) {
+  s.title("What If", "A model of your own: change any amber input and everything below follows · Today's dollars", 11, logo);
   s.note("A simple projection at steady returns, for trying ideas. Your Dashboard's own figures test every past market and work out each year's tax, so they'll differ; use this to see which way, and how much, a change moves things.", 11);
   s.skip();
   const age0 = M.age0, ret = M.retire, end = M.end + 1;
@@ -647,12 +661,12 @@ function buildWhatIf(s: Sheet, M: WorkbookData["M"], link: Record<string, string
   const i = Object.fromEntries(Object.entries(I).map(([k, v]) => [k, Lr(v)])) as Record<keyof typeof I, string>;
   // The year table sits to the right of the inputs and results.
   // Inputs and results in B:E (label, value in D, a note in E); the year table from G.
-  const T0 = 8, top = 6;
+  const T0 = 8, top = s.top + 2;
   const hdr = ["Age", "Start", "Saved", "Growth", "Spent, after tax", "Social Security and other", "Taken out, before tax", "End"];
   const fmts = ["int", "money", "money", "money", "money", "money", "money", "money"] as const;
   hdr.forEach((h, k) => {
-    const cell = s.put(T0 + k - 1, h, { r: top, font: { bold: true, size: 10, color: { argb: C.headInk } }, fill: C.head, align: { horizontal: k ? "right" : "center", wrapText: true } });
-    cell.border = { bottom: { style: "thin", color: { argb: C.head } } };
+    const cell = s.put(T0 + k - 1, h, { r: top, font: { bold: true, size: 9.5, color: { argb: C.muted } }, fill: C.ground, align: { horizontal: k ? "right" : "center", wrapText: true } });
+    cell.border = { bottom: { style: "thin", color: { argb: C.gold } } };
   });
   s.ws.getRow(top).height = 32;
   const rows = Math.max(1, end - age0 + 1), first = top + 1, last = top + rows;
@@ -706,13 +720,14 @@ function buildWhatIf(s: Sheet, M: WorkbookData["M"], link: Record<string, string
   const deltas = [-500, 0, 500, 1000];
   const rets = [-0.02, -0.01, 0, 0.01, 0.02];
   const gr = last + 3;
-  s.put(T0 - 1, "Savings at retirement for other returns (down) and saving (across)", { r: gr - 1, font: { bold: true, color: { argb: C.amber } } });
+  { const h = s.put(T0 - 1, "Savings at retirement for other returns (down) and saving per month (across)", { r: gr - 1, font: { name: theme.display, size: 12.5, bold: true, color: { argb: C.ink } }, align: { indent: 1 } }); h.border = { left: { style: "thick", color: { argb: C.gold } } }; s.ws.getRow(gr - 1).height = 24; }
   const gHead = gr;
-  s.put(T0 - 1, "", { r: gHead, fill: C.head });
-  deltas.forEach((dd, k) => s.put(T0 + k, fx(`${i.sav}+(${dd})`, sv + dd), { r: gHead, fmt: "money", font: { bold: true, color: { argb: C.headInk } }, fill: C.head, align: { horizontal: "right" } }));
+  s.put(T0 - 1, "", { r: gHead, fill: C.ground });
+  deltas.forEach((dd, k) => { const h = s.put(T0 + k, fx(`${i.sav}+(${dd})`, sv + dd), { r: gHead, fmt: "money", font: { bold: true, color: { argb: C.muted } }, fill: C.ground, align: { horizontal: "right" } }); h.border = { bottom: { style: "thin", color: { argb: C.gold } } }; });
+  s.cell(T0 - 1, gHead).border = { bottom: { style: "thin", color: { argb: C.gold } } };
   rets.forEach((dr, j) => {
     const r = gHead + 1 + j;
-    s.put(T0 - 1, fx(`${i.rPre}+(${dr})`, realPre + dr), { r, fmt: "pct", font: { bold: true }, fill: C.band, align: { horizontal: "center" } });
+    s.put(T0 - 1, fx(`${i.rPre}+(${dr})`, realPre + dr), { r, fmt: "pct", font: { bold: true, color: { argb: C.muted } }, fill: C.ground, align: { horizontal: "center" } });
     deltas.forEach((_dd, k) => {
       const cc = col(T0 + k), rr = `$${col(T0 - 1)}${r}`, sav2 = `${cc}$${gHead}`, n = `(${i.ret}-${i.age})`;
       // Savings grown, plus a year's saving rising by `grow` each year, grown to retirement.
@@ -723,5 +738,5 @@ function buildWhatIf(s: Sheet, M: WorkbookData["M"], link: Record<string, string
     });
   });
   s.ws.addConditionalFormatting({ ref: `${col(T0)}${gHead + 1}:${col(T0 + deltas.length - 1)}${gHead + rets.length}`, rules: [{ type: "colorScale", priority: 1, cfvo: [{ type: "min" }, { type: "max" }], color: [{ argb: "FFFFFFFF" }, { argb: "FFFDF3E3" }] } as never] });
-  s.freeze(6);
+  s.freeze(s.top);
 }

@@ -1140,3 +1140,6 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
   .dsh-st-row { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "name name badge" "when when when" "fig mid mid"; column-gap: 16px; }
   .dsh-st-years { grid-column: 1 / -1; grid-row: 3; }
 }
+/* "Open it in Google Sheets" steps (workbook/WorkbookButton.tsx). */
+.dsh-howto { margin: 12px 0 8px; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; line-height: 1.45; }
+.dsh-howto a { color: var(--ds-amber); text-decoration: underline; }
