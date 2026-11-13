@@ -26,6 +26,7 @@ import { Landing } from "./Landing";
 import { MailMe } from "./MailMe";
 import { TAB_TOURS } from "./tours";
 import { OUTSIDE_US, hasAccounts, unstarted, useDashboard, useProfiles } from "./store";
+import { usePlanStamp } from "./snapshot";
 
 import { SECTION_NAMES, type Section } from "./sections";
 
@@ -246,6 +247,8 @@ export function Frame({ current, title, meta, actions, help, children }: { curre
   const fresh = unstarted(data);
   useLanding();
   useFitFigures();
+  // Each new Net worth entry keeps the plan as it stood (snapshot.ts).
+  usePlanStamp();
   const [titleRef, pinned] = usePinned();
   const Icon = SECTIONS.find((s) => s.id === current)!.icon;
   const hasHelp = !!(help || TAB_TOURS[current]);

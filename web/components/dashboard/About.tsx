@@ -164,6 +164,24 @@ export function About() {
                     <li>Each entry is a point on <b>Net worth over time</b>, which also draws your
                     savings and investments without the home or debts, and marks each round number
                     passed.</li>
+                    <li><b>Your plan over time.</b> Each entry also keeps your plan as it stood the day
+                    you saved it: net worth, the readiness score, the chance of success, the
+                    spending your plan supports, savings at retirement and the net worth it
+                    projected to retirement. <b>Your entries</b> lists the spending supported and the
+                    chance of success beside each one. Entries saved before this have no plan
+                    kept.</li>
+                    <li><b>The spending your plan supports</b> is the most you could spend per month
+                    once retired, a fixed amount rising with prices, and still last in the share of
+                    past markets your plan aims for. It moves whenever your balances, saving or
+                    plans do, including when a starting withdrawal rate set on Retirement keeps the
+                    chance of success nearly still.</li>
+                    <li><b>Since</b> on the Dashboard compares an earlier entry with now: the change
+                    in net worth, split into what your plan saved (its saving per month, times the
+                    months between) and markets and everything else; and the spending your plan
+                    supports and the chance of success, then and now.</li>
+                    <li><b>Against your plan</b> on Net worth over time draws the net worth the plan
+                    projected from an earlier entry (the newest at least three months old) and says
+                    how far ahead of it or behind it you are, with prices risen since counted.</li>
                     <li><b>When you can spend it</b> sorts today&apos;s savings by when each can be
                     spent without the 10% early-withdrawal penalty, and <b>How it&apos;s taxed</b> by
                     how the money is taxed when it comes out.</li>

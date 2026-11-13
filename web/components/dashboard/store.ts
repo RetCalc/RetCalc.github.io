@@ -17,6 +17,7 @@ import type { ToolInputs } from "@/components/tools/ToolState";
 import { readScenarios, type Scenario } from "./scenarios";
 import { readRule } from "@/tools/plan/kidsRead";
 import type { CoverRule } from "@/tools/plan/model";
+import { readPlan, type PlanSnap } from "./progress";
 
 export type Per = "week" | "2weeks" | "twice" | "month" | "year";
 export const PER_LABEL: Record<Per, string> = { week: "per week", "2weeks": "every two weeks", twice: "twice a month", month: "per month", year: "per year" };
@@ -190,7 +191,13 @@ export interface YearEdit { what: "pay0" | "pay1" | "spend"; year: number; amoun
     a car loan whose payment goes on to the next car once it's paid off. */
 export interface DebtPay { id: string; name: string; kind: DebtKind; pay: number; full?: boolean; replace?: boolean }
 export interface DebtPlan { roll: boolean; debts: DebtPay[] }
-export interface Entry { date: string; items: Item[]; from: "setup" | "accounts" }
+export interface Entry {
+  date: string; items: Item[]; from: "setup" | "accounts";
+  /** The plan's headline figures as they stood when it was saved
+      (progress.ts); null while still to be worked out (snapshot.ts), left
+      out on entries saved before the plan was kept with them. */
+  plan?: PlanSnap | null;
+}
 
 export interface DashData {
   profile: Profile;
@@ -222,7 +229,12 @@ export const newId = () => Date.now().toString(36) + (seq++).toString(36);
 /* Entries saved before accounts existed held three numbers. */
 type OldEntry = { date: string; saved: number; value: number; owed: number };
 function upgrade(e: Entry | OldEntry): Entry {
-  if ("items" in e) return e;
+  if ("items" in e) {
+    if (!("plan" in e)) return e;
+    const plan = readPlan(e.plan);
+    if (plan === undefined) { const { plan: _drop, ...rest } = e; void _drop; return rest; }
+    return { ...e, plan };
+  }
   const items: Item[] = [{ id: "saved", side: "asset", kind: "workplace", name: "Savings, all together", value: e.saved }];
   if (e.value) items.push({ id: "home", side: "asset", kind: "home", name: "Home", value: e.value });
   if (e.owed) items.push({ id: "mortgage", side: "debt", kind: "mortgage", name: "Mortgage", value: e.owed, rate: null });
@@ -400,7 +412,8 @@ export function entryFrom(p: Profile, date = today()): Entry | null {
 }
 /** Adds an entry, replacing one already saved for that day. */
 export function withEntry(entries: Entry[], e: Entry): Entry[] {
-  return [...entries.filter((x) => x.date !== e.date), e].sort((a, b) => a.date.localeCompare(b.date));
+  // The plan's snapshot for it is worked out once the Dashboard is still (snapshot.ts).
+  return [...entries.filter((x) => x.date !== e.date), { ...e, plan: e.plan ?? null }].sort((a, b) => a.date.localeCompare(b.date));
 }
 /** Today's entry with the home and mortgage set: a copy of the latest
     entry (or setup's), saved as today's, replacing one already saved today. */

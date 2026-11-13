@@ -24,7 +24,8 @@ import { groupDigits, parseNum } from "@/lib/format";
 import { useNarrow } from "@/components/charts/useNarrow";
 import { useWidth } from "./charts";
 import { Frame } from "./Frame";
-import { longDate, money, shortMoney } from "./format";
+import { longDate, money, money10, pctDown, shortMoney } from "./format";
+import { planRef } from "./progress";
 import { ASSET_GROUPS, ASSET_KINDS, BASIS_KINDS, DEBT_GROUPS, DEBT_KINDS, groupOf, kindName, ownerOf, type Group } from "./kinds";
 import { Tile, TipLabel } from "./ui";
 import { ReadyToSpend, TaxMix, WhoseFilter, WorthOverTime, only, touchRead, whoName, type Who } from "./networth";
@@ -253,9 +254,13 @@ export function Accounts() {
   const shown = draft ? items : view(items);
   const have = sum(shown, "asset"), owe = sum(shown, "debt");
   const prev = data.entries[data.entries.length - 2];
-  const entriesCsv = () => [["Date", "Assets", "Debts", "Net worth", "Change"], ...data.entries.slice().reverse().map((e, i, arr) => {
+  // The plan as it stood with each entry, once entries keep it.
+  const plans = data.entries.some((e) => e.plan);
+  const supportsTxt = (e: Entry) => (e.plan?.supports != null ? money10(e.plan.supports) : "");
+  const chanceTxt = (e: Entry) => (e.plan?.chance != null ? pctDown(e.plan.chance) + "%" : "");
+  const entriesCsv = () => [["Date", "Assets", "Debts", "Net worth", "Change", ...(plans ? ["Spending your plan supported, per month", "Chance of success"] : [])], ...data.entries.slice().reverse().map((e, i, arr) => {
     const ch = arr[i + 1] ? netWorth(e) - netWorth(arr[i + 1]) : null;
-    return [longDate(e.date), money(sum(e.items, "asset")), money(sum(e.items, "debt")), money(netWorth(e)), ch == null ? "First entry" : (ch >= 0 ? "+" : "-") + money(Math.abs(ch))];
+    return [longDate(e.date), money(sum(e.items, "asset")), money(sum(e.items, "debt")), money(netWorth(e)), ch == null ? "First entry" : (ch >= 0 ? "+" : "-") + money(Math.abs(ch)), ...(plans ? [supportsTxt(e), chanceTxt(e)] : [])];
   })];
   const nwOf = (e: Entry) => sum(view(e.items), "asset") - sum(view(e.items), "debt");
   const actions = draft
@@ -294,7 +299,7 @@ export function Accounts() {
           <SegmentedItem pressed={mode === "time"} onPressedChange={() => setMode("time")}>Over time</SegmentedItem>
         </Segmented>
       }>
-        {mode === "time" && !draft ? <WorthOverTime entries={data.entries} view={view} /> : <>
+        {mode === "time" && !draft ? <WorthOverTime entries={data.entries} view={view} plan={who === "all" ? planRef(data.entries, today()) : null} /> : <>
           <div className="dsh-stats">
             <div className="dsh-stat"><div className="dsh-label">Net worth</div><div className="dsh-fig dsh-key">{money(have - owe)}</div>
               {prev && last && !draft ? <div className="dsh-cap dsh-mt6"><span className={nwOf(last) >= nwOf(prev) ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{nwOf(last) >= nwOf(prev) ? "↑" : "↓"} {money(Math.abs(nwOf(last) - nwOf(prev)))}</span> since {longDate(prev.date)}</div> : null}</div>
@@ -358,13 +363,15 @@ export function Accounts() {
       {data.entries.length ? (
         <Tile id="entries" icon={CalendarDaysIcon} title="Your entries" className="dsh-r4" right={<><span className="dsh-cap">{data.entries.length} so far</span> <CsvButton label="Your entries" filename="retcalc-net-worth-entries.csv" rows={entriesCsv} /></>}>
           <div className="dsh-scrollx"><table className="dsh-tbl dsh-etbl">
-            <thead><tr><th>Date</th><th>Assets</th><th>Debts</th><th>Net worth</th><th>Change</th><th><span className="sr-only">Delete</span></th></tr></thead>
+            <thead><tr><th>Date</th><th>Assets</th><th>Debts</th><th>Net worth</th><th>Change</th>{plans ? <><th><TipLabel text="Spending supported" id="supports" /></th><th><TipLabel text="Chance of success" id="chance" /></th></> : null}<th><span className="sr-only">Delete</span></th></tr></thead>
             <tbody>
               {data.entries.slice().reverse().map((e, i, arr) => {
                 const before = arr[i + 1], ch = before ? netWorth(e) - netWorth(before) : null;
                 return (
                   <tr key={e.date}><td>{longDate(e.date)}</td><td data-l="Assets">{money(sum(e.items, "asset"))}</td><td data-l="Debts">{money(sum(e.items, "debt"))}</td><td data-l="Net worth">{money(netWorth(e))}</td>
                     <td data-l="Change">{ch == null ? <span className="dsh-muted">First entry</span> : <span className={ch >= 0 ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{ch >= 0 ? "+" : "-"}{money(Math.abs(ch))}</span>}</td>
+                    {plans ? <><td data-l="Spending supported">{supportsTxt(e) ? supportsTxt(e) + "/mo" : <span className="dsh-muted">{e.plan === null ? "Working it out" : "—"}</span>}</td>
+                      <td data-l="Chance of success">{chanceTxt(e) || <span className="dsh-muted">—</span>}</td></> : null}
                     <td className="dsh-del"><Button variant="ghost" size="icon-xs" aria-label={"Delete the entry from " + longDate(e.date)} onClick={() => setRemoving(e.date)}><XIcon aria-hidden="true" /></Button></td></tr>
                 );
               })}

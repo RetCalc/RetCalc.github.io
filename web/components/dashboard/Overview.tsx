@@ -30,6 +30,7 @@ import { hasAccounts, netWorth, useDashboard, type DashData } from "./store";
 import { useLandedOn } from "./land";
 import { Empty, Tile, Tip } from "./ui";
 import { AssumptionChip } from "./AssumptionCheck";
+import { SinceTile } from "./Since";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
 
@@ -215,6 +216,7 @@ export function Overview() {
     <Frame current="overview" title="Dashboard" actions={R.S ? <ReportButton /> : undefined}>
       <Answer R={R} pr={pr} entries={data.entries} />
       <div className="dsh-hello">{hello}</div>
+      <SinceTile data={data} R={R} />
       <div className="dsh-grid dsh-r1">
         <Tile icon={WalletIcon} title="Net worth" right={
           <div className="dsh-nwhead">

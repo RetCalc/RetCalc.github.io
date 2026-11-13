@@ -11,6 +11,8 @@ import { useWidth } from "./charts";
 import { longDate, money, shortMoney } from "./format";
 import { ownerOf } from "./kinds";
 import { sum, type Entry, type Item, type Profile } from "./store";
+import { aheadOf, planLine, type Snapped } from "./progress";
+import { Tip } from "./ui";
 
 /** A person's name for a "whose" choice. */
 export const whoName = (names: [string, string], i: 0 | 1) => names[i].trim() || (i ? "Your partner" : "You");
@@ -68,8 +70,10 @@ const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "S
 /* ---------- Net worth over time ---------- */
 
 /** Net worth at each entry, and the savings and investments within it (the
-    home and debts aside), with the round numbers passed along the way. */
-export function WorthOverTime({ entries, view }: { entries: Entry[]; view: (items: Item[]) => Item[] }) {
+    home and debts aside), with the round numbers passed along the way.
+    `plan`: an earlier entry's snapshot, whose projected path is drawn from
+    its day on, with how far ahead of it or behind it net worth is now. */
+export function WorthOverTime({ entries, view, plan }: { entries: Entry[]; view: (items: Item[]) => Item[]; plan?: Snapped | null }) {
   const pts = entries.map((e) => { const it = view(e.items); return { date: e.date, t: yearOf(e.date), nw: sum(it, "asset") - sum(it, "debt"), sav: sum(it, "asset", SAVINGS) }; });
   const nwNow = pts.length ? <div className="dsh-stat"><div className="dsh-label">Net worth</div><div className="dsh-fig dsh-key">{money(pts[pts.length - 1].nw)}</div></div> : null;
   if (pts.length < 2) return <><div className="dsh-stats">{nwNow}</div><p className="dsh-cap dsh-mt">Each time you save a new entry, a point joins this chart. You have {pts.length || "no"} so far.</p></>;
@@ -78,6 +82,9 @@ export function WorthOverTime({ entries, view }: { entries: Entry[]; view: (item
   const ago = pts.slice(0, -1).reverse().find((p) => last.t - p.t >= 330 / 365) ?? null;
   const perYear = span >= 1 && first.nw > 0 && last.nw > 0 ? Math.pow(last.nw / first.nw, 1 / span) - 1 : null;
   const chg = (v: number) => <span className={v >= 0 ? "dsh-up" : "dsh-dn"}>{signed(v)}</span>;
+  const nwOf = (e: Entry) => { const it = view(e.items); return sum(it, "asset") - sum(it, "debt"); };
+  const ahead = aheadOf(entries, plan ?? null, nwOf);
+  const line = ahead && plan ? planLine(plan, last.t) : null;
   return (
     <>
       <div className="dsh-stats">
@@ -85,21 +92,23 @@ export function WorthOverTime({ entries, view }: { entries: Entry[]; view: (item
         {ago ? <div className="dsh-stat"><div className="dsh-label">In the last 12 months</div><div className="dsh-fig dsh-md">{chg(last.nw - ago.nw)}</div></div> : null}
         <div className="dsh-stat"><div className="dsh-label">Since {longDate(first.date)}</div><div className="dsh-fig dsh-md">{chg(last.nw - first.nw)}</div></div>
         {perYear != null ? <div className="dsh-stat"><div className="dsh-label">Growth per year, on average</div><div className="dsh-fig dsh-md">{(perYear * 100).toFixed(1)}%</div></div> : null}
+        {ahead && plan ? <div className="dsh-stat" id="ahead"><div className="dsh-label">Against your plan from {longDate(plan.date)} <Tip id="ahead" title="Ahead of your plan" /></div>
+          <div className="dsh-fig dsh-md"><span className={ahead.by >= 0 ? "dsh-up" : "dsh-dn"}>{money(Math.round(Math.abs(ahead.by) / 100) * 100)} {ahead.by >= 0 ? "ahead" : "behind"}</span></div></div> : null}
       </div>
-      <WorthLines pts={pts} />
-      <div className="dsh-legend dsh-mt6"><span><i />Net worth</span><span><i className="dsh-lsky" />Savings and investments (no home, no debts)</span></div>
+      <WorthLines pts={pts} plan={line} />
+      <div className="dsh-legend dsh-mt6"><span><i />Net worth</span><span><i className="dsh-lsky" />Savings and investments (no home, no debts)</span>{line && plan ? <span><i className="dsh-d" />Your plan from {longDate(plan.date)}</span> : null}</div>
     </>
   );
 }
 
 type WPt = { date: string; t: number; nw: number; sav: number };
 
-function WorthLines({ pts }: { pts: WPt[] }) {
+function WorthLines({ pts, plan }: { pts: WPt[]; plan: { t: number; v: number }[] | null }) {
   const [ref, W] = useWidth(900);
   const [at, setAt] = useState<number | null>(null);
   const H = 260, L = 58, R = 18, T = 26, B = 26;
   const x0 = pts[0].t, x1 = pts[pts.length - 1].t;
-  const vals = pts.flatMap((p) => [p.nw, p.sav]);
+  const vals = [...pts.flatMap((p) => [p.nw, p.sav]), ...(plan ?? []).map((p) => p.v)];
   const lo0 = Math.min(0, ...vals), hi0 = Math.max(...vals, 1);
   const step = niceStep(hi0 - lo0), lo = Math.floor(lo0 / step) * step, hi = Math.ceil((hi0 * 1.04) / step) * step;
   const X = (t: number) => L + ((t - x0) / (x1 - x0)) * (W - L - R), Y = (v: number) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
@@ -115,6 +124,13 @@ function WorthLines({ pts }: { pts: WPt[] }) {
     for (let m = Math.ceil(x0 * 12); m <= x1 * 12; m += every) ticks.push({ t: m / 12, l: SHORT_MONTHS[((m % 12) + 12) % 12] + " ’" + String(Math.floor(m / 12)).slice(2) });
   }
   const line = (k: "nw" | "sav") => pts.map((p, i) => (i ? "L" : "M") + X(p.t).toFixed(1) + " " + Y(p[k]).toFixed(1)).join(" ");
+  // The plan's projection from an earlier entry, and its figure on a date.
+  const planD = plan && plan.length > 1 ? plan.map((p, i) => (i ? "L" : "M") + X(p.t).toFixed(1) + " " + Y(p.v).toFixed(1)).join(" ") : null;
+  const planOn = (t: number) => {
+    if (!plan || plan.length < 2 || t < plan[0].t - 1e-6 || t > plan[plan.length - 1].t + 1e-6) return null;
+    const k = Math.max(1, plan.findIndex((p) => p.t >= t - 1e-9)), a = plan[k - 1], b = plan[k];
+    return b.t > a.t ? a.v + ((b.v - a.v) * (t - a.t)) / (b.t - a.t) : b.v;
+  };
   // Round numbers net worth went past, between two entries: the latest three,
   // kept apart so their names don't run together.
   const passed: { t: number; v: number }[] = [];
@@ -153,6 +169,7 @@ function WorthLines({ pts }: { pts: WPt[] }) {
             </g>
           );
         })}
+        {planD ? <path className="dsh-proj" d={planD} /> : null}
         <path className="dsh-l-sav" d={line("sav")} />
         <path className="dsh-l-nw" d={line("nw")} />
         {many ? null : pts.map((p) => <circle key={p.date} className="dsh-p-nw" cx={X(p.t)} cy={Y(p.nw)} r={3.5} />)}
@@ -164,6 +181,7 @@ function WorthLines({ pts }: { pts: WPt[] }) {
           <div className="dsh-tiprow"><span>Net worth</span><span>{money(hot.nw)}</span></div>
           <div className="dsh-tiprow"><span>Savings and investments</span><span>{money(hot.sav)}</span></div>
           {prev ? <div className="dsh-tiprow"><span>Since {longDate(prev.date)}</span><span>{signed(hot.nw - prev.nw)}</span></div> : null}
+          {planOn(hot.t) != null ? <div className="dsh-tiprow"><span>Your plan expected</span><span>{money(Math.round(planOn(hot.t)! / 100) * 100)}</span></div> : null}
         </div>
       ) : null}
     </div>
