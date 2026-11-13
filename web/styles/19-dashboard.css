@@ -1106,7 +1106,7 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-tx-tbl td, .dsh-tx-tbl th { white-space: nowrap; }
 .dsh-tx-map text.dsh-tx-rate { font-size: 11px; fill: var(--ds-muted); }
 .dsh .dsh-tx-tbl thead tr th { position: static; box-shadow: inset 0 -1px 0 var(--ds-rule); }
-.dsh .dsh-tx-tbl thead tr th:first-child { position: sticky; top: auto; }
+.dsh .dsh-tx-tbl.dsh-yby thead tr th:first-child { position: sticky; top: auto; }
 @media (max-width: 900px) { .dsh-tx { grid-template-columns: minmax(0, 1fr); gap: 22px; } }
 
 /* If things go wrong (Plan summary): the plan against each hard event, a
