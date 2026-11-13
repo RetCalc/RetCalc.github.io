@@ -24,7 +24,7 @@ export const PL_HEIR = E.PL_HEIR as number;
 
 /** One year of a run on a withdrawal budget (plRunBudget). */
 export interface PlBudgetRow {
-  y: number; age: number; age2: number | null; budget: number; out: number; left: number; owe: number;
+  y: number; age: number; age2: number | null; budget: number; out: number; left: number; owe: number; extra: number; capped: number;
   ss: number; pension: number; work: number; rmd: number; trad: number; reinvest: number; conv: number; brok: number; roth: number;
   tax: number; pen: number; aca: number; irmaa: number; agi: number; magi: number; ord: number; gain: number; taxable: number; seniors: number;
   short: number; endTrad: number; endRoth: number; endBrok: number; end: number;
@@ -32,6 +32,7 @@ export interface PlBudgetRow {
 export interface PlBudgetRun {
   ok: boolean; depleted: number; short: number; owed: number; tax: number; pen: number; aca: number; irmaa: number;
   conv: number; spent: number; end: number; trad: number; roth: number; brok: number; legacy: number;
+  over: number; overN: number; cappedN: number; pv: number; pvSpent: number; pvLegacy: number;
 }
 /** What plRunBudget reads off the prepared plan besides PlPrep's fields. */
 export interface PlPrepFull extends PlPrep { mix: { r: Float64Array; pi: Float64Array; n: number; first: number }; status: "s" | "m"; heir: number }

@@ -198,6 +198,9 @@ export interface BtResult {
 export interface PlTactics { c1: number; c2: number; f: number; u: number; im: number; ac: number }
 /** The plan from today: what plAtRetire() takes. */
 export interface PlToday {
+  /** Today's calendar year (the clock's when left off); plAtRetire sets
+      PlPlan.year0, the year retirement starts, from it. */
+  year?: number; year0?: number;
   status: "m" | "s"; state: string; age: number; spouseAge: number | null; retire: number; stopAge: number | null;
   trad: number; roth: number; rothBasis: number; brok: number; brokBasis: number;
   saveTrad: number; saveRoth: number; saveBrok: number; real: number; infl: number;

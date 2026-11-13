@@ -1301,8 +1301,9 @@ export function computeRetireTax(inp){
   // The 6% reduction comes off each qualifying person's own $6,000 (Schedule
   // 1-A works it once and claims the result per spouse), so a couple who both
   // qualify lose it twice as fast and it is gone by $250,000 joint either way.
+  // inp.noSeniorBonus: a tax year after the deduction ends (SENIOR_BONUS.through).
   let bonus = 0;
-  if (seniors > 0){
+  if (seniors > 0 && !inp.noSeniorBonus){
     bonus = seniors * Math.max(0, SENIOR_BONUS.amount - SENIOR_BONUS.rate *
       Math.max(0, agi - SENIOR_BONUS.start[st]));
   }

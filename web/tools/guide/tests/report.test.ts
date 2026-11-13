@@ -39,7 +39,7 @@ test("Maya and Sam: the Guide's figures, the health page, one child in college, 
   assert.ok(!M.pages.some((p) => p.id === "family"));
   // college is yes, with a child of 6: the College Savings defaults, one child
   assert.equal(M.college!.kids.length, 1);
-  assert.deepEqual(M.levers3.map((l) => l.fig), ["58", "Stop", "$98,000"]);
+  assert.deepEqual(M.levers3.map((l) => l.fig), ["58", "Stop", "$97,000"]);
 });
 
 test("a second child and college for two add their pages, with the shortfall and today's-dollar college", () => {

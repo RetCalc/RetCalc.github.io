@@ -67,7 +67,7 @@ export var YEAR_2026 = {
        tax years 2025-2028, available to itemizers too, reduced by 6% of MAGI
        above $75,000 single / $150,000 joint. */
   seniorAddl: {s:2050, m:1650},
-  seniorBonus: {amount:6000, rate:.06, start:{s:75000, m:150000}},
+  seniorBonus: {amount:6000, rate:.06, start:{s:75000, m:150000}, through:2028},
 
   /* Social Security's 2026 bend points: average indexed monthly earnings
      run through them make the benefit at full retirement age. Earnings

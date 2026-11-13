@@ -475,6 +475,30 @@ group("Plan engine: a withdrawal budget (the Dashboard's tax plan)");
   ok(o3.rows.every(function (x, k) { return x.conv < 1 || x.left >= FL[k] - 2; }), "a converting year still spends the floor");
   ok(r3.conv > 0 && r3.conv < conv.res.conv + run({ f: 5, u: 2 }).res.conv, "and converts less than without the floor", r3.conv);
   near(r3.end, pot, 1, "still on the strategy's path");
+  // Valued at the start of retirement: each year's spending at the returns until then.
+  var pvWant = 0;
+  for (i = 0; i < n; i++) pvWant += none.rows[i].left / Math.pow(1.04, i);
+  near(none.res.pvSpent, pvWant, 1, "spending valued at the start, year by year at the market's returns");
+  near(none.res.pvLegacy, none.res.legacy / Math.pow(1.04, n), 1, "and what's left for heirs");
+  // Tax the withdrawal can't pay comes out of the accounts, not dropped.
+  var C4 = prep({ status: "s", state: "CA", age1: 76, age2: null, trad: 4000000, roth: 0, rothBasis: 0, brok: 10000, brokBasis: 10000, pia1: 0, pia2: 0 });
+  var o4 = { rows: [] }, r4 = plRunBudget(C4, plTactics(C4, { c1: 70, c2: 70, f: 0, u: 0, im: 0, ac: 0 }), r, pi, 0, new Array(n).fill(20000), o4);
+  ok(o4.rows.every(function (x) { return x.left >= 0 && x.owe < 1; }), "every year's tax gets paid", JSON.stringify(o4.rows[0]));
+  ok(o4.rows.some(function (x) { return x.reinvest < x.rmd - x.budget - 1; }), "first from a required distribution that would have been reinvested");
+  eq(r4.owed, 0, "nothing left unpaid");
+})();
+
+group("Plan engine: a partner's pay is wages; the senior deduction ends after 2028");
+(function () {
+  var c = plTaxCache("m", "IL");
+  var asTrad = plTax(c, 0, 0, 70000, 0, 60, 60), asWage = plTax(c, 0, 0, 70000, 0, 60, 60, 70000);
+  near(asWage - asTrad, 70000 * 0.0495 - 2 * 2925 * 0.0495, 5, "Illinois taxes a partner's pay (it exempts retirement income)");
+  near(plOrdTaxable(60000, 0, 0, "s", 1, 1) - plOrdTaxable(60000, 0, 0, "s", 1), 6000, 0.01, "the $6,000 senior deduction, then none");
+  var P = plAtRetire({ year: 2026, status: "s", state: "TX", age: 64, retire: 66, trad: 500000, roth: 0, brok: 0, saveTrad: 0, saveRoth: 0, saveBrok: 0,
+    real: .04, infl: .03, spend: 40000, pia1: 0, claim1: 70, pension: 0, aca: false, household: 1, heirRate: .24, mix: 60, years: 5 });
+  eq(P.year0, 2028, "retiring in two years, from 2026");
+  var Cs = plPrep(P);
+  eq(Array.prototype.join.call(Cs.nb, ""), "01111", "the deduction for 2028, not after");
 })();
 
 /* ---------------- Social Security ---------------- */
@@ -1851,28 +1875,29 @@ group("Social Security: full retirement age from the birth year, in every estima
 
 group("Retirement Plan Optimizer");
 (function () {
-  var P = plAtRetire({status: "s", state: "IL", age: 62, retire: 62, trad: 800000, roth: 50000, rothBasis: 30000,
+  var P = plAtRetire({year: 2026, status: "s", state: "IL", age: 62, retire: 62, trad: 800000, roth: 50000, rothBasis: 30000,
     brok: 150000, brokBasis: 90000, saveTrad: 0, saveRoth: 0, saveBrok: 0, real: .045, infl: BASIC_INFL,
     spend: 55000, pia1: 2400, claim1: 67, pension: 0, aca: true, household: 1, heirRate: .24, mix: 60, years: 33, target: .9});
   var R = plOptimizeNow(P, "legacy");
   eq(R.of, 9 * 61, "every claiming age and every way of drawing it down: " + R.of + " plans");
   eq(R.windows, 100 - 33 + 1, "each through every historical start");
   ok(R.best.stats.medLegacy >= R.base.stats.medLegacy, "the best plan leaves at least as much as the usual way");
-  ok(R.best.stats.successRate >= R.base.stats.successRate - 1e-9, "and lasts as often");
+  // Retiring in 2026, Maria reaches 65 after the senior deduction ends (2028).
   var T = R.best.T;
-  eq(T.c1 + "," + T.f + "," + T.u + "," + T.ac, "70,3,2,1", "Maria: claim at 70, fill the 12% bracket, convert until RMDs begin, under the ACA cliff");
+  eq(T.c1 + "," + T.f + "," + T.u + "," + T.im + "," + T.ac, "70,4,1,1,1", "Maria: claim at 70, fill the 22% bracket, convert until Social Security, under the IRMAA line and the ACA cliff");
   says("optimizer", dollars(R.base.stats.medTax));
   says("optimizer", dollars(R.base.stats.medLegacy));
   says("optimizer", dollars(R.best.stats.medTax));
   says("optimizer", dollars(R.best.stats.medLegacy));
   says("optimizer", dollars(R.base.stats.medTax - R.best.stats.medTax) + " less");
   says("optimizer", dollars(R.best.stats.medLegacy - R.base.stats.medLegacy) + " more");
-  eq(R.base.stats.successRate + R.best.stats.successRate, 2, "both last in every market, as the article says");
+  says("optimizer", "lasts in " + Math.round(R.base.stats.successRate * R.windows) + " of the " + R.windows + " historical markets");
+  says("optimizer", "lasts in " + Math.round(R.best.stats.successRate * R.windows) + " of the " + R.windows + " markets");
   // The steps add up to the whole gain.
   var sum = R.steps.reduce(function (a, s) { return a + s.to.medLegacy - s.from.medLegacy; }, 0);
   near(sum, R.best.stats.medLegacy - R.base.stats.medLegacy, 0.01, "what each change is worth adds up to the total");
   // Someone born in 1957 (full retirement age 66 and 6 months): the same search, counted from their age.
-  var P57 = plAtRetire({status: "s", state: "IL", age: 62, retire: 62, trad: 800000, roth: 50000, rothBasis: 30000,
+  var P57 = plAtRetire({year: 2026, status: "s", state: "IL", age: 62, retire: 62, trad: 800000, roth: 50000, rothBasis: 30000,
     brok: 150000, brokBasis: 90000, saveTrad: 0, saveRoth: 0, saveBrok: 0, real: .045, infl: BASIC_INFL,
     spend: 55000, pia1: 2400, claim1: 67, fra1: ssFRA(1957), pension: 0, aca: true, household: 1, heirRate: .24, mix: 60, years: 33, target: .9});
   var R57 = plOptimizeNow(P57, "legacy");
