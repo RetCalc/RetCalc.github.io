@@ -94,6 +94,9 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
           {who === "you" ? "Your pay, year by year" : "Your spouse's pay, year by year"}<TipDot k="" text={TIP_PAY} />
         </h2>
         {both ? <div className="mb-0.5"><Segmented attr="data-who" options={[["you", "You"], ["spouse", "Spouse"]] as const} value={who} onChange={(w) => { setWho(w); setSel(null); setDraft(null); }} /></div> : null}
+        <Field id="ssStart" className="m-0 w-37.5 max-sm:flex-1" label={<span className="tipglue">First job at age<TipDot k="" text="The age of your first paid job, even part-time or summer work. Years before today are estimated from today's pay, so type what you actually earned in your early years (your statement at ssa.gov/myaccount lists every year). Any year of pay can count toward your best 35." /></span>}>
+          <NumberInput id="ssStart" nonNeg step={1} max={70} value={inputs.start} onValueChange={(v) => { setP("start")(v); setSel(null); setDraft(null); }} />
+        </Field>
         <Field id="ssGPast" className="m-0 w-37.5 max-sm:flex-1" label={<span className="tipglue">Raises before today<TipDot k="" text="How much faster than average wages your pay grew each year before today. 2% is a typical career that rose with experience. 0% is pay that only kept up." /></span>}>
           <Affixed suffix="%/yr"><NumberInput id="ssGPast" step={0.5} value={inputs.gPast} onValueChange={setP("gPast")} /></Affixed>
         </Field>

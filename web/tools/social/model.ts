@@ -22,8 +22,8 @@ const personDefaults = (birth: string, pay: number, pia: number, start: string, 
 
 export const SOCIAL_DEFAULTS = {
   status: "s" as "s" | "m",
-  you: personDefaults("1990", 85000, 2400, "22", "67", "90"),
-  spouse: personDefaults("1992", 55000, 1500, "24", "65", "92"),
+  you: personDefaults("1990", 85000, 2400, "18", "67", "90"),
+  spouse: personDefaults("1992", 55000, 1500, "18", "65", "92"),
   /** Other taxable income a year in retirement, for how much of the
       benefit is taxed. */
   other: groupDigits(40000, true),
@@ -64,15 +64,21 @@ export function wageIndex(year: number): number {
   return SS_AWI[base] / SS_AWI[Math.max(first, year)];
 }
 
+/** The age full-time pay starts, in the estimate: past years before it
+    are part-time or student work, a third of this age's pay. */
+const FULL_TIME_AGE = 22;
+
 /** Pay at every age of a career. Before this year, each year is today's
-    pay walked back at the past raise (in today's wages), and a year set by
+    pay walked back at the past raise (in today's wages). Past years before
+    22 start from a third of age 22's pay, rounded to the nearest $100 as
+    earned, and walk back at the same raise. A year set by
     hand is what was earned that year, as paid, indexed to today's wages;
     it stands alone, like a line of an earnings record. This year is
     today's pay. After it, each year is the year before plus the raise
     ahead, in today's dollars, so a year set by hand (a promotion, a cut)
     carries forward and the raises continue from it. */
 export function careerYears(p: PersonInputs, ageNow: number): CareerYear[] {
-  const start = clampAge(p.start, 14, 70, 22), stop = Math.max(start + 1, clampAge(p.stop, 15, 80, 67));
+  const start = clampAge(p.start, 14, 70, 18), stop = Math.max(start + 1, clampAge(p.stop, 15, 80, 67));
   const payNow = Math.max(0, parseNum(p.pay)), gPast = parseNum(p.gPast) / 100, gAhead = parseNum(p.gAhead) / 100;
   const out: CareerYear[] = [];
   let prev: number | null = null;
@@ -82,6 +88,13 @@ export function careerYears(p: PersonInputs, ageNow: number): CareerYear[] {
     if (d < 0) {
       const f = wageIndex(NEWEST_YEAR + d);
       if (hand) { earned = Math.max(0, parseNum(e)); pay = earned * f; }
+      else if (age < FULL_TIME_AGE && FULL_TIME_AGE < ageNow) {
+        // A third of age 22's pay at 21, in today's wages, then back at the
+        // past raise; rounded to $100 as earned so the figure reads cleanly.
+        const at21 = payNow / Math.pow(1 + gPast, ageNow - FULL_TIME_AGE) / 3;
+        earned = Math.round(at21 / Math.pow(1 + gPast, FULL_TIME_AGE - 1 - age) / f / 100) * 100;
+        pay = earned * f;
+      }
       else { pay = payNow / Math.pow(1 + gPast, -d); earned = pay / f; }
     }
     else if (d === 0) pay = payNow;
