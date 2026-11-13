@@ -348,3 +348,21 @@ test("a line's cost is for the amount on it, even at a deduction's limit", () =>
   const pi = paycheckInput(budget({ pcGross: "60,000", pcMatch: "100", pcRothIra: String(L.ira.base / 26), pcIraRoth: false }), "IL");
   near(pcCostPer(pi, "rothIra"), 1 - 0.12 - 0.0495, 0.001);
 });
+
+test("Fill: once every line above brokerage is full, brokerage takes the rest", () => {
+  // A line can round a cent under its limit when a line above it moves that
+  // limit; topping it up must not skip brokerage. Swept across pay and match
+  // so some case lands on that rounding whatever the year's limits are.
+  const rows = BUDGET_DEFAULTS.rows.map((r) => ({ ...r, amount: ({ "Rent / Mortgage": "2,400", "Groceries": "900", "Travel": "4,000" } as Record<string, string>)[r.desc] ?? r.amount }));
+  let checked = 0;
+  for (let g2 = 60000; g2 <= 100000; g2 += 1000) for (const m of ["450", "500", "533.33", "600", "466.67", "541.67", "566.66", "583.33"]) {
+    const pi = paycheckInput(budget({ pcStatus: "m2", pcGross: "120,000", pcGross2: g2.toLocaleString("en-US"), pcState: "NJ", pcHsaFamily: true,
+      pcMatchRate2: "100", pcMatchUpTo2: "4", pcK401maxRoth: true, pcMatch: m, pcHsa: "300", pcEf: "200", rows }), "NJ");
+    const a = paycheckFill(pi), ord = pi.order.filter((s) => s !== "ef" || pi.efOn);
+    const allFull = ord.every((s) => s === "brok" || a[s] >= Math.floor(pcCap(pi, s, a) * 100 + 1e-6) / 100 - 1e-9);
+    if (!allFull || !ord.includes("brok")) continue;
+    checked++;
+    assert.ok(paycheckRun(pi, a).left < 0.01, `pay2 ${g2}, match ${m}: ${paycheckRun(pi, a).left} left with brokerage at ${a.brok}`);
+  }
+  assert.ok(checked > 20, `${checked} cases with every line full`);
+});

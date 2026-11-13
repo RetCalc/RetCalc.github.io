@@ -477,7 +477,11 @@ export function paycheckFill(pi: PcInput, order: PcStep[] = pi.order): PcAmounts
       a[partial] = Math.round(a[partial] * 100 + 1) / 100;
       if (paycheckRun(pi, a).left < 0) { a[partial] = Math.round(a[partial] * 100 - 1) / 100; break; }
     }
-  } else if (ord.includes("brok")) a.brok = Math.max(0, Math.floor(paycheckRun(pi, a).left * 100 + 1e-6) / 100);
+  }
+  // A line that was only a cent short (rounded before a line above it moved
+  // its limit) is full now, and brokerage still takes what's left.
+  if (ord.includes("brok") && ord.every((s) => s === "brok" || full(s)))
+    a.brok = Math.max(0, Math.floor(paycheckRun(pi, a).left * 100 + 1e-6) / 100);
   return a;
 }
 
