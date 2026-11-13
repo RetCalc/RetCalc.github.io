@@ -406,6 +406,16 @@ export function About() {
                     <li>Once a month, when your balances need updating, you get a check-in
                     email. It says when you last updated them and never includes your
                     figures. Turn it off in Profile or from any email.</li>
+                    <li><b>Download spreadsheet</b>, on the Dashboard and Plan summary, makes your
+                    whole plan an Excel workbook on your own device (nothing is sent anywhere):
+                    an overview, net worth, income and saving, your budget, every working year,
+                    retirement year by year and every past market, retirement taxes, stress
+                    tests, Social Security, your assumptions, and a What If sheet. Totals,
+                    shares, rates and links between sheets are formulas, so a changed balance or
+                    budget line carries through; blue figures on yellow are inputs. What If is a
+                    simple steady-return model you can play with; it won&apos;t match the
+                    Dashboard exactly, which tests every past market and works out each
+                    year&apos;s tax.</li>
                   </ul>
                 </Section>
               </Group>
