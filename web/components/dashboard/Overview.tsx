@@ -30,6 +30,7 @@ import { hasAccounts, netWorth, useDashboard, type DashData } from "./store";
 import { useLandedOn } from "./land";
 import { Empty, Tile, Tip } from "./ui";
 import { AssumptionChip } from "./AssumptionCheck";
+import { StressLine } from "./StressTests";
 import { SinceTile } from "./Since";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
@@ -94,11 +95,12 @@ function Answer({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entri
   );
 }
 
-function Chance({ R, accounts }: { R: Results; accounts: boolean }) {
+function Chance({ R, accounts, pr, entries }: { R: Results; accounts: boolean; pr: DashData["profile"]; entries: DashData["entries"] }) {
   return (
     <Tile icon={ShieldCheckIcon} title="Chance of success" tip="chance">
       <div className="dsh-fig dsh-mt">{R.success != null ? pctDown(R.success) + "%" : "—"}</div>
       <div className="dsh-cap dsh-mt6">{R.success != null ? (R.runs && R.success < 1 ? `${R.runs.ok} of ${R.runs.of} historical retirements lasted to ${toAges(R)}` : `of historical retirements lasted to ${toAges(R)}`) : R.gap ?? "Needs your age, savings, retirement age and spending"}</div>
+      <StressLine pr={pr} entries={entries} R={R} />
       <div className="dsh-foot"><span className="dsh-cap">{R.strategy ? `With your chosen strategy: ${R.strategy.name}` : accounts ? "Spending a fixed amount that rises with prices" : "Add your accounts for a sharper number"}</span></div>
     </Tile>
   );
@@ -251,7 +253,7 @@ export function Overview() {
             <AssumptionChip pr={pr} entries={data.entries} R={R} />
           </div>
         </Tile>
-        <div className="dsh-side"><Readiness R={R} pr={pr} entries={data.entries} /><Chance R={R} accounts={accounts} /></div>
+        <div className="dsh-side"><Readiness R={R} pr={pr} entries={data.entries} /><Chance R={R} accounts={accounts} pr={pr} entries={data.entries} /></div>
       </div>
 
       <div className="dsh-grid dsh-r2">

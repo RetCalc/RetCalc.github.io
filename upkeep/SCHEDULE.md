@@ -1,8 +1,8 @@
 # RetCalc upkeep schedule
 
-Generated from `upkeep/items.json` by `python3 upkeep/check.py --write` on 2026-11-11; don't edit by hand. Status is as of that day: the **Next due** column is what counts. Ask Claude to refresh it, or to update anything that's due.
+Generated from `upkeep/items.json` by `python3 upkeep/check.py --write` on 2026-11-13; don't edit by hand. Status is as of that day: the **Next due** column is what counts. Ask Claude to refresh it, or to update anything that's due.
 
-**0 overdue · 5 due within 30 days · 19 up to date**
+**0 overdue · 5 due within 30 days · 20 up to date**
 
 | Status | Item | Area | Now covers | Last updated | Next due | How often | Source |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -25,6 +25,7 @@ Generated from `upkeep/items.json` by `python3 upkeep/check.py --write` on 2026-
 | 🟢 OK | **Local income tax states and notes** | Taxes | Tax year 2026 | 2026-10-26 | 2027-03-15 | Yearly, with the state tax update | Tax Foundation's state and local income tax data; each state's revenue department (Maryland Comptroller county rates, New York tax department for NYC); check each lookup link still opens |
 | 🟢 OK | **State rules for retirement income** | Taxes | Tax year 2026 | 2026-10-29 | 2027-03-15 | Yearly, early in the year | State revenue departments; Tax Foundation and AARP state guides as a cross-check |
 | 🟢 OK | **Home price, rent and housing-cost defaults** | Housing | $450,000 home, $1,800 rent | 2026-10-05 | 2027-03-31 | Yearly | NAR or Census median home price; Census or Zillow median rent; Tax Foundation property tax rates |
+| 🟢 OK | **Social Security trust fund projection (Trustees Report)** | Social Security | 2026 Trustees Report: combined trust funds run out in 2034, 83% of scheduled benefits payable then | 2026-11-13 | 2027-05-01 | Yearly, when the new Trustees Report comes out | The annual Social Security Trustees Report (ssa.gov/oact/tr), usually out in spring or early summer; the 2026 report came out June 9, 2026 |
 | 🟢 OK | **72(t) interest rate floor** | Other defaults | 5% (Notice 2022-6: the greater of 5% or 120% of the federal mid-term rate) | 2026-10-29 | 2027-10-01 | Yearly: confirm Notice 2022-6 still sets the 5% floor and that no later notice or law changed it. Do not move the default when the mid-term rate rises | IRS Notice 2022-6 (the 5% floor); IRS Applicable Federal Rates (monthly revenue rulings) for the 120% test |
 | 🟢 OK | **Debt Payoff example rates** | Other defaults | Credit card 22.9% | 2026-10-05 | 2027-10-01 | Yearly | Federal Reserve G.19 consumer credit report (credit card rates) |
 | 🟢 OK | **Long-run assumption defaults** | Other defaults |  | 2026-10-13 | 2027-10-01 | Yearly review; change rarely | Long-run history on the site itself; Vanguard and Morningstar capital-market outlooks as a sanity check |
@@ -52,6 +53,7 @@ Generated from `upkeep/items.json` by `python3 upkeep/check.py --write` on 2026-
 - **Local income tax states and notes.** Which states have local income taxes (and so show Income Tax's optional local field), each one's usual base (wages or state taxable income), its one-line note (Maryland's county range, New York City's range) and its lookup links.
 - **State rules for retirement income.** Which states tax Social Security, pension and IRA exclusions, and extra deductions or credits, each at the age the state names (Iowa 55, Delaware 60, Georgia and New Jersey 62, New York 59½, Wisconsin and Rhode Island 67, and 65 for most extras), and states with no early-withdrawal penalty add-on.
 - **Home price, rent and housing-cost defaults.** The starting home price, rent, rent growth, home appreciation, property tax rate and insurance in the Mortgage and Rent vs. Buy tools.
+- **Social Security trust fund projection (Trustees Report).** The year Social Security's combined trust funds (OASDI) are projected to run out and the share of scheduled benefits the taxes still coming in would pay then. The Dashboard's "If things go wrong" stress test pays every benefit at that share from that year.
 - **72(t) interest rate floor.** The Bridge's 72(t) interest rate starts at 5%, which is always allowed: the IRS permits the greater of 5% or 120% of the federal mid-term rate. This is a check that 5% is still the statutory floor, not a default to chase.
 - **Debt Payoff example rates.** The example debts' interest rates, mainly the credit card APR.
 - **Long-run assumption defaults.** Default return before inflation (8.5%), inflation (3%), college cost growth (4%), heirs' tax rate and similar starting assumptions.

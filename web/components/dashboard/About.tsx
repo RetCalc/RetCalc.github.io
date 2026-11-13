@@ -288,6 +288,36 @@ export function About() {
                     If anyone is under 65 once the last paycheck stops, the years until Medicare
                     are called out here, on Plan summary and in Next steps.</dd>
                   </dl>
+                  <p><b>If things go wrong</b>, on Plan summary, runs your plan again with one hard
+                  event added: the same withdrawal strategy, the same mix and every past market
+                  since 1926. Each shows the chance of success with the event against your
+                  plan&apos;s, and the middle market: what&apos;s left at the end, or the age the
+                  money runs out.</p>
+                  <ul>
+                    <li><b>A partner dies</b> (couples): in the year the older of you turns 75, or
+                    your first year of retirement if later. From then Social Security pays only the
+                    larger of your two benefits, and spending is 75% of the couple&apos;s. It also
+                    finds the life insurance, paid that year, that brings the chance back to your
+                    plan&apos;s.</li>
+                    <li><b>A year without work</b>: at 55 (next year if you&apos;re past it, your last
+                    year of work if sooner), no pay and no saving, and that year&apos;s spending
+                    taken from checking and savings, then the brokerage, then retirement accounts.
+                    Your whole plan follows from there, savings at retirement included.</li>
+                    <li><b>Retiring into a bad market</b>: your retirement started in January 1929,
+                    1937, 1966, 1973, 2000 and 2008, each the record covers to the end of your plan.</li>
+                    <li><b>Long-term care</b>: $100,000 per year in today&apos;s dollars for 3 years
+                    from when the older of you turns 85, on top of your spending. Both figures can
+                    be changed there.</li>
+                    <li><b>Social Security pays less</b>: every benefit at 83% from 2034, when the
+                    2026 Trustees Report projects the combined trust funds run out. Not shown
+                    outside the US.</li>
+                  </ul>
+                  <p>A test holds up when its chance is no more than 10 points below your
+                  plan&apos;s; a bad market only if every year shown lasts. The Dashboard&apos;s
+                  Chance of success tile says how many it holds up in. The events aren&apos;t
+                  foreseen: your strategy works out its spending as it would without them (after
+                  a partner&apos;s death, 75% of it), and taxes on what the events change
+                  aren&apos;t refigured.</p>
                 </Section>
                 <Section id="assume">
                   <ul>

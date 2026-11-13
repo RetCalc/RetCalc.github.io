@@ -21,6 +21,8 @@ import { BANDS, BAND_WORDS, type Band } from "../assume-bench";
 import { GROUP_NAMES, SHORT, type GroupId } from "../assumptions";
 import { AgeStack, Climb, Fan, HBars, Lanes, Lines, OwedBars, SplitBar, WorthLine, WorthMap, kidColor } from "./charts";
 import type { DashReport, PageInfo } from "./model";
+import { STRESS_NAMES, STRESS_TIPS } from "../stress-plan";
+import { TIPS } from "../tips";
 
 type M_ = DashReport;
 const Brand = () => <span className="rp-brand"><ReportMark />RetCalc</span>;
@@ -509,6 +511,34 @@ function Last({ M, p }: { M: M_; p: PageInfo }) {
   );
 }
 
+/* ---------- if things go wrong ---------- */
+function Stress({ M, p }: { M: M_; p: PageInfo }) {
+  const X = M.stress!, two = M.who.two, ends = M.R.endAges.join(" and ") || String(M.end);
+  const mid = (m: { end: number; outAge: number | null }, who: string) => (m.outAge != null ? "Ran out at " + (two ? who + "'s " : "") + m.outAge : rounded(m.end) + " left at " + ends);
+  const when = (t: (typeof X.tests)[number]) => (t.year == null ? "" : t.id === "ss" ? "From " + t.year : t.year + ", " + (two || t.id === "work" ? t.who + " " : "age ") + t.age);
+  const pts = (x: number) => { const d = Math.round((x - X.base.rate) * 100); return d === 0 ? "" : " (" + (d > 0 ? "+" : "−") + Math.abs(d) + ")"; };
+  return (
+    <Sheet M={M} p={p}>
+      <Lead h={<>It holds up in {num(X.held)} of {num(X.of)} hard events.</>}>
+        Each test is your plan as it is, with the same withdrawal strategy and every past month since {M.hist.first}, and one hard event added. A test holds up when its chance of success is no more than 10 points below your plan&apos;s own, <b>{pct(X.base.rate)}</b>; retiring into a bad market, only if every year shown lasts.
+      </Lead>
+      <table className="rp-t gap"><thead><tr><th className="l">If this happens</th><th className="l">When</th><th>Chance of success</th><th className="l">Middle market</th><th className="l">Holds up</th></tr></thead><tbody>
+        <tr><td className="l"><b>Your plan as it is</b></td><td className="l" /><td>{pct(X.base.rate)}</td><td className="l">{mid(X.base.mid, M.who.First)}</td><td className="l" /></tr>
+        {X.tests.map((t) => (
+          <tr key={t.id}><td className="l"><b>{STRESS_NAMES[t.id]}</b></td><td className="l">{when(t)}</td>
+            <td>{t.event ? pct(t.event.rate) + pts(t.event.rate) : "—"}</td>
+            <td className="l">{t.starts ? t.starts.map((s) => s.year + ": " + (s.outAge != null ? "ran out at " + s.outAge : rounded(s.end) + " left")).join("; ") : t.event ? mid(t.event.mid, t.who) : ""}</td>
+            <td className="l">{t.holds ? "Yes" : "No"}</td></tr>
+        ))}
+      </tbody></table>
+      {X.tests.some((t) => t.id === "death") ? <p className="rp-small">{X.cover == null ? "No one-time sum tried brings the chance back after a partner's death." : X.cover === 0 ? "After a partner's death the chance holds without life insurance." : <>Life insurance of about <b>{money(X.cover)}</b>, paid in the year of a partner&apos;s death, brings the chance of success back to {pct(X.base.rate)}.</>}</p> : null}
+      <Sec>What each test assumes</Sec>
+      <div className="rp-cols2">{X.tests.map((t) => <p key={t.id} className="rp-small"><b>{STRESS_NAMES[t.id]}.</b> {t.care ? <>Paid care, in a nursing home or at home, costing {money(t.care.amount)} per year in today&apos;s dollars for {yrs(t.care.years)}, from when {two ? "the older of you turns" : "you turn"} {t.care.age}, on top of your strategy&apos;s spending.</> : TIPS[STRESS_TIPS[t.id]]}</p>)}
+        <p className="rp-small"><b>Middle market.</b> {TIPS.stressMedian}</p></div>
+    </Sheet>
+  );
+}
+
 /* ---------- getting to 59½ ---------- */
 function Bridge({ M, p }: { M: M_; p: PageInfo }) {
   const B = M.bridge!, out = B.out.trad + B.out.roth + B.out.brok, E = B.early, years = E.years % 1 ? E.years.toFixed(1) : String(E.years);
@@ -845,6 +875,7 @@ export function DashPages({ M }: { M: M_ }) {
       case "changes": return <Changes key={p.n} M={M} p={p} />;
       case "road": return <Road key={p.n} M={M} p={p} />;
       case "last": return <Last key={p.n} M={M} p={p} />;
+      case "stress": return <Stress key={p.n} M={M} p={p} />;
       case "bridge": return <Bridge key={p.n} M={M} p={p} />;
       case "social": return <Social key={p.n} M={M} p={p} />;
       case "health": return <Health key={p.n} M={M} p={p} />;

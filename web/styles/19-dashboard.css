@@ -1088,3 +1088,34 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-debtfields .dsh-check { flex-basis: 100%; }
 .dsh-warn { color: var(--ds-loss); }
 .dsh-debtsum { margin-top: 10px; }
+
+/* If things go wrong (Plan summary): the plan against each hard event, a
+   row each: what happens, when, the chance with it, the middle market, and
+   whether it holds up. */
+.dsh-st-table { margin-top: 20px; font-size: 13.5px; }
+.dsh-st-row { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, .9fr) minmax(0, .8fr) minmax(0, 1.2fr) 104px; column-gap: 18px; align-items: center; padding: 11px 8px; border-radius: 10px; }
+.dsh-st-row:not(.dsh-st-head):hover { background: var(--ds-raised); }
+.dsh-st-head { padding-top: 0; padding-bottom: 8px; border-radius: 0; border-bottom: 1px solid var(--ds-rule); font-size: 11.5px; color: var(--ds-muted); }
+.dsh-st-name { font-weight: 600; }
+.dsh-st-name .dsh-cap { display: block; margin-top: 2px; font-weight: 400; }
+.dsh-st-fig { font-weight: 600; font-variant-numeric: tabular-nums; }
+.dsh-st-fig .dsh-cap { display: block; font-weight: 400; }
+.dsh-st-mid { font-variant-numeric: tabular-nums; }
+.dsh-st-badge { justify-self: end; }
+.dsh-badge.dsh-st-short { background: color-mix(in srgb, var(--ds-loss) 13%, var(--ds-surface)); color: var(--ds-loss); }
+.dsh-st-years { grid-column: 3 / 5; display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 0; padding: 0; list-style: none; font-variant-numeric: tabular-nums; }
+.dsh-st-years li { display: inline-flex; gap: 6px; padding: 3px 9px; border-radius: 999px; background: var(--ds-raised); white-space: nowrap; }
+.dsh-st-years li[data-out] { background: color-mix(in srgb, var(--ds-loss) 11%, var(--ds-surface)); color: var(--ds-loss); }
+.dsh-st-assume { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--ds-rule); max-width: 560px; }
+.dsh-st-assume .dsh-row { margin-top: 8px; }
+@media (max-width: 1100px) {
+  .dsh-st-row { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr) minmax(0, 1.2fr); grid-template-areas: "name name badge" "when fig mid"; row-gap: 8px; padding: 12px 8px; }
+  .dsh-st-head { display: none; }
+  .dsh-st-name { grid-area: name; } .dsh-st-when { grid-area: when; } .dsh-st-fig { grid-area: fig; } .dsh-st-mid { grid-area: mid; } .dsh-st-badge { grid-area: badge; }
+  .dsh-st-years { grid-column: 2 / 4; grid-row: 2; }
+  .dsh-st-row + .dsh-st-row { border-top: 1px solid var(--ds-rule); border-radius: 0; }
+}
+@media (max-width: 560px) {
+  .dsh-st-row { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "name name badge" "when when when" "fig mid mid"; column-gap: 16px; }
+  .dsh-st-years { grid-column: 1 / -1; grid-row: 3; }
+}

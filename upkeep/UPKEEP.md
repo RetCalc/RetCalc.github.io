@@ -151,6 +151,17 @@ Covers `market-history` and `french-data`. Both must end on the same month.
    articles' worked examples, both baselines and the Guide e2e figures.
    Update the articles' text and their `math.test.js` expectations together.
 
+### Social Security Trustees Report (spring or early summer)
+
+Covers `ss-trustees`. When the year's Trustees Report is out (ssa.gov/oact/tr),
+take the combined OASDI figures, not OASI alone: the year the trust funds
+are projected to run out and the percent of scheduled benefits payable then.
+Set `SS_CUT` in `web/components/dashboard/stress.ts` (year, share, report
+year) and update the `stressSs` tip in `web/components/dashboard/tips.ts`
+and the If things go wrong part of the Dashboard's About page, which quote
+them. Then `npm run test:dashboard` (stress.test.ts) and search
+`content/lessons/` for the old year and share.
+
 ### Today's CAPE (monthly)
 
 Covers `cape-now`. In `web/lib/engine/data/history.js`, set `CAPE_NOW` to the latest monthly reading on

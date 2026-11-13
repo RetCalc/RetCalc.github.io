@@ -304,6 +304,22 @@
       "notes": "These are judgment calls, not data. Raise any change with the owner first."
     },
     {
+      "id": "ss-trustees",
+      "area": "Social Security",
+      "name": "Social Security trust fund projection (Trustees Report)",
+      "what": "The year Social Security's combined trust funds (OASDI) are projected to run out and the share of scheduled benefits the taxes still coming in would pay then. The Dashboard's \"If things go wrong\" stress test pays every benefit at that share from that year.",
+      "where": ["web/components/dashboard/stress.ts: SS_CUT (year, share, report)",
+        "web/components/dashboard/tips.ts: stressSs (quotes the year, the share and the report); ssPct also mentions the trust fund",
+        "web/components/dashboard/About.tsx: the If things go wrong section"],
+      "source": "The annual Social Security Trustees Report (ssa.gov/oact/tr), usually out in spring or early summer; the 2026 report came out June 9, 2026",
+      "cadence": "Yearly, when the new Trustees Report comes out",
+      "last_updated": "2026-11-13",
+      "data_for": "2026 Trustees Report: combined trust funds run out in 2034, 83% of scheduled benefits payable then",
+      "next_due": "2027-05-01",
+      "priority": "medium",
+      "notes": "Use the combined OASDI figures, not OASI alone (2026 report: OASI alone runs out in late 2032 with 78% payable). The Learn lessons may quote the projection too: search content/lessons/ for the old year and share."
+    },
+    {
       "id": "law-watch",
       "area": "Taxes",
       "name": "New laws that change the rules mid-year",

@@ -26,9 +26,10 @@ import { allSteps } from "../nextsteps";
 import { rateAssumptions } from "../assumptions";
 import { explain } from "../readiness";
 import { liveScenarios, scenarioName, scenarioSentence } from "../scenarios";
+import { lifeCover, stressTests } from "../stress-plan";
 import { PER_LABEL, hasAccounts, netWorth, sum, type DashData, type Item } from "../store";
 
-export type PageId = "cover" | "stand" | "worth" | "income" | "spending" | "saving" | "home" | "family" | "changes" | "road" | "last" | "bridge" | "social"
+export type PageId = "cover" | "stand" | "worth" | "income" | "spending" | "saving" | "home" | "family" | "changes" | "road" | "last" | "stress" | "bridge" | "social"
   | "health" | "money" | "score" | "next" | "assume" | "sources" | "saveyears" | "years";
 export interface PageInfo { id: PageId; title: string; n: number; because?: string }
 
@@ -292,6 +293,10 @@ export function dashReport(d: DashData, today = new Date()) {
       ladder2: two ? ages.map((c) => { const x = at(S.ss.claim, c); return { age: c, v: x.own2 + x.top2 }; }) : [] };
   })() : null;
 
+  /* If things go wrong: the plan against each hard event, as Plan summary shows it. */
+  const run = stressTests(pr, entries, R);
+  const stress = run && run.tests.length ? { ...run, cover: lifeCover(pr, entries, run) } : null;
+
   /* ---------- the score, each area explained, and what to do ---------- */
   const score = R.score;
   const areas = FACTORS.map((f) => ({ ...f, part: R.parts[f.id] ?? null, why: explain(f.id, pr, entries, R) }));
@@ -318,6 +323,7 @@ export function dashReport(d: DashData, today = new Date()) {
   if (changes) add("changes", "Changes ahead", "On this report because of the changes in your Calculator");
   add("road", "The road from here");
   add("last", "Will it last?");
+  if (stress) add("stress", "If things go wrong");
   if (bridge) add("bridge", "Getting to 59½", "On this report because " + (early!.name === "You" ? "you retire" : early!.name + " retires") + " before 59½");
   if (social) add("social", two ? "Social Security for both of you" : "Social Security");
   if (health) add("health", "Health cover before Medicare", "On this report because you stop work before 65");
@@ -343,7 +349,7 @@ export function dashReport(d: DashData, today = new Date()) {
     mapFrom: Math.floor(Math.min(a.age, ...hist2.map((h) => a.age! - (today.getTime() - new Date(h.date + "T12:00:00").getTime()) / 3.15576e10))),
     missing: null, pr, entries, R, S, a, F, H, who, abroad, today, yearOf, age0, retire, end, rmdAge, firstClaim, firstMed, claim2, med2, r2,
     phases, stops, runs, worst, hist, rows, money, worth, pay, other: pr.other.filter((x) => (x.amount ?? 0) > 0), save, spend, home: homeShown ? home : null,
-    family, changes, bridge, health, social, score, assume, rating: rating(score, R.partial), areas, steps, mix, mixWords: mixWords(mix), stocks: stocksOf(mix),
+    family, changes, bridge, health, social, stress, score, assume, rating: rating(score, R.partial), areas, steps, mix, mixWords: mixWords(mix), stocks: stocksOf(mix),
     goal: target(a), pages, perSave, perYears,
     // For the Guide's charts, which take the plan's figures by these names.
     factors: FACTORS, Rg: { P: R.parts as Record<string, { p: number; txt: string }>, score: score ?? 0 },
