@@ -134,8 +134,6 @@ export function Summary() {
         </div>
       ) : <Note>The summary fills in once your profile has your age, retirement age and pay.</Note>}
       {S ? <AssumptionCheck pr={pr} entries={data.entries} R={R} /> : null}
-      <StressTests pr={pr} entries={data.entries} R={R} />
-
       <EarlyRetirement pr={pr} entries={data.entries} R={R} />
       <HealthCover pr={pr} R={R} />
       <TaxesCard pr={pr} entries={data.entries} R={R} />
@@ -161,6 +159,15 @@ export function Summary() {
         </Tile>
       </div>
 
+      {/* The timeline stays open, right under today's picture. */}
+      {tl.lanes.length ? (
+        <div className="dsh-r4">
+          <Tile icon={CalendarDaysIcon} title="Your timeline" right={<span className="dsh-cap">Today is the dashed line</span>}>
+            <Timeline lanes={tl.lanes} from={tl.from} to={tl.to} now={nowYear()} />
+          </Tile>
+        </div>
+      ) : null}
+
       {/* The rest folds to a line each, opened for the whole of it. */}
       {S ? (
         <Fold icon={TrendingUpIcon} title="Saving to retirement" className="dsh-psum"
@@ -181,14 +188,7 @@ export function Summary() {
         <Readiness R={R} pr={pr} entries={data.entries} className="dsh-fold-same" />
       </Fold>
 
-      {tl.lanes.length ? (
-        <Fold icon={CalendarDaysIcon} title="Your timeline" summary={timelineLine(pr)}>
-          <Tile icon={CalendarDaysIcon} title="Your timeline" className="dsh-fold-same">
-            <Timeline lanes={tl.lanes} from={tl.from} to={tl.to} now={nowYear()} />
-            <p className="dsh-cap dsh-mt6">Today is the dashed line.</p>
-          </Tile>
-        </Fold>
-      ) : null}
+      <StressTests pr={pr} entries={data.entries} R={R} />
 
       <div className="dsh-r4">
         <Tile icon={ListChecksIcon} title="What to do next" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/next" />}>All next steps</Button>}>
@@ -210,13 +210,6 @@ function readinessLine(R: Results): string {
   if (!R.partial) return `${R.score} of 100`;
   const avail = FACTORS.reduce((s, f) => s + (R.parts[f.id] ? f.w : 0), 0), got = FACTORS.reduce((s, f) => s + (pts[f.id] ?? 0), 0);
   return `${got} of ${avail} so far, ${100 - avail} points not scored yet`;
-}
-
-/** The timeline in a line: when each of you retires. */
-function timelineLine(pr: Profile): string {
-  const two = pr.who === "couple";
-  const parts = (two ? [pr.p1, pr.p2] : [pr.p1]).map((p, i) => (p.by && p.retire ? `${two ? nameOf(pr, i ? 1 : 0) + " retires in " : "You retire in "}${p.by + p.retire}` : null)).filter(Boolean);
-  return parts.length ? parts.join("; ") : "Your household along the years";
 }
 
 /** The years with no job's health plan before Medicare: called out, with
