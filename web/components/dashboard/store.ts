@@ -122,6 +122,10 @@ export interface Profile {
       made it your plan (bridge.ts), and the day you did. Its figures always
       come from the plan. Unset: no bridge plan yet. */
   bridge?: { inputs: ToolInputs; at: string };
+  /** Taxes in retirement (taxes.ts): which accounts the withdrawals come from
+      and what's converted to Roth, once you've made it your plan, and the
+      day you did. Unset: no conversions, brokerage first. */
+  taxPlan?: { f: number; u: number; im: number; ac: number; at: string };
   /** The tools behind the tabs, as their own inputs: budget (pay, the
       budget and the saving sliders), tax (the deductions and local tax on
       Taxes & Savings), social (pay history), drawdown (the strategy, its

@@ -200,6 +200,24 @@ const health: Tour<DashData> = { name: "Health cover", title: "Health cover unti
   ],
   chip: () => "" };
 
+/* Taxes in retirement: which accounts pay, and Roth conversions. */
+const taxes: Tour<DashData> = { name: "Taxes in retirement", title: "Which accounts pay, and what to convert", read: plan,
+  pages: [
+    { title: "One plan", focus: "#taxes", tasks: () => [
+      { h: "Your <b>withdrawal strategy</b> on Drawdown decides how much comes out of savings each year. This decides which accounts it comes from, and how much traditional money to move to Roth while your tax is low." },
+      { h: "Each year's tax comes out of that year's withdrawal, so your savings follow the same path and your <b>chance of success doesn't change</b>. A conversion only uses the room your plan sets aside for tax, so spending doesn't fall below what your plan spends." },
+    ] },
+    { title: "Your choices", focus: "#txFill", tasks: ({ s }) => [
+      { h: "<b>Draw traditional money up to</b> a bracket: each year takes traditional money first, up to that much taxable income. <b>The rest of that room</b> can be converted to Roth until Social Security or required withdrawals start.", ok: done(!!s.profile.taxPlan) },
+      { h: "The box under the choices names the plan that leaves you the most, tried in every past market. <b>Try it</b>, then <b>Use this tax plan</b> to keep it." },
+    ] },
+    { title: "Reading it", focus: "#taxes .dsh-tx-map", tasks: () => [
+      { h: "Each bar is a year's income as the tax sees it. Below the first line there's no tax; each line above is where a bracket ends. Low bars between retiring and Social Security are the years conversions use." },
+      { h: "Required withdrawals start at 73 or 75 and can push income into higher brackets for the rest of your life. Converting earlier shrinks them." },
+    ] },
+  ],
+  chip: () => "" };
+
 /* Home: the mortgage and what owning costs, or the rent. */
 const home: Tour<DashData> = { name: "Your home", title: "What your home costs", read: plan,
   pages: [
@@ -235,6 +253,6 @@ const years: Tour<DashData> = { name: "Year by year", title: "Every year from no
   ],
   chip: () => "" };
 
-registerTours({ "dsh-years": years, "dsh-retirement-early": retirementEarly, "dsh-retirement-health": health, "dsh-home": home, "dsh-accounts": accounts, "dsh-income": income, "dsh-spending": spending, "dsh-savings": savings, "dsh-calculator": calculator, "dsh-retirement": retirement } as Record<string, Tour<DashData>>);
+registerTours({ "dsh-years": years, "dsh-retirement-early": retirementEarly, "dsh-retirement-health": health, "dsh-retirement-taxes": taxes, "dsh-home": home, "dsh-accounts": accounts, "dsh-income": income, "dsh-spending": spending, "dsh-savings": savings, "dsh-calculator": calculator, "dsh-retirement": retirement } as Record<string, Tour<DashData>>);
 export const TAB_TOURS = { accounts: "dsh-accounts", home: "dsh-home", income: "dsh-income", spending: "dsh-spending", savings: "dsh-savings", calculator: "dsh-calculator", retirement: "dsh-retirement", years: "dsh-years" } as Record<string, string>;
 

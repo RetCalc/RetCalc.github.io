@@ -19,6 +19,7 @@ import { sim } from "@/tools/guide/calc";
 import { childCost, children } from "@/tools/guide/schedule";
 import { AssumptionCheck } from "./AssumptionCheck";
 import { StressTests } from "./StressTests";
+import { TaxesCard } from "./RetireTaxes";
 import { Accounts as PlanAccounts, ChildrenCost, Climb, PayCard, StageLine } from "@/tools/plan/Summary";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { Legend, TodayBars } from "./Accounts";
@@ -137,6 +138,7 @@ export function Summary() {
 
       <EarlyRetirement pr={pr} entries={data.entries} R={R} />
       <HealthCover pr={pr} R={R} />
+      <TaxesCard pr={pr} entries={data.entries} R={R} />
 
       <div className="dsh-grid dsh-two">
         <Tile icon={ReceiptIcon} title="Your budget" right={<span className="dsh-cap">{money(F.spend)} per month</span>}>

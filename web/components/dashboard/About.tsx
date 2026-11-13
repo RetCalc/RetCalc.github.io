@@ -264,7 +264,7 @@ export function About() {
                 </Section>
                 <Section id="retire">
                   <p><b>Retirement</b> starts with what you&apos;ll have when you retire, then
-                  switches between up to three views.</p>
+                  switches between up to four views.</p>
                   <dl className="gloss">
                     <dt>Drawdown</dt>
                     <dd>The Drawdown Simulator on your plan. Your savings at retirement (the
@@ -287,6 +287,27 @@ export function About() {
                     then, your household, and the income your plan gives that year and at 65.
                     If anyone is under 65 once the last paycheck stops, the years until Medicare
                     are called out here, on Plan summary and in Next steps.</dd>
+                    <dt>Taxes</dt>
+                    <dd>Which accounts each year&apos;s withdrawal comes from, and how much
+                    traditional money to convert to Roth. Your withdrawal strategy sets how much
+                    comes out each year, in every past market; this only decides where it comes
+                    from. Each year&apos;s tax, the 10% early-withdrawal tax and the premiums
+                    that follow income (Medicare&apos;s surcharge, a marketplace plan after its
+                    credit) are paid out of that withdrawal, and a conversion only moves money
+                    from traditional to Roth, so your savings follow the same path and your chance
+                    of success doesn&apos;t change. A conversion only uses the room your plan sets
+                    aside for tax: it&apos;s cut back until the year still spends what your
+                    strategy spends, less that allowance. The choices are the Retirement Plan
+                    Optimizer&apos;s: draw traditional money up to the standard deduction or the
+                    top of the 10%, 12%, 22% or 24% bracket, convert the rest until Social
+                    Security or required withdrawals start, and stay under Medicare&apos;s first
+                    surcharge line from 63 or the marketplace credit&apos;s limit before 65. Each
+                    plan is run in every past market and compared with no conversions (brokerage
+                    first, then traditional, then Roth) on what you spend over retirement plus
+                    what&apos;s left for heirs, counting traditional money at 76% since heirs pay
+                    income tax on it. Retiring before 59½, the bridge plans the years until then
+                    and this starts where it ends, from each market&apos;s balances then. Brackets
+                    and deductions are held at this year&apos;s in today&apos;s dollars.</dd>
                   </dl>
                   <p><b>If things go wrong</b>, on Plan summary, runs your plan again with one hard
                   event added: the same withdrawal strategy, the same mix and every past market

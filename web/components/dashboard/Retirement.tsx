@@ -11,7 +11,7 @@
    each in a line, to learn them before choosing. */
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { ArrowDownToLineIcon, BookOpenIcon, ChevronDownIcon, HeartPulseIcon, MilestoneIcon, RotateCcwIcon, SunsetIcon } from "lucide-react";
+import { ArrowDownToLineIcon, BookOpenIcon, ChevronDownIcon, HeartPulseIcon, MilestoneIcon, ReceiptTextIcon, RotateCcwIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
@@ -29,12 +29,13 @@ import { DD_LOCKED, DD_OWN, drawdownFor, fromDrawdown, mixWords, retireMix } fro
 import { longDate, money, pctDown } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { couple, holdings, nameOf, people, results, spendMonth, type Results } from "./model";
-import { today, useDashboard, type Entry, type Profile } from "./store";
+import { OUTSIDE_US, today, useDashboard, type Entry, type Profile } from "./store";
 import { bridgeBudget, bridgeChoices, bridgeFor, bridgeLocked, bridgeSummary, earlyRetirees, householdAt, partnerWork } from "./bridge";
 import type { BrBudget } from "@/lib/engine/types";
 import { healthChoices, healthFor, healthGap, healthWords } from "./health";
 import { useLandedOn } from "./land";
 import { Note, PlanFacts, Tile, TipLabel, To } from "./ui";
+import { TaxesTile } from "./RetireTaxes";
 
 const STRATS_KEY = "retcalc.dashboard.strategiesOpen";
 function readStratsOpen() { try { return localStorage.getItem(STRATS_KEY) === "1"; } catch { return false; } }
@@ -44,7 +45,7 @@ function saveStratsOpen(v: boolean) { try { localStorage.setItem(STRATS_KEY, v ?
 /* The address's part ("#bridge"), as it changes. */
 const onHash = (f: () => void) => { window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); };
 
-type Side = "drawdown" | "early" | "health";
+type Side = "drawdown" | "early" | "health" | "taxes";
 
 export function Retirement() {
   const { data, setProfile: set } = useDashboard();
@@ -54,8 +55,8 @@ export function Retirement() {
   const early = earlyRetirees(pr).length > 0;
   const hash = useSyncExternalStore(onHash, () => window.location.hash, () => "");
   const [picked, setPicked] = useState<Side | null>(null);
-  const fromHash: Side = hash === "#bridge" && early ? "early" : hash === "#health" ? "health" : "drawdown";
-  const side: Side = picked === "early" && !early ? "drawdown" : picked ?? fromHash;
+  const fromHash: Side = hash === "#bridge" && early ? "early" : hash === "#health" ? "health" : hash === "#taxes" ? "taxes" : "drawdown";
+  const side: Side = (picked ?? fromHash) === "early" && !early ? "drawdown" : (picked ?? fromHash) === "taxes" && pr.state === OUTSIDE_US ? "drawdown" : picked ?? fromHash;
   const R = useMemo(() => results(pr, data.entries), [pr, data.entries]);
   const tax = R.abroad ? ", before taxes" : "";
   // Bumped when a strategy is chosen out here, so the simulator opens on it.
@@ -83,7 +84,7 @@ export function Retirement() {
   }, [pr, plan, set, setGuide]);
 
   return (
-    <Frame current="retirement" title="Retirement" help={side === "health" ? "dsh-retirement-health" : early ? "dsh-retirement-early" : undefined}>
+    <Frame current="retirement" title="Retirement" help={side === "health" ? "dsh-retirement-health" : side === "taxes" ? "dsh-retirement-taxes" : early ? "dsh-retirement-early" : undefined}>
       <Tile id="at-retirement" icon={SunsetIcon} title="At retirement" right={<To href="/dashboard/profile#plan-retirement">Ages, spending and assumptions</To>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Savings, {R.retireYear ?? "—"}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
@@ -101,11 +102,13 @@ export function Retirement() {
           <SegmentedItem pressed={side === "drawdown"} onClick={() => setPicked("drawdown")}><ArrowDownToLineIcon aria-hidden="true" />Drawdown</SegmentedItem>
           {early ? <SegmentedItem pressed={side === "early"} onClick={() => setPicked("early")}><MilestoneIcon aria-hidden="true" />Bridge to 59½</SegmentedItem> : null}
           {!R.abroad ? <SegmentedItem pressed={side === "health"} onClick={() => setPicked("health")}><HeartPulseIcon aria-hidden="true" />Health cover</SegmentedItem> : null}
+          {!R.abroad ? <SegmentedItem pressed={side === "taxes"} onClick={() => setPicked("taxes")}><ReceiptTextIcon aria-hidden="true" />Taxes</SegmentedItem> : null}
         </Segmented>
       </div>
 
       {side === "early" ? <BridgeTile /> : null}
       {side === "health" ? <HealthTile /> : null}
+      {side === "taxes" ? <TaxesTile /> : null}
 
       {side === "drawdown" ? <>
       <div className="dsh-r4" id="compare"><Collapsible open={stratsOpen} onOpenChange={openStrats}><Tile id="strategies" icon={BookOpenIcon} title="The withdrawal strategies" className={stratsOpen ? undefined : "dsh-shut"}

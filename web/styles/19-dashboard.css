@@ -1089,6 +1089,26 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-warn { color: var(--ds-loss); }
 .dsh-debtsum { margin-top: 10px; }
 
+/* ---------- Retirement: Taxes in retirement (RetireTaxes.tsx) ---------- */
+.dsh-tx { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 32px; margin-top: 18px; align-items: start; }
+.dsh-tx-in { margin-top: 0; padding: 18px; border: 1px solid var(--ds-rule-strong); border-radius: 16px; background: var(--ds-raised); }
+.dsh-tx-best { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.dsh-tx-best svg { width: 14px; height: 14px; vertical-align: -2px; color: var(--ds-brand-gold); }
+.dsh-tx-out .dsh-stats { margin-top: 0; }
+.dsh-tx-pay { --g: var(--ds-series-gray); } .dsh-tx-ss { --g: var(--ds-series-sky); } .dsh-tx-rmd { --g: var(--ds-series-rose); }
+.dsh-tx-trad { --g: var(--ds-series-lavender); } .dsh-tx-conv { --g: var(--ds-brand-gold); } .dsh-tx-gain { --g: var(--ds-series-teal); }
+.dsh-tx-map .dsh-seg[data-dim] { opacity: .25; }
+.dsh-tx-map .dsh-legend span { cursor: default; }
+.dsh-tx-line path { fill: none; stroke: var(--ds-text); stroke-width: 1.25; stroke-dasharray: 4 3; opacity: .5; }
+.dsh-tx-ded path { stroke: var(--ds-brand-jade); stroke-dasharray: none; opacity: .9; }
+.dsh-legend i.dsh-tx-lsw { --g: var(--ds-text); border-top-style: dashed; border-top-width: 1.5px; opacity: .6; }
+.dsh-tx-th { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+.dsh-tx-tbl td, .dsh-tx-tbl th { white-space: nowrap; }
+.dsh-tx-map text.dsh-tx-rate { font-size: 11px; fill: var(--ds-muted); }
+.dsh .dsh-tx-tbl thead tr th { position: static; box-shadow: inset 0 -1px 0 var(--ds-rule); }
+.dsh .dsh-tx-tbl thead tr th:first-child { position: sticky; top: auto; }
+@media (max-width: 900px) { .dsh-tx { grid-template-columns: minmax(0, 1fr); gap: 22px; } }
+
 /* If things go wrong (Plan summary): the plan against each hard event, a
    row each: what happens, when, the chance with it, the middle market, and
    whether it holds up. */

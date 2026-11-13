@@ -80,6 +80,22 @@ export const TIPS = {
   stressMarket: "Your retirement started in January of a year that began a hard market, for each one the record covers to the end of your plan: the 1929 crash, the 1937 relapse, 1966 (the start behind the 4% rule), the 1973 oil shock, the 2000 dot-com bust and the 2008 financial crisis. Each shows what was left at the end, or the age the money ran out.",
   stressCare: "Paid care, in a nursing home or at home, costing this much per year in today's dollars for the years you set, from age 85 (the older of you, for a couple), on top of your strategy's spending. A nursing home room costs over $100,000 per year in much of the US; care at home part of each day costs less.",
   stressSs: "Social Security's combined trust funds are projected to run out in 2034, after which the taxes still coming in would pay about 83% of scheduled benefits (the 2026 Social Security Trustees Report), unless Congress acts first. This pays every benefit in your plan at 83% from 2034. If you've set a lower share on Income, your plan already counts it.",
+
+  /* Taxes in retirement */
+  taxPlan: "Your withdrawal strategy decides how much comes out of savings each year. This decides which accounts it comes from, and how much traditional money to convert to Roth. Each year's tax comes out of that year's withdrawal, so your savings follow the same path and your chance of success doesn't change: what changes is how much of each withdrawal you keep, and what's left for your heirs.",
+  taxFill: "Each year, take money from traditional 401(k)s and IRAs first, up to this much taxable income, before touching the brokerage or Roth. Filling the low brackets now, while there's room, can mean less taxed at higher rates later, when Social Security and required withdrawals stack up. \"Nothing extra\" takes the brokerage first, then traditional, then Roth.",
+  taxUntil: "The part of that room the year doesn't spend can be converted to Roth: moved from traditional to Roth, taxed now as income, then free of tax for good and never forced out. Converting until Social Security starts uses the years when your income is lowest; until required withdrawals start goes on longer.",
+  taxIrmaa: "Medicare charges more for Part B and drug plans when income two years earlier passes a line. From 63, this keeps each year's withdrawals and conversions just under the first line.",
+  taxAca: "Before 65, a marketplace plan's premium credit depends on your income. This keeps conversions from pushing income past the credit's limit.",
+  taxMarket: "Every past market since 1926 your plan's years fit in, ranked by how much your strategy withdraws over them. The figures and the chart follow this one; the line under the figures counts them all.",
+  taxBest: "Every choice here, tried in every past market: the plan that leaves the most over your lifetime (spent, and left for heirs after their tax) in the median market. A plan has to win by more than $1,000 to count.",
+  taxTotal: "Federal and state income tax on everything you take out, convert and receive, with the 10% early-withdrawal tax if any, added up over the years shown.",
+  taxSpent: "Your withdrawals, Social Security, pensions and any pay, less tax and the premiums that follow income, added up over the years shown. Spending dips in years you convert, since the tax comes out of that year's withdrawal.",
+  taxHeirs: "What's left at the end, counting traditional money at 76%, since heirs pay income tax on it as they take it out (24% assumed). Roth and brokerage money passes without that tax.",
+  taxConv: "Traditional money moved to Roth over the years shown. It's taxed as income the year it's converted.",
+  taxAhead: "Each past market run twice, with this plan and with no conversions: ahead means more spent plus more left for heirs, by over $500.",
+  taxLines: "Below the first line, income isn't taxed (the standard deduction, more from 65). Each line above it is where a bracket ends. Room under a line in a year is income that year could take at that rate. Capital gains sit on top: they're taxed at their own lower rates.",
+  taxPrem: "The premiums that rise with income: Medicare's surcharge, and before 65 what a marketplace plan costs after its credit. Medicare's standard premiums are the same whatever the plan, so they're not counted.",
 } as const;
 
 export type TipId = keyof typeof TIPS;

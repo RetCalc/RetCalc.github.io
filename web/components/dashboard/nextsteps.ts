@@ -70,6 +70,9 @@ export function allSteps(d: DashData, R: Results): Step[] {
   // Retiring before Medicare: health cover to buy until then.
   const gap = healthGap(pr);
   if (gap) add({ id: "health", title: "Plan health cover until Medicare", why: `${gap.years} ${gap.years === 1 ? "year" : "years"} with no job's plan, ${gap.from} to ${gap.to}`, action: "Plan it", href: "/dashboard/retirement#health", done: !!pr.healthSeen, gain: 7 });
+  // Mostly traditional savings: which account pays each year, and Roth conversions, change the tax.
+  const P = R.S?.P;
+  if (!R.abroad && P && P.trad > 0.3 * (P.trad + P.roth + P.brok)) add({ id: "taxes", title: "Plan your taxes in retirement", why: "Most of your savings is taxed as it comes out; the account you draw from, and Roth conversions in low-tax years, change how much", action: "Plan it", href: "/dashboard/retirement#taxes", done: !!pr.taxPlan, gain: 4 });
   // Retiring before 59½: what can come out of a Roth early, and what a sale is taxed on.
   if (early && H.accounts && ((H.roth > 0 && H.rothBasis == null) || (H.brok > 0 && H.brokBasis == null)))
     add({ id: "basis", title: H.roth > 0 && H.rothBasis == null ? "Add your Roth contributions" : "Add your brokerage cost basis", why: "Your bridge to 59½ depends on what can come out early, and its tax", action: "Add", href: "/dashboard/accounts#assets", done: false, gain: 3 });
