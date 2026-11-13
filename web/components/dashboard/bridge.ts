@@ -131,7 +131,9 @@ export function bridgeBudget(pr: Profile, R: Results): BrBudget | null {
       if (w.month !== 1) continue;
       const seq = w.seq.concat(Array(o.years - L).fill(w.seq[L - 1]));
       const rows = runDrawdown(o, seq, null, P).rows;
-      byStart[w.year + Math.max(0, k)] = Array.from({ length: nB }, (_, y) => (y + k < 0 ? 0 : Math.max(0, rows[y + k]?.realWithdrawal ?? 0)));
+      // Keyed by the year the bridge starts: bridge year y is the strategy's
+      // year y + k, so its markets are the same calendar years.
+      byStart[w.year + k] = Array.from({ length: nB }, (_, y) => (y + k < 0 ? 0 : Math.max(0, rows[y + k]?.realWithdrawal ?? 0)));
     }
   }
   const all = Object.values(byStart), mid = (y: number) => {

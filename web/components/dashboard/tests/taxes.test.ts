@@ -42,3 +42,32 @@ test("retiring before 59½, the tax plan starts where the bridge ends, in each m
   const c = compare(s!, bestPlan(s!).T);
   console.log("bridged", s!.y0, s!.age0, s!.starts.length, JSON.stringify(c));
 });
+
+test("the second of you retiring early: each market starts on the strategy's own balance", async () => {
+  const { drawdownSetup } = await import("@/tools/drawdown/model");
+  const { ddWindows, runDrawdown } = await import("@/lib/engine/typed-drawdown");
+  const { drawdownFor } = await import("../flows");
+  const base = { ...EMPTY_PROFILE, ...seed.profile, assume: { ...DEFAULT_ASSUMPTIONS, ...seed.profile.assume } };
+  // Jordan (born 1986) retires at 54, in 2040, four years before Sam (born 1984) at 60: k = -4.
+  for (const over of [{ p1: { ...base.p1, retire: 60 }, p2: { ...base.p2, retire: 54 } }, { p1: { ...base.p1, retire: 52 }, p2: { ...base.p2, retire: 55 } }]) {
+    const pr = { ...base, ...over }, R = results(pr, seed.entries), s = taxSetup(pr, seed.entries, R);
+    assert.ok(s, "a setup");
+    const { o, P } = drawdownSetup(drawdownFor(pr, R.ddPlan!));
+    const W = new Map(ddWindows(o).filter((w) => w.month === 1).map((w) => [w.year, w]));
+    for (const st of s!.starts.slice(0, 12)) {
+      if (!s!.y0) break;
+      const want = runDrawdown(o, W.get(st.year)!.seq, null, P).rows[s!.y0 - 1].realEnd;
+      const got = st.acc!.trad + st.acc!.roth + st.acc!.brok;
+      assert.ok(Math.abs(got - want) < 1, `start ${st.year}: ${got} vs ${want}`);
+    }
+    const none = taxRuns(s!, NO_PLAN).runs;
+    assert.ok(none.filter((r) => !r.res.ok).length <= Math.ceil(none.length * (1 - R.success!)) + 1, "no conversions runs short no more often than the strategy");
+  }
+});
+
+test("a fixed amount: markets ranked by what's left at the end", () => {
+  const base = { ...EMPTY_PROFILE, ...seed.profile, assume: { ...DEFAULT_ASSUMPTIONS, ...seed.profile.assume } };
+  const pr = { ...base, strategy: "fixed" }, R = results(pr, seed.entries), s = taxSetup(pr, seed.entries, R)!;
+  const endOf = (y: number) => s.starts.find((x) => x.year === y)!.end;
+  assert.ok(endOf(marketYear(s, "p10")) <= endOf(marketYear(s, "p50")) && endOf(marketYear(s, "p50")) <= endOf(marketYear(s, "p90")), "10th ≤ median ≤ 90th");
+});

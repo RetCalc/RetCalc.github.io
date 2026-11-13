@@ -56,7 +56,7 @@ export function TaxesTile() {
     return <div className="dsh-r4"><Note>{R.abroad ? "Outside the US, your plan doesn't figure taxes." : "Taxes in retirement open once your profile has your ages, savings, retirement age and spending."}</Note></div>;
   }
   const year = marketYear(s, market), run = taxDetail(s, T, year)!, base = taxDetail(s, NO_PLAN, year)!;
-  const all = compare(s, T);
+  const all = compare(s, T), shown = all.gains.get(year) ?? null;
   const isBase = samePlan(T, NO_PLAN);
   const early = earlyRetirees(pr)[0];
   const delta = (a: number, b: number, good: "up" | "down") => {
@@ -106,13 +106,13 @@ export function TaxesTile() {
 
           <div className="dsh-tx-out">
             <div className="dsh-stats">
-              <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Tax over retirement" id="taxTotal" /></div><div className="dsh-fig dsh-md">{money(round(run.res.tax))}</div>{delta(run.res.tax, base.res.tax, "down")}</div>
+              <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Tax over retirement" id="taxTotal" /></div><div className="dsh-fig dsh-md">{money(round(run.res.tax))}</div>{delta(run.res.tax, base.res.tax, "down")}{run.res.overN > 0 ? <div className="dsh-cap dsh-mt6">{money(round(run.res.over))} of it from savings, in {run.res.overN} {run.res.overN === 1 ? "year" : "years"} <Tip id="taxOver" title="Tax from savings" /></div> : null}</div>
               <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Spent over retirement" id="taxSpent" /></div><div className="dsh-fig dsh-md">{money(round(run.res.spent))}</div>{delta(run.res.spent, base.res.spent, "up")}</div>
               <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Left for heirs, after their tax" id="taxHeirs" /></div><div className="dsh-fig dsh-md">{money(round(run.res.legacy))}</div>{delta(run.res.legacy, base.res.legacy, "up")}</div>
-              <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Converted to Roth" id="taxConv" /></div><div className="dsh-fig dsh-md">{money(round(run.res.conv))}</div>{convYears ? <div className="dsh-cap dsh-mt6">Ages {convYears}</div> : null}</div>
+              <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Converted to Roth" id="taxConv" /></div><div className="dsh-fig dsh-md">{money(round(run.res.conv))}</div>{convYears ? <div className="dsh-cap dsh-mt6">Ages {convYears}{run.res.cappedN > 0 ? <>, limited by your tax budget in {run.res.cappedN} {run.res.cappedN === 1 ? "year" : "years"} <Tip id="taxCapped" title="Limited by your tax budget" /></> : null}</div> : null}</div>
             </div>
             {!isBase ? (
-              <p className="dsh-cap dsh-mt">Against no conversions, this plan left more to spend and for your heirs in <b>{all.ahead} of {all.of}</b> past markets <Tip id="taxAhead" title="Past markets" />, about {money(round(Math.abs(all.gain)))} {all.gain >= 0 ? "more" : "less"} in the median one.</p>
+              <p className="dsh-cap dsh-mt">Valued at the start of retirement <Tip id="taxAhead" title="Valued at the start of retirement" />, this plan comes out ahead of no conversions in <b>{all.ahead} of {all.of}</b> past markets{shown != null ? <>, and {Math.abs(shown) < 1000 ? "about even" : <>{money(round(Math.abs(shown)))} {shown >= 0 ? "ahead" : "behind"}</>} in the one shown</> : null}.</p>
             ) : null}
             <TaxMap s={s} rows={run.rows} />
           </div>
@@ -278,7 +278,7 @@ export function TaxesCard({ pr, entries, R }: { pr: Profile; entries: Entry[]; R
           <div className="dsh-stat"><div className="dsh-label">Tax over retirement</div><div className="dsh-fig dsh-md">{money(round(c.tax))}</div>{conv ? <div className="dsh-cap dsh-mt6">{money(round(c.base.tax))} with no conversions</div> : null}</div>
           {conv ? <div className="dsh-stat"><div className="dsh-label">Converted to Roth</div><div className="dsh-fig dsh-md">{money(round(c.conv))}</div></div> : null}
           {conv ? <div className="dsh-stat"><div className="dsh-label">Ahead of no conversions</div><div className="dsh-fig dsh-md">{c.ahead} of {c.of}<small>past markets</small></div></div> : null}
-          {!conv && B ? <div className="dsh-stat"><div className="dsh-label">With the plan that leaves the most</div><div className="dsh-fig dsh-md">{money(round(B.c.tax))}</div><div className="dsh-cap dsh-mt6">tax, and about {money(round(B.c.gain))} more to spend and leave, ahead in {B.c.ahead} of {B.c.of} past markets</div></div> : null}
+          {!conv && B ? <div className="dsh-stat"><div className="dsh-label">With the plan that leaves the most</div><div className="dsh-fig dsh-md">{money(round(B.c.tax))}</div><div className="dsh-cap dsh-mt6">tax; worth about {money(round(B.c.gain))} more at the start of retirement, ahead in {B.c.ahead} of {B.c.of} past markets</div></div> : null}
         </div>
         <p className="dsh-cap dsh-mt">{pr.taxPlan ? <>Your tax plan: {planWords(T)}.</> : <>No tax plan yet: your plan draws the brokerage first, then traditional, then Roth, with no conversions.</>} Figures are the median past market, in today&apos;s dollars.</p>
       </Tile>

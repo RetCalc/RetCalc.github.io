@@ -48,7 +48,7 @@ export function planWords(t: TaxPlan): string {
   return `Fill ${fill} with traditional money${t.u === 1 ? ", converting the rest until Social Security starts" : t.u === 2 ? ", converting the rest until required withdrawals start" : ", spending it, not converting"}${guards.length ? ", staying " + guards.join(" and ") : ""}`;
 }
 
-interface Start { year: number; off: number; W: Float64Array; FL: Float64Array; acc: { trad: number; roth: number; rothBasis: number; brok: number; brokBasis: number } | null }
+interface Start { year: number; off: number; W: Float64Array; FL: Float64Array; end: number; acc: { trad: number; roth: number; rothBasis: number; brok: number; brokBasis: number } | null }
 export interface TaxSetup {
   C: PlPrepFull; starts: Start[]; T0: { c1: number; c2: number };
   /** The first year planned here, counted from retirement (the bridge's end for early retirees), its age and calendar year. */
@@ -84,8 +84,8 @@ export function taxSetup(pr: Profile, entries: Entry[], R: Results = results(pr,
       const { run } = runBridge({ ...bridgeInput(bIn), ...(budget ? { budget } : {}) }, "hist", 0);
       if (run) for (const r of run.best.hist.runs) {
         const e = r.end;
-        // Keyed by the drawdown's start: the bridge's start less the years before it.
-        ends.set(r.start! - Math.max(0, k), { trad: e.trad, roth: e.roth, rothBasis: e.rothIn, brok: e.brok, brokBasis: e.bBasis });
+        // Keyed by the drawdown's start: the bridge starts k years after it.
+        ends.set(r.start! - k, { trad: e.trad, roth: e.roth, rothBasis: e.rothIn, brok: e.brok, brokBasis: e.bBasis });
       }
     }
     const years = o.years - y0;
@@ -93,6 +93,7 @@ export function taxSetup(pr: Profile, entries: Entry[], R: Results = results(pr,
     const P0 = S.P as PlPlan & { extra?: number[]; work2?: { years: number } | null };
     const P = {
       ...P0, mix, years, strategy: "fixed",
+      ...(P0.year0 != null ? { year0: P0.year0 + y0 } : {}),
       age1: P0.age1 + y0, age2: P0.age2 != null ? P0.age2 + y0 : null,
       ...(P0.extra ? { extra: P0.extra.slice(y0) } : {}),
       ...(P0.work2 ? { work2: { ...P0.work2, years: Math.max(0, P0.work2.years - y0) } } : {}),
@@ -103,9 +104,16 @@ export function taxSetup(pr: Profile, entries: Entry[], R: Results = results(pr,
       if (w.month !== 1) continue;
       const off = w.year - (HIST_START as number) + y0;
       if (off < 0 || off + years > C.mix.n) continue;
-      const acc = y0 > 0 ? ends.get(w.year) ?? null : null;
-      if (y0 > 0 && !acc) continue;
+      const bAcc = y0 > 0 ? ends.get(w.year) ?? null : null;
+      if (y0 > 0 && !bAcc) continue;
       const rows = runDrawdown(o, w.seq, null, Pd).rows;
+      // Each account as the bridge left it, scaled to what the strategy's own
+      // run holds then, so the years after follow the strategy's path.
+      let acc = bAcc;
+      if (bAcc) {
+        const tot = bAcc.trad + bAcc.roth + bAcc.brok, want = Math.max(0, rows[y0 - 1]?.realEnd ?? tot), f = tot > 0 ? want / tot : 0;
+        acc = { trad: bAcc.trad * f, roth: bAcc.roth * f, rothBasis: bAcc.rothBasis * f, brok: bAcc.brok * f, brokBasis: bAcc.brokBasis * f };
+      }
       // The withdrawal, and the floor under each year's spending: what the
       // strategy spends less the tax the plan sets aside for it, so a
       // conversion only uses that room.
@@ -115,7 +123,7 @@ export function taxSetup(pr: Profile, entries: Entry[], R: Results = results(pr,
         W[y] = Math.max(0, r?.realWithdrawal ?? 0);
         FL[y] = Math.max(0, (r?.realSpend ?? 0) - S.taxYr);
       }
-      starts.push({ year: w.year, off, W, FL, acc });
+      starts.push({ year: w.year, off, W, FL, acc, end: Math.max(0, rows[o.years - 1]?.realEnd ?? 0) });
     }
     if (!starts.length) return null;
     let hasAca = false;
@@ -129,6 +137,12 @@ export function taxSetup(pr: Profile, entries: Entry[], R: Results = results(pr,
 }
 
 export interface StartRun { year: number; res: PlBudgetRun; total: number; out: number }
+/* `total` is what plans are judged on: what's spent over retirement and
+   what's left for heirs after their tax, each valued at the start of
+   retirement at what the accounts earned in that market until then. Tax
+   paid early and tax saved late then weigh the same: a conversion only
+   counts as ahead when the tax it saves later is worth more than the tax it
+   costs now would have grown to. */
 export interface TaxRuns { T: TaxPlan; runs: StartRun[] }
 
 function prepFor(s: TaxSetup, st: Start): PlPrepFull {
@@ -157,7 +171,7 @@ export function taxRuns(s: TaxSetup, T: TaxPlan): TaxRuns {
     const res = plRunBudget(C, K, C.mix.r, C.mix.pi, st.off, st.W, null, st.FL);
     let out = 0;
     for (let y = 0; y < st.W.length; y++) out += st.W[y];
-    return { year: st.year, res, total: res.spent + res.legacy, out };
+    return { year: st.year, res, total: res.pv, out };
   });
   const r = { T, runs };
   memo.set(key, r);
@@ -170,8 +184,9 @@ export interface Compare {
   /** Medians across markets. */
   spent: number; legacy: number; tax: number; prem: number; conv: number;
   base: { spent: number; legacy: number; tax: number; prem: number };
-  /** Markets where the plan left more (spent + for heirs) than no conversions, of all. */
-  ahead: number; of: number; gain: number;
+  /** Markets where the plan came out ahead of no conversions (StartRun.total,
+      by more than $500), of all; the median gain, and each market's. */
+  ahead: number; of: number; gain: number; gains: Map<number, number>;
 }
 /** A plan against no conversions, market by market. */
 export function compare(s: TaxSetup, T: TaxPlan): Compare {
@@ -181,7 +196,7 @@ export function compare(s: TaxSetup, T: TaxPlan): Compare {
     spent: median(A.map((a) => a.res.spent)), legacy: median(A.map((a) => a.res.legacy)), tax: median(A.map((a) => a.res.tax)),
     prem: median(A.map((a) => a.res.irmaa + a.res.aca)), conv: median(A.map((a) => a.res.conv)),
     base: { spent: median(B.map((b) => b.res.spent)), legacy: median(B.map((b) => b.res.legacy)), tax: median(B.map((b) => b.res.tax)), prem: median(B.map((b) => b.res.irmaa + b.res.aca)) },
-    ahead: gains.filter((g) => g > 500).length, of: gains.length, gain: median(gains),
+    ahead: gains.filter((g) => g > 500).length, of: gains.length, gain: median(gains), gains: new Map(A.map((a, i) => [a.year, gains[i]])),
   };
 }
 
@@ -193,7 +208,7 @@ export function candidates(s: TaxSetup): TaxPlan[] {
 }
 
 /** The plan that leaves the most over a lifetime (spent, and for heirs after
-    their tax) in the median market, with how it does against no conversions. */
+    their tax, valued at the start of retirement) in the median market. */
 export function bestPlan(s: TaxSetup): { T: TaxPlan; median: number } {
   let best = NO_PLAN, top = -Infinity;
   for (const T of candidates(s)) {
@@ -209,10 +224,11 @@ export const MARKETS: { k: MarketKey; q: number; name: string }[] = [
   { k: "p90", q: 0.9, name: "90th" }, { k: "p75", q: 0.75, name: "75th" }, { k: "p50", q: 0.5, name: "Median" }, { k: "p25", q: 0.25, name: "25th" }, { k: "p10", q: 0.1, name: "10th" },
 ];
 /** The historical start each market follows: ranked, as the Bridge ranks
-    them, by how much the strategy withdraws over these years. */
+    them, by how much the strategy withdraws over these years, then (a fixed
+    amount withdraws the same in every market) by what's left at the end. */
 export function marketYear(s: TaxSetup, k: MarketKey): number {
-  const sum = (st: Start) => st.W.reduce((a, v) => a + v, 0);
-  const v = s.starts.slice().sort((a, b) => sum(a) - sum(b));
+  const sum = (st: Start) => Math.round(st.W.reduce((a, v) => a + v, 0));
+  const v = s.starts.slice().sort((a, b) => sum(a) - sum(b) || a.end - b.end);
   const q = MARKETS.find((m) => m.k === k)!.q;
   return v[Math.min(v.length - 1, Math.floor(v.length * q))].year;
 }

@@ -305,9 +305,15 @@ export function About() {
                     plan is run in every past market and compared with no conversions (brokerage
                     first, then traditional, then Roth) on what you spend over retirement plus
                     what&apos;s left for heirs, counting traditional money at 76% since heirs pay
-                    income tax on it. Retiring before 59½, the bridge plans the years until then
-                    and this starts where it ends, from each market&apos;s balances then. Brackets
-                    and deductions are held at this year&apos;s in today&apos;s dollars.</dd>
+                    income tax on it, each year valued back to the start of retirement at what
+                    your savings earned in that market, so tax paid early and tax saved late weigh
+                    the same. In a year when tax and premiums come to more than the withdrawal
+                    (large required withdrawals, low spending), the rest is paid from savings.
+                    Retiring before 59½, the bridge plans the years until then and this starts
+                    where it ends, from each market&apos;s accounts as the bridge left them,
+                    scaled to what your strategy&apos;s run holds then. Brackets and deductions
+                    are held at this year&apos;s in today&apos;s dollars, except the $6,000
+                    senior deduction, which ends after 2028.</dd>
                   </dl>
                   <p><b>If things go wrong</b>, on Plan summary, runs your plan again with one hard
                   event added: the same withdrawal strategy, the same mix and every past market
