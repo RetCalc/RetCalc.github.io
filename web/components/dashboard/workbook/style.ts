@@ -77,6 +77,9 @@ export interface Col<T> {
 
 export interface TableOut { first: number; last: number; total: number | null; L: (key: string) => string; c: (key: string) => number }
 
+/** The RetCalc mark and name as one image, its id in the workbook and size in pixels. */
+export interface Mark { id: number; w: number; h: number }
+
 export class Sheet {
   ws: Worksheet; name: string; r = 1; c0 = 2;
   /** The column label and value rows put their value in (the label spans the columns before it). */
@@ -114,12 +117,15 @@ export class Sheet {
 
   /** The header band: the RetCalc mark and name, the site's address at the
       right, the sheet's title, the household and date, a gold rule. */
-  title(t: string, sub: string, span: number, logo: number | null) {
+  title(t: string, sub: string, span: number, mark: Mark | null) {
     const last = this.c0 + span - 1;
-    this.ws.getRow(1).height = 8;
-    this.ws.getRow(2).height = 26;
-    if (logo != null) this.ws.addImage(logo, { tl: { col: this.c0 - 1 + 0.02, row: 1.1 }, ext: { width: 24, height: 24 }, editAs: "absolute" } as never);
-    this.put(this.c0, "RetCalc", { r: 2, font: { name: theme.display, size: 13, bold: true, color: { argb: C.ink } }, align: { indent: logo != null ? 4 : 0 } });
+    this.ws.getRow(1).height = 10;
+    // The mark and the name as one picture (they can't overlap in any app),
+    // or, without one, the name in type.
+    const h = mark ? mark.h : 0;
+    this.ws.getRow(2).height = Math.max(26, h * 0.75 + 6);
+    if (mark) this.ws.addImage(mark.id, { tl: { col: this.c0 - 1, row: 1 + 3 / (h * 0.75 + 6) }, ext: { width: mark.w, height: mark.h }, editAs: "absolute" } as never);
+    else this.put(this.c0, "RetCalc", { r: 2, font: { name: theme.display, size: 16, bold: true, color: { argb: C.ink } } });
     this.ws.mergeCells(2, last - 1, 2, last);
     this.put(last - 1, theme.links ? { text: "retcalc.app", hyperlink: "https://retcalc.app" } : "retcalc.app", { r: 2, font: { size: 9.5, color: { argb: C.faint } }, align: { horizontal: "right" } });
     this.ws.getRow(3).height = 10;

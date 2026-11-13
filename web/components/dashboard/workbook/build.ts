@@ -12,7 +12,7 @@ import { ALL_TOGETHER, COLLEGE_LINE } from "../flows";
 import { nameOf } from "../model";
 import { STRESS_NAMES } from "../stress-plan";
 import type { WorkbookData } from "./data";
-import { C, Sheet, col, fx, ref, setFlavor, theme, type Col, type Val } from "./style";
+import { C, Sheet, col, fx, ref, setFlavor, theme, type Col, type Mark, type Val } from "./style";
 
 const N = {
   overview: "Overview", worth: "Net Worth", income: "Income & Saving", spending: "Spending", years: "Year by Year",
@@ -30,10 +30,10 @@ const r0 = (v: number) => Math.round(v);
 const monthOf = (amount: string, freq: number) => ((parseNum(amount) || 0) * (freq || 12)) / 12;
 const pctOf = (a: number, b: number) => (b > 0 ? a / b : 0);
 
-export function buildWorkbook(wb: Workbook, D: WorkbookData, o: { flavor?: "excel" | "sheets"; logo?: ArrayBuffer | Uint8Array | null } = {}) {
+export function buildWorkbook(wb: Workbook, D: WorkbookData, o: { flavor?: "excel" | "sheets"; mark?: { png: ArrayBuffer | Uint8Array; w: number; h: number } | null } = {}) {
   const { M } = D;
   setFlavor(o.flavor ?? "excel");
-  const logo = o.logo ? wb.addImage({ buffer: o.logo as never, extension: "png" }) : null;
+  const logo: Mark | null = o.mark ? { id: wb.addImage({ buffer: o.mark.png as never, extension: "png" }), w: o.mark.w, h: o.mark.h } : null;
   const two = M.who.two, names: [string, string] = [M.who.First, M.who.Second];
   const sub = `${M.who.title} · Prepared ${M.date} with RetCalc · Today's dollars unless noted`;
   wb.creator = "RetCalc"; wb.lastModifiedBy = "RetCalc"; wb.created = M.today; wb.modified = M.today;
@@ -625,7 +625,7 @@ export function buildWorkbook(wb: Workbook, D: WorkbookData, o: { flavor?: "exce
 }
 
 /* ======================= What If ======================= */
-function buildWhatIf(s: Sheet, M: WorkbookData["M"], link: Record<string, string>, logo: number | null) {
+function buildWhatIf(s: Sheet, M: WorkbookData["M"], link: Record<string, string>, logo: Mark | null) {
   s.title("What If", "A model of your own: change any amber input and everything below follows · Today's dollars", 11, logo);
   s.note("A simple projection at steady returns, for trying ideas. Your Dashboard's own figures test every past market and work out each year's tax, so they'll differ; use this to see which way, and how much, a change moves things.", 11);
   s.skip();

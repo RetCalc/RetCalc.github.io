@@ -15,13 +15,40 @@ import { readDashboard } from "../store";
 
 type Flavor = "excel" | "sheets";
 
+/** The RetCalc mark and name drawn as one picture for the top of each sheet,
+    at three times its size so it stays sharp. The name is in the
+    Dashboard's own type. */
+async function drawMark(): Promise<{ png: ArrayBuffer; w: number; h: number } | null> {
+  const icon = await new Promise<HTMLImageElement | null>((done) => {
+    const i = new Image();
+    i.onload = () => done(i);
+    i.onerror = () => done(null);
+    i.src = "/icon-192.png";
+  });
+  if (!icon) return null;
+  const S = 3, H = 40, gap = 11;
+  const font = `700 ${25 * S}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Inter, Helvetica, Arial, sans-serif`;
+  const c = document.createElement("canvas"), x = c.getContext("2d");
+  if (!x) return null;
+  x.font = font;
+  const W = H + gap + Math.ceil(x.measureText("RetCalc").width / S) + 4;
+  c.width = W * S; c.height = H * S;
+  x.font = font;
+  x.fillStyle = "#1d1d1f";
+  x.textBaseline = "middle";
+  x.drawImage(icon, 0, 0, H * S, H * S);
+  x.fillText("RetCalc", (H + gap) * S, (H / 2 + 1.5) * S);
+  const blob = await new Promise<Blob | null>((done) => c.toBlob(done, "image/png"));
+  return blob ? { png: await blob.arrayBuffer(), w: W, h: H } : null;
+}
+
 async function build(flavor: Flavor): Promise<string | null> {
   const [{ default: ExcelJS }, { workbookData }, { buildWorkbook }] = await Promise.all([import("exceljs"), import("./data"), import("./build")]);
   const D = workbookData(readDashboard());
   if ("missing" in D) return D.missing;
-  const logo = await fetch("/icon-192.png").then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null);
+  const mark = await drawMark().catch(() => null);
   const wb = new ExcelJS.Workbook();
-  buildWorkbook(wb, D, { flavor, logo });
+  buildWorkbook(wb, D, { flavor, mark });
   const buf = await wb.xlsx.writeBuffer();
   const url = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
   const a = document.createElement("a");
@@ -64,11 +91,11 @@ export function WorkbookButton() {
           <DialogContent aria-labelledby="dshSheetsTitle">
             <h2 id="dshSheetsTitle" className="dsh-dlg-h">Open it in Google Sheets</h2>
             <ol className="dsh-howto">
-              <li>Go to <a href="https://drive.google.com" target="_blank" rel="noreferrer">drive.google.com</a> and choose <b>New</b>, then <b>File upload</b>.</li>
-              <li>Pick the file that just downloaded, <b>retcalc-plan-…-google-sheets.xlsx</b>.</li>
-              <li>Open it, then choose <b>Open with Google Sheets</b> at the top.</li>
+              <li>Go to <a href="https://drive.google.com" target="_blank" rel="noreferrer">drive.google.com</a>, choose <b>New</b>, then <b>File upload</b>, and pick <b>retcalc-plan-…-google-sheets.xlsx</b>.</li>
+              <li>Open it and choose <b>Open with Google Sheets</b> at the top.</li>
+              <li>Choose <b>File</b>, then <b>Save as Google Sheets</b>. That makes it a real Google Sheet, and the note about an Excel file goes away. You can delete the uploaded .xlsx after.</li>
             </ol>
-            <p className="dsh-cap">It stays in your own Google Drive; RetCalc never sees it.</p>
+            <p className="dsh-cap">To skip the last step next time, turn on <b>Convert uploads</b> in Google Drive&apos;s settings. The file stays in your own Google Drive; RetCalc never sees it.</p>
             <div className="dsh-navbtns"><Button onClick={() => setHowTo(false)}>Got it</Button></div>
           </DialogContent>
         </Dialog>
