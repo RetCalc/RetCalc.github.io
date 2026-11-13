@@ -74,6 +74,35 @@ function Feature({ kicker, title, sub, points, flip, children }: { kicker: strin
   );
 }
 
+/** The plan spreadsheet as it opens: the RetCalc header, the Overview's
+    first cards and a few milestones, with the sheets along the bottom.
+    Drawn here, for the sample household, so it's sharp at any size. */
+function SheetMock() {
+  const cards = [["Net worth today", "$610,500", "amber"], ["Savings at retirement, 2044", "$2,032,785", "amber"], ["Chance of success", "100%", "jade"], ["Readiness score", "96", "sky"]];
+  const stones = [["2044", "Sam retires", "Sam 60, Jordan 58"], ["2049", "Medicare", "At 65 for each of you"], ["2051", "Social Security", "Each of you claims at 67"], ["2059", "Required withdrawals", "From traditional accounts"]];
+  const tabs = ["Overview", "Net Worth", "Income & Saving", "Spending", "Year by Year", "Retirement", "What If"];
+  return (
+    <div className="dl-xl" role="img" aria-label="The plan spreadsheet's Overview: net worth, savings at retirement, chance of success and readiness score, milestones, and a tab for each sheet">
+      <div className="dl-xl-bar" aria-hidden="true"><i /><i /><i /><span>retcalc-plan-2026-11-13.xlsx</span></div>
+      <div className="dl-xl-cols" aria-hidden="true">{["A", "B", "C", "D", "E", "F", "G", "H"].map((c) => <span key={c}>{c}</span>)}</div>
+      <div className="dl-xl-sheet" aria-hidden="true">
+        <div className="dl-xl-mark"><Image src="/icon-192.png" width={22} height={22} alt="" /><b>RetCalc</b><span>retcalc.app</span></div>
+        <div className="dl-xl-title">Sam and Jordan</div>
+        <div className="dl-xl-sub">Your retirement plan · Today&apos;s dollars</div>
+        <div className="dl-xl-cards">
+          {cards.map(([t, v, c]) => <div key={t} className={"dl-xl-card dl-xl-" + c}><small>{t}</small><strong>{v}</strong></div>)}
+        </div>
+        <div className="dl-xl-h">Milestones</div>
+        <div className="dl-xl-rows">
+          <div className="dl-xl-head"><span>Year</span><span>What happens</span><span /></div>
+          {stones.map(([y, t, d]) => <div key={y + t}><span>{y}</span><b>{t}</b><span>{d}</span></div>)}
+        </div>
+      </div>
+      <div className="dl-xl-tabs" aria-hidden="true">{tabs.map((t, i) => <span key={t} className={i ? undefined : "dl-xl-on"}>{t}</span>)}</div>
+    </div>
+  );
+}
+
 const PAGES: { icon: LucideIcon; name: string; what: string }[] = [
   { icon: LayoutGridIcon, name: "Dashboard", what: "Your main numbers on one screen" },
   { icon: ClipboardListIcon, name: "Plan summary", what: "The whole plan on one page" },
@@ -204,6 +233,11 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
       <Feature kicker="Learn" title="Learn the ideas behind your plan." sub="66 lessons in 8 tracks, from saving and taxes to Social Security and drawing your savings down."
         points={["A lesson picked for what your plan needs next", "Lessons that show the idea with your own numbers", "Each one links to the page or tool where you act on it"]}>
         <Shot name="learn" w={1720} h={570} sizes="(max-width: 900px) 100vw, 760px" alt="Next for you: a lesson on the emergency fund, picked because cash covers 2.9 months of spending" />
+      </Feature>
+
+      <Feature flip kicker="Spreadsheet" title="Take your whole plan with you in a spreadsheet." sub="Download your plan as a formatted workbook for Excel or Google Sheets, built on your own device."
+        points={["Net worth, pay and saving, your budget, every year to retirement and after, taxes, stress tests and Social Security", "Totals and links between sheets are formulas, so a changed balance or budget line carries through", "A What If sheet to try other ages, returns and spending"]}>
+        <SheetMock />
       </Feature>
 
       <section className="dl-sec dl-center">
