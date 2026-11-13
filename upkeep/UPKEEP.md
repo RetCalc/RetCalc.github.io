@@ -154,12 +154,12 @@ Covers `market-history` and `french-data`. Both must end on the same month.
 ### Social Security Trustees Report (spring or early summer)
 
 Covers `ss-trustees`. When the year's Trustees Report is out (ssa.gov/oact/tr),
-take the combined OASDI figures, not OASI alone: the year the trust funds
-are projected to run out and the percent of scheduled benefits payable then.
-Set `SS_CUT` in `web/components/dashboard/stress.ts` (year, share, report
-year) and update the `stressSs` tip in `web/components/dashboard/tips.ts`
-and the If things go wrong part of the Dashboard's About page, which quote
-them. Then `npm run test:dashboard` (stress.test.ts) and search
+take the combined OASDI figures, not OASI alone: the percent of scheduled
+benefits payable once the trust funds run out (the test doesn't use the
+year). Set `SS_SHARE` in `web/components/dashboard/stress.ts` and update the
+`stressSs` tip in `web/components/dashboard/tips.ts` and the If things go
+wrong part of the Dashboard's About page, which quote the share and the
+report. Then `npm run test:dashboard` (stress.test.ts) and search
 `content/lessons/` for the old year and share.
 
 ### Today's CAPE (monthly)

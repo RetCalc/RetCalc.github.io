@@ -15,7 +15,7 @@ import type { Scenario } from "./scenarios";
 import type { TipId } from "./tips";
 import { OUTSIDE_US, type Entry, type Person, type Profile } from "./store";
 import {
-  CARE_DEFAULT, SS_CUT, SURVIVOR_AGE, badStarts, careItems, coverFor, holds, runSet, ssCutItems, ssStreams, survivorRun, type RunSet,
+  CARE_DEFAULT, SS_SHARE, SURVIVOR_AGE, SURVIVOR_SPEND, WORK_AGE, badStarts, careItems, coverFor, holds, runSet, ssCutItems, ssStreams, survivorRun, type RunSet,
 } from "./stress";
 
 export type StressId = "death" | "work" | "market" | "care" | "ss";
@@ -36,15 +36,17 @@ export interface StressTest {
   year: number | null; age: number | null; who: string;
   /** A partner dies: the run with it, for the life insurance that covers it. */
   death?: { o: DdOpts; P: DdPrep; k: number };
-  /** A year without work: what that year's spending takes, and from where;
-      savings at retirement with it. */
-  work?: { need: number; cash: number; brok: number; ret: number; other: number; atRetire: number | null };
+  /** A year without work: whose pay stops (2 both), what that year's
+      spending takes, and from where; savings at retirement with it. */
+  work?: { whose: 0 | 1 | 2; need: number; cash: number; brok: number; ret: number; other: number; atRetire: number | null };
+  /** A partner dies: the share of spending kept after. */
+  spend?: number;
   /** Retiring into a bad market: each start the record covers. */
   starts?: { year: number; end: number; outAge: number | null }[];
   /** Long-term care, as tested. */
   care?: { amount: number; years: number; age: number };
-  /** Social Security paid less: the share of today's benefit paid from
-      SS_CUT.year, after any share the plan already counts. */
+  /** Social Security paid less: the share of each benefit tested, and
+      whether the plan's own expected share already counts that much. */
   ss?: { share: number; already: boolean };
 }
 
@@ -56,6 +58,26 @@ const born = (p: Person) => (p.by ?? 0) + ((p.bm || 1) - 1) / 12;
 /** The older of you (the only one, for one person). */
 export function olderOf(pr: Profile): 0 | 1 {
   return pr.who === "couple" && pr.p2.by != null && pr.p1.by != null && born(pr.p2) < born(pr.p1) ? 1 : 0;
+}
+
+/** Each test's assumptions: as set on Plan summary, else the usual ones.
+    death.age and work.age are the age of whoever it happens to (work: the
+    first of you's, when both stop); spend and share are fractions. */
+export interface StressAssume {
+  death: { who: 0 | 1; age: number; spend: number };
+  work: { who: 0 | 1 | 2; age: number };
+  care: { amount: number; years: number; age: number };
+  ss: { share: number };
+}
+export function stressAssume(pr: Profile): StressAssume {
+  const s = pr.stress ?? {}, two = pr.who === "couple";
+  const wWho = two ? s.work?.who ?? 2 : 0, wP = wWho === 1 ? pr.p2 : pr.p1, now = ageOf(wP);
+  return {
+    death: { who: two ? s.death?.who ?? olderOf(pr) : 0, age: s.death?.age ?? SURVIVOR_AGE, spend: s.death?.spend != null ? s.death.spend / 100 : SURVIVOR_SPEND },
+    work: { who: wWho, age: s.work?.age ?? Math.max(WORK_AGE, now != null ? now + 1 : WORK_AGE) },
+    care: { ...CARE_DEFAULT, ...s.care },
+    ss: { share: s.ss?.share != null ? s.ss.share / 100 : SS_SHARE },
+  };
 }
 
 /** The plan's run, as the chance of success comes from it. */
@@ -86,19 +108,19 @@ function run(pr: Profile, entries: Entry[], R: Results): Stress | null {
   if (!plan || R.retireYear == null || pr.p1.by == null) return null;
   const { o, P } = plan, base = runSet(o, P), abroad = pr.state === OUTSIDE_US;
   const two = pr.who === "couple" && pr.p2.by != null;
-  const old = olderOf(pr), oldP = old ? pr.p2 : pr.p1, oldName = nameOf(pr, old);
+  const old = olderOf(pr), oldP = old ? pr.p2 : pr.p1, oldName = nameOf(pr, old), A = stressAssume(pr);
   const split: [number, number] = [R.ss1 ?? 0, R.ss2 ?? 0];
-  // A year of retirement (0 the first) from the older of you's age.
-  const yearOf = (age: number) => Math.max(0, Math.round(oldP.by! + age - R.retireYear!));
+  // A year of retirement (0 the first) from one of you's age.
+  const yearOf = (age: number, p: Person = oldP) => Math.max(0, Math.round(p.by! + age - R.retireYear!));
   const tests: StressTest[] = [];
   const add = (t: Omit<StressTest, "holds">, ok?: boolean) => tests.push({ ...t, holds: ok ?? (t.event ? holds(base.rate, t.event.rate) : false) });
 
-  // A partner dies, at 75 of the older of you, or your first year of retirement if later.
+  // A partner dies, at the age set (or your first year of retirement if later).
   if (two) {
-    const k = yearOf(SURVIVOR_AGE);
+    const dP = A.death.who ? pr.p2 : pr.p1, k = dP.by != null ? yearOf(A.death.age, dP) : o.years;
     if (k < o.years) {
-      const S = survivorRun(o, P, k, split), year = R.retireYear + k;
-      add({ id: "death", event: runSet(S.o, S.P), year, age: year - oldP.by!, who: oldName, death: { o: S.o, P: S.P, k } });
+      const S = survivorRun(o, P, k, split, A.death.spend), year = R.retireYear + k;
+      add({ id: "death", event: runSet(S.o, S.P), year, age: year - dP.by!, who: nameOf(pr, A.death.who), death: { o: S.o, P: S.P, k }, spend: A.death.spend });
     }
   }
 
@@ -117,52 +139,63 @@ function run(pr: Profile, entries: Entry[], R: Results): Stress | null {
     add({ id: "care", event: runSet({ ...o, expenseItems: [...o.expenseItems, ...careItems(o, kc, c.amount, c.years)] }, P), year, age: year - oldP.by!, who: oldName, care: c });
   }
 
-  // Social Security paid less from 2034, after any share the plan already counts.
+  // Social Security paid less: every benefit at the share set, from the day
+  // it starts, after any share the plan already counts.
   const paid = ssStreams(o, split).some((s) => s.a > 0);
   if (!abroad && paid) {
-    const scale = (pr.ss.pct ?? 100) / 100, share = scale > 0 ? Math.min(1, SS_CUT.share / scale) : 1;
-    const k = Math.max(0, SS_CUT.year - R.retireYear), already = share >= 1 - 1e-9;
-    const event = already ? base : runSet({ ...o, expenseItems: [...o.expenseItems, ...ssCutItems(o, k, share, split)] }, P);
-    add({ id: "ss", event, year: SS_CUT.year, age: SS_CUT.year - pr.p1.by, who: nameOf(pr, 0), ss: { share: SS_CUT.share, already } });
+    const scale = (pr.ss.pct ?? 100) / 100, share = scale > 0 ? Math.min(1, A.ss.share / scale) : 1;
+    const already = share >= 1 - 1e-9;
+    const event = already ? base : runSet({ ...o, expenseItems: [...o.expenseItems, ...ssCutItems(o, 0, share, split)] }, P);
+    add({ id: "ss", event, year: null, age: null, who: nameOf(pr, 0), ss: { share: A.ss.share, already } });
   }
 
   return { base, tests, held: tests.filter((t) => t.holds).length, of: tests.length };
 }
 
-/** The year without work: at 55 (or next year, if that's past), but never
-    after your last year of work. Everyone still working loses that year's
-    pay, nothing is saved, and the year's spending (as the plan has it,
-    less any other income) comes out of cash first, then the brokerage,
-    then retirement accounts. Through the plan's own scenarios (hidden: ids
+/** The year without work: at the age set (55, or next year if that's past,
+    unless set), kept between next year and the last year of work. Whoever
+    it's set for (either of you, or both) loses that year's pay, nothing is
+    saved, and what the year's spending needs beyond what's still coming in
+    after tax comes out of cash first, then the brokerage, then retirement
+    accounts. Through the plan's own scenarios (hidden: ids
     starting "__"): a pay change of 100% less for each of you that year and
     Stop saving for it, so the plan follows from there (cover.ts: spending
     carries on when pay comes back), and lump sums taken out on that
     birthday. Null when it doesn't apply. */
-export function yearOffProfile(pr: Profile, entries: Entry[]): { pr: Profile; at: number; need: number; cash: number; brok: number; other: number } | null {
-  const age = ageOf(pr.p1), retire = pr.p1.retire;
-  if (age == null || retire == null) return null;
-  const at = Math.min(Math.max(55, age + 1), retire - 1);
-  if (at < age + 1) return null;
-  const Y = planYearsOf(pr, entries).years.find((y) => y.age === at);
-  if (!Y) return null;
-  const other = Y.other * 12, need = Math.max(0, Y.spending * 12 - other);
-  const cash = Math.min(need, Math.max(0, holdings(entries, pr).cash ?? 0));
+export function yearOffProfile(pr: Profile, entries: Entry[], W = stressAssume(pr).work): { pr: Profile; at: number; age: number; whose: 0 | 1 | 2; need: number; cash: number; brok: number; other: number } | null {
+  const whose = pr.who === "couple" ? W.who : 0, p = whose === 1 ? pr.p2 : pr.p1;
+  const age = ageOf(pr.p1), own = ageOf(p), retire = p.retire;
+  if (age == null || own == null || retire == null || pr.p1.retire == null) return null;
+  // At their age, kept between next year and their last year of work; the
+  // plan's years count by the first of you's age.
+  const ageAt = Math.min(Math.max(Math.round(W.age), own + 1), retire - 1);
+  if (ageAt < own + 1) return null;
+  const at = ageAt + (age - own);
+  if (at >= pr.p1.retire && whose !== 1) return null;
   const sc = (id: string, over: Partial<Scenario>): Scenario => ({ id, kind: "income", name: "", on: true, from: at, until: at + 1, mode: "pct", amount: -100, ramp: 0, acct: "auto", nominal: 0, ...over });
-  // With no pay the plan would still put in what an IRA allows, so saving
-  // is stopped outright that year too.
-  const off = [sc("__off0", { who: 0 }), ...(pr.who === "couple" ? [sc("__off1", { who: 1 })] : []), sc("__offS", { kind: "saving", mode: "stop", amount: 0 })];
+  // Without the pay, saving is stopped outright that year too (the plan
+  // would otherwise still put in what an IRA allows).
+  const off = [...(whose !== 1 ? [sc("__off0", { who: 0 })] : []), ...(whose !== 0 ? [sc("__off1", { who: 1 })] : []), sc("__offS", { kind: "saving", mode: "stop", amount: 0 })];
   const lump = (id: string, amount: number, acct: Scenario["acct"]) => sc(id, { kind: "lump", until: 0, mode: "amount", amount: -Math.round(amount), acct });
   const withLumps = (b: number, t: number): Profile => ({ ...pr, scenarios: [...(pr.scenarios ?? []), ...off, ...(b > 0.5 ? [lump("__offB", b, "brok")] : []), ...(t > 0.5 ? [lump("__offT", t, "trad")] : [])] });
   // The plan still puts in what it frees that year (children costing less
   // than today, a debt paid off) with nothing to pay it from: taken back
   // out with the year's spending, so nothing goes in.
   const Y0 = planYearsOf(withLumps(0, 0), entries).years.find((y) => y.age === at);
-  const putIn = Y0 ? (Object.values(Y0.saved).reduce((s, v) => s + v, 0) + Y0.match) * 12 : 0;
+  const Y = planYearsOf(pr, entries).years.find((y) => y.age === at);
+  if (!Y0 || !Y) return null;
+  // The year's spending as the plan has it (with the pay stopped, the plan's
+  // own "spending" that year is only what's left over), less what still
+  // comes in after tax: other income, and the other one's pay when only one
+  // stops.
+  const other = Y0.other * 12, need = Math.max(0, (Y.spending - (Y0.income - Y0.taxes)) * 12);
+  const cash = Math.min(need, Math.max(0, holdings(entries, pr).cash ?? 0));
+  const putIn = (Object.values(Y0.saved).reduce((s, v) => s + v, 0) + Y0.match) * 12;
   let brok = need - cash, next = withLumps(brok + putIn, 0);
   // What the brokerage can't cover on the day comes from retirement accounts.
   const short = brok + putIn > 0.5 ? lumpShortfalls(next, entries, age).__offB : undefined;
   if (short) { const b = Math.max(0, short.have); next = withLumps(b, need - cash + putIn - b); brok = Math.max(0, b - putIn); }
-  return { pr: next, at, need, cash, brok, other };
+  return { pr: next, at, age: ageAt, whose, need, cash, brok, other };
 }
 
 function yearOff(pr: Profile, entries: Entry[]): Omit<StressTest, "holds"> | null {
@@ -170,8 +203,8 @@ function yearOff(pr: Profile, entries: Entry[]): Omit<StressTest, "holds"> | nul
   if (!Y) return null;
   const R2 = results(Y.pr, entries), plan = planRun(Y.pr, R2);
   return {
-    id: "work", event: plan ? runSet(plan.o, plan.P) : null, year: pr.p1.by! + Y.at, age: Y.at, who: nameOf(pr, 0),
-    work: { need: Y.need, cash: Y.cash, brok: Y.brok, ret: Math.max(0, Y.need - Y.cash - Y.brok), other: Y.other, atRetire: R2.atRetire },
+    id: "work", event: plan ? runSet(plan.o, plan.P) : null, year: pr.p1.by! + Y.at, age: Y.age, who: nameOf(pr, Y.whose === 1 ? 1 : 0),
+    work: { whose: Y.whose, need: Y.need, cash: Y.cash, brok: Y.brok, ret: Math.max(0, Y.need - Y.cash - Y.brok), other: Y.other, atRetire: R2.atRetire },
   };
 }
 

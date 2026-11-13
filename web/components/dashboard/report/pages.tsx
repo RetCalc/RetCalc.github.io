@@ -515,7 +515,7 @@ function Last({ M, p }: { M: M_; p: PageInfo }) {
 function Stress({ M, p }: { M: M_; p: PageInfo }) {
   const X = M.stress!, two = M.who.two, ends = M.R.endAges.join(" and ") || String(M.end);
   const mid = (m: { end: number; outAge: number | null }, who: string) => (m.outAge != null ? "Ran out at " + (two ? who + "'s " : "") + m.outAge : rounded(m.end) + " left at " + ends);
-  const when = (t: (typeof X.tests)[number]) => (t.year == null ? "" : t.id === "ss" ? "From " + t.year : t.year + ", " + (two || t.id === "work" ? t.who + " " : "age ") + t.age);
+  const when = (t: (typeof X.tests)[number]) => (t.id === "ss" && t.ss ? Math.round(t.ss.share * 100) + "% of benefits paid" : t.year == null ? "" : t.year + ", " + (two || t.id === "work" ? t.who + " " : "age ") + t.age);
   const pts = (x: number) => { const d = Math.round((x - X.base.rate) * 100); return d === 0 ? "" : " (" + (d > 0 ? "+" : "−") + Math.abs(d) + ")"; };
   return (
     <Sheet M={M} p={p}>

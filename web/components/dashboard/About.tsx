@@ -315,25 +315,28 @@ export function About() {
                   plan&apos;s, and the middle market: what&apos;s left at the end, or the age the
                   money runs out.</p>
                   <ul>
-                    <li><b>A partner dies</b> (couples): in the year the older of you turns 75, or
-                    your first year of retirement if later. From then Social Security pays only the
-                    larger of your two benefits, and spending is 75% of the couple&apos;s. It also
-                    finds the life insurance, paid that year, that brings the chance back to your
-                    plan&apos;s.</li>
-                    <li><b>A year without work</b>: at 55 (next year if you&apos;re past it, your last
-                    year of work if sooner), no pay and no saving, and that year&apos;s spending
-                    taken from checking and savings, then the brokerage, then retirement accounts.
-                    Your whole plan follows from there, savings at retirement included.</li>
+                    <li><b>A partner dies</b> (couples): by default the older of you at 75 (or your
+                    first year of retirement if later). From then Social Security pays only the
+                    larger of your two benefits, and spending is a share of the couple&apos;s, 75%
+                    by default. It also finds the life insurance, paid that year, that brings the
+                    chance back to your plan&apos;s.</li>
+                    <li><b>A year without work</b>: by default both of your pays stop at 55 (next
+                    year if you&apos;re past it, kept before the last year of work); either of you
+                    alone can be chosen. No saving that year, and what that year&apos;s spending
+                    needs beyond what still comes in is taken from checking and savings, then the
+                    brokerage, then retirement accounts. Your whole plan follows from there,
+                    savings at retirement included.</li>
                     <li><b>Retiring into a bad market</b>: your retirement started in January 1929,
                     1937, 1966, 1973, 2000 and 2008, each the record covers to the end of your plan.</li>
-                    <li><b>Long-term care</b>: $100,000 per year in today&apos;s dollars for 3 years
-                    from when the older of you turns 85, on top of your spending. Both figures can
-                    be changed there.</li>
-                    <li><b>Social Security pays less</b>: every benefit at 83% from 2034, when the
-                    2026 Trustees Report projects the combined trust funds run out. Not shown
-                    outside the US.</li>
+                    <li><b>Long-term care</b>: by default $100,000 per year in today&apos;s dollars
+                    for 3 years from when the older of you turns 85, on top of your spending.</li>
+                    <li><b>Social Security pays less</b>: every benefit at a lower share for your
+                    whole retirement, 83% by default (what the 2026 Trustees Report projects the
+                    taxes coming in would pay once the trust funds run short). Not shown outside
+                    the US.</li>
                   </ul>
-                  <p>A test holds up when its chance is no more than 10 points below your
+                  <p>Each test&apos;s assumptions open from its link in the When column, and are
+                  saved with your plan. A test holds up when its chance is no more than 10 points below your
                   plan&apos;s; a bad market only if every year shown lasts. The Dashboard&apos;s
                   Chance of success tile says how many it holds up in. The events aren&apos;t
                   foreseen: your strategy works out its spending as it would without them (after

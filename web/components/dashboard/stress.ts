@@ -9,17 +9,21 @@
 
 import { ddWindows, runDrawdown, HIST_START, type DdItem, type DdOpts, type DdPrep } from "@/lib/engine/typed-drawdown";
 
-/** Social Security's combined trust funds (OASDI) run out in 2034, and the
-    taxes still coming in then pay 83% of scheduled benefits: the 2026
-    Social Security Trustees Report (released June 9, 2026). Kept current
+/** The share of each Social Security benefit "Social Security pays less"
+    tests unless set otherwise: what the taxes still coming in would pay
+    once the combined trust funds (OASDI) run out, 83% in the 2026 Social
+    Security Trustees Report (released June 9, 2026). The test applies it to
+    every benefit from the day it starts, whenever that is. Kept current
     from each year's report (upkeep/items.json, "ss-trustees"). */
-export const SS_CUT = { year: 2034, share: 0.83, report: 2026 } as const;
+export const SS_SHARE = 0.83;
 
 /** A partner's death: from then the household spends this share of what
     the two of them did. */
 export const SURVIVOR_SPEND = 0.75;
-/** The age of the older of you the partner's death is tested at. */
+/** The age a partner's death is tested at (the older of you, unless set). */
 export const SURVIVOR_AGE = 75;
+/** The age a year without work is tested at (or next year, if past it). */
+export const WORK_AGE = 55;
 /** Long-term care unless set on Plan summary: per year in today's dollars,
     for how many years, from what age. */
 export const CARE_DEFAULT = { amount: 100000, years: 3, age: 85 } as const;

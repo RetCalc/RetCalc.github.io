@@ -9,13 +9,16 @@
 
 import { useEffect, useState } from "react";
 import { UmbrellaIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { MoneyField, NumberField } from "@/components/fields/Field";
 import { Fold, Empty, Tip, TipLabel, To } from "./ui";
-import { useTyped, txt, num } from "./fields";
+import { txt, num } from "./fields";
 import { money, pctDown, shortMoney } from "./format";
-import { toAges, type Results } from "./model";
-import { CARE_DEFAULT, type RunSet } from "./stress";
-import { STRESS_NAMES, STRESS_TIPS, lifeCover, lifeCoverCached, stressCached, stressTests, type Stress, type StressTest } from "./stress-plan";
+import { nameOf, toAges, type Results } from "./model";
+import { type RunSet } from "./stress";
+import { STRESS_NAMES, STRESS_TIPS, lifeCover, lifeCoverCached, olderOf, stressAssume, stressCached, stressTests, type Stress, type StressId, type StressTest } from "./stress-plan";
 import { useDashboard, type Entry, type Profile } from "./store";
 
 /** The tests, worked out after the page draws (each is a run of the plan
@@ -64,27 +67,29 @@ function Badge({ ok }: { ok: boolean }) {
   return <span className={ok ? "dsh-badge dsh-gain" : "dsh-badge dsh-st-short"}>{ok ? "Holds up" : "Falls short"}</span>;
 }
 
-/** When a test's event happens, in a few words. */
+/** What a test assumes, in a few words: when it happens, or for Social
+    Security, the share paid. The link that opens its assumptions. */
 function whenWords(t: StressTest, two: boolean): string {
+  if (t.id === "ss" && t.ss) return `${Math.round(t.ss.share * 100)}% of benefits paid`;
   if (t.year == null) return "";
-  if (t.id === "ss") return `From ${t.year}`;
   return `${t.year}, ${two || t.id === "work" ? t.who + " " : "age "}${t.age}`;
 }
 
-function Row({ t, S, R, two, cover, pct }: { t: StressTest; S: Stress; R: Results; two: boolean; cover: number | null | undefined; pct?: number | null }) {
+function Row({ t, S, R, two, cover, pct, onEdit }: { t: StressTest; S: Stress; R: Results; two: boolean; cover: number | null | undefined; pct?: number | null; onEdit: (id: StressId) => void }) {
   const name = STRESS_NAMES[t.id];
   const sub = t.id === "death" ? (cover === undefined ? "Life insurance that would cover it: working it out…" : cover == null ? "No one-time sum brings the chance back" : cover === 0 ? "No life insurance needed to keep your chance" : `Life insurance that would cover it: ${money(cover)}`)
-    : t.id === "work" && t.work ? `${shortMoney(t.work.need)} of spending from savings` + (R.atRetire != null && t.work.atRetire != null && R.atRetire - t.work.atRetire >= 500 ? `, ${shortMoney(Math.round((R.atRetire - t.work.atRetire) / 1000) * 1000)} less at retirement` : "")
+    : t.id === "work" && t.work ? (two ? (t.work.whose === 2 ? "Both pays stop; " : `${t.who}'s pay stops; `) : "") + `${shortMoney(t.work.need)} of spending from savings` + (R.atRetire != null && t.work.atRetire != null && R.atRetire - t.work.atRetire >= 500 ? `, ${shortMoney(Math.round((R.atRetire - t.work.atRetire) / 1000) * 1000)} less at retirement` : "")
     : t.id === "care" && t.care ? `${money(t.care.amount)} per year for ${t.care.years} ${t.care.years === 1 ? "year" : "years"}`
-    : t.id === "ss" && t.ss ? (t.ss.already ? `Your plan already counts ${pct ?? 100}% of each benefit` : `${Math.round(t.ss.share * 100)}% of each benefit`)
+    : t.id === "ss" && t.ss ? (t.ss.already ? `Your plan already counts ${pct ?? 100}% of each benefit` : `Every benefit ${100 - Math.round(t.ss.share * 100)}% lower`)
     : null;
+  const when = whenWords(t, two);
   return (
     <div className="dsh-st-row" role="row">
       <div className="dsh-st-name" role="cell">
         <TipLabel text={name} id={STRESS_TIPS[t.id]} />
         {sub ? <span className="dsh-cap">{sub}{t.id === "death" && cover ? <> <Tip id="lifeCover" title="Life insurance that would cover it" /></> : null}</span> : null}
       </div>
-      <div className="dsh-st-when" role="cell">{whenWords(t, two)}</div>
+      <div className="dsh-st-when" role="cell">{t.id === "market" ? when : <Button variant="link" size="inline" onClick={() => onEdit(t.id)} title="Change what this test assumes">{when || "Set it"}</Button>}</div>
       {t.id === "market" && t.starts ? (
         <ul className="dsh-st-years" role="cell" aria-label="Each start">
           {t.starts.map((s) => (
@@ -100,29 +105,9 @@ function Row({ t, S, R, two, cover, pct }: { t: StressTest; S: Stress; R: Result
   );
 }
 
-/** Long-term care as tested: the amount per year and the years, kept in
-    the profile. */
-function CareFields() {
-  const { data, setProfile } = useDashboard();
-  const c = { ...CARE_DEFAULT, ...data.profile.stress?.care };
-  const [amount, setAmount] = useTyped(txt(c.amount));
-  const [years, setYears] = useTyped(String(c.years));
-  const set = (over: { amount?: number; years?: number }) => setProfile((p) => ({ ...p, stress: { ...p.stress, care: { ...p.stress?.care, ...over } } }));
-  return (
-    <div className="dsh-st-assume">
-      <div className="dsh-label">Assumptions you can change</div>
-      <div className="dsh-row dsh-pair">
-        <MoneyField id="dshCareAmt" label={<TipLabel text="Long-term care, per year" id="stressCare" />} value={amount}
-          onValueChange={(v) => { setAmount(v); const n = num(v); if (n != null) set({ amount: Math.max(0, Math.round(n)) }); }} />
-        <NumberField id="dshCareYears" label="For how many years" unit="years" step={1} max={20} value={years}
-          onValueChange={(v) => { setYears(v); const n = num(v); if (n != null) set({ years: Math.max(1, Math.min(20, Math.round(n))) }); }} />
-      </div>
-    </div>
-  );
-}
-
 export function StressTests({ pr, entries, R }: { pr: Profile; entries: Entry[]; R: Results }) {
   const S = useStress(pr, entries, R), cover = useCover(pr, entries, S);
+  const [editing, setEditing] = useState<StressId | null>(null);
   if (!R.S) return <Empty icon={UmbrellaIcon} title="If things go wrong" ghost="— of 5" text="How your plan holds up if a partner dies, work stops for a year, markets fall as you retire, care is needed or Social Security pays less. It fills in once your plan runs." action="Fill in your profile" href="/dashboard/profile" />;
   const two = pr.who === "couple";
   const summary = S === undefined ? "Testing your plan against hard events…" : S ? heldWords(S) + (S.held < S.of ? "; falls short: " + S.tests.filter((t) => !t.holds).map((t) => STRESS_NAMES[t.id]).join(", ") : "") : "Fills in once your plan runs";
@@ -140,9 +125,9 @@ export function StressTests({ pr, entries, R }: { pr: Profile; entries: Entry[];
               <span role="columnheader">If this happens</span><span role="columnheader">When</span>
               <span role="columnheader" className="dsh-st-fig">Chance of success</span><span role="columnheader">Middle market</span><span role="columnheader" />
             </div>
-            {S.tests.map((t) => <Row key={t.id} t={t} S={S} R={R} two={two} cover={cover} pct={pr.ss.pct} />)}
+            {S.tests.map((t) => <Row key={t.id} t={t} S={S} R={R} two={two} cover={cover} pct={pr.ss.pct} onEdit={setEditing} />)}
           </div>
-          <CareFields />
+          {editing ? <AssumeDialog id={editing} onClose={() => setEditing(null)} /> : null}
         </div>
       ) : S === null ? <p className="dsh-cap">{R.gap ?? "Fills in once your plan runs."}</p> : null}
     </Fold>
@@ -156,3 +141,52 @@ export function StressLine({ pr, entries, R }: { pr: Profile; entries: Entry[]; 
   return <div className="dsh-cap dsh-mt6"><To href="/dashboard/summary#stress">{heldWords(S)}</To></div>;
 }
 
+/** A test's assumptions, in a small window: saved to the profile, and the
+    tests run again with them. "Use the usual" goes back to the defaults. */
+function AssumeDialog({ id, onClose }: { id: StressId; onClose: () => void }) {
+  const { data, setProfile } = useDashboard();
+  const pr = data.profile, A = stressAssume(pr), two = pr.who === "couple";
+  const names: [string, string] = [nameOf(pr, 0), nameOf(pr, 1)];
+  const [who, setWho] = useState<number>(id === "death" ? A.death.who : A.work.who);
+  const [age, setAge] = useState(String(id === "death" ? A.death.age : id === "work" ? A.work.age : A.care.age));
+  const [pct, setPct] = useState(String(Math.round((id === "death" ? A.death.spend : A.ss.share) * 100)));
+  const [amount, setAmount] = useState(txt(A.care.amount));
+  const [years, setYears] = useState(String(A.care.years));
+  const n = (v: string, lo: number, hi: number) => { const x = num(v); return x == null ? null : Math.max(lo, Math.min(hi, Math.round(x))); };
+  const put = (over: NonNullable<Profile["stress"]>) => { setProfile((p) => ({ ...p, stress: { ...p.stress, ...over } })); onClose(); };
+  const save = () => {
+    if (id === "death") put({ death: { who: who ? 1 : 0, age: n(age, 30, 110) ?? A.death.age, spend: n(pct, 0, 100) ?? Math.round(A.death.spend * 100) } });
+    else if (id === "work") put({ work: { who: (two ? who : 0) as 0 | 1 | 2, age: n(age, 18, 90) ?? A.work.age } });
+    else if (id === "care") put({ care: { amount: n(amount, 0, 1e7) ?? A.care.amount, years: n(years, 1, 20) ?? A.care.years, age: n(age, 50, 110) ?? A.care.age } });
+    else if (id === "ss") put({ ss: { share: n(pct, 0, 100) ?? Math.round(A.ss.share * 100) } });
+  };
+  const reset = () => { setProfile((p) => { const s = { ...p.stress }; delete s[id as "death" | "work" | "care" | "ss"]; return { ...p, stress: s }; }); onClose(); };
+  const whoAge = id === "work" ? (who === 1 ? names[1] : names[0]) : id === "death" ? names[who ? 1 : 0] : null;
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent aria-labelledby="dshStTitle">
+        <h2 id="dshStTitle" className="dsh-dlg-h">{STRESS_NAMES[id]}</h2>
+        <form className="dsh-cellform" onSubmit={(e) => { e.preventDefault(); save(); }}>
+          {(id === "death" || id === "work") && two ? (
+            <Segmented aria-label={id === "death" ? "Who dies" : "Whose pay stops"}>
+              <SegmentedItem pressed={who === 0} onPressedChange={() => setWho(0)}>{names[0]}</SegmentedItem>
+              <SegmentedItem pressed={who === 1} onPressedChange={() => setWho(1)}>{names[1]}</SegmentedItem>
+              {id === "work" ? <SegmentedItem pressed={who === 2} onPressedChange={() => setWho(2)}>Both</SegmentedItem> : null}
+            </Segmented>
+          ) : null}
+          {id === "care" ? <MoneyField id="dshStAmt" label="Care, per year in today's dollars" value={amount} onValueChange={setAmount} /> : null}
+          {id === "care" ? <NumberField id="dshStYears" label="For how many years" unit="years" step={1} max={20} value={years} onValueChange={setYears} /> : null}
+          {id !== "ss" ? <NumberField id="dshStAge" label={id === "care" ? (two ? `From when ${nameOf(pr, olderOf(pr))} is` : "From age") : two && whoAge ? `When ${whoAge} is` : "At age"} unit="years old" step={1} value={age} onValueChange={setAge} /> : null}
+          {id === "death" ? <NumberField id="dshStSpend" label="Spending after, as a share of what you spent together" unit="%" step={5} max={100} value={pct} onValueChange={setPct} /> : null}
+          {id === "ss" ? <NumberField id="dshStShare" label="Share of each benefit paid" unit="%" step={1} max={100} value={pct} onValueChange={setPct} /> : null}
+          <p className="dsh-cap">{id === "work" ? "Kept between next year and the last year of work." : id === "death" ? "Social Security pays only the larger of your two benefits from then." : id === "ss" ? "Every benefit in your plan at this share, for your whole retirement." : "On top of your strategy's spending, rising with prices."}</p>
+          <div className="dsh-navbtns dsh-wrapbtns">
+            <Button type="submit">Save</Button>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            {pr.stress?.[id as "death" | "work" | "care" | "ss"] ? <Button type="button" variant="link" onClick={reset}>Use the usual</Button> : null}
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -168,10 +168,19 @@ export interface Profile {
       switched on or off. They change the plan's saving year by year, so
       every tab follows them. Unset: none yet. */
   scenarios?: Scenario[];
-  /** Plan summary's "If things go wrong": long-term care as tested there
-      (per year in today's dollars, for how many years, from what age),
-      when set away from the usual (stress.ts CARE_DEFAULT). */
-  stress?: { care?: { amount?: number; years?: number; age?: number } };
+  /** Plan summary's "If things go wrong": each test's assumptions where set
+      away from the usual (stress.ts has the defaults). care: per year in
+      today's dollars, for how many years, from the older of you's age.
+      death: who dies (0 the first of you), at their age, and the share of
+      the couple's spending kept after (percent). work: at whose age, and
+      whose pay stops (0, 1, or 2 for both). ss: the share of each benefit
+      paid (percent). */
+  stress?: {
+    care?: { amount?: number; years?: number; age?: number };
+    death?: { who?: 0 | 1; age?: number; spend?: number };
+    work?: { who?: 0 | 1 | 2; age?: number };
+    ss?: { share?: number };
+  };
 }
 
 export type AssetKind = "workplace" | "g457" | "ira" | "roth" | "brokerage" | "hsa" | "cash" | "home" | "other";
