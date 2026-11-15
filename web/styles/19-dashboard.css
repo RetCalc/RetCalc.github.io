@@ -1152,7 +1152,6 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-calc-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 5px 0; }
 .dsh-calc-row dt { min-width: 0; color: var(--ds-text); }
 .dsh-calc-row dd { margin: 0; flex: none; font-variant-numeric: tabular-nums; color: var(--ds-text); }
-.dsh-calc-note { display: block; font-size: 12px; color: var(--ds-muted); line-height: 1.35; }
 .dsh-calc-total { border-top: 1px solid var(--ds-rule-strong); margin-top: 4px; padding-top: 8px; font-weight: 600; }
 .dsh-calc-total + .dsh-calc-row { margin-top: 6px; }
 .dsh-calc + .dsh-calc { margin-top: 10px; }

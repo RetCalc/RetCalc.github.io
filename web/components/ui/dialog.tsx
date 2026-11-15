@@ -27,6 +27,8 @@ const dialogContentVariants = cva(
         default: "max-w-85",
         /* forms: the converter, growth rates, asset mix, item editor */
         wide: "wide max-w-105",
+        /* a figure worked out line by line: Year by year's spending and taxes */
+        sum: "max-w-120",
         /* a reading dialog: the strategy guide */
         guide: "max-w-195 px-6.5 pb-5 max-sm:px-4 max-sm:pt-4.5 max-sm:pb-4.5",
         /* the classic studies */

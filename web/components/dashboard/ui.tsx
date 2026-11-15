@@ -27,15 +27,15 @@ export function Tile({ icon: Icon, title, right, className, id, tip, tipK, child
 /** A "?" with one of the Dashboard's explanations (tips.ts), or the site
     glossary's entry `k`; `title` names it for screen readers and heads the
     sheet it opens on a phone. */
-export function Tip({ id, k, title }: { id?: TipId; k?: string; title: string }) {
-  return <TipDot k={k ?? ""} title={title} text={id ? TIPS[id] : undefined} />;
+export function Tip({ id, k, title, tipText }: { id?: TipId; k?: string; title: string; tipText?: string }) {
+  return <TipDot k={k ?? ""} title={title} text={tipText ?? (id ? TIPS[id] : undefined)} />;
 }
 
 /** A field's label ending in a "?", its last word kept with the dot so a
     narrow column never leaves the dot alone on a line. */
-export function TipLabel({ text, id, k }: { text: string; id?: TipId; k?: string }) {
+export function TipLabel({ text, id, k, tipText }: { text: string; id?: TipId; k?: string; tipText?: string }) {
   const m = text.match(/^([\s\S]*?)(\S+\s*)$/);
-  return <>{m ? m[1] : ""}<span className="tipglue">{m ? m[2] : text} <Tip id={id} k={k} title={text} /></span></>;
+  return <>{m ? m[1] : ""}<span className="tipglue">{m ? m[2] : text} <Tip id={id} k={k} title={text} tipText={tipText} /></span></>;
 }
 
 /** One part of a StackBar: its share of the bar and its line in the key. */
