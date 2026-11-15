@@ -56,6 +56,42 @@ function Tour() {
   );
 }
 
+/** On a phone, where the browser window and its tour are hidden: the same
+    page in an iPhone, with the tour's button under it. Pressed, the video
+    takes the phone's place (it is 16:9, so it plays across the screen, and
+    its controls offer full screen); when it ends, the phone comes back. The
+    iPhone's titanium edge, side buttons and Dynamic Island are drawn here;
+    the status bar and home indicator are in the screenshot. */
+function PhoneTour() {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <div className="dl-phone-tour">
+      {playing ? (
+        <div className="dl-mtour">
+          <video className="dl-video" src="/dashboard-landing/dashboard-tour.mp4" controls autoPlay playsInline
+            aria-label="A 90-second tour of the Dashboard, with music and on-screen text" onEnded={() => setPlaying(false)} />
+        </div>
+      ) : (
+        <>
+          <div className="dl-phone">
+            <i className="dl-ph-btn dl-ph-act" aria-hidden="true" /><i className="dl-ph-btn dl-ph-up" aria-hidden="true" />
+            <i className="dl-ph-btn dl-ph-dn" aria-hidden="true" /><i className="dl-ph-btn dl-ph-pwr" aria-hidden="true" />
+            <div className="dl-ph-screen">
+              <Shot name="mobile" w={1170} h={2532} sizes="300px" alt="The Dashboard on a phone: the one-line answer, Update balances, net worth, and the tabs along the bottom" />
+              <span className="dl-ph-island" aria-hidden="true" />
+            </div>
+          </div>
+          <div className="dl-mplay">
+            <Button size="xl" variant="outline" onClick={() => setPlaying(true)}>
+              <PlayIcon data-icon="inline-start" aria-hidden="true" />Watch the 90-second tour
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Points({ items }: { items: string[] }) {
   return <ul className="dl-points">{items.map((t) => <li key={t}><CheckIcon aria-hidden="true" />{t}</li>)}</ul>;
 }
@@ -167,17 +203,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
             <div className="dl-chrome" aria-hidden="true"><i /><i /><i /><span>retcalc.app/dashboard</span></div>
             <Tour />
           </div>
-          {/* On a phone, the same page in an iPhone: its titanium edge, side
-              buttons and Dynamic Island are drawn here; the status bar and
-              home indicator are in the screenshot. */}
-          <div className="dl-phone">
-            <i className="dl-ph-btn dl-ph-act" aria-hidden="true" /><i className="dl-ph-btn dl-ph-up" aria-hidden="true" />
-            <i className="dl-ph-btn dl-ph-dn" aria-hidden="true" /><i className="dl-ph-btn dl-ph-pwr" aria-hidden="true" />
-            <div className="dl-ph-screen">
-              <Shot name="mobile" w={1170} h={2532} sizes="300px" alt="The Dashboard on a phone: the one-line answer, Update balances, net worth, and the tabs along the bottom" />
-              <span className="dl-ph-island" aria-hidden="true" />
-            </div>
-          </div>
+          <PhoneTour />
         </div>
       </div>
 

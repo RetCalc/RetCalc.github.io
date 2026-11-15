@@ -46,7 +46,7 @@
 .dl-tour img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .dl-video{position:absolute;inset:0;width:100%;height:100%;background:#0e1116}
 .dl-play{position:absolute;left:50%;top:50%;translate:-50% -50%}
-.dl-phone{display:none}
+.dl-phone-tour{display:none}
 
 /* sections */
 .dl-sec{margin-top:clamp(80px,9vw,120px)}
@@ -123,9 +123,13 @@
 @media (max-width:640px){
   .dl-ctas > *{width:100%}
   .dl-stage .dl-window{display:none}
+  .dl-phone-tour{display:block}
+  .dl-mplay{display:flex;justify-content:center;margin-top:24px}
+  /* The tour on a phone: the video's 16:9 across the column, in the window's frame. */
+  .dl-mtour{position:relative;aspect-ratio:16/9;overflow:hidden;border:1px solid var(--ds-rule);border-radius:12px;background:#0e1116}
   /* An iPhone: a black bezel inside a thin titanium edge, side buttons, and
      the Dynamic Island over the screen, all to an iPhone's proportions. */
-  .dl-phone{display:block;position:relative;width:min(288px,78%);margin:0 auto;padding:10px;border-radius:50px;background:#0b0c0e;
+  .dl-phone{position:relative;width:min(288px,78%);margin:0 auto;padding:10px;border-radius:50px;background:#0b0c0e;
     box-shadow:inset 0 0 0 1.5px #26282c,0 0 0 1.5px #85878c,0 0 0 3px #3b3d42}
   .dl-ph-screen{position:relative;overflow:hidden;border-radius:40px;background:var(--ds-ground)}
   .dl-ph-screen img{width:100%;height:auto;vertical-align:top}
