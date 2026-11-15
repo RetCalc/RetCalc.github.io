@@ -158,6 +158,41 @@ export interface CashYear {
   paidOff: string[]; freed: number;
   /** The figures typed into the table for this year. */
   edits: YearEdit[];
+  /** How the year's spending and taxes come about, for the table's
+      "How it's worked out". */
+  why: YearWhy;
+}
+
+/** A year's spending and taxes in parts, a month in today's dollars. The
+    spending parts add up to `spending` exactly; the tax parts to `taxes`. */
+export interface YearWhy {
+  spend: {
+    /** Spending as the plan starts, debt payments and today's children's
+        costs in it. */
+    start: number;
+    /** What raises (and pay as typed or changed) have done to it since. */
+    raises: number; payChanged: boolean;
+    /** Debt and mortgage payments: less after inflation, or paid off; what
+        they free is saved. */
+    debts: number;
+    /** Saving held down by a Save less change, spent. */
+    saveLess: number;
+    /** The children's costs beyond today's, and college. */
+    kids: number; college: number;
+    /** Each change at work (its id), what it adds to spending. */
+    changes: { id: string; v: number }[];
+    /** A figure typed into the table: what it adds to the plan's. */
+    typed: number;
+    /** What saving couldn't cover, taken out of spending. */
+    short: number;
+  };
+  tax: {
+    pay: number; preTax: number; fedTaxable: number;
+    fed: number; state: number; stateName: string; local: number; ss: number; med: number;
+    /** More tax where pre-tax saving is given up to cover costs. */
+    taxUp: number;
+    abroad: boolean;
+  };
 }
 
 /** The plan's saving year by year from now to retirement, account by
@@ -255,7 +290,7 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
     const from = E.filter((e) => !e.once && e.year <= year).sort((x, y) => y.year - x.year)[0];
     return from ? from.amount * Math.pow(1 + raise, year - from.year) : null;
   };
-  let spendShift = 0;
+  let spendShift = 0, start: number | null = null;
   // When your partner stops work, if before you: the calendar year.
   const r2 = pr.who === "couple" && pr.p2.by != null && pr.p2.retire != null ? pr.p2.by + pr.p2.retire : null;
   const year0 = new Date().getFullYear();
@@ -320,6 +355,8 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
       bA = inc - tx.tax; bS = r.raw - fr;
     } else ({ lines, tx } = solve(pk, inc, byRaiseFr, changed, fr));
     prevPay = [P1.pay, P2.pay]; prevPath = path;
+    // Spending before Save less, and then after it (`why`).
+    const preA = inc - tx.tax - total(lines) - ef;
     // Save less: what goes in is held to its ceiling, taken from the
     // account it names first, then in the dashboard's order, the match last.
     const SL = saveLessAt(scen, t, end, total(lines), lines.match);
@@ -356,23 +393,36 @@ function yearlyRun(pr: Profile, F: Flow, a: Answers, opts: { college: number[] }
     // goes into it.
     const spendOnce = edits.find((e) => e.what === "spend" && e.once && e.year === year);
     const spendFrom = edits.find((e) => e.what === "spend" && !e.once && (e.year === year || (k === 0 && e.year < year)));
+    let typedShift = 0;
     if (spendOnce || spendFrom) {
       const pre = inc - (tx.tax + (abroad ? 0 : c?.taxUp ?? 0)) - total(keptOf(c)) - ef;
       if (spendFrom) spendShift = spendFrom.amount / 12 - pre;
       const shift = spendOnce ? spendOnce.amount / 12 - pre : spendShift;
-      if (Math.abs(shift) >= 0.5) c = coverFor(need + shift);
-    } else if (Math.abs(spendShift) >= 0.5) c = coverFor(need + spendShift);
+      if (Math.abs(shift) >= 0.5) { c = coverFor(need + shift); typedShift = shift; }
+    } else if (Math.abs(spendShift) >= 0.5) { c = coverFor(need + spendShift); typedShift = spendShift; }
     const left = keptOf(c);
     const emp = Math.max(0, match - (c?.matchLost ?? 0));
     // The employer's money goes in as the match line is taxed.
     const empRoth = pk.roth.match;
     rows.push({ t: left.trad + (empRoth ? 0 : emp), r: left.roth + left.hsa + (empRoth ? emp : 0), b: left.brok, short: c?.short ?? 0 });
     base.push(total(lines) + match);
-    const taxes = tx.tax + (abroad ? 0 : c?.taxUp ?? 0), saved = total(left);
-    years.push({ k, age: t, year, pay: [P1.pay / 12, P2.pay / 12], other, income: inc, taxes, spending: inc - taxes - saved - ef,
-      saved: { ...left }, match: emp, ef, kids: kidsCost, college, change: Y.cut - total(Y.add), short: c?.short ?? 0, tags: [...P1.tags, ...P2.tags, ...Y.tags], works,
+    const taxes = tx.tax + (abroad ? 0 : c?.taxUp ?? 0), saved = total(left), spending = inc - taxes - saved - ef;
+    // The spending in parts: from the plan's start, each thing that moves
+    // it; what rounding leaves goes with the raises.
+    const preB = inc - tx.tax - total(lines) - ef;
+    if (start == null) start = preA + fr;
+    const changesW = Y.parts.filter((x) => !(SL.stop && x.d > 0)).map((x) => ({ id: x.id, v: -x.d }));
+    const short = c?.short ?? 0;
+    const sp = { start, raises: preA + fr - start, payChanged: changed || P1.tags.length + P2.tags.length > 0, debts: -fr, saveLess: preB - preA,
+      kids: kidsCost, college, changes: changesW, typed: typedShift, short: -short };
+    sp.raises += spending - (sp.start + sp.raises + sp.debts + sp.saveLess + sp.kids + sp.college + changesW.reduce((s2, x) => s2 + x.v, 0) + sp.typed + sp.short);
+    const per = (v: number) => (abroad ? 0 : (v * pk.p) / 12), R = tx.run;
+    const why: YearWhy = { spend: sp, tax: { pay: (P1.pay + P2.pay) / 12, preTax: per(R.k401 + R.hsa + R.health), fedTaxable: per(R.fedTaxable) / pk.p,
+      fed: per(R.fed), state: per(R.state), stateName: R.stateName, local: per(R.local), ss: per(R.ss), med: per(R.med), taxUp: abroad ? 0 : c?.taxUp ?? 0, abroad } };
+    years.push({ k, age: t, year, pay: [P1.pay / 12, P2.pay / 12], other, income: inc, taxes, spending,
+      saved: { ...left }, match: emp, ef, kids: kidsCost, college, change: Y.cut - total(Y.add), short, tags: [...P1.tags, ...P2.tags, ...Y.tags], works,
       paidOff: (a.paidOff ?? []).filter((x) => x.k === k).map((x) => x.name), freed: fr,
-      edits: edits.filter((e) => e.year === year && (e.what !== "pay1" || works[1])) });
+      edits: edits.filter((e) => e.year === year && (e.what !== "pay1" || works[1])), why });
   }
   return { rows, base, years, pre };
 }

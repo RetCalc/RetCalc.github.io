@@ -22,7 +22,7 @@ import { ChangeDialog, INCOME_KIND, PickKind, SAVE_LESS_KIND, SPENDING_KIND, fx,
 import { Frame } from "./Frame";
 import { planOf, tipLabel, withRow, withoutRow } from "./Calculator";
 import { useWidth } from "./charts";
-import type { CashYear } from "./cover";
+import type { CashYear, YearWhy } from "./cover";
 import type { Answers } from "@/tools/guide/store";
 import { money, shortMoney } from "./format";
 import { ageOf, couple, nameOf, planYearsOf, realGrowth } from "./model";
@@ -50,6 +50,8 @@ export function YearByYear() {
   const [dlg, setDlg] = useState<{ at: "pick" } | { at: "edit"; s: Scenario; fresh: boolean } | null>(null);
   // A figure being typed into the table, and what the last one did.
   const [cell, setCell] = useState<Cell | null>(null);
+  // A year's taxes, opened to see how they're worked out.
+  const [taxAt, setTaxAt] = useState<CashYear | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   useEffect(() => {
     if (!flash) return;
@@ -148,9 +150,10 @@ export function YearByYear() {
       }>
         <YearTable years={years} names={names} other={other} f={f} age2now={age2now} pr={pr} a={a}
           onPay={(y, who) => setCell({ what: who ? "pay1" : "pay0", year: y.year, k: y.k, value: yr(y.pay[who]), label: names ? names[who] + "'s pay" : "Your pay", edit: y.edits.find((e) => e.what === (who ? "pay1" : "pay0")) ?? null })}
-          onSpend={(y) => setCell({ what: "spend", year: y.year, k: y.k, value: yr(y.spending), label: "Spending", edit: y.edits.find((e) => e.what === "spend") ?? null })} />
+          onSpend={(y) => setCell({ what: "spend", year: y.year, k: y.k, value: yr(y.spending), label: "Spending", edit: y.edits.find((e) => e.what === "spend") ?? null, y })}
+          onTax={setTaxAt} />
         {flash ? <p className="dsh-cap dsh-mt6 dsh-yby-flash" role="status">{flash}</p> : null}
-        <p className="dsh-cap dsh-mt6">Per year. Click a pay or spending figure to type your own; a dot marks one you&apos;ve typed. {future ? `Each year's dollars: prices rise ${pctWord(infl)} per year.` : "Today's dollars: what each year's money buys at today's prices."} Savings grow at {pctWord(realGrowth(pr))} per year beyond inflation on <To href="/dashboard/retirement">Retirement</To>.</p>
+        <p className="dsh-cap dsh-mt6">Per year. Click a spending or tax figure to see how it&apos;s worked out, and a pay or spending figure to type your own; a dot marks one you&apos;ve typed. {future ? `Each year's dollars: prices rise ${pctWord(infl)} per year.` : "Today's dollars: what each year's money buys at today's prices."} Savings grow at {pctWord(realGrowth(pr))} per year beyond inflation on <To href="/dashboard/retirement">Retirement</To>.</p>
       </Tile>
 
       <div className="dsh-grid dsh-two">
@@ -162,7 +165,8 @@ export function YearByYear() {
         </Tile>
       </div>
 
-      {cell ? <QuickEdit cell={cell} future={future} f={f} onSave={(e) => putEdit(e, cell)} onReset={() => putEdit(null, cell)} onClose={() => setCell(null)} /> : null}
+      {taxAt ? <TaxWhyDialog y={taxAt} names={names} future={future} f={f} onClose={() => setTaxAt(null)} /> : null}
+      {cell ? <QuickEdit cell={cell} future={future} f={f} infl={infl} y0={y0.year} pr={pr} onSave={(e) => putEdit(e, cell)} onReset={() => putEdit(null, cell)} onClose={() => setCell(null)} /> : null}
       {dlg?.at === "pick" ? <PickKind kinds={KINDS} note="What do you see coming? Pick one, then give it ages and amounts." foot="To set a single year's pay or spending, click it in the table." close={() => setDlg(null)} pick={(k) => open(k.kind, k.over)} /> : null}
       {dlg?.at === "edit" ? (
         <ChangeDialog s={dlg.s} fresh={dlg.fresh} years={{ base: age, end: retire, ages: true }} accounts saveLess label={tipLabel} names={names} sentence={sentence} effectOf={effectOf}
@@ -195,9 +199,9 @@ function csvRows(): string[][] | null {
 
 /* ---------- the table ---------- */
 
-function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend }: {
+function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend, onTax }: {
   years: CashYear[]; names: [string, string] | null; other: boolean; f: (k: number) => number; age2now: number | null; pr: Profile; a: Answers;
-  onPay: (y: CashYear, who: 0 | 1) => void; onSpend: (y: CashYear) => void;
+  onPay: (y: CashYear, who: 0 | 1) => void; onSpend: (y: CashYear) => void; onTax: (y: CashYear) => void;
 }) {
   const m = (v: number, k: number) => money(Math.round(yr(v) * f(k)));
   const live = liveScenarios(pr.scenarios), kids = kidsOf(a);
@@ -264,8 +268,8 @@ function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend }: {
                 ))}
                 {other ? <td>{m(y.other, y.k)}</td> : null}
                 <td className="dsh-yby-strong">{m(y.income, y.k)}</td>
-                <td className="dsh-yby-gs">{m(y.taxes, y.k)}</td>
-                <td><button type="button" className="dsh-yby-cell" onClick={() => onSpend(y)} title={`Type spending in ${y.year}`}>{m(y.spending, y.k)}{dot(y, "spend")}</button></td>
+                <td className="dsh-yby-gs"><button type="button" className="dsh-yby-cell" onClick={() => onTax(y)} title={`How taxes in ${y.year} are worked out`}>{m(y.taxes, y.k)}</button></td>
+                <td><button type="button" className="dsh-yby-cell" onClick={() => onSpend(y)} title={`How spending in ${y.year} is worked out, or type your own`}>{m(y.spending, y.k)}{dot(y, "spend")}</button></td>
                 <td className="dsh-yby-gs">{m(y.saved.trad, y.k)}</td>
                 <td>{m(y.saved.roth + y.saved.hsa, y.k)}</td>
                 <td>{m(y.saved.brok, y.k)}</td>
@@ -338,11 +342,115 @@ function useCrosshair() {
 /* ---------- typing a figure ---------- */
 
 /** The figure being typed: whose, which year, and what it is now (per year, today's dollars). */
-type Cell = { what: YearEdit["what"]; year: number; k: number; value: number; label: string; edit: YearEdit | null };
+type Cell = { what: YearEdit["what"]; year: number; k: number; value: number; label: string; edit: YearEdit | null; y?: CashYear };
+
+/* ---------- how a figure is worked out ---------- */
+
+type WhyRow = { label: string; v: number; note?: string };
+
+/** Rows a year (whole dollars, per year) that add up to the total shown:
+    each rounded, and what rounding leaves put on the row named `fix`. */
+function settle(rows: WhyRow[], total: number, fix: number): WhyRow[] {
+  const out = rows.map((r) => ({ ...r, v: Math.round(r.v) }));
+  const gap = Math.round(total) - out.reduce((t, r) => t + r.v, 0);
+  if (out[fix]) out[fix].v += gap;
+  return out;
+}
+
+const signed = (v: number) => (v < 0 ? "−" : "+") + money(Math.abs(v));
+
+/** A list of figures to a total: the first as it is, the rest with a sign,
+    a rule, then the total. `after`: lines under the total (inflation). */
+function WhyList({ rows, total, totalLabel, after, label }: { rows: WhyRow[]; total: number; totalLabel: string; after?: WhyRow[]; label: string }) {
+  return (
+    <dl className="dsh-calc" aria-label={label}>
+      {rows.map((r, i) => (
+        <div key={i} className="dsh-calc-row">
+          <dt>{r.label}{r.note ? <span className="dsh-calc-note">{r.note}</span> : null}</dt>
+          <dd>{i === 0 ? money(r.v) : signed(r.v)}</dd>
+        </div>
+      ))}
+      <div className="dsh-calc-row dsh-calc-total"><dt>{totalLabel}</dt><dd>{money(Math.round(total))}</dd></div>
+      {after?.map((r, i) => (
+        <div key={"a" + i} className={"dsh-calc-row" + (i === after.length - 1 ? " dsh-calc-total" : "")}>
+          <dt>{r.label}{r.note ? <span className="dsh-calc-note">{r.note}</span> : null}</dt>
+          <dd>{i === after.length - 1 ? money(r.v) : signed(r.v)}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** A year's spending in parts: where the plan starts, then each thing
+    that moves it, in today's dollars; then in that year's own dollars. */
+function SpendWhy({ y, y0, pr, infl }: { y: CashYear; y0: number; pr: Profile; infl: number }) {
+  const w: YearWhy["spend"] = y.why.spend, live = liveScenarios(pr.scenarios);
+  const name = (id: string) => { const s = live.find((x) => x.id === id); return s ? scenarioName(s) : "A change"; };
+  // The typed spending at work: this year's own, or the latest carried on to it.
+  const E = (pr.yearly.edits ?? []).filter((e) => e.what === "spend");
+  const typedFrom = E.find((e) => e.once && e.year === y.year)?.year ?? E.filter((e) => !e.once && e.year <= y.year).sort((p, q) => q.year - p.year)[0]?.year ?? null;
+  const rows: WhyRow[] = [
+    { label: `Spending in ${y0}`, v: yr(w.start), note: "Pay after taxes and saving, with today's debt payments and children's costs in it" },
+    { label: `Take-home pay since ${y0}`, v: yr(w.raises), note: (w.payChanged ? "Raises, pay changes and taxes" : "Raises and taxes") + ": the part of the change you don't save" },
+    { label: "Debt payments ended or smaller after inflation", v: yr(w.debts), note: "What they free is saved" },
+    { label: "Saving less, as a change sets", v: yr(w.saveLess) },
+    { label: w.kids >= 0 ? "Children's costs beyond today's" : "Children's costs below today's", v: yr(w.kids) },
+    { label: "College", v: yr(w.college) },
+    ...w.changes.map((c) => ({ label: name(c.id), v: yr(c.v) })),
+    { label: typedFrom == null || typedFrom === y.year ? "Your typed figure, against the plan's" : `Your figure typed for ${typedFrom} on, against the plan's`, v: yr(w.typed) },
+    { label: "More than saving can cover", v: yr(w.short), note: "Spending has to give" },
+  ];
+  const keep = rows.map((r, i) => (i < 2 || Math.abs(r.v) >= 0.5 ? r : null));
+  const shown = settle(rows.filter((_, i) => keep[i]), yr(y.spending), 1);
+  const then = yr(y.spending), own = Math.round(then * Math.pow(1 + infl, y.k));
+  return (
+    <div className="dsh-calc-wrap">
+      <p className="dsh-cap">What&apos;s spent is what&apos;s left of pay once taxes and saving come out. From {y0}, this is what moves it, per year in today&apos;s dollars.</p>
+      <WhyList label={`How spending in ${y.year} is worked out`} rows={shown} total={then} totalLabel={`Spending in ${y.year}, today's dollars`}
+        after={y.k > 0 ? [
+          { label: "Prices rising", v: own - Math.round(then), note: `${pctWord(infl)} per year for ${y.k} ${y.k === 1 ? "year" : "years"}` },
+          { label: `In ${y.year} dollars`, v: own },
+        ] : undefined} />
+    </div>
+  );
+}
+
+/** A year's taxes in parts: the pay they're on, then each tax. */
+function TaxWhyDialog({ y, names, future, f, onClose }: { y: CashYear; names: [string, string] | null; future: boolean; f: (k: number) => number; onClose: () => void }) {
+  const t = y.why.tax, k = future ? f(y.k) : 1, d = (v: number) => yr(v) * k;
+  const rows = settle([
+    { label: "Federal income tax", v: d(t.fed) },
+    { label: t.stateName ? `${t.stateName} income tax` : "State income tax", v: d(t.state) },
+    { label: "Local income tax", v: d(t.local) },
+    { label: "Social Security", v: d(t.ss), note: "6.2% of wages, up to the year's limit" },
+    { label: "Medicare", v: d(t.med), note: "1.45% of wages, more on high pay" },
+    { label: "Taxed again as pre-tax saving is given up", v: d(t.taxUp), note: "To cover the children's costs, college or a change" },
+  ], d(y.taxes), 0).filter((r, i) => i < 2 || r.v !== 0);
+  const pay = d(t.pay), rate = pay > 0 ? d(y.taxes) / pay : 0;
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent aria-labelledby="dshTaxTitle">
+        <h2 id="dshTaxTitle" className="dsh-dlg-h">Taxes in {y.year}</h2>
+        {t.abroad ? <p className="dsh-cap dsh-mt6">Outside the US, the plan counts no US taxes on pay.</p> : (
+          <div className="dsh-calc-wrap">
+            <WhyList label="The income it's on" rows={settle([
+              { label: names ? "Pay, both of you" : "Pay", v: pay },
+              { label: "Pre-tax saving and health premiums", v: -d(t.preTax), note: "401(k), HSA and the like" },
+              { label: "Deductions", v: -(pay - d(t.preTax) - d(t.fedTaxable)), note: "The standard deduction, or yours itemized, and a traditional IRA's" },
+            ], d(t.fedTaxable), 2)} total={d(t.fedTaxable)} totalLabel="Taxed by the IRS" />
+            <WhyList label={`How taxes in ${y.year} are worked out`} rows={rows} total={d(y.taxes)} totalLabel={`Taxes in ${y.year}`} />
+            <p className="dsh-cap">{Math.round(rate * 1000) / 10}% of pay. {future ? `In ${y.year} dollars.` : "In today's dollars."} Worked out by the same calculator as your paycheck, on that year&apos;s pay.</p>
+          </div>
+        )}
+        <div className="dsh-navbtns dsh-mt"><Button type="button" variant="outline" onClick={onClose}>Close</Button></div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 /** A small window over the table: the figure selected to type over, for
     that year only or from it to retirement. Return saves it. */
-function QuickEdit({ cell, future, f, onSave, onReset, onClose }: { cell: Cell; future: boolean; f: (k: number) => number; onSave: (e: YearEdit) => void; onReset: () => void; onClose: () => void }) {
+function QuickEdit({ cell, future, f, infl, y0, pr, onSave, onReset, onClose }: { cell: Cell; future: boolean; f: (k: number) => number; infl: number; y0: number; pr: Profile; onSave: (e: YearEdit) => void; onReset: () => void; onClose: () => void }) {
   const shown = (v: number) => groupDigits(Math.round(v * (future ? f(cell.k) : 1)), true);
   const [txt, setTxt] = useState(shown(cell.edit?.amount ?? cell.value));
   const [once, setOnce] = useState(cell.edit?.once ?? false);
@@ -361,6 +469,8 @@ function QuickEdit({ cell, future, f, onSave, onReset, onClose }: { cell: Cell; 
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent aria-labelledby="dshCellTitle" initialFocus={input}>
         <h2 id="dshCellTitle" className="dsh-dlg-h">{cell.label} in {cell.year}</h2>
+        {cell.what === "spend" && cell.y ? <SpendWhy y={cell.y} y0={y0} pr={pr} infl={infl} /> : null}
+        {cell.what === "spend" ? <h3 className="dsh-calc-h">Type your own</h3> : null}
         <form className="dsh-cellform" onSubmit={(e) => { e.preventDefault(); save(); }}>
           <Affixed prefix="$" suffix="/yr"><MoneyInput ref={input} aria-label={`${cell.label} in ${cell.year}, per year`} nonNeg value={txt} onValueChange={setTxt} /></Affixed>
           <Segmented aria-label="How long">

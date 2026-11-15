@@ -138,6 +138,9 @@ export interface YearChange {
   add: Monthly;
   /** The scenarios at work this year. */
   tags: string[];
+  /** Each one's own dollars a month: positive, saving it adds; negative,
+      saving it gives up (for spending). */
+  parts: { id: string; d: number }[];
 }
 
 /** What the saving scenarios do in the year you're `t`, on saving of
@@ -146,7 +149,7 @@ export interface YearChange {
     ones before it leave it. Lump sums aren't here: they're one-offs on
     the Calculator's stages (calc.ts). */
 export function yearChange(list: Scenario[], t: number, end: number, own: number, opts: { lines?: boolean } = {}): YearChange {
-  const out: YearChange = { cut: 0, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [] };
+  const out: YearChange = { cut: 0, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [], parts: [] };
   let running = own, stopped: string | null = null;
   for (const s of liveScenarios(list)) {
     if ((s.kind !== "saving" && s.kind !== "spending") || !runs(s, t, end)) continue;
@@ -164,13 +167,14 @@ export function yearChange(list: Scenario[], t: number, end: number, own: number
     d = Math.round(d);
     if (d === 0) continue;
     out.tags.push(s.id);
+    out.parts.push({ id: s.id, d });
     running += d;
     if (d > 0) { out.add[s.acct === "auto" ? "brok" : s.acct] += d; continue; }
     out.cut += -d;
     if (s.acct !== "auto") out.typed[s.acct] = (out.typed[s.acct] ?? 0) + -d;
   }
   // Saving stopped: nothing goes in, whatever the other changes add.
-  if (stopped) return { cut: own, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [...out.tags, stopped] };
+  if (stopped) return { cut: own, typed: {}, add: { brok: 0, roth: 0, trad: 0, hsa: 0 }, tags: [...out.tags, stopped], parts: [{ id: stopped, d: -own }] };
   return out;
 }
 
