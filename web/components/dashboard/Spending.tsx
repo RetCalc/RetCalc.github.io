@@ -1,8 +1,8 @@
 "use client";
 
 /* Spending: what goes out each month, against what comes in after taxes,
-   how that compares to the usual budget rules (BudgetRules), and the
-   Budget tool itself below it, line by line. Setup's one number
+   the Budget tool itself below it, line by line, and under that how
+   it compares to the usual budget rules (BudgetRules). Setup's one number
    starts its "Everything else" line; from then on the budget's total is
    your spending everywhere. The emergency fund is sized here, on the
    budget or on the emergency budget beside it. */
@@ -69,7 +69,6 @@ export function Spending() {
         ) : null}
         {left != null && left < 0 ? <div className="dsh-mt"><Note>You&apos;re spending more than comes in after taxes. Check the numbers, or look for room in the budget below.</Note></div> : null}
       </Tile>
-      <BudgetRules pr={pr} F={F} />
       <div className="dsh-r4" id="budget">
         {/* What "from your home" means is the tip beside each such line. */}
         <Hosted key={rev} household={null} locked={[...housing, ...debtLines(pr).map((l) => l.slot)].map((n) => "row:" + n)}
@@ -80,6 +79,7 @@ export function Spending() {
           <Budget />
         </Hosted>
       </div>
+      <BudgetRules pr={pr} F={F} />
     </Frame>
   );
 }

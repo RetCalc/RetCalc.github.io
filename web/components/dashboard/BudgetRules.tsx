@@ -77,7 +77,7 @@ function SplitCard({ s }: { s: Split }) {
         })}
       </div>
       <div className="dsh-br-one">
-        <div className="dsh-br-name"><span className="tipglue">Needs, wants and saving <TipDot k="" title="50/30/20" text={PARTS.map((p) => `${p.name}: ${money(amt[p.k])} per month, ${p.what}.`).join(" ") + ` The 50/30/20 rule, from Elizabeth Warren's All Your Worth: half of income after taxes to needs, 30% to wants, 20% to saving. Income here is ${money(s.base)} per month after taxes, with premiums taken out of pay added back. A line you add to the budget below can be set to Need or Want.`} /></span> <span className="dsh-br-sub">· 50/30/20 of income after taxes</span></div>
+        <div className="dsh-br-name"><span className="tipglue">Needs, wants and saving <TipDot k="" title="50/30/20" text={PARTS.map((p) => `${p.name}: ${money(amt[p.k])} per month, ${p.what}.`).join(" ") + ` The 50/30/20 rule, from Elizabeth Warren's All Your Worth: half of income after taxes to needs, 30% to wants, 20% to saving. Income here is ${money(s.base)} per month after taxes, with premiums taken out of pay added back. A line you add to the budget above can be set to Need or Want.`} /></span> <span className="dsh-br-sub">· 50/30/20 of income after taxes</span></div>
         <div className="dsh-br-stack">
           <div className="dsh-br-segs">
             {PARTS.map((p) => <i key={p.k} data-k={p.k} style={{ "--g": width(p.k) } as React.CSSProperties} />)}
@@ -99,12 +99,12 @@ export function BudgetRules({ pr, F }: { pr: Profile; F: Flow }) {
   });
   if (!R.cards.length) return null;
   return (
-    <Tile id="rules" icon={GaugeIcon} title="How you compare to the usual rules" right={<span className="dsh-cap">Rules of thumb, not grades</span>}>
+    <Tile id="rules" className="dsh-r4" icon={GaugeIcon} title="How you compare to the usual rules" right={<span className="dsh-cap">Rules of thumb, not grades</span>}>
       <div className="dsh-br" data-n={R.cards.length}>
         {R.cards.map((c) => <Card key={c.id} c={c} />)}
         {R.split ? <SplitCard s={R.split} /> : (
           <div className="dsh-br-card dsh-br-split dsh-br-wait">
-            <div className="dsh-cap">Needs, wants and saving shows once &ldquo;Everything else&rdquo; in your budget below is split into lines. <a href="#budget">Go to your budget</a></div>
+            <div className="dsh-cap">Needs, wants and saving shows once &ldquo;Everything else&rdquo; in your budget above is split into lines. <a href="#budget">Go to your budget</a></div>
           </div>
         )}
       </div>
