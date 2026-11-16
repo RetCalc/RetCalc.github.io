@@ -66,6 +66,16 @@ export function Spending() {
               {" "}<Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("college", "/dashboard/spending")} />}>See how it&apos;s worked out</Button></span>
             <Button size="sm" onClick={addCollege}>{F.college > 0 ? "Raise it to " + money(need) : "Add it to my budget"}</Button>
           </div>
+        ) : F.college > 0 && short < -25 ? (
+          /* The budget saves more than the plan now takes: less help, or a
+             child's college planned differently. */
+          <div className="dsh-mt dsh-tip">
+            <span>{need > 0 ? <>Saving for college: <b>{money(F.college)}</b> per month, more than the <b>{money(need)}</b> your plan for it now takes. Lower it, and the rest goes to saving.</>
+              : <>Your budget sets aside <b>{money(F.college)}</b> per month for college, but your plan doesn&apos;t help with college now. Take it out, and it goes to saving.</>}
+              {" "}{need > 0 ? <Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("college", "/dashboard/spending")} />}>See how it&apos;s worked out</Button>
+                : <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>College in Profile</Button>}</span>
+            <Button size="sm" onClick={addCollege}>{need > 0 ? "Lower it to " + money(need) : "Take it out of my budget"}</Button>
+          </div>
         ) : null}
         {left != null && left < 0 ? <div className="dsh-mt"><Note>You&apos;re spending more than comes in after taxes. Check the numbers, or look for room in the budget below.</Note></div> : null}
       </Tile>

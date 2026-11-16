@@ -17,6 +17,10 @@ export interface Release {
 }
 
 export const RELEASES: Release[] = [
+  { version: "4.13.1", date: "2026-11-16", title: "College saving follows your plan, down as well as up", items: [
+    { text: "When your plan now needs less for college than your budget sets aside, Spending offers to lower the College savings line, or take it out if you're no longer helping.", href: "/dashboard/spending" },
+    { text: "Apply to my plan in College Savings updates your budget's College savings line too." },
+  ] },
   { version: "4.13.0", date: "2026-11-16", title: "What's new and version numbers", items: [
     { text: "This list: every release of RetCalc, with what changed and where to find it.", href: "/dashboard/about#about-whatsnew" },
     { text: "About is marked New when there's a release you haven't seen." },
