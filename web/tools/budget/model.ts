@@ -33,7 +33,10 @@ export const BUDGET_PRESETS = [
 export interface BudgetRow { group: string; desc: string; amount: string; freq: number; custom: boolean; slot?: string;
   /** What the line would be cut to while living on the emergency fund (the
       Dashboard's emergency budget); unset, the same as `amount`. */
-  emerg?: string }
+  emerg?: string;
+  /** A line you added: a want (true) or a need (false), for the
+      Dashboard's needs, wants and saving; unset, its group decides. */
+  want?: boolean }
 
 export const PRESET_DESCS = BUDGET_PRESETS.flatMap((g) => g.items.map((it) => it.desc));
 export const PRESET_GROUPS = BUDGET_PRESETS.map((g) => g.group);

@@ -34,7 +34,10 @@ import { budgetShare } from "./share";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Paycheck } from "./Paycheck";
+import { sortOf, sortable, type Sort } from "@/components/dashboard/budget-rules";
 
+
+const NEED_WANT = [["need", "Need"], ["want", "Want"]] as const;
 
 export function Budget() {
   // A budget saved before the Paycheck tab opens without its saving lines
@@ -220,6 +223,9 @@ export function Budget() {
                           <PencilIcon className="ml-1.5 inline size-3 shrink-0 align-baseline text-muted-foreground opacity-0 transition-opacity group-hover/name:opacity-100 group-focus-within/name:opacity-100 pointer-coarse:opacity-70" aria-hidden="true" />
                         </span>
                       )}
+                      {/* On the Dashboard, a line you add says whether it's a need or a
+                         want, for needs, wants and saving on Spending. */}
+                      {dash && sortable(r, i) ? <Segmented size="compact" attr="data-nw" options={NEED_WANT} value={sortOf(r, i) as Sort} onChange={(v) => setRow(i, { want: v === "want" })} /> : null}
                       <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} readOnly={fixed(r)} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount" + (fixed(r) ? (debtRow(r) ? ", set on Net worth" : ", set on Home") : "")} /></Affixed>
                       {emCol ? <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="emerg" data-i={i} value={r.emerg ?? r.amount} onValueChange={(v) => setRow(i, { emerg: v })} aria-label={r.desc + " in an emergency"} /></Affixed> : null}
                       <Segmented size="compact" attr="data-fv" options={dash ? ([[12, "Per month"], [1, "Per year"]] as const) : ([[12, "/mo"], [1, "/yr"]] as const)} value={r.freq} onChange={(f) => { if (!fixed(r)) setRow(i, { freq: f }); }} />
