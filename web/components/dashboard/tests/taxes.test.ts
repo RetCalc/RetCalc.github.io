@@ -14,7 +14,9 @@ const { results } = await import("../model");
 const { EMPTY_PROFILE, DEFAULT_ASSUMPTIONS } = await import("../store");
 const { NO_PLAN, bestPlan, compare, marketYear, taxDetail, taxRuns, taxSetup } = await import("../taxes");
 
-const seed = JSON.parse(JSON.parse(readFileSync(new URL("../../../public/dev-seed.json", import.meta.url), "utf8"))["retcalc.dashboard.v1"]) as DashData;
+// The sample household (Sam and Jordan), kept with the tests: the dev seed in
+// public/ isn't committed, so a clean checkout (CI) doesn't have it.
+const seed = JSON.parse(JSON.parse(readFileSync(new URL("./fixtures/sample-household.json", import.meta.url), "utf8"))["retcalc.dashboard.v1"]) as DashData;
 
 test("the sample household's tax plan follows the strategy's withdrawals", () => {
   const pr = { ...EMPTY_PROFILE, ...seed.profile, assume: { ...DEFAULT_ASSUMPTIONS, ...seed.profile.assume } }, R = results(pr, seed.entries), s = taxSetup(pr, seed.entries, R);
