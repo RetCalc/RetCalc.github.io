@@ -9,6 +9,7 @@
    settings, scenarios and walkthroughs aren't part of the dashboard, so
    they're left out. */
 
+import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -136,6 +137,7 @@ export function About() {
                   do about it.</p>
                   <p>It&apos;s yours alone. It&apos;s saved to your account, and nothing in it changes
                   the rest of RetCalc.</p>
+                  <p><Link href="/financial-dashboard">See the Dashboard&apos;s front page and tour</Link></p>
                 </div></CardContent>
               </Card>
 
