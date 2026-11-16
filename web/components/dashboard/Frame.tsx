@@ -29,6 +29,7 @@ import { OUTSIDE_US, hasAccounts, unstarted, useDashboard, useProfiles } from ".
 import { usePlanStamp } from "./snapshot";
 
 import { SECTION_NAMES, type Section } from "./sections";
+import { useNewRelease } from "./seen-release";
 
 export type { Section };
 export const SECTIONS: { id: Section; name: string; icon: LucideIcon }[] = [
@@ -63,7 +64,7 @@ function ThemeButton({ className }: { className: string }) {
   );
 }
 
-function Rail({ current, dots }: { current: Section; dots: Partial<Record<Section, boolean>> }) {
+function Rail({ current, dots, fresh }: { current: Section; dots: Partial<Record<Section, boolean>>; fresh: boolean }) {
   return (
     <nav className="dsh-rail" aria-label="Dashboard">
       <div className="dsh-rail-in">
@@ -72,7 +73,9 @@ function Rail({ current, dots }: { current: Section; dots: Partial<Record<Sectio
           <Link key={id} href={hrefFor(id)} className="dsh-ri" aria-current={id === current ? "page" : undefined} title={name}>
             <Icon aria-hidden="true" />
             {dots[id] ? <><i className="dsh-dot" aria-hidden="true" /><span className="sr-only">, something to fill in</span></> : null}
+            {id === "about" && fresh ? <i className="dsh-dot" data-new="" aria-hidden="true" /> : null}
             <span>{name}</span>
+            {id === "about" && fresh ? <span className="dsh-ri-new">New<span className="sr-only"> release to see</span></span> : null}
           </Link>
         ))}
         <div className="dsh-rail-gap" />
@@ -90,7 +93,7 @@ const BAR: Section[] = ["overview", "summary", "calculator", "retirement"];
 /** Phones and touch screens: a bar along the bottom with the tabs used
     most, and More, which opens every tab at once with the theme switch and
     the way back to the site. */
-function TabBar({ current, dots }: { current: Section; dots: Partial<Record<Section, boolean>> }) {
+function TabBar({ current, dots, fresh }: { current: Section; dots: Partial<Record<Section, boolean>>; fresh: boolean }) {
   const [open, setOpen] = useState(false);
   // Away while scrolling down, back on the way up or at the end, as a
   // phone browser's own toolbar does: Safari spends a tap near the bottom
@@ -124,7 +127,7 @@ function TabBar({ current, dots }: { current: Section; dots: Partial<Record<Sect
           );
         })}
         <button type="button" className="dsh-tb" aria-current={elsewhere ? "page" : undefined} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(true)}>
-          <span className="dsh-tb-i"><MenuIcon aria-hidden="true" />{moreDot ? <i className="dsh-dot" aria-hidden="true" /> : null}</span>
+          <span className="dsh-tb-i"><MenuIcon aria-hidden="true" />{moreDot ? <i className="dsh-dot" aria-hidden="true" /> : fresh ? <i className="dsh-dot" data-new="" aria-hidden="true" /> : null}</span>
           <span>{elsewhere ? SECTIONS.find((s) => s.id === current)?.name ?? "More" : "More"}</span>
           <span className="sr-only">: every tab</span>
         </button>
@@ -140,6 +143,7 @@ function TabBar({ current, dots }: { current: Section; dots: Partial<Record<Sect
               <Link key={id} href={hrefFor(id)} className="dsh-mi" aria-current={id === current ? "page" : undefined} onClick={() => setOpen(false)}>
                 <Icon aria-hidden="true" /><span>{name}</span>
                 {dots[id] ? <i className="dsh-dot" aria-label="Something to fill in" /> : null}
+                {id === "about" && fresh ? <Badge variant="caution" className="ml-auto">New</Badge> : null}
               </Link>
             ))}
           </nav>
@@ -254,6 +258,8 @@ export function Frame({ current, title, meta, actions, help, children }: { curre
   const hasHelp = !!(help || TAB_TOURS[current]);
   // A dot on a section with something still to fill in.
   const abroad = data.profile.state === OUTSIDE_US;
+  // A release you haven't seen marks About (opening it marks it seen).
+  const newRelease = useNewRelease() && current !== "about";
   const dots: Partial<Record<Section, boolean>> = {
     accounts: !hasAccounts(data.entries), retirement: (!data.profile.ss.checked && !abroad) || !data.profile.strategy,
     profile: !data.done || data.skipped.length > 0,
@@ -261,7 +267,7 @@ export function Frame({ current, title, meta, actions, help, children }: { curre
   return (
     <div className="dsh-app" data-pinned={pinned ? "" : undefined}>
       <a className="dsh-skip" href="#dsh-page">Skip to the page</a>
-      <Rail current={current} dots={dots} />
+      <Rail current={current} dots={dots} fresh={newRelease} />
       <div className="dsh-main">
         <header className="dsh-top">
           <div className="dsh-title">
@@ -293,7 +299,7 @@ export function Frame({ current, title, meta, actions, help, children }: { curre
           <span className="dsh-pagefoot-l"><Link href="/dashboard/about#disclaimer">Disclaimer</Link><Link href="/privacy">Privacy</Link><MailMe user="contact" domain="retcalc.app" /></span>
         </footer>
       </div>
-      <TabBar current={current} dots={dots} />
+      <TabBar current={current} dots={dots} fresh={newRelease} />
     </div>
   );
 }

@@ -15,6 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FinePrint } from "./FinePrint";
 import { Frame } from "./Frame";
+import { markReleaseSeen, useNewRelease } from "./seen-release";
+import { WhatsNew } from "./WhatsNew";
 
 /* The sections, in reading order. Each section's id is "about-" + its key,
    so /dashboard/about#about-networth opens that one. */
@@ -62,12 +64,13 @@ function Section({ id, children }: { id: SectionKey; children: ReactNode }) {
 }
 
 /** The index beside the text from 1100px. A link to a section opens it. */
-function Index() {
+function Index({ openNew }: { openNew: (v: boolean) => void }) {
   const { set } = useContext(OpenCtx);
   const link = "block min-h-6 rounded-sm py-0.5 text-note text-muted-foreground no-underline hover:text-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring";
   return (
     <nav className="about-index" aria-label="On this page">
       <a className={link} href="#about-what">What this is</a>
+      <a className={link} href="#about-whatsnew" onClick={() => openNew(true)}>What&apos;s new</a>
       {GROUPS.map((g) => (
         <div key={g.key} className="mt-4">
           <a className="toolgroup-h about-index-h" href={"#about-" + g.key}>{g.label}</a>
@@ -89,11 +92,24 @@ function Index() {
 export function About() {
   const [open, setOpen] = useState<Partial<Record<SectionKey, boolean>>>({});
   const set = useCallback((k: SectionKey, v: boolean) => setOpen((o) => ({ ...o, [k]: v })), []);
+  // What's new opens by itself when there's a release you haven't seen;
+  // being here marks it seen.
+  const unseen = useNewRelease();
+  const [wnOpen, setWnOpen] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!unseen) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- opened once on arrival, then it's yours
+    setWnOpen((o) => o ?? true);
+    markReleaseSeen();
+  }, [unseen]);
   // A link to a section opens it, on arrival and after.
   useEffect(() => {
     const fromHash = () => {
       const k = window.location.hash.replace(/^#about-/, "");
-      if (k in TITLE) {
+      if (k === "whatsnew") {
+        setWnOpen(true);
+        requestAnimationFrame(() => document.getElementById("about-whatsnew")?.scrollIntoView());
+      } else if (k in TITLE) {
         set(k as SectionKey, true);
         requestAnimationFrame(() => document.getElementById("about-" + k)?.scrollIntoView());
       }
@@ -107,7 +123,7 @@ export function About() {
       <OpenCtx.Provider value={{ open, set }}>
         <div className="dsh-about" id="tab-about">
           <div className="about-layout">
-            <Index />
+            <Index openNew={setWnOpen} />
             <div className="about-main">
               <Card id="about-what">
                 <CardHeader><CardTitle>What this is</CardTitle></CardHeader>
@@ -122,6 +138,8 @@ export function About() {
                   the rest of RetCalc.</p>
                 </div></CardContent>
               </Card>
+
+              <WhatsNew open={!!wnOpen} onOpenChange={setWnOpen} />
 
               <Group id="works">
                 <Section id="profile">
