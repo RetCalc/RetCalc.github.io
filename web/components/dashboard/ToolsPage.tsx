@@ -22,8 +22,9 @@ import { Frame, SECTIONS, SignedIn } from "./Frame";
 import { Hosted, TOOL_VIEWS, householdOf, seedFor, toolHref } from "./host";
 import { useDashboard, type Entry, type Profile } from "./store";
 import { applyCollege, collegeNeedOf, sameCollege } from "./college";
-import { budgetFor, flow, mixWords, retireMix } from "./flows";
+import { COLLEGE_LINE, budgetFor, flow, fromBudget, mixWords, retireMix, withCollegeLine } from "./flows";
 import { budgetGroups } from "@/tools/budget/model";
+import { parseNum } from "@/lib/format";
 import { money, pctDown } from "./format";
 import { holdings, mortgage, results } from "./model";
 import { Note } from "./ui";
@@ -147,6 +148,14 @@ const noop = () => () => {};
    tool finds it as you left it (Reset goes back to your plan's figures). */
 const kept = new Map<string, ToolInputs>();
 
+/** A budget already saving for college follows the plan's new figure
+    when College Savings is applied; one that isn't is left as it is
+    (Spending offers to add it). */
+function withCollegeSaving(p: Profile): Profile {
+  const b = budgetFor(p);
+  return b.rows.some((r) => r.desc === COLLEGE_LINE && parseNum(r.amount) > 0) ? fromBudget(p, withCollegeLine(b, collegeNeedOf(p))) : p;
+}
+
 function Tool({ sub }: { sub: DashTool }) {
   const { data, setProfile } = useDashboard();
   // College Savings' figures as they stand, for "Apply to my plan".
@@ -169,12 +178,12 @@ function Tool({ sub }: { sub: DashTool }) {
         {/* Saved scenarios, the site's own lists: one saved here is there too.
             Reset goes back to your plan's figures. */}
         <ScenarioBar compareHref="/dashboard/tools/compare" resetTo={(id) => seed(id)} sharePath={sitePath(sub)} />
-        {sub === "college" ? <Button disabled={!apply || applied} onClick={() => { if (apply) { setProfile(() => apply); setApplied(true); } }}>{applied || (college && sameCollege(data.profile, college)) ? <><CheckIcon aria-hidden="true" />{applied ? "Applied to my plan" : "Your plan matches"}</> : "Apply to my plan"}</Button> : null}
+        {sub === "college" ? <Button disabled={!apply || applied} onClick={() => { if (apply) { setProfile(() => withCollegeSaving(apply)); setApplied(true); } }}>{applied || (college && sameCollege(data.profile, college)) ? <><CheckIcon aria-hidden="true" />{applied ? "Applied to my plan" : "Your plan matches"}</> : "Apply to my plan"}</Button> : null}
         <Button variant="outline" nativeButton={false} render={<Link href={back} />}><ChevronLeftIcon aria-hidden="true" />Back to {backName}</Button>
       </>}>
       {sub === "college" ? (
         <div>
-          <Note>Filled in from your plan. Change anything here (each child&apos;s cost, when they start and for how long, what&apos;s saved, the return, tuition inflation), then Apply to my plan to keep it.
+          <Note>Filled in from your plan. Change anything here (each child&apos;s cost, when they start and for how long, what&apos;s saved, the return, tuition inflation), then Apply to my plan to keep it. If your budget saves for college, its line follows.
             {data.profile.college.help === "part" && !data.profile.college.plan ? <> Each year&apos;s cost here is your half of the school&apos;s {money(data.profile.college.cost)}.</> : null}
             {mismatch ? <> <b>The children here don&apos;t match your plan&apos;s.</b> Add or remove children in <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Profile</Button>, then come back.</> : null}</Note>
         </div>
