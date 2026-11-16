@@ -11,7 +11,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { CircleUserRoundIcon, HomeIcon, LayoutGridIcon, LogOutIcon, MoonIcon, SunIcon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
+import { CirclePlayIcon, CircleUserRoundIcon, HomeIcon, LayoutGridIcon, LogOutIcon, MoonIcon, SunIcon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { useAccount } from "./AccountProvider";
 import { usePopup } from "@/components/shell/Popup";
@@ -99,6 +99,8 @@ export function AccountButton({ inDashboard = false }: { inDashboard?: boolean }
           <DropdownMenuSeparator />
           {homeItem}
           {inDashboard ? null : <DropdownMenuItem render={<Link href="/dashboard" />}><LayoutGridIcon />Dashboard</DropdownMenuItem>}
+          {/* The Dashboard's front page and tour, which /dashboard only shows before setup. */}
+          <DropdownMenuItem render={<Link href="/financial-dashboard" />}><CirclePlayIcon />Dashboard tour</DropdownMenuItem>
           <DropdownMenuItem render={<Link href="/account" />} onClick={() => router.prefetch("/account")}><UserRoundIcon />Account</DropdownMenuItem>
           {themeItem}
           <DropdownMenuItem onClick={async () => {
