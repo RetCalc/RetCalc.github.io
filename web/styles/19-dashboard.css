@@ -1201,3 +1201,18 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
   .dsh-br-three .dsh-fig.dsh-md { font-size: 26px; }
   .dsh-br-marks span { font-size: 10px; }
 }
+
+/* What's new (About, WhatsNew.tsx): the folded row names the version; each
+   release a dated heading, its headline and what changed. */
+.about-wn-t { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
+.about-wn-v { font-size: 13px; font-weight: 400; color: var(--ds-muted); }
+.about-wn { list-style: none; margin: 0; }
+.about-wn > li { padding: 14px 0; border-top: 1px solid var(--ds-rule); }
+.about-wn > li:first-child { border-top: 0; }
+.about-wn-h { display: flex; align-items: baseline; gap: 10px; font-variant-numeric: tabular-nums; }
+.about-wn-h span { font-size: 13px; color: var(--ds-muted); }
+.about .about-wn-title { margin: 2px 0 4px; font-weight: 600; }
+.about-wn ul { margin: 0; }
+/* A release you haven't seen: an amber dot on About, "New" beside its name. */
+.dsh-dot[data-new] { background: var(--dsh-tint-fill, var(--ds-amber)); }
+.dsh-ri .dsh-ri-new { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--ds-amber); }
