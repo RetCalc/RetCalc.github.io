@@ -92,10 +92,9 @@ function SplitCard({ s }: { s: Split }) {
 
 export function BudgetRules({ pr, F }: { pr: Profile; F: Flow }) {
   if (!F.hasPay) return null;
-  const m = F.pi.p / 12, hsa = F.pi.amounts.hsa * m;
   const R = budgetRules({
     rows: F.b.rows, rent: pr.home !== "own", gross: F.gross, after: F.afterTax + otherMonth(pr),
-    premiums: F.spend - F.spendPaid, retire: F.trad + F.roth - hsa + F.match,
+    premiums: F.spend - F.spendPaid, save: F.invested + F.match,
   });
   if (!R.cards.length) return null;
   return (

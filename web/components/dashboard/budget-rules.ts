@@ -6,7 +6,7 @@
    lenders don't count it as one). Pure: the figures come in, the cards
    go out. */
 
-import { annualize, isPlannedRow, isSavingsRow, rowSlot, type BudgetRow } from "@/tools/budget/model";
+import { annualize, isPlannedRow, isSavingsRow, rowSlot, sameName, type BudgetRow } from "@/tools/budget/model";
 
 /** The line setup's one spending number sits on (flows.ts ALL_TOGETHER). */
 const ALL_TOGETHER = "Everything else";
@@ -17,8 +17,8 @@ const DEBT = "debt:";
     dues (lenders count all four); renting, the rent and renter's insurance. */
 const HOUSING_OWN = ["Rent / Mortgage", "Property tax", "Home / Renters insurance", "HOA"];
 const HOUSING_RENT = ["Rent / Mortgage", "Home / Renters insurance"];
-/** Debt payments besides housing: loans set on Net worth, and the budget's own debt lines. */
-const DEBT_SLOTS = ["Car payment", "Other debt payments"];
+/** A preset debt line outside the Debt group, while it keeps its name. */
+const DEBT_SLOTS = ["Car payment"];
 /** The preset lines that are wants; every other preset line is a need. */
 const WANT_SLOTS = ["Eating out", "Activities & hobbies", "Subscriptions", "Travel", "Gifts"];
 /** A line you add, until you say: by its group. */
@@ -26,11 +26,20 @@ const WANT_GROUPS = ["Lifestyle", "Food", "Custom", ""];
 
 export type Sort = "need" | "want";
 
+/** A line's preset name, while it still is that line: a preset renamed to
+    something else (Car payment to "Ubers") is no longer what its name was,
+    so it goes by its group, like a line you add. Lines the Dashboard sets
+    (from Home, from your debts) can't be renamed and keep theirs. */
+export function presetOf(r: BudgetRow, i: number): string | undefined {
+  const slot = rowSlot(r, i);
+  return slot && (r.custom || sameName(r.desc, slot)) ? slot : undefined;
+}
+
 /** Whether a budget line is a need or a want, or neither (saving, or a
     line the paycheck plans). A line you added says so itself, once set. */
 export function sortOf(r: BudgetRow, i: number): Sort | null {
   if (isSavingsRow(r) || isPlannedRow(r)) return null;
-  const slot = rowSlot(r, i);
+  const slot = presetOf(r, i);
   if (slot?.startsWith(DEBT)) return "need";
   if (!r.custom && slot) return WANT_SLOTS.includes(slot) ? "want" : "need";
   if (r.want != null) return r.want ? "want" : "need";
@@ -39,12 +48,13 @@ export function sortOf(r: BudgetRow, i: number): Sort | null {
 }
 
 /** Whether a line can be switched between need and want: lines you add
-    (not the ones the Dashboard sets, nor setup's one number). */
+    and presets you've renamed (not the ones the Dashboard sets, nor
+    setup's one number). */
 export const sortable = (r: BudgetRow, i: number) =>
-  r.custom && !rowSlot(r, i) && r.desc !== ALL_TOGETHER && sortOf(r, i) != null;
+  !presetOf(r, i) && r.desc !== ALL_TOGETHER && sortOf(r, i) != null;
 
 export interface RuleCard {
-  id: "house" | "debt" | "car" | "retire";
+  id: "house" | "debt" | "car" | "save";
   name: string;
   /** Your share, in percent. */
   pct: number;
@@ -76,8 +86,9 @@ export interface RulesInput {
   rent: boolean;
   /** Per month, both of you: pay before taxes; all income after taxes
       (what Spending's "All income after taxes" shows); premiums taken
-      out of pay; saved for retirement through work, the match with it. */
-  gross: number; after: number; premiums: number; retire: number;
+      out of pay; saved and invested from pay (401(k), IRA, HSA,
+      brokerage), the match with it: Taxes & Savings' savings rate. */
+  gross: number; after: number; premiums: number; save: number;
 }
 
 export interface Rules { cards: RuleCard[]; split: Split | null }
@@ -92,10 +103,11 @@ function card(c: Omit<RuleCard, "ok" | "gap" | "gapDollars" | "pct">): RuleCard 
 }
 
 export function budgetRules(x: RulesInput): Rules {
-  const rows = x.rows.map((r, i) => ({ r, i, slot: rowSlot(r, i), m: monthly(r) })).filter((o) => o.m > 0 && !isPlannedRow(o.r));
+  const rows = x.rows.map((r, i) => ({ r, i, slot: presetOf(r, i), m: monthly(r) })).filter((o) => o.m > 0 && !isPlannedRow(o.r));
   const sum = (f: (o: (typeof rows)[number]) => boolean) => rows.filter(f).reduce((s, o) => s + o.m, 0);
   const housing = sum((o) => !!o.slot && (x.rent ? HOUSING_RENT : HOUSING_OWN).includes(o.slot));
-  const debts = sum((o) => !!o.slot && (o.slot.startsWith(DEBT) || DEBT_SLOTS.includes(o.slot)) || (o.r.custom && !o.slot && o.r.group === "Debt"));
+  // Debt: loans from Net worth, a car payment still called that, and any line under Debt.
+  const debts = sum((o) => (!!o.slot && (o.slot.startsWith(DEBT) || DEBT_SLOTS.includes(o.slot))) || (o.r.group === "Debt" && !o.slot?.startsWith(DEBT)));
   const car = sum((o) => o.r.group === "Transportation");
   // While setup's one number holds spending, a rule whose lines are all
   // empty would read 0% when the money is really in that one line.
@@ -114,8 +126,8 @@ export function budgetRules(x: RulesInput): Rules {
       why: "Lenders' back-end rule: every debt payment, the mortgage included, under 36% of pay before taxes. Many lenders allow up to 43%." }));
   if (!(lump && car === 0)) cards.push(card({ id: "car", name: "Transportation", min: 10, max: 15, of: "after", dollars: car, base: x.after,
     why: "A common planners' range: everything getting around costs, car payment, insurance, gas and upkeep, at 10–15% of income after taxes." }));
-  cards.push(card({ id: "retire", name: "Saving for retirement", min: 15, atLeast: true, of: "gross", dollars: x.retire, base: x.gross,
-    why: "The usual target for anyone starting in their twenties or thirties: about 15% of pay before taxes into retirement accounts, the employer's match included. Starting later takes more." }));
+  cards.push(card({ id: "save", name: "Saving and investing", min: 15, atLeast: true, of: "gross", dollars: x.save, base: x.gross,
+    why: "Everything you save and invest from pay, 401(k), IRA, HSA and brokerage, with the employer's match. The usual target is about 15% of pay before taxes for anyone starting in their twenties or thirties; starting later takes more." }));
 
   // 50/30/20 needs every line sorted: not while setup's one number holds spending.
   let split: Split | null = null;

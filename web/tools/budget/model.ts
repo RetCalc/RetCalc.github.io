@@ -62,7 +62,7 @@ export function newLineName(rows: BudgetRow[], group: string): string {
 export const HEALTH_SLOT = "Health insurance";
 export const isLockedRow = (r: BudgetRow, i: number) => rowSlot(r, i) === HEALTH_SLOT && r.desc === HEALTH_SLOT;
 
-const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.toLowerCase();
+export const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.toLowerCase();
 
 /** The line that other tools read by this name (Health insurance, Rent /
     Mortgage, Property tax): the preset line while it keeps its name, or a

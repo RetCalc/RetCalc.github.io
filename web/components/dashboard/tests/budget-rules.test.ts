@@ -3,7 +3,7 @@
    until setup's one number is split into lines. */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { budgetRules, sortOf, sortable } from "../budget-rules";
+import { budgetRules, presetOf, sortOf, sortable } from "../budget-rules";
 import type { BudgetRow } from "@/tools/budget/model";
 
 const row = (group: string, desc: string, amount: number, extra: Partial<BudgetRow> = {}): BudgetRow =>
@@ -20,7 +20,7 @@ const OWN: BudgetRow[] = [
   { ...row("Lifestyle", "Travel", 4800), freq: 1 }, { ...row("Lifestyle", "Gifts", 1200), freq: 1 },
   { group: "Debt", desc: "Student loan", amount: "560", freq: 12, custom: true, slot: "debt:s1" },
 ];
-const base = { gross: 11000, after: 8300, premiums: 0, retire: 1540 };
+const base = { gross: 11000, after: 8300, premiums: 0, save: 1540 };
 const near = (a: number, b: number, d = 0.05) => assert.ok(Math.abs(a - b) < d, `${a} ≉ ${b}`);
 const byId = (r: ReturnType<typeof budgetRules>, id: string) => r.cards.find((c) => c.id === id)!;
 
@@ -40,12 +40,12 @@ test("renting: rent against 30%, debt besides rent against 10% after taxes", () 
   assert.equal(d.of, "after"); near(d.dollars, 620 + 560); near(d.pct, (1180 / 8300) * 100); assert.ok(!d.ok);
 });
 
-test("transportation is a range; retirement is at least 15%", () => {
+test("transportation is a range; saving is at least 15%", () => {
   const r = budgetRules({ rows: OWN, rent: false, ...base });
-  const c = byId(r, "car"), s = byId(r, "retire");
+  const c = byId(r, "car"), s = byId(r, "save");
   near(c.dollars, 1100); assert.ok(c.ok);
   near(s.pct, 14); assert.ok(!s.ok); near(s.gapDollars, 110, 0.5);
-  assert.ok(byId(budgetRules({ rows: OWN, rent: false, ...base, retire: 1700 }), "retire").ok);
+  assert.ok(byId(budgetRules({ rows: OWN, rent: false, ...base, save: 1700 }), "save").ok);
 });
 
 test("no housing line, no housing card; no pay, no cards", () => {
@@ -89,6 +89,30 @@ test("setup's one number holds spending: no 50/30/20 yet", () => {
 test("setup's one number holds spending: a rule with no lines of its own waits too", () => {
   const rows = [row("Housing", "Rent / Mortgage", 2000), { group: "Custom", desc: "Everything else", amount: "4000", freq: 12, custom: true }];
   const ids = budgetRules({ rows, rent: true, ...base }).cards.map((c) => c.id);
-  assert.deepEqual(ids, ["house", "retire"]);
-  assert.deepEqual(budgetRules({ rows: rows.slice(0, 1), rent: true, ...base }).cards.map((c) => c.id), ["house", "debt", "car", "retire"]);
+  assert.deepEqual(ids, ["house", "save"]);
+  assert.deepEqual(budgetRules({ rows: rows.slice(0, 1), rent: true, ...base }).cards.map((c) => c.id), ["house", "debt", "car", "save"]);
+});
+
+test("a renamed preset goes by its group: Car payment renamed Ubers is getting around, not a debt", () => {
+  const rows = OWN.map((r) => (r.slot === "Car payment" ? { ...r, desc: "Ubers" } : r));
+  const ubers = rows.find((r) => r.desc === "Ubers")!, i = rows.indexOf(ubers);
+  assert.equal(presetOf(ubers, i), undefined);
+  const r = budgetRules({ rows, rent: false, ...base });
+  near(byId(r, "debt").dollars, 2950 + 560);
+  near(byId(r, "car").dollars, 1100);
+  assert.ok(sortable(ubers, i));
+  assert.equal(sortOf(ubers, i), "need");
+  assert.equal(sortOf({ ...ubers, want: true }, i), "want");
+});
+
+test("a renamed preset leaves housing; renaming only its case doesn't", () => {
+  const away = OWN.map((r) => (r.slot === "Property tax" ? { ...r, desc: "Lawn care" } : r));
+  near(byId(budgetRules({ rows: away, rent: false, ...base }), "house").dollars, 2400 + 120);
+  const cased = OWN.map((r) => (r.slot === "Property tax" ? { ...r, desc: "property tax " } : r));
+  near(byId(budgetRules({ rows: cased, rent: false, ...base }), "house").dollars, 2950);
+});
+
+test("a line under Debt counts as a debt whatever it's called", () => {
+  const rows = [...OWN, { group: "Debt", desc: "Credit card", amount: "200", freq: 12, custom: true }];
+  near(byId(budgetRules({ rows, rent: true, ...base }), "debt").dollars, 620 + 560 + 200);
 });

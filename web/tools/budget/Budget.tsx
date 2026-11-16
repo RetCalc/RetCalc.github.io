@@ -38,6 +38,10 @@ import { sortOf, sortable, type Sort } from "@/components/dashboard/budget-rules
 
 
 const NEED_WANT = [["need", "Need"], ["want", "Want"]] as const;
+/** What a line without the switch counts as, on the Dashboard: none for
+    setup's one number (needs and wants wait until it's split). */
+const sortWord = (r: BudgetRow, i: number) =>
+  isSavingsRow(r) ? "Saving" : r.custom && r.desc === "Everything else" ? null : ({ need: "Need", want: "Want" } as const)[sortOf(r, i) ?? "need"];
 
 export function Budget() {
   // A budget saved before the Paycheck tab opens without its saving lines
@@ -225,7 +229,9 @@ export function Budget() {
                       )}
                       {/* On the Dashboard, a line you add says whether it's a need or a
                          want, for needs, wants and saving on Spending. */}
-                      {dash && sortable(r, i) ? <Segmented size="compact" attr="data-nw" options={NEED_WANT} value={sortOf(r, i) as Sort} onChange={(v) => setRow(i, { want: v === "want" })} /> : null}
+                      {/* The rest say what they're counted as. */}
+                      {!dash ? null : sortable(r, i) ? <span className="bgnw"><Segmented size="compact" attr="data-nw" options={NEED_WANT} value={sortOf(r, i) as Sort} onChange={(v) => setRow(i, { want: v === "want" })} /></span>
+                        : sortWord(r, i) ? <span className="bgsort" title={`Counted as ${sortWord(r, i) === "Saving" ? "saving" : "a " + sortWord(r, i)!.toLowerCase()} in needs, wants and saving`}>{sortWord(r, i)}</span> : null}
                       <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} readOnly={fixed(r)} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount" + (fixed(r) ? (debtRow(r) ? ", set on Net worth" : ", set on Home") : "")} /></Affixed>
                       {emCol ? <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="emerg" data-i={i} value={r.emerg ?? r.amount} onValueChange={(v) => setRow(i, { emerg: v })} aria-label={r.desc + " in an emergency"} /></Affixed> : null}
                       <Segmented size="compact" attr="data-fv" options={dash ? ([[12, "Per month"], [1, "Per year"]] as const) : ([[12, "/mo"], [1, "/yr"]] as const)} value={r.freq} onChange={(f) => { if (!fixed(r)) setRow(i, { freq: f }); }} />
