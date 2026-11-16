@@ -1156,3 +1156,48 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
 .dsh-calc-total + .dsh-calc-row { margin-top: 6px; }
 .dsh-calc + .dsh-calc { margin-top: 10px; }
 .dsh-calc-h { margin: 16px 0 0; font-size: 14px; font-weight: 600; }
+
+/* How you compare to the usual rules (Spending, BudgetRules.tsx): a card per
+   rule, centered, then needs, wants and saving across the full width. */
+.dsh-br { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 12px; }
+.dsh-br[data-n="3"] { --n: 3; }
+.dsh-br-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 16px 14px; border-radius: var(--r-card, 16px); background: var(--ds-raised); text-align: center; min-width: 0; }
+.dsh-br-card .dsh-fig { font-size: 40px; }
+.dsh-br-name { font-size: 14px; font-weight: 600; color: var(--ds-text); }
+.dsh-br-sub { font-weight: 400; color: var(--ds-muted); }
+.dsh-br-bar { position: relative; align-self: stretch; height: 10px; margin: 4px 6px; border-radius: 999px; background: var(--dsh-fill, var(--ds-rule)); }
+.dsh-br-fill { position: absolute; inset: 0 auto 0 0; width: var(--w); border-radius: 999px; background: var(--dsh-tint-fill, var(--ds-amber)); }
+.dsh-br-fill[data-ok] { background: var(--ds-gain); }
+.dsh-br-tick { position: absolute; left: var(--a); top: -5px; bottom: -5px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--ds-text); }
+.dsh-br-band { position: absolute; left: var(--a); width: calc(var(--b) - var(--a)); top: -4px; bottom: -4px; border-radius: 5px; box-shadow: inset 0 0 0 1.5px var(--ds-text); }
+.dsh-br-split { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 28px; align-items: center; padding: 18px 22px; text-align: left; }
+.dsh-br-wait { display: block; text-align: center; }
+.dsh-br-three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; text-align: center; }
+.dsh-br-three .dsh-fig.dsh-md { font-size: 34px; }
+.dsh-br-sw { display: inline-block; width: 9px; height: 9px; margin-right: 6px; border-radius: 3px; background: var(--k); }
+.dsh-br [data-k="need"] { --k: var(--c-spend, #5856d6); }
+.dsh-br [data-k="want"] { --k: color-mix(in srgb, var(--c-spend, #5856d6) 50%, #fff); }
+.dsh-br [data-k="save"] { --k: var(--c-save, #1f9d55); }
+.dsh-br-d { font-size: 12.5px; font-weight: 600; color: var(--ds-gain); }
+.dsh-br-d[data-bad] { color: var(--ds-amber); }
+.dsh-br-one .dsh-br-name { margin-bottom: 10px; }
+.dsh-br-stack { position: relative; }
+.dsh-br-segs { display: flex; gap: 2px; height: 30px; border-radius: 8px; overflow: hidden; background: var(--dsh-fill, var(--ds-rule)); }
+.dsh-br-segs i { flex: var(--g) 1 0; min-width: 0; background: var(--k); }
+.dsh-br-rtick { position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--ds-text); }
+.dsh-br-marks { position: relative; height: 18px; margin-top: 4px; font-size: 11px; color: var(--ds-muted); }
+.dsh-br-rtick[data-at="80"] { left: 80%; }
+.dsh-br-marks span[data-at="25"] { left: 25%; } .dsh-br-marks span[data-at="65"] { left: 65%; } .dsh-br-marks span[data-at="90"] { left: 90%; }
+.dsh-br-marks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+@media (max-width: 900px) {
+  .dsh-br, .dsh-br[data-n="3"] { --n: 2; }
+  .dsh-br-split { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+}
+@media (max-width: 420px) {
+  .dsh-br { gap: 8px; }
+  .dsh-br-card { padding: 14px 10px 12px; }
+  .dsh-br-split { padding: 16px 14px; }
+  .dsh-br-card .dsh-fig { font-size: 32px; }
+  .dsh-br-three .dsh-fig.dsh-md { font-size: 26px; }
+  .dsh-br-marks span { font-size: 10px; }
+}

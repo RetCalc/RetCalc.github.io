@@ -129,6 +129,9 @@
 @container (max-width:447.98px){
   .bgrow{flex-wrap:wrap;row-gap:4px;padding:7px 0}
   .bgrow .desc{flex-basis:100%}
+  /* What it counts as stays on the name's line, at its end. */
+  .bgrow:has(> .bgsort, > .bgnw) .desc{flex-basis:calc(100% - var(--bgsort-w,104px) - 8px)}
+  .bgrow .bgsort{text-align:right}
 }
 /* Wide: two lines side by side, the group head across both. */
 @container (min-width:820px){
@@ -170,3 +173,7 @@ a.txlink:hover{text-decoration-color:currentColor}
   #bgList[data-emview="normal"] [data-slot="input-group"]:has([data-f="emerg"]),
   #bgList[data-emview="emergency"] [data-slot="input-group"]:has([data-f="amount"]){display:none}
 }
+/* What a line counts as in the Dashboard's needs, wants and saving, where
+   it has no Need/Want switch: a quiet word the switch's width, centered. */
+.bgrow .bgnw{flex:none;display:flex;justify-content:center;width:var(--bgsort-w,104px)}
+.bgrow .bgsort{flex:none;width:var(--bgsort-w,104px);text-align:center;font-size:12px;color:var(--dim)}

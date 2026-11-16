@@ -1,7 +1,8 @@
 "use client";
 
 /* Spending: what goes out each month, against what comes in after taxes,
-   and the Budget tool itself below it, line by line. Setup's one number
+   the Budget tool itself below it, line by line, and under that how
+   it compares to the usual budget rules (BudgetRules). Setup's one number
    starts its "Everything else" line; from then on the budget's total is
    your spending everywhere. The emergency fund is sized here, on the
    budget or on the emergency budget beside it. */
@@ -22,6 +23,7 @@ import { childCost, children } from "@/tools/guide/schedule";
 import { useDashboard } from "./store";
 import { Note, Tile, TipLabel } from "./ui";
 import { housingLines } from "./housing";
+import { BudgetRules } from "./BudgetRules";
 
 export function Spending() {
   const { data, setProfile } = useDashboard();
@@ -77,6 +79,7 @@ export function Spending() {
           <Budget />
         </Hosted>
       </div>
+      <BudgetRules pr={pr} F={F} />
     </Frame>
   );
 }

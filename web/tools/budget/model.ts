@@ -33,7 +33,10 @@ export const BUDGET_PRESETS = [
 export interface BudgetRow { group: string; desc: string; amount: string; freq: number; custom: boolean; slot?: string;
   /** What the line would be cut to while living on the emergency fund (the
       Dashboard's emergency budget); unset, the same as `amount`. */
-  emerg?: string }
+  emerg?: string;
+  /** A line you added: a want (true) or a need (false), for the
+      Dashboard's needs, wants and saving; unset, its group decides. */
+  want?: boolean }
 
 export const PRESET_DESCS = BUDGET_PRESETS.flatMap((g) => g.items.map((it) => it.desc));
 export const PRESET_GROUPS = BUDGET_PRESETS.map((g) => g.group);
@@ -59,7 +62,7 @@ export function newLineName(rows: BudgetRow[], group: string): string {
 export const HEALTH_SLOT = "Health insurance";
 export const isLockedRow = (r: BudgetRow, i: number) => rowSlot(r, i) === HEALTH_SLOT && r.desc === HEALTH_SLOT;
 
-const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.toLowerCase();
+export const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.toLowerCase();
 
 /** The line that other tools read by this name (Health insurance, Rent /
     Mortgage, Property tax): the preset line while it keeps its name, or a

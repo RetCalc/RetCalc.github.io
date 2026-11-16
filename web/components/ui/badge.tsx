@@ -23,6 +23,9 @@ const badgeVariants = cva(
         // tint over the card's Surface, the one mix that keeps the text at
         // 4.5:1 in both themes (DESIGN.md, Badges).
         positive: "bg-[color-mix(in_srgb,var(--ds-gain)_15%,var(--card))] text-(--ds-gain)",
+        // Over a guideline: the warm of the assumption check's aggressive
+        // end at the same 15% tint, its text the amber ink (4.5:1 both themes).
+        caution: "bg-[color-mix(in_srgb,var(--dsh-tint-fill,var(--ds-amber))_15%,var(--card))] text-(--ds-amber)",
         // A marker that should catch the eye, such as Beta: the strong edge.
         highlight: "border-(--ds-rule-strong) text-foreground",
       },
