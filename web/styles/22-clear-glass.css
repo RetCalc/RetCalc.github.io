@@ -180,11 +180,11 @@ a.dsh-crumb:hover { color: var(--ds-amber); }
    hover. Links that are whole rows or cards (lesson titles, tool cards)
    keep the text color. */
 [data-slot="button"][data-variant="link"],
-:is(.dsh-page, main) :is(p, li, dd, td, label, .dsh-cap, .dsh-foot, .hint, .dsh-note, [data-slot="card-description"]) > a:not([data-slot]) {
+:is(.dsh-page, main, .about-wn) :is(p, li, dd, td, label, .dsh-cap, .dsh-foot, .hint, .dsh-note, [data-slot="card-description"]) > a:not([data-slot]) {
   color: var(--ds-amber); text-decoration-color: color-mix(in srgb, var(--ds-amber) 40%, transparent); text-underline-offset: 3px;
 }
 [data-slot="button"][data-variant="link"]:hover,
-:is(.dsh-page, main) :is(p, li, dd, td, label, .dsh-cap, .dsh-foot, .hint, .dsh-note, [data-slot="card-description"]) > a:not([data-slot]):hover { text-decoration-color: currentColor; }
+:is(.dsh-page, main, .about-wn) :is(p, li, dd, td, label, .dsh-cap, .dsh-foot, .hint, .dsh-note, [data-slot="card-description"]) > a:not([data-slot]):hover { text-decoration-color: currentColor; }
 
 /* Fields: white (dark gray in dark) with a visible edge, so they read as
    places to type; amber ring while typing. */

@@ -1206,7 +1206,7 @@ html.pwa .dsh-rail-in { padding-top: calc(14px + var(--sb-clear)); }
    release a dated heading, its headline and what changed. */
 .about-wn-t { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
 .about-wn-v { font-size: 13px; font-weight: 400; color: var(--ds-muted); }
-.about-wn { list-style: none; margin: 0; }
+.about-wn { list-style: none; margin: 0; padding: 0; }
 .about-wn > li { padding: 14px 0; border-top: 1px solid var(--ds-rule); }
 .about-wn > li:first-child { border-top: 0; }
 .about-wn-h { display: flex; align-items: baseline; gap: 10px; font-variant-numeric: tabular-nums; }
