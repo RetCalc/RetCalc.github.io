@@ -16,6 +16,12 @@ export interface Release {
   items?: { text: string; href?: string }[];
 }
 
+/** The site's version and the day it went live. Usually the newest release
+    below. A change that earns a number but isn't news for someone using
+    the Dashboard (the homepage redesign, 4.15.0) is counted here only:
+    it gets no entry in the list and doesn't mark About as New. */
+export const SITE = { version: "4.15.0", date: "2026-11-17" };
+
 export const RELEASES: Release[] = [
   { version: "4.14.1", date: "2026-11-17", title: "Phone fixes", items: [
     { text: "Budget lines on a phone keep their name on one row, with the amount under it. Need or Want is one button on the line: tap it to switch.", href: "/dashboard/spending" },

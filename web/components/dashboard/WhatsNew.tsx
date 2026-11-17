@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
-import { CURRENT, RELEASES, type Release } from "./releases";
+import { RELEASES, SITE, type Release } from "./releases";
 
 /** How many releases show before "See all releases". */
 const SHOWN = 5;
@@ -45,7 +45,7 @@ export function WhatsNew({ open, onOpenChange }: { open: boolean; onOpenChange: 
         <Collapsible open={open} onOpenChange={onOpenChange}>
           <h2 className="m-0">
             <CollapsibleTrigger variant="row">
-              <span className="about-wn-t">What&apos;s new<span className="about-wn-v">Version {CURRENT.version} · {day(CURRENT.date)}</span></span>
+              <span className="about-wn-t">What&apos;s new<span className="about-wn-v">Version {SITE.version} · {day(SITE.date)}</span></span>
               <ChevronDownIcon aria-hidden="true" />
             </CollapsibleTrigger>
           </h2>
@@ -65,7 +65,7 @@ export function WhatsNew({ open, onOpenChange }: { open: boolean; onOpenChange: 
             <h2 id="wnAllTitle" className="dsh-dlg-h">Every release</h2>
             <DialogClose render={<Button variant="ghost" size="icon" aria-label="Close" />}><XIcon aria-hidden="true" /></DialogClose>
           </div>
-          <p className="dsh-cap dsh-mt6">Version {CURRENT.version} is the current one. A major version is a rebuild or redesign, a minor one a new feature, a patch fixes.</p>
+          <p className="dsh-cap dsh-mt6">Version {SITE.version} is the current one. A major version is a rebuild or redesign, a minor one a new feature, a patch fixes.</p>
           <List releases={RELEASES} onLink={() => setAll(false)} />
         </DialogContent>
       </Dialog>

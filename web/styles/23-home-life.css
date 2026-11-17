@@ -1,0 +1,210 @@
+/* The homepage (components/home/Home.tsx, Life.tsx), branch homepage-v3.
+   The page runs edge to edge; .hx-in holds a section's content to the
+   site's width. The small charts inside it keep their styles from
+   16-home.css (.hm-chart, data-draw), which the tool list shares.
+
+   Motion is driven by custom properties the scripts set as the page
+   scrolls: on the first scene --h (0 while the headline shows, 1 once it
+   has left), --p (how far along the chart the age is), --cy (how high the
+   balance sits), --k1/--k2 (the light's color) and --rx/--ry (the deck's
+   lean toward the pointer); on the Dashboard scene --s (0 lying back, 1
+   upright). Phones: styles/phone/33-home.css. */
+
+html:has(.hx){overflow-x:clip}
+.hx{width:100vw;margin-left:calc(50% - 50vw);--hx-pad:clamp(20px,4vw,56px);--hx-ease:cubic-bezier(.16,1,.3,1);
+  --hx-side:max(var(--hx-pad),calc(50vw - 665px + var(--hx-pad)));
+  --hx-on:var(--dsh-on-page,var(--ds-text));--hx-edge:color-mix(in srgb,#fff 12%,transparent);--hx-shade:rgba(0,0,0,.55)}
+[data-theme="light"] .hx{--hx-edge:color-mix(in srgb,#fff 85%,transparent);--hx-shade:rgba(40,44,60,.26)}
+.hx ::selection{background:color-mix(in srgb,var(--ds-amber) 30%,transparent)}
+.hx a:focus-visible,.hx button:focus-visible{outline:2px solid var(--ds-amber);outline-offset:4px;border-radius:10px}
+.hx-in{max-width:1330px;margin-inline:auto;padding-inline:var(--hx-pad);box-sizing:border-box}
+
+/* ---------- type ---------- */
+.hx-display{margin:0;font:700 clamp(40px,min(6vw,10.4vh),92px)/.98 var(--sans);letter-spacing:-.04em;text-wrap:balance;color:var(--ds-text)}
+.hx-display em{font-style:normal;color:var(--ds-amber)}
+.hx-h2{margin:0;font:700 clamp(34px,4.6vw,68px)/1.02 var(--sans);letter-spacing:-.04em;text-wrap:balance;color:var(--ds-text)}
+.hx-body{font-size:clamp(17px,1.35vw,20px);line-height:1.5;color:var(--hx-on);max-width:56ch}
+.hx-lede{font-size:clamp(17px,1.5vw,21px);line-height:1.45;color:var(--hx-on);max-width:50ch;margin:clamp(18px,3vh,30px) 0 0}
+.hx-lede b{color:var(--ds-text);font-weight:600}
+.hx-btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:clamp(16px,2.8vh,30px)}
+.hx-head{display:grid;gap:14px;max-width:920px;margin-bottom:clamp(28px,4vw,56px)}
+
+/* ---------- 1. the life scene ---------- */
+.hx-life{position:relative;height:660vh}
+.hx-stage{position:sticky;top:var(--pin-top);height:calc(100vh - var(--pin-top));height:calc(100svh - var(--pin-top));overflow:clip;box-sizing:border-box;
+  display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);column-gap:clamp(24px,4vw,72px);
+  padding:clamp(18px,4vh,48px) var(--hx-side) 0;perspective:1500px;perspective-origin:72% 38%;
+  --h:0;--p:.03;--cy:.9;--k1:0;--k2:0;--rx:0;--ry:0}
+
+/* The light behind the deck: gold while saving, jade as work becomes optional, steel in retirement. */
+.hx-pool{position:absolute;right:-10%;top:-18%;width:78%;height:100%;pointer-events:none;
+  --c:color-mix(in srgb,color-mix(in srgb,var(--ds-brand-gold),var(--ds-brand-jade) calc(var(--k1) * 100%)),var(--ds-brand-steel) calc(var(--k2) * 100%));
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 24%,transparent),transparent 74%)}
+
+.hx-hero{grid-area:1 / 1;align-self:start;position:relative;z-index:3;max-width:780px;
+  opacity:calc(1 - var(--h) * 2);transform:translateY(calc(var(--h) * -56px));filter:blur(calc(var(--h) * 10px))}
+.hx-stage[data-live] .hx-hero{visibility:hidden}
+
+.hx-age{grid-area:1 / 1;align-self:start;z-index:2;opacity:calc(var(--h) * 2 - 1);transform:translateY(calc((1 - var(--h)) * 44px))}
+.hx-stage:not([data-live]) .hx-age{visibility:hidden}
+.hx-age-n{display:flex;align-items:baseline;gap:14px}
+.hx-age-n span{font:600 clamp(18px,1.6vw,24px) var(--sans);color:var(--ds-muted)}
+.hx-age-n b{font:700 clamp(96px,min(15vw,25vh),224px)/.86 var(--sans);letter-spacing:-.04em;color:var(--ds-text);font-variant-numeric:tabular-nums}
+.hx-bal{display:flex;flex-direction:column;margin-top:clamp(8px,1.8vh,20px)}
+.hx-bal b{font:600 clamp(34px,min(4vw,6.6vh),62px)/1 var(--sans);letter-spacing:-.03em;color:var(--ds-amber);font-variant-numeric:tabular-nums}
+.hx-bal span{font-size:16px;color:var(--ds-muted);margin-top:6px}
+
+/* The deck of panes: the front one is glass over the chart, the rest wait behind it. */
+.hx-deck{grid-area:1 / 2;align-self:start;list-style:none;margin:clamp(4px,4vh,52px) 0 0;padding:0;display:grid;position:relative;z-index:4;
+  transform-style:preserve-3d;transform:rotateY(calc(-11deg + var(--ry) * 12deg)) rotateX(calc(4deg - var(--rx) * 9deg))}
+/* Before the script runs, each pane sits where its place in the deck (--d) puts it. */
+.hx-pane{grid-area:1 / 1;border-radius:28px;will-change:transform,opacity;
+  transform:translate3d(calc(var(--d) * 5%),calc(var(--d) * -12%),calc(var(--d) * -170px));opacity:calc(1 - var(--d) * .5);
+  background:color-mix(in srgb,var(--ds-surface) 80%,transparent);
+  box-shadow:inset 0 1px 0 var(--hx-edge),0 0 0 1px color-mix(in srgb,var(--ds-text) 9%,transparent),
+    0 36px 70px -30px var(--hx-shade),0 14px 26px -18px var(--hx-shade)}
+.hx-pane[data-front]{-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6)}
+.hx-pane-in{display:flex;flex-direction:column;gap:10px;box-sizing:border-box;height:100%;min-height:clamp(320px,46vh,440px);padding:clamp(20px,2.2vw,32px)}
+.hx-kick{display:flex;justify-content:space-between;gap:16px;font:600 14px var(--sans);color:var(--tone,var(--ds-amber))}
+.hx-kick i{font-style:normal;color:var(--ds-muted);font-variant-numeric:tabular-nums}
+.hx-pane-h{font:700 clamp(24px,2.3vw,34px)/1.08 var(--sans);letter-spacing:-.03em;text-wrap:balance;color:var(--ds-text)}
+.hx-pane p{font-size:16px;line-height:1.45;color:var(--hx-on);max-width:44ch}
+.hx-viz{margin-top:auto;padding-top:8px}
+.hx-go{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font:600 15px var(--sans);color:var(--ds-amber)}
+.hx-go svg{width:16px;height:16px;transition:transform .25s var(--hx-ease)}
+.hx-pane-in:hover .hx-go svg{transform:translateX(4px)}
+.hx-fig{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.hx-fig b{font:600 clamp(34px,3.2vw,46px)/1 var(--sans);letter-spacing:-.03em;color:var(--ds-amber)}
+.hx-fig span{font-size:14px;color:var(--ds-muted)}
+.hx-fig-big b{font-size:clamp(76px,8.4vw,128px);line-height:.9;letter-spacing:-.04em;color:var(--ds-text)}
+.hx-fig-big span{font-size:16px;max-width:30ch;margin-top:8px}
+.hx-t-amber{--tone:var(--ds-amber)} .hx-t-jade{--tone:var(--ds-brand-jade)} .hx-t-steel{--tone:var(--ds-brand-steel)}
+.hx-t-lav{--tone:var(--ds-series-lavender)} .hx-t-sky{--tone:var(--ds-series-sky)} .hx-t-teal{--tone:var(--ds-series-teal)}
+[data-theme="light"] .hx-t-jade{--tone:color-mix(in srgb,var(--ds-brand-jade) 62%,#000)}
+[data-theme="light"] .hx-t-steel{--tone:color-mix(in srgb,var(--ds-brand-steel) 62%,#000)}
+[data-theme="light"] .hx-t-lav{--tone:color-mix(in srgb,var(--ds-series-lavender) 72%,#000)}
+[data-theme="light"] .hx-t-sky{--tone:color-mix(in srgb,var(--ds-series-sky) 58%,#000)}
+[data-theme="light"] .hx-t-teal{--tone:color-mix(in srgb,var(--ds-series-teal) 58%,#000)}
+
+/* The chart along the bottom: a faint whole life, and the part lived so far drawn over it. */
+.hx-chart{position:absolute;left:0;right:0;bottom:34px;height:42%;z-index:1;pointer-events:none}
+.hx-chart svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.hx-chart path{fill:none;vector-effect:non-scaling-stroke}
+.hx-ghost .hx-ln{stroke:color-mix(in srgb,var(--ds-text) 22%,transparent);stroke-width:1.5;stroke-dasharray:2 6;stroke-linecap:round}
+.hx-chart .hx-env{fill:color-mix(in srgb,var(--ds-text) 4.5%,transparent)}
+.hx-lit{position:absolute;inset:0;clip-path:inset(-40px calc((1 - var(--p)) * 100%) 0 0)}
+.hx-lit .hx-ln{stroke:var(--ds-amber);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.hx-chart .hx-area{fill:color-mix(in srgb,var(--ds-amber) 13%,transparent)}
+.hx-chart .hx-run{stroke:color-mix(in srgb,var(--ds-brand-steel) 50%,transparent);stroke-width:1}
+.hx-chart .hx-fail{stroke:var(--ds-loss);stroke-width:1.5}
+.hx-retire{position:absolute;left:var(--x);top:4%;bottom:0;border-left:1px dashed var(--ds-rule-strong);opacity:.35;transition:opacity .5s}
+.hx-stage[data-retired] .hx-retire{opacity:1}
+.hx-retire span{position:absolute;right:10px;top:0;white-space:nowrap;font:600 13px var(--sans);font-style:normal;color:var(--ds-muted)}
+.hx-cursor{position:absolute;top:-8%;bottom:0;left:calc(var(--p) * 100%);width:1px;
+  background:linear-gradient(transparent,color-mix(in srgb,var(--ds-text) 38%,transparent) 35%)}
+.hx-now{position:absolute;left:calc(var(--p) * 100%);top:calc(var(--cy) * 100%);width:14px;height:14px;margin:-7px;border-radius:50%;
+  background:var(--ds-amber);box-shadow:0 0 0 5px color-mix(in srgb,var(--ds-amber) 24%,transparent),0 4px 10px -2px var(--hx-shade)}
+.hx-axis{position:absolute;left:0;right:0;top:100%;height:34px;border-top:1px solid var(--ds-rule)}
+.hx-axis span{position:absolute;left:var(--x);top:9px;transform:translateX(-50%);font:500 13px var(--sans);color:var(--ds-muted);font-variant-numeric:tabular-nums}
+
+/* A dot on the age line for each tool; clicking one scrolls to it. */
+.hx-marks{position:absolute;left:0;right:0;bottom:34px;height:0;z-index:5}
+.hx-marks button{position:absolute;left:var(--x);width:28px;height:28px;margin:-14px;padding:0;border:0;background:none;cursor:pointer}
+.hx-marks button::after{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--ds-rule-strong);
+  box-shadow:0 0 0 2px var(--ds-ground);transition:transform .35s var(--hx-ease),background .3s}
+.hx-marks button[data-on]::after{background:var(--ds-amber)}
+.hx-marks button[data-here]::after,.hx-marks button:hover::after{transform:scale(1.7)}
+
+.hx-cue{position:absolute;left:var(--hx-side);bottom:calc(34px + 13%);z-index:3;display:flex;align-items:center;gap:12px;
+  font:600 14px var(--sans);color:var(--ds-muted);opacity:calc(1 - var(--h) * 3)}
+.hx-cue i{width:1px;height:34px;background:linear-gradient(var(--ds-amber),transparent);animation:hx-cue 1.8s var(--hx-ease) infinite;transform-origin:top}
+@keyframes hx-cue{0%{transform:scaleY(0)}60%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:0}}
+
+/* ---------- 2. the Dashboard ---------- */
+.hx-dash{position:relative;padding-top:clamp(72px,10vw,150px)}
+.hx-dash-head{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(24px,5vw,80px);align-items:end}
+.hx-dash-head .hx-body{margin-bottom:22px}
+.hx-scene{display:block;box-sizing:border-box;max-width:1500px;margin:clamp(20px,4vw,56px) auto 0;padding:0 var(--hx-pad);perspective:2400px;perspective-origin:50% 20%;--s:0}
+.hx-plane{position:relative;width:80%;margin-left:3%;aspect-ratio:2880 / 1800;transform-style:preserve-3d;transform-origin:50% 62%;will-change:transform;
+  transform:rotateX(calc((1 - var(--s)) * 54deg + 4deg)) rotateZ(calc((1 - var(--s)) * -15deg)) scale(calc(.8 + var(--s) * .2))}
+.hx-scene img{width:100%;height:auto;vertical-align:top}
+.hx-base{position:absolute;inset:0;overflow:hidden;border-radius:16px;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--ds-text) 10%,transparent),0 60px 120px -50px var(--hx-shade),0 30px 50px -36px var(--hx-shade)}
+.hx-layer{position:absolute;left:var(--l);top:var(--t);width:var(--w);height:var(--h);overflow:hidden;transform:translateZ(calc(var(--z) * (1 - var(--s) * .8)));
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--ds-text) 8%,transparent),
+    calc(var(--z) * -.12 * (1 - var(--s))) calc(var(--z) * .3 * (1 - var(--s) * .8)) calc(var(--z) * .45) -12px var(--hx-shade)}
+.hx-layer > div{position:absolute;left:var(--il);top:var(--it);width:var(--iw)}
+.hx-l1{--z:170px;border-radius:2.2% / 3.5%}
+.hx-l2{--z:320px;border-radius:4.4% / 5.8%}
+.hx-l3{--z:120px;border-radius:4.4% / 9.6%}
+/* An iPhone Pro, as the site draws it elsewhere: thin even bezels, a titanium edge, the Dynamic Island and its side buttons. All sizes run off its width (--pw). */
+.hx-phone{position:absolute;box-sizing:border-box;width:var(--pw);padding:calc(var(--pw) * .032);border-radius:calc(var(--pw) * .165);background:#0b0b0c;
+  box-shadow:0 0 0 calc(var(--pw) * .011) #9a958e,0 0 0 calc(var(--pw) * .016) #5d5a55,0 50px 80px -30px var(--hx-shade)}
+[data-theme="dark"] .hx-phone{box-shadow:0 0 0 calc(var(--pw) * .011) #5c5a57,0 0 0 calc(var(--pw) * .016) #2e2d2b,0 50px 80px -30px var(--hx-shade)}
+.hx .hx-phone img{border-radius:calc(var(--pw) * .135)}
+.hx-island{position:absolute;z-index:1;left:50%;top:calc(var(--pw) * .058);width:calc(var(--pw) * .3);height:calc(var(--pw) * .088);
+  transform:translateX(-50%);border-radius:999px;background:#000}
+.hx-phone::before,.hx-phone::after{content:"";position:absolute;width:calc(var(--pw) * .014);border-radius:2px;background:#8a857e}
+.hx-phone::before{left:calc(var(--pw) * -.026);top:22%;height:6%;box-shadow:0 calc(var(--pw) * .16) 0 0 #8a857e,0 calc(var(--pw) * .3) 0 0 #8a857e}
+.hx-phone::after{right:calc(var(--pw) * -.026);top:30%;height:12%}
+[data-theme="dark"] .hx-phone::before,[data-theme="dark"] .hx-phone::after{background:#4a4845}
+[data-theme="dark"] .hx-phone::before{box-shadow:0 calc(var(--pw) * .16) 0 0 #4a4845,0 calc(var(--pw) * .3) 0 0 #4a4845}
+.hx-l4{--z:420px;left:89%;top:6%;--pw:calc((min(100vw,1500px) - var(--hx-pad) * 2) * .16);
+  transform:translateZ(calc(var(--z) * (1 - var(--s) * .72))) rotateZ(calc((1 - var(--s)) * 15deg))}
+.hx-points{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(20px,3vw,48px);margin-block:clamp(44px,6vw,96px) 0;padding-block:0}
+.hx-points li{border-top:1px solid var(--ds-rule);padding-top:16px;font-size:16px;line-height:1.45;color:var(--hx-on)}
+.hx-points b{display:block;margin-bottom:6px;font:600 19px/1.25 var(--sans);letter-spacing:-.02em;color:var(--ds-text)}
+
+/* ---------- 3. every tool ---------- */
+.hx-tools{padding-top:clamp(90px,12vw,180px)}
+.hx-trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-block:1px solid var(--ds-rule)}
+.hx-trio a{display:grid;grid-template-columns:1fr auto;gap:4px 14px;align-items:center;padding:22px 24px 22px 0}
+.hx-trio a + a{border-left:1px solid var(--ds-rule);padding-left:24px}
+.hx-trio b{font:700 clamp(22px,2.2vw,32px)/1.1 var(--sans);letter-spacing:-.03em;color:var(--ds-text);transition:color .2s}
+.hx-trio span{grid-column:1;font-size:15.5px;line-height:1.4;color:var(--hx-on)}
+.hx-trio svg{grid-area:1 / 2 / 3 / 3;width:22px;height:22px;color:var(--ds-amber);transition:transform .3s var(--hx-ease)}
+.hx-trio a:hover b{color:var(--ds-amber)} .hx-trio a:hover svg{transform:translateX(5px)}
+/* Three belts of tool cards, drifting right, left, right; a belt stops under the pointer. */
+.hx-rows{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(22px,2.6vw,38px);margin-top:clamp(32px,4.4vw,64px)}
+.hx-row-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px}
+.hx .hx-row h3{margin:0;font:600 15px var(--sans);color:var(--ds-muted)}
+.hx-belt{overflow:hidden;padding-block:14px 26px;margin-block:-14px -26px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
+.hx-belt{cursor:grab;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.hx-belt[data-drag]{cursor:grabbing}
+.hx-belt[data-drag] .hx-tool{pointer-events:none}
+.hx-track{list-style:none;display:flex;width:max-content;margin:0;padding:0;will-change:transform}
+.hx-tool{-webkit-user-drag:none}
+/* A card sent back to its start at once, before its picture plays again. */
+.hx-snap .hm-chart *{transition:none !important}
+.hx-track li{flex:0 0 clamp(300px,25vw,372px);box-sizing:border-box;padding-right:clamp(14px,1.5vw,22px)}
+.hx-tool{display:flex;flex-direction:column;gap:5px;box-sizing:border-box;height:100%;padding:clamp(18px,1.6vw,24px);border-radius:24px;background:var(--ds-surface);
+  box-shadow:inset 0 1px 0 var(--hx-edge),0 0 0 1px color-mix(in srgb,var(--ds-text) 6%,transparent),0 18px 30px -26px var(--hx-shade);
+  transition:transform .5s var(--hx-ease),box-shadow .5s var(--hx-ease)}
+.hx-tool:hover,.hx-tool:focus-visible{transform:translateY(-6px);
+  box-shadow:inset 0 1px 0 var(--hx-edge),0 0 0 1px color-mix(in srgb,var(--ds-amber) 45%,transparent),0 30px 44px -26px var(--hx-shade)}
+.hx-peek{display:flex;align-items:center;height:clamp(128px,11vw,158px);margin-bottom:12px}
+.hx-peek svg.hm-chart{width:100%;height:100%}
+.hx-tool-n{display:flex;align-items:center;justify-content:space-between;gap:12px;font:600 clamp(19px,1.5vw,22px)/1.2 var(--sans);letter-spacing:-.02em;color:var(--ds-text);transition:color .2s}
+.hx-tool-n svg{flex:none;width:18px;height:18px;color:var(--ds-amber);opacity:0;transform:translateX(-8px);transition:opacity .2s,transform .35s var(--hx-ease)}
+.hx-tool-q{font-size:15px;line-height:1.4;color:var(--hx-on)}
+.hx-tool:hover .hx-tool-n,.hx-tool:focus-visible .hx-tool-n{color:var(--ds-amber)}
+.hx-tool:hover .hx-tool-n svg,.hx-tool:focus-visible .hx-tool-n svg{opacity:1;transform:none}
+
+/* ---------- 4. the record ---------- */
+.hx-record{padding-top:clamp(90px,12vw,180px)}
+.hx-record .hm-century{margin-top:0}
+
+/* ---------- 5. the close ---------- */
+.hx-close{padding:clamp(100px,14vw,220px) 0 clamp(70px,9vw,140px);text-align:center}
+.hx-close-h{font-size:clamp(48px,8.4vw,132px);max-width:14ch;margin-inline:auto}
+.hx-close .hx-body{margin:clamp(18px,2.4vw,30px) auto 0}
+.hx-close .hx-btns{justify-content:center}
+
+@media (prefers-reduced-motion:reduce){
+  .hx-hero,.hx-age{transform:none;filter:none}
+  .hx-deck{transform:none}
+  .hx-cue i{animation:none}
+  .hx-plane,.hx-layer,.hx-l4,.hx-phones .hx-phone{transition:none}
+  .hx-tool{transition:none}
+}
