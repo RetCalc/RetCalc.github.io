@@ -15,6 +15,8 @@
   html{scroll-padding-top:calc(var(--sb-clear) + var(--navh) + 12px);-webkit-tap-highlight-color:transparent}
   /* A phone-only element that sets no display of its own shows as its tag would. */
   .phone-only{display:revert}
+  /* The keyboard's skip links are 44px tall when they appear. */
+  a.skiplink,a.dsh-skip{min-height:44px;display:inline-flex;align-items:center}
   .desk-only{display:none !important}
 
   /* ---------- the top bar ----------

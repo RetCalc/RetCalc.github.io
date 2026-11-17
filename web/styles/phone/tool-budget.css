@@ -10,6 +10,8 @@
      showing, since there's no hover to reveal it. */
   #bgList .bgrow .bgname{padding:13px 6px;margin:0 -6px}
   #bgList .bgrow .bgname:empty{min-height:44px;vertical-align:middle}
+  /* The per-line /mo | /yr switch: each option a full 44px square at least. */
+  #bgList [data-slot=segmented-item]{min-width:44px}
   #bgList .bgrow .desc > svg{opacity:.7}
   #bgList .bgrow .desc .pinfo{vertical-align:-3px}
   /* The Inputs view shows the emergency fund without the reading above it:

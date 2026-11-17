@@ -21,5 +21,5 @@
   .seo-side li{margin:0;padding:11px 0;border-top:1px solid var(--line-soft);list-style:none}
   .seo-side li:first-child{border-top:0}
   .seo-a .seo-side ul{padding-left:0;margin:0 0 8px}
-  .seo-side li > a:first-child{display:inline-block;padding-block:6px;margin-block:-6px}
+  .seo-side li > a:first-child{display:inline-flex;align-items:center;min-height:44px;margin-block:-11px}
 }
