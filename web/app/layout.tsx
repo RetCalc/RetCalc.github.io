@@ -20,6 +20,7 @@ import { ToolHelp } from "@/tools/help/ToolHelp";
 import { SITE } from "@/lib/site";
 import { STANDALONE_SCRIPT, THEME_SCRIPT } from "@/lib/theme-script";
 import { TOOL_RAIL_SCRIPT } from "@/lib/tool-rail-script";
+import SPLASH from "@/lib/splash.json";
 
 import "./globals.css";
 import { PaneMotion } from "@/components/shell/PaneMotion";
@@ -78,7 +79,9 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
-  appleWebApp: { capable: true, title: "RetCalc", statusBarStyle: "black-translucent" },
+  /* startupImage: the home-screen app's launch pictures, the page's ground
+     with the icon, one per iPhone size and theme (scripts/pwa/splash.mjs). */
+  appleWebApp: { capable: true, title: "RetCalc", statusBarStyle: "black-translucent", startupImage: SPLASH },
 };
 
 export const viewport: Viewport = {

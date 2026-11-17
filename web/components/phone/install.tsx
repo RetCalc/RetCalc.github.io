@@ -100,7 +100,7 @@ export function InstallPrompt() {
           <SheetBody>
             <ol className="pinstall-steps">
               <li><span><ShareIcon aria-hidden="true" /></span><div><b>Tap Share</b>The square with an arrow in Safari&apos;s toolbar. On newer iPhones it&apos;s under <EllipsisIcon className="pinstall-inl" aria-label="the three dots" />.</div></li>
-              <li><span><PlusSquareIcon aria-hidden="true" /></span><div><b>Choose Add to Home Screen</b>Scroll down the list if you don&apos;t see it.</div></li>
+              <li><span><PlusSquareIcon aria-hidden="true" /></span><div><b>Choose Add to Home Screen</b>If it isn&apos;t in the list, tap View More or scroll down.</div></li>
               <li><span className="pinstall-mark"><Brandmark /></span><div><b>Tap Add</b>RetCalc opens from its own icon, full screen, and the calculators work without a connection.</div></li>
             </ol>
           </SheetBody>

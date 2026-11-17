@@ -10,8 +10,12 @@
   html:root{--ptab-h:56px;--navh:48px;--gut:16px;
     --pbar-clear:calc(var(--ptab-h) + env(safe-area-inset-bottom,0px))}
   /* The home-screen app's status bar sits over the page: the top bar pads
-     itself past it (--sb-clear, 00-base.css), so things pin under the bar. */
-  html:root{--pin-top:calc(var(--sb-clear) + var(--navh))}
+     itself past it, so things pin under the bar. On a phone the clearance
+     is the safe-area inset itself (it is 0 in a Safari tab). The site-wide
+     value doubles it (00-base.css), which on a current iPhone left a 60pt
+     empty band over the bar; checked in the iOS 26 simulator. If the bar
+     ever tucks under the status bar on a device, this is the one line. */
+  html:root{--sb-clear:env(safe-area-inset-top,0px);--pin-top:calc(var(--sb-clear) + var(--navh))}
   html{scroll-padding-top:calc(var(--sb-clear) + var(--navh) + 12px);-webkit-tap-highlight-color:transparent}
   /* A phone-only element that sets no display of its own shows as its tag would. */
   .phone-only{display:revert}
