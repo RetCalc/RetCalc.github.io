@@ -30,9 +30,10 @@ export function PhoneBarTitle() {
         if (++tries < 20) raf = requestAnimationFrame(find);
         return;
       }
-      // A long headline (the homepage's) is not a name: the logo stays.
+      // A lesson's title can run long: the bar cuts it with an ellipsis. A
+      // headline longer than that is not a name, and the logo stays.
       const name = (h.textContent ?? "").replace(/\s+/g, " ").trim();
-      if (name.length > 30) return;
+      if (name.length > 60) return;
       setTitle(name);
       const bar = document.querySelector<HTMLElement>(".navbar.oneline")?.offsetHeight ?? 48;
       io = new IntersectionObserver(([e]) => setOn(!e.isIntersecting && e.boundingClientRect.top < bar + 8), { rootMargin: `-${bar}px 0px 0px 0px` });
