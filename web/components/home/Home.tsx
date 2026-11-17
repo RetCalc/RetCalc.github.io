@@ -22,8 +22,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { ArrowRightIcon } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { TOOL_GROUPS, type ToolSub } from "@/lib/tools";
 import { BacktestSliders, CollegeStairs, DebtDownhill, RentBuyBlueprint } from "@/components/tools/picker-charts";
 import type { HomeData } from "./data";
@@ -161,18 +161,25 @@ function ToolViz({ sub, data }: { sub: ToolSub; data: HomeData }) {
 /** Every tool, as a card with its picture. On a desktop each group is a
     belt of cards that drifts slowly on its own, the first to the right,
     the next to the left, the third to the right, and stops under the
-    pointer; the cards repeat so the belt never ends. On a phone each group
-    is one row to swipe, with no repeats. */
+    pointer; the cards repeat so the belt never ends. A belt can be moved
+    by hand: drag it, swipe sideways on a trackpad, or use its arrows. On
+    a phone each group is one row to swipe, with no repeats. */
 function Tools({ data }: { data: HomeData }) {
-  /** Draws a card's picture again each time the pointer comes to it. */
+  const box = useRef<HTMLElement>(null);
+  useBelts(box);
+  /** Draws a card's picture again, from nothing, each time the pointer comes to it. */
   const replay = (e: React.PointerEvent<HTMLElement>) => {
-    if (e.pointerType !== "mouse") return;
+    if (e.pointerType !== "mouse" || e.buttons) return;
     const card = e.currentTarget;
+    // Back to the start at once (no easing out), then play.
+    card.classList.add("hx-snap");
     card.setAttribute("data-draw", "pending");
-    requestAnimationFrame(() => requestAnimationFrame(() => card.setAttribute("data-draw", "go")));
+    void card.offsetWidth;
+    card.classList.remove("hx-snap");
+    requestAnimationFrame(() => card.setAttribute("data-draw", "go"));
   };
   return (
-    <section className="hx-tools" aria-labelledby="hxTools">
+    <section className="hx-tools" ref={box} aria-labelledby="hxTools">
       <div className="hx-in">
         <div className="hx-head">
           <h2 className="hx-h2" id="hxTools" data-rv="">A calculator, a guide and 14 tools.</h2>
@@ -194,7 +201,7 @@ function Tools({ data }: { data: HomeData }) {
             const extra = copy || r > 0;
             return (
               <li key={`${copy ? "b" : "a"}${r}${c.sub}`} className={extra ? "hx-copy" : undefined} aria-hidden={extra || undefined}>
-                <Link href={"/" + c.path} className="hx-tool" data-draw="" data-draw-at="0.6" tabIndex={extra ? -1 : undefined} onPointerEnter={replay}>
+                <Link href={"/" + c.path} className="hx-tool" draggable={false} data-draw="" data-draw-at="0.6" tabIndex={extra ? -1 : undefined} onPointerEnter={replay}>
                   <span className="hx-peek" aria-hidden="true"><ToolViz sub={c.sub} data={data} /></span>
                   <span className="hx-tool-n">{c.name}<ArrowRightIcon aria-hidden="true" /></span>
                   <span className="hx-tool-q">{c.q}</span>
@@ -203,9 +210,15 @@ function Tools({ data }: { data: HomeData }) {
             );
           }));
           return (
-            <div key={g.label} className="hx-row" data-dir={gi % 2 ? "left" : "right"}>
-              <h3 className="hx-in">{g.title}</h3>
-              <div className="hx-belt">
+            <div key={g.label} className="hx-row">
+              <div className="hx-in hx-row-head">
+                <h3>{g.title}</h3>
+                <div className="hx-nudge max-phone:hidden">
+                  <Button variant="outline" size="icon" data-nudge="-1" aria-label={`${g.title}: earlier tools`}><ArrowLeftIcon aria-hidden="true" /></Button>
+                  <Button variant="outline" size="icon" data-nudge="1" aria-label={`${g.title}: more tools`}><ArrowRightIcon aria-hidden="true" /></Button>
+                </div>
+              </div>
+              <div className="hx-belt" data-belt={gi % 2 ? "left" : "right"}>
                 <ul className="hx-track" style={{ "--n": reps * g.cards.length } as React.CSSProperties}>{half(false)}{half(true)}</ul>
               </div>
             </div>
@@ -214,6 +227,111 @@ function Tools({ data }: { data: HomeData }) {
       </div>
     </section>
   );
+}
+
+/* The belts (768px and up). Each keeps its own place (x, in pixels) and is
+   moved a frame at a time: by hand while it's dragged, then on what's left
+   of that push, then toward where an arrow sent it, and otherwise at its
+   own slow drift, which waits while the pointer is over the belt. The
+   track holds its cards twice, so the place wraps at half its width. On a
+   phone the belts are plain rows that scroll and none of this runs. */
+function useBelts(box: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches, phone = matchMedia("(width < 768px)");
+    const DRIFT = 30;
+    interface Belt {
+      belt: HTMLElement; track: HTMLElement; dir: number; x: number; v: number; target: number | null; over: boolean;
+      drag: { x0: number; from: number; last: number; t: number; moved: boolean } | null;
+    }
+    const belts: Belt[] = [...el.querySelectorAll<HTMLElement>("[data-belt]")].map((belt) => ({
+      belt, track: belt.querySelector<HTMLElement>(".hx-track") as HTMLElement, dir: belt.dataset.belt === "left" ? -1 : 1,
+      x: 0, v: 0, target: null, over: false, drag: null,
+    }));
+    let raf = 0, last = 0, seen = false;
+    const frame = (t: number) => {
+      const dt = Math.min(0.05, last ? (t - last) / 1000 : 0);
+      last = t;
+      for (const b of belts) {
+        if (phone.matches) { if (b.track.style.transform) b.track.style.transform = ""; continue; }
+        const half = b.track.scrollWidth / 2;
+        if (b.drag) { /* the pointer sets x */ }
+        else if (b.target != null) {
+          const d = b.target - b.x;
+          b.x += d * Math.min(1, dt * 7);
+          if (Math.abs(d) < 0.5) { b.x = b.target; b.target = null; }
+        } else if (Math.abs(b.v) > 6) { b.x += b.v * dt; b.v *= Math.pow(0.03, dt); }
+        else if (!b.over && !still) b.x += b.dir * DRIFT * dt;
+        if (half > 0) {
+          const wrap = b.x <= -half ? half : b.x > 0 ? -half : 0;
+          if (wrap) { b.x += wrap; if (b.target != null) b.target += wrap; if (b.drag) b.drag.x0 += wrap; }
+        }
+        b.track.style.transform = `translate3d(${b.x.toFixed(2)}px,0,0)`;
+      }
+      raf = seen ? requestAnimationFrame(frame) : 0;
+    };
+    const io = new IntersectionObserver(([e]) => {
+      seen = e.isIntersecting;
+      if (seen && !raf) { last = 0; raf = requestAnimationFrame(frame); }
+    }, { rootMargin: "200px" });
+    io.observe(el);
+
+    const offs: (() => void)[] = [];
+    const on = <K extends keyof HTMLElementEventMap>(n: HTMLElement, k: K, f: (e: HTMLElementEventMap[K]) => void, o?: AddEventListenerOptions) => {
+      n.addEventListener(k, f as EventListener, o);
+      offs.push(() => n.removeEventListener(k, f as EventListener, o));
+    };
+    for (const b of belts) {
+      on(b.belt, "pointerenter", (e) => { if (e.pointerType === "mouse") b.over = true; });
+      on(b.belt, "pointerleave", () => { b.over = false; });
+      on(b.belt, "focusin", () => { b.over = true; });
+      on(b.belt, "focusout", () => { b.over = false; });
+      on(b.belt, "pointerdown", (e) => {
+        if (phone.matches || (e.pointerType === "mouse" && e.button !== 0)) return;
+        b.drag = { x0: b.x, from: e.clientX, last: e.clientX, t: e.timeStamp, moved: false };
+        b.v = 0; b.target = null;
+      });
+      on(b.belt, "pointermove", (e) => {
+        const d = b.drag;
+        if (!d) return;
+        const dx = e.clientX - d.from;
+        if (!d.moved && Math.abs(dx) > 6) { d.moved = true; b.belt.setPointerCapture(e.pointerId); b.belt.setAttribute("data-drag", ""); }
+        if (!d.moved) return;
+        b.x = d.x0 + dx;
+        const dt = (e.timeStamp - d.t) / 1000;
+        if (dt > 0) b.v = b.v * 0.6 + ((e.clientX - d.last) / dt) * 0.4;
+        d.last = e.clientX; d.t = e.timeStamp;
+      });
+      const end = (e: PointerEvent) => {
+        const d = b.drag;
+        if (!d) return;
+        b.drag = null;
+        b.belt.removeAttribute("data-drag");
+        if (!d.moved) { b.v = 0; return; }
+        if (e.timeStamp - d.t > 80) b.v = 0;
+        // The press that ended a drag isn't a click on the card under it.
+        const stop = (c: Event) => { c.preventDefault(); c.stopPropagation(); };
+        b.belt.addEventListener("click", stop, { capture: true, once: true });
+        setTimeout(() => b.belt.removeEventListener("click", stop, { capture: true }), 0);
+      };
+      on(b.belt, "pointerup", end);
+      on(b.belt, "pointercancel", end);
+      // A sideways swipe on a trackpad moves the belt; up and down still scrolls the page.
+      on(b.belt, "wheel", (e) => {
+        if (phone.matches || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+        e.preventDefault();
+        b.x -= e.deltaX; b.v = 0; b.target = null;
+      }, { passive: false });
+      const row = b.belt.closest(".hx-row");
+      row?.querySelectorAll<HTMLElement>("[data-nudge]").forEach((btn) => on(btn, "click", () => {
+        const card = b.track.querySelector("li")?.getBoundingClientRect().width ?? 340;
+        b.v = 0;
+        b.target = (b.target ?? b.x) - Number(btn.dataset.nudge) * card * 2;
+      }));
+    }
+    return () => { io.disconnect(); cancelAnimationFrame(raf); offs.forEach((f) => f()); };
+  }, [box]);
 }
 
 /* The page's motion below the first scene: text eases in as it arrives

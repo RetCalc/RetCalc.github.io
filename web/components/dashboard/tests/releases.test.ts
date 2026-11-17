@@ -1,17 +1,20 @@
-/* What's new (releases.ts): the newest release is the site's version, and
+/* What's new (releases.ts): the site's version is package.json's and is the
+   newest release or newer (an unlisted one), and
    the list runs newest first with every version once. Fails a release
    whose package.json and What's new disagree. */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { CURRENT, RELEASES } from "../releases";
+import { CURRENT, RELEASES, SITE } from "../releases";
 
 const parts = (v: string) => v.split(".").map(Number);
 const newer = (a: string, b: string) => { const [x, y] = [parts(a), parts(b)]; for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i]; return false; };
 
-test("package.json's version is the newest release", () => {
+test("package.json's version is the site's, and no older than the newest release", () => {
   const pkg = JSON.parse(readFileSync(new URL("../../../package.json", import.meta.url), "utf8"));
-  assert.equal(pkg.version, CURRENT.version);
+  assert.equal(pkg.version, SITE.version);
+  assert.ok(SITE.version === CURRENT.version || newer(SITE.version, CURRENT.version), `${SITE.version} is older than ${CURRENT.version}`);
+  assert.ok(SITE.date >= CURRENT.date, "the site's date runs backwards");
 });
 
 test("versions are major.minor.patch, newest first, each once", () => {
