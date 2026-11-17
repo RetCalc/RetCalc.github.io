@@ -9,13 +9,17 @@
      tab bar. The page gutter is 16px, the iPhone's own margin. */
   html:root{--ptab-h:56px;--navh:48px;--gut:16px;
     --pbar-clear:calc(var(--ptab-h) + env(safe-area-inset-bottom,0px))}
-  /* The home-screen app's status bar sits over the page: the top bar pads
-     itself past it, so things pin under the bar. On a phone the clearance
-     is the safe-area inset itself (it is 0 in a Safari tab). The site-wide
-     value doubles it (00-base.css), which on a current iPhone left a 60pt
-     empty band over the bar; checked in the iOS 26 simulator. If the bar
-     ever tucks under the status bar on a device, this is the one line. */
-  html:root{--sb-clear:env(safe-area-inset-top,0px);--pin-top:calc(var(--sb-clear) + var(--navh))}
+  /* The home-screen app. From iOS 26 the system blurs the top of an
+     installed web app whose status bar is "black-translucent" (the page
+     runs under the status bar), and the blur reaches about twice the
+     safe-area inset an installed app reports: that is why the site-wide
+     clearance is double the inset (00-base.css), and phones keep it. The
+     page now asks for the "default" status bar (app/layout.tsx), which
+     starts the page below the status bar with no blur and an inset of 0;
+     iOS reads that only when the app is added, so an icon added earlier
+     keeps the old style, and the doubled clearance keeps its bar clear of
+     the blur. */
+  html:root{--pin-top:calc(var(--sb-clear) + var(--navh))}
   html{scroll-padding-top:calc(var(--sb-clear) + var(--navh) + 12px);-webkit-tap-highlight-color:transparent}
   /* A phone-only element that sets no display of its own shows as its tag would. */
   .phone-only{display:revert}
@@ -58,7 +62,9 @@
   .navbar.oneline .hh-chip,.navbar.oneline .theme-slot{display:none}
 
   /* ---------- the page ---------- */
-  main{padding:10px var(--gr) calc(28px + var(--pbar-clear)) var(--gl);gap:14px}
+  /* The footer follows every page and carries the room for the bars, so the
+     page itself ends with an ordinary gap. */
+  main{padding:10px var(--gr) 24px var(--gl);gap:14px}
   body:has(.dsh) main{padding:0}
   /* The page never scrolls sideways: anything that would poke past the
      screen's edge (a tip's 44px touch area at the end of a line) is clipped
@@ -66,6 +72,8 @@
      becomes its own scroller; wide tables scroll in their own boxes. */
   main,.dsh-page{overflow-x:clip}
   .sitefoot-in{padding-bottom:calc(24px + var(--pbar-clear))}
+  /* On a tool's page the footer's last line also clears the Inputs | Results switch. */
+  body:has(.pv-switch) .sitefoot-in{padding-bottom:calc(84px + var(--pbar-clear))}
   body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
   .toast{bottom:calc(var(--pbar-clear) + 14px)}
   body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bottom,0px))}

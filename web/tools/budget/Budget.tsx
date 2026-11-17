@@ -178,7 +178,7 @@ export function Budget() {
               {emCol ? <div className="bgcols" aria-hidden="true"><span>Normal</span><span>In an emergency</span></div> : null}
               {emCol ? <div className="bgview"><Segmented attr="data-emview" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={emView} onChange={setEmView} /></div> : null}
               {/* Phones: what the sort words' titles say, once for every line. */}
-              {dash ? <p className="hint mt-0 mb-1 phone:hidden">Need, Want or Saving beside a line is what it counts as in needs, wants and saving.</p> : null}
+              {dash ? <p className="hint mt-0 mb-1 phone:hidden">Need, Want or Saving beside a line is what it counts as in needs, wants and saving. Tap Need or Want to change it.</p> : null}
               {groups.map((g) => (
                 <div className="bggroup" key={g.name}>
                   <div className="bggroup-h">
