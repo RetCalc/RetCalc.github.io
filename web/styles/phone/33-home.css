@@ -10,24 +10,27 @@
   /* ---------- the welcome: the whole first screen ---------- */
   .hx-welcome{position:relative;display:flex;flex-direction:column;box-sizing:border-box;overflow:clip;
     min-height:calc(100svh - var(--pin-top) - var(--pbar-clear,0px))}
-  .hx-welcome-glow{position:absolute;left:-30%;right:-30%;top:24%;height:70%;pointer-events:none;
+  .hx-welcome-glow{position:absolute;left:-30%;right:-30%;top:30%;height:80%;pointer-events:none;
     background:radial-gradient(closest-side,color-mix(in srgb,var(--ds-brand-gold) 20%,transparent),transparent 74%)}
   .hx-welcome-in{position:relative;margin-block:auto;padding:20px var(--hx-side) 28px}
   .hx-welcome .hx-display{font-size:clamp(40px,12.6vw,56px)}
   .hx-welcome .hx-lede{margin-top:16px}
   .hx-welcome .hx-btns{margin-top:22px}
-  .hx-wave{position:relative;flex:none;height:clamp(140px,28svh,260px)}
-  .hx-wave-cue{position:absolute;left:var(--hx-side);top:0;margin:0;display:flex;align-items:center;gap:10px;max-width:56vw;
-    font:600 13px/1.3 var(--sans);color:var(--ds-muted)}
-  .hx-wave-cue i{flex:none;width:1px;height:26px;background:linear-gradient(var(--ds-amber),transparent);transform-origin:top;
-    animation:hx-cue 1.8s var(--hx-ease) infinite}
-  .hx-wave-draw{position:absolute;inset:0;animation:hx-wave 1.6s var(--hx-ease) .15s both}
-  .hx-wave svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-  .hx-wave-ln{fill:none;stroke:var(--ds-amber);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-  .hx-wave-a{stop-color:var(--ds-amber);stop-opacity:.2}
-  .hx-wave-b{stop-color:var(--ds-amber);stop-opacity:0}
-  @keyframes hx-wave{from{clip-path:inset(-20px 100% 0 0)}to{clip-path:inset(-20px 0 0 0)}}
-  @media (prefers-reduced-motion:reduce){ .hx-wave-draw,.hx-wave-cue i{animation:none} }
+  /* Three rows of questions drifting past, the middle one the other way, set at a slight angle. */
+  .hx-asks{position:relative;flex:none;display:grid;gap:10px;margin:0 -8% 30px;padding-block:14px;transform:rotate(-4deg);
+    -webkit-mask-image:linear-gradient(90deg,transparent 4%,#000 20%,#000 80%,transparent 96%);mask-image:linear-gradient(90deg,transparent 4%,#000 20%,#000 80%,transparent 96%)}
+  .hx-ask-row{list-style:none;display:flex;width:max-content;margin:0;padding:0;animation:hx-asks calc(var(--n) * 9s) linear infinite;will-change:transform}
+  .hx-ask-row:nth-child(2){animation-direction:reverse}
+  .hx-ask-row li{flex:none;padding-right:10px}
+  .hx .hx-asks .hx-ask-row a{display:flex;align-items:center;gap:9px;min-height:44px;box-sizing:border-box;padding:0 18px 0 14px;border-radius:999px;white-space:nowrap;
+    font:600 15px var(--sans);letter-spacing:-.01em;color:var(--ds-text);background:var(--ds-surface);
+    box-shadow:inset 0 1px 0 var(--hx-edge),0 0 0 1px color-mix(in srgb,var(--ds-text) 9%,transparent),0 12px 20px -16px var(--hx-shade)}
+  .hx-ask-row a::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--ds-amber)}
+  .hx-ask-row:nth-child(2) a::before{background:var(--ds-brand-jade)}
+  .hx-ask-row:nth-child(3) a::before{background:var(--ds-brand-steel)}
+  .hx-ask-row a:active{background:var(--ds-raised)}
+  @keyframes hx-asks{to{transform:translate3d(-50%,0,0)}}
+  @media (prefers-reduced-motion:reduce){ .hx-ask-row{animation:none} }
 
   /* ---------- the life scene ---------- */
   .hx-life{height:620vh}

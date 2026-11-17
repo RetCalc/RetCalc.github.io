@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { TOOL_GROUPS } from "@/lib/tools";
 import type { HomeData } from "./data";
 import { EXAMPLE } from "./example";
 import { BridgeChart, CloudChart, FireChart, GrowthChart, HealthChart, RothChart, ScoreRing, SocialChart } from "./charts";
@@ -50,6 +51,9 @@ const CHAPTERS: Chapter[] = [
 ];
 const N = CHAPTERS.length;
 
+/** Every tool, for the questions on the phone welcome. */
+const ASKS = TOOL_GROUPS.flatMap((g) => g.cards);
+
 /** Where a pane sits for its distance from the front: 0 is the front, 1 the
     next one waiting behind it, -1 the one that has just flown past. */
 /** `plain`: no blur (phones, where blurring a pane each frame is what costs most). */
@@ -77,7 +81,6 @@ export function Life({ data }: { data: HomeData }) {
   const geo = useMemo(() => lifeGeometry(data), [data]);
   useLifeMotion(track, geo);
 
-  const x0 = geo.x(EXAMPLE.age), x1 = geo.x(RETIRE);
   return (
     <>
     {/* Phones: a welcome that fills the first screen. The scene below starts
@@ -94,19 +97,20 @@ export function Life({ data }: { data: HomeData }) {
           <Link href="/calculator" className={buttonVariants({ variant: "outline", size: "xl" })}>Open the Calculator</Link>
         </div>
       </div>
-      <div className="hx-wave" aria-hidden="true">
-        <p className="hx-wave-cue"><span>Scroll to follow one plan from 32 to 95</span><i /></p>
-        <div className="hx-wave-draw">
-          <svg viewBox={`${x0.toFixed(1)} 216 ${(x1 - x0).toFixed(1)} 184`} preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="hxWaveFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" className="hx-wave-a" /><stop offset="1" className="hx-wave-b" />
-              </linearGradient>
-            </defs>
-            <path d={geo.area} fill="url(#hxWaveFill)" />
-            <path className="hx-wave-ln" d={geo.growth} />
-          </svg>
-        </div>
+      {/* The questions the tools answer, drifting past in three rows; each opens its tool. */}
+      <div className="hx-asks">
+        {[0, 1, 2].map((r) => {
+          const row = ASKS.filter((_, n) => n % 3 === r);
+          return (
+            <ul key={r} className="hx-ask-row" style={{ "--n": row.length } as React.CSSProperties}>
+              {[false, true].map((copy) => row.map((c) => (
+                <li key={(copy ? "b" : "a") + c.sub} aria-hidden={copy || undefined}>
+                  <Link href={"/" + c.path} tabIndex={copy ? -1 : undefined}>{c.q}</Link>
+                </li>
+              )))}
+            </ul>
+          );
+        })}
       </div>
     </section>
     <section className="hx-life" ref={track} aria-labelledby="hmTitle">
