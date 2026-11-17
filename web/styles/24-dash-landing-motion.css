@@ -23,13 +23,16 @@ html:has(.dlx){overflow-x:clip}
   transform:rotateX(calc((1 - var(--s)) * 26deg)) scale(calc(.9 + var(--s) * .1));transition:transform .6s var(--dlx-ease)}
 .dlx-stage:not([data-playing]) .dlx-tilt{transition:none}
 .dlx .dl-window{box-shadow:0 60px 120px -50px var(--dlx-shade),0 30px 50px -36px var(--dlx-shade)}
-/* Two of the Dashboard's cards, floating in front of the window's edges. */
+/* Two of the Dashboard's cards, floating in front of the window's edges.
+   Each hangs past its side of the window only as far as the screen has
+   room: the max() pulls it back in by the page's own margin, plus 4% for
+   how much nearer (and so larger) it sits than the window. */
 .dlx-crop{position:absolute;z-index:2;aspect-ratio:var(--ar);overflow:hidden;border-radius:18px;pointer-events:none;transition:opacity .3s;
   box-shadow:inset 0 1px 0 var(--dlx-edge),0 0 0 1px color-mix(in srgb,var(--ds-text) 9%,transparent),0 36px 60px -24px var(--dlx-shade)}
 .dlx-crop > div{position:absolute;left:var(--il);top:var(--it);width:var(--iw)}
 .dlx-crop > img{vertical-align:top}
-.dlx-f1{left:-6%;top:88%;width:36%;aspect-ratio:auto;border-radius:16px;transform:translate3d(0,calc((1 - var(--s)) * 120px),130px)}
-.dlx-f2{right:-5%;top:-5%;width:23%;transform:translate3d(0,calc((1 - var(--s)) * -60px),190px)}
+.dlx-f1{left:max(-6%,calc((100% - 100vw) / 2 + 28px + 4%));top:88%;width:36%;aspect-ratio:auto;border-radius:16px;transform:translate3d(0,calc((1 - var(--s)) * 120px),130px)}
+.dlx-f2{right:max(-5%,calc((100% - 100vw) / 2 + 28px + 6%));top:-5%;width:23%;transform:translate3d(0,calc((1 - var(--s)) * -60px),190px)}
 .dlx-stage[data-playing] .dlx-tilt{transform:none}
 .dlx-stage[data-playing] .dlx-crop{opacity:0}
 @media (max-width:1000px){ .dlx-crop{display:none} }
