@@ -97,17 +97,13 @@ export function Life({ data }: { data: HomeData }) {
           <Link href="/calculator" className={buttonVariants({ variant: "outline", size: "xl" })}>Open the Calculator</Link>
         </div>
       </div>
-      {/* The questions the tools answer, drifting past in three rows; each opens its tool. */}
-      <div className="hx-asks">
+      {/* The questions the tools answer, drifting past in three rows: a picture, not links. */}
+      <div className="hx-asks" aria-hidden="true">
         {[0, 1, 2].map((r) => {
           const row = ASKS.filter((_, n) => n % 3 === r);
           return (
             <ul key={r} className="hx-ask-row" style={{ "--n": row.length } as React.CSSProperties}>
-              {[false, true].map((copy) => row.map((c) => (
-                <li key={(copy ? "b" : "a") + c.sub} aria-hidden={copy || undefined}>
-                  <Link href={"/" + c.path} tabIndex={copy ? -1 : undefined}>{c.q}</Link>
-                </li>
-              )))}
+              {[false, true].map((copy) => row.map((c) => <li key={(copy ? "b" : "a") + c.sub}><span>{c.q}</span></li>))}
             </ul>
           );
         })}

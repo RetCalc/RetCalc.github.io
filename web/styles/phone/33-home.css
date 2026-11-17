@@ -17,18 +17,17 @@
   .hx-welcome .hx-lede{margin-top:16px}
   .hx-welcome .hx-btns{margin-top:22px}
   /* Three rows of questions drifting past, the middle one the other way, set at a slight angle. */
-  .hx-asks{position:relative;flex:none;display:grid;gap:10px;margin:0 -8% 30px;padding-block:14px;transform:rotate(-4deg);
+  .hx-asks{position:relative;pointer-events:none;-webkit-user-select:none;user-select:none;flex:none;display:grid;gap:10px;margin:0 -8% 30px;padding-block:14px;transform:rotate(-4deg);
     -webkit-mask-image:linear-gradient(90deg,transparent 4%,#000 20%,#000 80%,transparent 96%);mask-image:linear-gradient(90deg,transparent 4%,#000 20%,#000 80%,transparent 96%)}
   .hx-ask-row{list-style:none;display:flex;width:max-content;margin:0;padding:0;animation:hx-asks calc(var(--n) * 9s) linear infinite;will-change:transform}
   .hx-ask-row:nth-child(2){animation-direction:reverse}
   .hx-ask-row li{flex:none;padding-right:10px}
-  .hx .hx-asks .hx-ask-row a{display:flex;align-items:center;gap:9px;min-height:44px;box-sizing:border-box;padding:0 18px 0 14px;border-radius:999px;white-space:nowrap;
+  .hx-ask-row span{display:flex;align-items:center;gap:9px;min-height:44px;box-sizing:border-box;padding:0 18px 0 14px;border-radius:999px;white-space:nowrap;
     font:600 15px var(--sans);letter-spacing:-.01em;color:var(--ds-text);background:var(--ds-surface);
     box-shadow:inset 0 1px 0 var(--hx-edge),0 0 0 1px color-mix(in srgb,var(--ds-text) 9%,transparent),0 12px 20px -16px var(--hx-shade)}
-  .hx-ask-row a::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--ds-amber)}
-  .hx-ask-row:nth-child(2) a::before{background:var(--ds-brand-jade)}
-  .hx-ask-row:nth-child(3) a::before{background:var(--ds-brand-steel)}
-  .hx-ask-row a:active{background:var(--ds-raised)}
+  .hx-ask-row span::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--ds-amber)}
+  .hx-ask-row:nth-child(2) span::before{background:var(--ds-brand-jade)}
+  .hx-ask-row:nth-child(3) span::before{background:var(--ds-brand-steel)}
   @keyframes hx-asks{to{transform:translate3d(-50%,0,0)}}
   @media (prefers-reduced-motion:reduce){ .hx-ask-row{animation:none} }
 
