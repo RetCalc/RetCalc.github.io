@@ -21,7 +21,7 @@ export interface Release {
     the Dashboard (the homepage redesign, 4.15.0, and its phone fixes,
     4.15.1) is counted here only: it gets no entry in the list and doesn't
     mark About as New. */
-export const SITE = { version: "4.15.1", date: "2026-11-17" };
+export const SITE = { version: "4.15.2", date: "2026-11-17" };
 
 export const RELEASES: Release[] = [
   { version: "4.14.1", date: "2026-11-17", title: "Phone fixes", items: [
