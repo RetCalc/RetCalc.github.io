@@ -30,6 +30,7 @@ import { collegeChildren, collegeKid, collegeYears } from "./college";
 import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, profileLabel, readDashboard, useDashboard, useProfiles, withHome, type DashData, type Person, type Profile as P } from "./store";
 import { NewProfileButton, Profiles } from "./Profiles";
 import { Note, Tile, Tip, TipLabel, To } from "./ui";
+import { TapNote } from "@/components/phone/Words";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
 
@@ -59,9 +60,9 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
           </button>
         ))}
       </div>
-      <div className="dsh-mt"><Note>
+      <div className="dsh-mt"><TapNote label="How these rates are used" className="dsh-pa-tap"><Note>
         Until you retire, savings grow at a steady <b>{pct(real)}</b> per year after inflation ({pct(A.growth)} growth less {pct(A.inflation)} inflation). Once retired, the plan runs through <b>every market since 1926</b> instead of a steady rate, invested in your retirement mix: {mixWords(retireMix(pr))}. That mix is set in the <To href="/dashboard/retirement">Retirement</To> simulator. Every figure is in today&apos;s dollars.
-      </Note></div>
+      </Note></TapNote><p className="dsh-cap dsh-flush dsh-pa-today phone:hidden">Every figure is in today&apos;s dollars.</p></div>
       <div className="dsh-foot"><Button variant="link" size="inline" onClick={() => set((p) => ({ ...p, assume: { ...DEFAULT_ASSUMPTIONS, stocks: p.assume.stocks } }))}>Back to the usual: balanced, 3% inflation</Button></div>
     </Tile>
   );

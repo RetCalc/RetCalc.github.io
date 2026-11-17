@@ -149,7 +149,7 @@ export function InvestedCard() {
       </Learn>
       <BackNote step="invested" />
       <Numbers>
-        <div className="gd-fields"><SelF k="risk" label="How is it invested?" opts={RISKS.map((r) => [r.real, r.label + " · " + r.sub])} num full redraw
+        <div className="gd-fields"><SelF k="risk" label="How is it invested?" opts={RISKS.map((r) => [r.real, r.label + " · " + r.sub])} num full redraw tap="Which mix is yours"
           hint="Target-date funds are usually Balanced or Growth until the last decade before retirement; the fund's page shows its share in stocks." /></div>
       </Numbers>
       <Means><MixReadout /></Means>

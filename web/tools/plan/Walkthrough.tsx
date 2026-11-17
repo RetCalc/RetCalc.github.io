@@ -150,7 +150,7 @@ function Header({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => void }) 
     <div className="toolback">
       <h1 className="toolhead-name">Paycheck to Retirement</h1>
       <div className="toolbar mt-3 w-full">
-      <nav aria-label="Steps" className="-mx-1 min-w-0 max-w-full overflow-x-auto pb-1">
+      <nav aria-label="Steps" className="pw-steps -mx-1 min-w-0 max-w-full overflow-x-auto pb-1">
         <ol className="m-0 flex min-w-max list-none gap-1 p-0">
           {STEPS.map((s, i) => {
             // Changes ahead, skipped, stays open to go into but isn't ticked off.
@@ -192,7 +192,7 @@ function RunningStrip({ plan }: { plan: PlanState }) {
   );
   const left = s ? (Math.abs(s.left) < 0.01 ? 0 : s.left) : null;
   return (
-    <Card size="flush" className="col-span-full">
+    <Card size="flush" className="col-span-full" data-pw="run">
       <CardContent className="grid grid-cols-3 gap-x-6 gap-y-3 px-5.5 py-3.5 max-sm:grid-cols-2 max-sm:px-4 lg:grid-cols-6">
         {fig("Gross pay", s?.gross ?? null, per)}
         {fig("Taxes", s?.taxes ?? null, s ? money(s.taxes * s.p) + " per year" : undefined)}
@@ -237,7 +237,7 @@ function Foot({ plan, idx, goTo }: { plan: PlanState; idx: number; goTo: (s: Ste
   const blocked = step === "start" && !startDone(plan) ? "Enter your ages and your pay to go on." : null;
   if (step === "summary") return null;
   return (
-    <Card className="col-span-full">
+    <Card className="col-span-full" data-pw="foot">
       <CardContent className="flex flex-wrap items-center gap-3">
         {prev ? <Button variant="outline" size="lg" onClick={() => goTo(prev)}><i className="arw back" aria-hidden="true"></i>Back</Button> : null}
         <span className="flex-1"></span>

@@ -2,4 +2,117 @@
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* ---------- Calculator and Retirement: the embedded tools ----------
+     Clear Glass caps an embedded tool's inputs column at the screen's
+     height (for its sticky column beside the results). On a phone the
+     column is static, so the cap only let the inputs run under the
+     result cards that follow: the column takes its full height here. */
+  .dsh .dsh-embed :is(#asideSeries,#asideDD,#asideBR,#asideHC){max-height:none}
+
+  /* ---------- Calculator: Results in the order the site's Advanced has ----------
+     The answer, then the chart, then when you could stop saving, then the
+     accounts' table and the rest as they come (PlanScreen's results column). */
+  .dsh #tab-series > *{order:4}
+  .dsh #tab-series > :first-child{order:0}
+  .dsh #tab-series > :has(> [data-pchart]){order:1}
+  .dsh #tab-series > :has(> #coastCard){order:2}
+  .dsh #tab-series > #saPanel{order:3}
+
+  /* ---------- Retirement ---------- */
+  /* What the page shows (Drawdown, Bridge, Health cover, Taxes): one row
+     of four equal, 44px tabs, the icon over the name. */
+  .dsh-retside{margin-top:14px}
+  .dsh-retside [role="group"]{display:flex;flex-wrap:nowrap;width:100%}
+  .dsh-retside [role="group"] > button{flex:1 1 0;min-width:0;min-height:52px;flex-direction:column;gap:3px;padding:6px 2px;
+    font-size:12px;line-height:1.15;white-space:normal;text-align:center}
+  .dsh-retside [role="group"] > button svg{width:17px;height:17px}
+  /* The strategies: Use this one, Show all and Hide at a thumb's size. */
+  #strategies .dsh-strat [data-slot="button"],#strategies .dsh-more [data-slot="button"]{min-height:44px}
+  #strategies .dsh-tile-h [data-slot="collapsible-trigger"],#strategies .dsh-tile-h [data-slot="button"]{min-height:44px}
+  :is(#drawdown,#bridge) > .dsh-tile-h [data-slot="button"]{min-height:44px}
+  :is(#bridge,#taxes) .dsh-tip [data-slot="button"]{min-height:44px}
+  /* A Remove it inside a sentence keeps a 44px touch area. */
+  :is(#bridge,#taxes) .dsh-cap [data-slot="button"][data-size="inline"]{position:relative}
+  :is(#bridge,#taxes) .dsh-cap [data-slot="button"][data-size="inline"]::after{content:"";position:absolute;inset:-12px -6px}
+  /* The plan's facts' "Where these come from": a row of its own. */
+  .dsh-payfacts .dsh-cap .ptap{margin-top:-6px}
+
+  /* Taxes in retirement: the answer pinned over the choices (Inputs). */
+  .dsh-tx-pin{display:contents}
+  #taxes .dsh-tx{margin-top:14px}
+  #taxes .dsh-tx-in{padding:14px}
+  #taxes .dsh-tx-best [data-slot="button"]{min-height:44px}
+  #taxes .dsh-tx-th [data-slot="collapsible-trigger"]{min-height:44px}
+  #taxes .dsh-tx-th{margin-top:10px}
+  #taxes .dsh-tx-out > .dsh-cap .ptap{display:flex}
+  #taxes .dsh-tx-map .dsh-legend{font-size:12.5px}
+
+  /* ---------- If things go wrong (StressTests.tsx, on Plan summary) ----------
+     The date a test assumes is the button that changes it: said so, with
+     a 44px row to tap. */
+  .dsh-st-when [data-slot="button"]{min-height:44px;gap:8px;text-decoration:none}
+  .dsh-st-change{display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border-radius:999px;
+    background:var(--dsh-fill);color:var(--ds-text);font-size:12.5px;font-weight:500;text-decoration:none}
+
+  /* ---------- Year by year ---------- */
+  /* What shapes the years: each change a 44px chip, its pencil a 44px square. */
+  .dsh-yby-chip{min-height:44px}
+  .dsh-yby-tog{min-height:44px}
+  .dsh-yby-pen{min-width:44px;min-height:44px}
+  .dsh-yby-changes > [data-slot="button"]{min-height:44px}
+
+  /* Years or Table. */
+  .dsh-yby-pick{margin:12px 0 4px}
+  .dsh-yby-pick [data-slot="segmented"]{display:flex;width:100%}
+  .dsh-yby-pick [data-slot="segmented-item"]{flex:1 1 0;gap:6px;font-size:14px}
+  .dsh-yby-pick svg{width:16px;height:16px}
+  #table:not(.dsh-yby-tblon) .dsh-yby-wrap{display:none}
+  #table.dsh-yby-tblon .dsh-ylist{display:none}
+  /* The table, when chosen: every figure that opens something a full row tall. */
+  #table .dsh-yby tbody td{height:44px}
+  #table .dsh-yby-cell{display:inline-flex;align-items:center;min-height:44px}
+
+  /* The list: a row a year, figures in three even columns. */
+  .dsh-ylist{margin-top:8px}
+  .dsh-ylist-rows{margin:0;padding:0;list-style:none}
+  .dsh-ylist-rows > li + li{border-top:1px solid var(--ds-rule)}
+  .dsh-ylist-row{display:grid;grid-template-columns:54px repeat(3,minmax(0,1fr)) 14px;align-items:center;column-gap:8px;
+    width:100%;min-height:56px;margin:0;padding:8px 0;border:0;background:none;color:var(--ds-text);font:inherit;text-align:left;
+    cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .dsh-ylist-row:active{background:var(--dsh-fill-2)}
+  .dsh-ylist-row:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px;border-radius:10px}
+  .dsh-ylist-row[data-now] .dsh-ylist-y b{color:var(--ds-amber)}
+  .dsh-ylist-y,.dsh-ylist-f{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .dsh-ylist-y b{font:600 15.5px/1.2 var(--sans);font-variant-numeric:tabular-nums}
+  .dsh-ylist-y small,.dsh-ylist-f small{font-size:11.5px;line-height:1.3;color:var(--ds-muted)}
+  .dsh-ylist-f b{font:500 14px/1.25 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dsh-ylist-chev{width:14px;height:14px;color:var(--ds-rule-strong)}
+  .dsh-ylist-notes{grid-column:2 / -1;display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
+  .dsh-ylist-notes > span{padding:2px 8px;border-radius:999px;background:var(--dsh-fill);font-size:12px;line-height:1.35;color:var(--dsh-on-page)}
+  .dsh-ylist-notes > span.dsh-dn{background:color-mix(in srgb,var(--ds-loss) 11%,var(--ds-surface));color:var(--ds-loss)}
+  .dsh-ylist-total{margin:4px 0 0;padding:10px 0 0;border-top:1px solid var(--ds-rule-strong);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}
+  .dsh-ylist-total > div{display:flex;flex-direction:column;gap:1px}
+  .dsh-ylist-total > div:first-child{grid-column:1 / -1;font-weight:600}
+  .dsh-ylist-total dt{font-size:12.5px;color:var(--ds-muted)}
+  .dsh-ylist-total > div:first-child dt{font-size:13.5px;color:var(--ds-text)}
+  .dsh-ylist-total dd{margin:0;font:600 15px/1.25 var(--sans);font-variant-numeric:tabular-nums}
+
+  /* A year, opened in its sheet. */
+  .dsh-ylist-sub{display:block;margin-top:2px;font-size:13.5px;font-weight:400;color:var(--ds-muted)}
+  .dsh-ylist-what{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px;padding:0;list-style:none}
+  .dsh-ylist-what > li{padding:3px 10px;border-radius:999px;background:var(--dsh-fill);font-size:13px;color:var(--dsh-on-page)}
+  .dsh-ylist-what > li.dsh-dn{background:color-mix(in srgb,var(--ds-loss) 11%,var(--ds-surface));color:var(--ds-loss)}
+  .dsh-ylist-h{margin:14px 0 2px;font:600 12.5px/1.3 var(--sans);letter-spacing:.02em;text-transform:uppercase;color:var(--ds-muted)}
+  .dsh-ylist-dl{display:flex;flex-direction:column}
+  .dsh-ylist-fig{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;margin:0;padding:8px 0;border:0;border-bottom:1px solid var(--ds-rule);
+    background:none;color:var(--ds-text);font:inherit;font-size:15px;text-align:left}
+  .dsh-ylist-dl > .dsh-ylist-fig:last-child{border-bottom:0}
+  button.dsh-ylist-fig{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  button.dsh-ylist-fig:active{background:var(--dsh-fill-2)}
+  button.dsh-ylist-fig:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px;border-radius:8px}
+  .dsh-ylist-fig[data-strong]{font-weight:600}
+  .dsh-ylist-k{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .dsh-ylist-k small{font-size:12.5px;line-height:1.35;font-weight:400;color:var(--ds-amber)}
+  .dsh-ylist-v{flex:none;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dsh-ylist-fig .dsh-yby-dot{vertical-align:2px}
 }

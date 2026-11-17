@@ -25,6 +25,8 @@ import {
   type MarketKey, type TaxPlan, type TaxSetup,
 } from "./taxes";
 import { Note, Tile, Tip, TipLabel, To } from "./ui";
+import { PinnedReading } from "@/components/common/Reading";
+import { TapNote } from "@/components/phone/Words";
 
 const round = (v: number) => Math.round(v / 1000) * 1000;
 
@@ -71,18 +73,23 @@ export function TaxesTile() {
     <div className="dsh-r4">
       <Tile id="taxes" icon={ReceiptTextIcon} title="Taxes in retirement" tip="taxPlan"
         right={<span className="dsh-cap">{s.year0} to {s.year0 + s.years - 1}{s.bridged ? ", after the bridge" : ""}</span>}>
+        {/* Phones: what the choices come to, pinned while they're made (a
+            tap goes to the Results). Nothing on wider screens. */}
+        <div className="dsh-tx-pin phone:hidden" data-pv="in">
+          <PinnedReading main={{ label: "Tax over retirement", value: money(round(run.res.tax)) }} side={{ label: "Left for heirs, after their tax", value: money(round(run.res.legacy)) }} />
+        </div>
         {saved ? (
-          <p className="dsh-cap dsh-mt6">Your tax plan, saved {longDate(saved.at)}: <b>{planWords(T)}</b>. Changes below are saved to it.{" "}
+          <p className="dsh-cap dsh-mt6" data-pv="in">Your tax plan, saved {longDate(saved.at)}: <b>{planWords(T)}</b>. Changes below are saved to it.{" "}
             <Button variant="link" size="inline" onClick={() => set((p) => ({ ...p, taxPlan: undefined }))}>Remove it</Button></p>
         ) : (
-          <div className="dsh-mt6 dsh-tip">
+          <div className="dsh-mt6 dsh-tip" data-pv="in">
             <span>Your withdrawal strategy sets how much comes out each year. Choose which accounts it comes from, and how much to convert to Roth while your tax is low{early ? "; the bridge plans the years before 59½" : ""}.</span>
             <Button size="sm" onClick={use}>Use this tax plan</Button>
           </div>
         )}
 
         <div className="dsh-tx">
-          <div className="dsh-tx-in dsh-fields dsh-fields-sm">
+          <div className="dsh-tx-in dsh-fields dsh-fields-sm" data-pv="in">
             <SelectField id="txFill" label={<TipLabel text="Draw traditional money up to" id="taxFill" />} value={String(T.f)} onChange={(v) => change({ ...T, f: Number(v) })}>
               {FILL_NAMES.map((n, i) => <option key={i} value={i}>{n}</option>)}
             </SelectField>
@@ -104,7 +111,7 @@ export function TaxesTile() {
             </div>
           </div>
 
-          <div className="dsh-tx-out">
+          <div className="dsh-tx-out" data-pv="out">
             <div className="dsh-stats">
               <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Tax over retirement" id="taxTotal" /></div><div className="dsh-fig dsh-md">{money(round(run.res.tax))}</div>{delta(run.res.tax, base.res.tax, "down")}{run.res.overN > 0 ? <div className="dsh-cap dsh-mt6">{money(round(run.res.over))} of it from savings, in {run.res.overN} {run.res.overN === 1 ? "year" : "years"} <Tip id="taxOver" title="Tax from savings" /></div> : null}</div>
               <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Spent over retirement" id="taxSpent" /></div><div className="dsh-fig dsh-md">{money(round(run.res.spent))}</div>{delta(run.res.spent, base.res.spent, "up")}</div>
@@ -118,8 +125,11 @@ export function TaxesTile() {
           </div>
         </div>
 
-        <YearTable s={s} rows={run.rows} names={couple(pr)} />
-        <p className="dsh-cap dsh-mt">In today&apos;s dollars. Each year&apos;s withdrawal is your strategy&apos;s, from <To href="/dashboard/retirement">Drawdown</To>; Social Security and the ages you claim it come from <To href="/dashboard/income#social-security">Income</To>.</p>
+        <div data-pv="out" className="phone:contents"><YearTable s={s} rows={run.rows} names={couple(pr)} /></div>
+        <p className="dsh-cap dsh-mt max-phone:hidden">In today&apos;s dollars. Each year&apos;s withdrawal is your strategy&apos;s, from <To href="/dashboard/retirement">Drawdown</To>; Social Security and the ages you claim it come from <To href="/dashboard/income#social-security">Income</To>.</p>
+        {/* Phones: the dollars stay in view; where the withdrawals and Social Security come from is a tap away. */}
+        <p className="dsh-cap dsh-mt phone:hidden" data-pv="out">In today&apos;s dollars.{" "}
+          <TapNote inline label="Where these come from">Each year&apos;s withdrawal is your strategy&apos;s, from <To href="/dashboard/retirement">Drawdown</To>; Social Security and the ages you claim it come from <To href="/dashboard/income#social-security">Income</To>.</TapNote></p>
       </Tile>
     </div>
   );

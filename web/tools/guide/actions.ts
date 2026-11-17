@@ -4,6 +4,7 @@
    through to the household bar. From gdTrip(), gdCapture(), gdEndTrip() and
    gdHouseholdSync() in src/js/app/31-guide-coach.js and 29-guide-trips.js. */
 
+import { isPhone } from "@/components/phone/usePhone";
 import { setToolInputs, toolInputs, type ToolInputs } from "@/components/tools/ToolState";
 import { HOUSEHOLD_STORE, readHousehold, type SavedHousehold } from "@/lib/household";
 import { readStored } from "@/lib/storage";
@@ -85,7 +86,7 @@ export function startTrip(id: string, from?: string): { path: string; sync: bool
     g.trip = t;
     // On a phone the open coach would cover most of the tool, so it starts
     // folded to its title, the next thing to do and Back to guide.
-    g.coachMin = typeof window !== "undefined" && window.matchMedia("(max-width:640px)").matches;
+    g.coachMin = isPhone();
   });
   tripBoot.done = true;
   return { path: meta.path, sync };

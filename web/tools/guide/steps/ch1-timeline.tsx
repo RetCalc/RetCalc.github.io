@@ -34,11 +34,11 @@ export function AboutYou() {
       <Numbers>
         <div className="gd-fields">
           <SelF k="status" label="Household" opts={[["s", "Just me"], ["m", "Me and a spouse"]]} redraw full />
-          <SelF k="state" label="State you live in" opts={[["", "Choose your state"], ...STATE_OPTIONS.map((o) => [o.code, o.name] as [string, string])]} redraw full
+          <SelF k="state" label="State you live in" opts={[["", "Choose your state"], ...STATE_OPTIONS.map((o) => [o.code, o.name] as [string, string])]} redraw full tap="Why your state"
             hint="Your state's income tax sets your take-home pay and what retirement costs in tax, and its rules shape healthcare costs." />
           <NumF k="age" label="Your age" affix="yrs old" />
           {mar(v) ? <NumF k="spouseAge" label="Spouse's age" affix="yrs old" /> : null}
-          <NumF k="retire" label="Age you'd like to retire" affix="yrs old" hint="A guess is fine. You can try other ages later."
+          <NumF k="retire" label="Age you'd like to retire" affix="yrs old" tap="Your retirement age" hint="A guess is fine. You can try other ages later."
             err={ok(a.age) && ok(a.retire) && a.retire <= a.age ? <>Your retirement age needs to be later than your age today. This guide is built for the saving years. If you&apos;ve
               {" "}already retired, <Button variant="quiet" size="inline" data-gd="retired" onClick={() => { G.set("retired", true, true); G.go("retired"); }}>start from what you have</Button>
               {" "}and the guide opens the <b>Drawdown Simulator</b> with it.</> : null} />

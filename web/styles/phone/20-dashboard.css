@@ -212,4 +212,13 @@
   .dsh .dsh-assume .dsh-ac-chip{display:inline-flex;align-items:center;min-height:44px;vertical-align:middle}
   .dsh .dsh-hello{padding:14px 16px;font-size:15px}
   .dsh .dsh-hello .dsh-r{margin-left:0}
+
+  /* ---------- Plan summary (Summary.tsx, AssumptionCheck.tsx) ---------- */
+  /* How your assumptions compare: the column names the wide table has over
+     it, said on each row's figures (its header row is hidden this narrow). */
+  .dsh .dsh-ac-row:not(.dsh-ac-head) :is(.dsh-ac-yours,.dsh-ac-bal)::before{display:block;margin-bottom:2px;font:500 11.5px/1.3 var(--sans);color:var(--ds-muted)}
+  .dsh .dsh-ac-row:not(.dsh-ac-head) .dsh-ac-yours::before{content:"Yours"}
+  .dsh .dsh-ac-row:not(.dsh-ac-head) .dsh-ac-bal::before{content:"Balanced"}
+  .dsh .dsh-ac-row:not(.dsh-ac-head) .dsh-ac-fx::before{content:"At retirement ";font-size:11.5px;font-weight:500;color:var(--ds-muted)}
+  .dsh .dsh-ac-to{display:grid;place-items:center;width:44px;height:44px;margin:-8px -8px -8px 0}
 }
