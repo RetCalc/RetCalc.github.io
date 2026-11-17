@@ -108,7 +108,7 @@ function Row({ t, S, R, two, cover, pct, onEdit }: { t: StressTest; S: Stress; R
 export function StressTests({ pr, entries, R }: { pr: Profile; entries: Entry[]; R: Results }) {
   const S = useStress(pr, entries, R), cover = useCover(pr, entries, S);
   const [editing, setEditing] = useState<StressId | null>(null);
-  if (!R.S) return <Empty icon={UmbrellaIcon} title="If things go wrong" ghost="— of 5" text="How your plan holds up if a partner dies, work stops for a year, markets fall as you retire, care is needed or Social Security pays less. It fills in once your plan runs." action="Fill in your profile" href="/dashboard/profile" />;
+  if (!R.S) return <Empty icon={UmbrellaIcon} title="If things go wrong" ghost="— of 5" text="How your plan holds up if one of you passes away, work stops for a year, markets fall as you retire, care is needed or Social Security pays less. It fills in once your plan runs." action="Fill in your profile" href="/dashboard/profile" />;
   const two = pr.who === "couple";
   const summary = S === undefined ? "Testing your plan against hard events…" : S ? heldWords(S) + (S.held < S.of ? "; falls short: " + S.tests.filter((t) => !t.holds).map((t) => STRESS_NAMES[t.id]).join(", ") : "") : "Fills in once your plan runs";
   return (

@@ -341,7 +341,7 @@ export function About() {
                   plan&apos;s, and the middle market: what&apos;s left at the end, or the age the
                   money runs out.</p>
                   <ul>
-                    <li><b>A partner dies</b> (couples): by default the older of you at 75 (or your
+                    <li><b>If one of you passes away</b> (couples): by default the older of you at 75 (or your
                     first year of retirement if later). From then Social Security pays only the
                     larger of your two benefits, and spending is a share of the couple&apos;s, 75%
                     by default. It also finds the life insurance, paid that year, that brings the

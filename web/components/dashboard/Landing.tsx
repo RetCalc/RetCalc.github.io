@@ -286,7 +286,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
             <Shot name="retire-tile" w={1520} h={650} sizes="(max-width: 900px) 100vw, 760px" alt="At retirement: savings, chance of success, planned spending, taxes and Social Security, and the years of health cover to plan before Medicare" />
           </Card>
           <Card i={1} flip tone="rose" name="Stress tests" title="See what happens if things go wrong." sub="Your plan run again with one hard thing added, and whether it still holds up."
-            points={["A partner dying, a year without work, long-term care", "Retiring into 1929, 1937, 1966 or 1973", "Social Security paying less than promised"]}>
+            points={["One of you passing away, a year without work, long-term care", "Retiring into 1929, 1937, 1966 or 1973", "Social Security paying less than promised"]}>
             <Shot name="stress" w={2080} h={1096} sizes="(max-width: 900px) 100vw, 760px" alt="If things go wrong: the plan holds up in 5 of 5 stress tests, with the chance of success and what's left in each" />
           </Card>
           <Card i={2} tone="gold" name="Next steps" title="Know what to work on next." sub="A short list of changes, ranked by how much each one improves your plan, with a link to make each one.">

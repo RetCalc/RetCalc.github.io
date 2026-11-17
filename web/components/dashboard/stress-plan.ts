@@ -21,7 +21,7 @@ import {
 export type StressId = "death" | "work" | "market" | "care" | "ss";
 /** Each test's name, as the page and the report say it. */
 export const STRESS_NAMES: Record<StressId, string> = {
-  death: "A partner dies", work: "A year without work", market: "Retiring into a bad market", care: "Long-term care", ss: "Social Security pays less",
+  death: "If one of you passes away", work: "A year without work", market: "Retiring into a bad market", care: "Long-term care", ss: "Social Security pays less",
 };
 /** Each test's explanation (tips.ts), what it assumes. */
 export const STRESS_TIPS: Record<StressId, TipId> = { death: "stressDeath", work: "stressWork", market: "stressMarket", care: "stressCare", ss: "stressSs" };
