@@ -234,21 +234,4 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--ds-focus);outline
   html:not(.pwa) .navbar.oneline nav[role=tablist]{justify-content:space-evenly;gap:0}
   html:not(.pwa) .navbar.oneline nav[role=tablist] button{margin-right:0;padding-inline:clamp(1px,.8vw,6px);font-size:clamp(13px,3.6vw,17.5px)}
   @media (max-width:340px){ html:not(.pwa) .navbar.oneline nav[role=tablist] button{font-size:12px;padding-inline:0} }
-  /* The home-screen app docks the whole row at the bottom as a tab bar (see
-     11-charts.css): the five tabs share the width, and the account button
-     (or the theme button, with no accounts) closes the row. The logo has no
-     place there. */
-  html.pwa .navbar.oneline{display:flex;align-items:stretch;gap:0;min-height:0;
-    padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
-  html.pwa .navbar.oneline .brand{display:none}
-  html.pwa .navbar.oneline nav[role=tablist]{flex:1 1 0;min-width:0}
-  html.pwa .navbar.oneline nav[role=tablist] button{margin-right:0;padding:10px 1px 9px}
-  html.pwa .navbar.oneline .navrow-end{flex:none;gap:0;padding:0 10px 0 2px}
-  /* There the button drops its outline and reads like a tab: plain icon,
-     Muted until its menu is open. !important because the button's look is
-     Tailwind utilities, a layer above this sheet. */
-  html.pwa .navrow-end :is(.acct-btn,.theme-slot) > button{width:46px !important;height:46px !important;border-radius:50% !important;
-    border-color:transparent !important;background:transparent !important;box-shadow:none !important;color:var(--dim)}
-  html.pwa .navrow-end :is(.acct-btn,.theme-slot) > button svg{width:22px;height:22px}
-  html.pwa .navrow-end :is(.acct-btn,.theme-slot) > button[aria-expanded=true]{color:var(--text);background:var(--panel-2) !important}
 }

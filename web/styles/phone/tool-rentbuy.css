@@ -1,0 +1,12 @@
+/* Phones only (under 768px): Rent vs. Buy.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* Copy from Mortgage: a full-height button. */
+  #rbCopyMort{min-height:44px;margin-top:8px;padding-inline:16px;font-size:15px}
+  /* The table scrolls inside its own box, never the page. */
+  #rbTable{min-width:560px}
+  /* Folded groups (tools/FoldToggle.tsx). */
+  #asideRB [data-closed~="buy"] [data-fold="buy"],
+  #asideRB [data-closed~="asm"] [data-fold="asm"]{display:none}
+}

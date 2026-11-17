@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { NEW } from "../playwright.config";
+import { reveal } from "./phone";
 
 /* Unusual input and damaged data: the tools say what's wrong, or carry on,
    but never crash, show NaN or ∞, or quietly open other numbers. */
@@ -41,9 +42,11 @@ test("a money field stops at 12 digits; a percent at 100", async ({ page }) => {
 
 test("a 0% withdrawal rate explains why there's no answer", async ({ page }) => {
   await page.goto(NEW + "/advanced");
+  await reveal(page, "#withdrawal");
   await page.locator("#withdrawal").fill("0");
   await expect(page.locator("#payWarnText")).toContainText("0% withdrawal rate");
   // Reach your target has no answer to offer, so neither button shows.
+  await reveal(page, "#reachCard");
   await expect(page.locator("#reachCard")).toBeVisible();
   await expect(page.locator("#btnCoast, #btnRetire")).toHaveCount(0);
   await noBadText(page);

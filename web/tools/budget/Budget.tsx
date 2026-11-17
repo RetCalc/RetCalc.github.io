@@ -34,6 +34,7 @@ import { budgetShare } from "./share";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Paycheck } from "./Paycheck";
+import { InfoTap } from "@/components/phone/Words";
 import { sortOf, sortable, type Sort } from "@/components/dashboard/budget-rules";
 
 
@@ -42,6 +43,9 @@ const NEED_WANT = [["need", "Need"], ["want", "Want"]] as const;
     setup's one number (needs and wants wait until it's split). */
 const sortWord = (r: BudgetRow, i: number) =>
   isSavingsRow(r) ? "Saving" : r.custom && r.desc === "Everything else" ? null : ({ need: "Need", want: "Want" } as const)[sortOf(r, i) ?? "need"];
+
+/** What a line's sort word means, said in its title (and on a tap, on a phone). */
+const sortNote = (w: string) => `Counted as ${w === "Saving" ? "saving" : "a " + w.toLowerCase()} in needs, wants and saving`;
 
 export function Budget() {
   // A budget saved before the Paycheck tab opens without its saving lines
@@ -158,7 +162,7 @@ export function Budget() {
     {tabs}
     <ViewTransition key="budget" enter={swap} exit={swap} default="none">
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3" id="tab-budget">
-      <div className="min-w-0 lg:col-span-2">
+      <div className="min-w-0 lg:col-span-2" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the lines are on screen. */}
         <PinnedReading tone={empty ? "text" : "answer"} main={{ label: "Your budget, per month", value: money(totalYr / 12) }} side={{ label: "Per year", value: money(totalYr) }} />
@@ -173,6 +177,8 @@ export function Budget() {
             <div id="bgList" ref={listRef} data-emerg={emCol ? "" : undefined} data-emview={emCol ? emView : undefined}>
               {emCol ? <div className="bgcols" aria-hidden="true"><span>Normal</span><span>In an emergency</span></div> : null}
               {emCol ? <div className="bgview"><Segmented attr="data-emview" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={emView} onChange={setEmView} /></div> : null}
+              {/* Phones: what the sort words' titles say, once for every line. */}
+              {dash ? <p className="hint mt-0 mb-1 phone:hidden">Need, Want or Saving beside a line is what it counts as in needs, wants and saving.</p> : null}
               {groups.map((g) => (
                 <div className="bggroup" key={g.name}>
                   <div className="bggroup-h">
@@ -194,7 +200,7 @@ export function Budget() {
                           : <span className="desc">{r.desc} <span className="text-muted-foreground">· from your home</span>{scope?.slots?.fromHome ? <TipDot k="" title="From your home" text={scope.slots.fromHome} /> : null}</span>
                       ) : isLockedRow(r, i) ? (
                         /* Fixed: the Paycheck tab reads this line as your premiums. */
-                        <span className="desc" title="The Paycheck tab reads this line as your health premiums, so it keeps its name">{r.desc}</span>
+                        <span className="desc" title="The Paycheck tab reads this line as your health premiums, so it keeps its name">{r.desc}<InfoTap title={r.desc}><p>The Paycheck tab reads this line as your health premiums, so it keeps its name.</p></InfoTap></span>
                       ) : (
                         /* Every other name is renamed in place, a line added to a
                            group as much as a preset: a click selects it to type
@@ -231,7 +237,7 @@ export function Budget() {
                          want, for needs, wants and saving on Spending. */}
                       {/* The rest say what they're counted as. */}
                       {!dash ? null : sortable(r, i) ? <span className="bgnw"><Segmented size="compact" attr="data-nw" options={NEED_WANT} value={sortOf(r, i) as Sort} onChange={(v) => setRow(i, { want: v === "want" })} /></span>
-                        : sortWord(r, i) ? <span className="bgsort" title={`Counted as ${sortWord(r, i) === "Saving" ? "saving" : "a " + sortWord(r, i)!.toLowerCase()} in needs, wants and saving`}>{sortWord(r, i)}</span> : null}
+                        : sortWord(r, i) ? <span className="bgsort" title={sortNote(sortWord(r, i)!)}>{sortWord(r, i)}</span> : null}
                       <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} readOnly={fixed(r)} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount" + (fixed(r) ? (debtRow(r) ? ", set on Net worth" : ", set on Home") : "")} /></Affixed>
                       {emCol ? <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="emerg" data-i={i} value={r.emerg ?? r.amount} onValueChange={(v) => setRow(i, { emerg: v })} aria-label={r.desc + " in an emergency"} /></Affixed> : null}
                       <Segmented size="compact" attr="data-fv" options={dash ? ([[12, "Per month"], [1, "Per year"]] as const) : ([[12, "/mo"], [1, "/yr"]] as const)} value={r.freq} onChange={(f) => { if (!fixed(r)) setRow(i, { freq: f }); }} />
@@ -274,6 +280,7 @@ export function Budget() {
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
         <aside id="asideBudget" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card size="flush" className="min-w-0">
+            <div data-pv="out">
             <HeroReading tone={empty ? "text" : "answer"} under
               hero={{ label: "Your budget, per month", id: "bgTotal", value: money(totalYr / 12), noteId: "bgTotalNote",
                 note: empty ? "Enter your expenses to begin" : "Every line, with yearly bills spread over the year" }}
@@ -288,8 +295,9 @@ export function Budget() {
                 ))}
               </div>
             </div>
+            </div>
 
-            <div className="border-t border-border px-5.5 pt-4 pb-5 max-sm:px-4">
+            <div className="border-t border-border px-5.5 pt-4 pb-5 max-sm:px-4" data-bgef>
               <h3 className="m-0 flex items-center gap-2 text-body font-semibold">Emergency fund<TipDot k="emergency" /></h3>
               <div className="efrow mt-2.5">
                 <span>Target for</span>{" "}

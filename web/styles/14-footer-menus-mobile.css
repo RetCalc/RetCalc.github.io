@@ -21,10 +21,6 @@
 @media (max-width:900px){ .sitefoot-in{grid-template-columns:minmax(0,1fr);gap:16px} }
 /* clear of the fixed bottom bar in the installed app, and of the guide's coach */
 body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
-@media (max-width:640px){
-  html.pwa .sitefoot-in{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
-  html.pwa body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 104px + env(safe-area-inset-bottom,0px))}
-}
 @media print{ .sitefoot{display:none !important} }
 
 

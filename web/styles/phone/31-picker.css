@@ -1,0 +1,43 @@
+/* Phones only (under 768px): the tool list.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* ---------- the header: title and the Charts | Compact switch ---------- */
+  .tp-head{margin-bottom:18px;gap:10px 16px;flex-wrap:nowrap}
+  .tp-switch [data-slot=segmented-item]{min-height:44px;padding-inline:12px}
+  .tp-switch [data-slot=segmented-item] svg{margin-right:5px}
+
+  /* ---------- Compact: each group is one white card of 64px rows ---------- */
+  .tp-compact{gap:22px}
+  .tp-col{gap:0}
+  .tp-col .toolgroup-h{margin:0 0 8px 16px}
+  .toolcard.tp-tile{position:relative;min-height:64px;gap:12px;padding:10px 12px 10px 14px;border-radius:0;box-shadow:none;background:var(--ds-surface)}
+  .tp-col > .tp-tile:first-of-type{border-radius:var(--r-panel) var(--r-panel) 0 0}
+  .tp-col > .tp-tile:last-of-type{border-radius:0 0 var(--r-panel) var(--r-panel)}
+  .tp-col > .tp-tile:only-of-type{border-radius:var(--r-panel)}
+  .tp-col > .tp-tile + .tp-tile::before{content:"";position:absolute;left:66px;right:0;top:0;height:.5px;background:var(--ds-rule)}
+  .toolcard.tp-tile:is(.is-beat,:focus-visible){background:var(--dsh-fill-2)}
+  .tp-tile .toolcard-icon{width:40px;height:40px;padding:7px}
+  .tp-tile .toolcard-name{font-size:16px;line-height:1.25}
+  .tp-tile .toolcard-desc{font-size:14px;line-height:1.35;margin-top:2px}
+  /* the long arrow becomes a chevron */
+  .tp-tile .toolcard-arrow{width:12px;height:18px}
+  .tp-tile .toolcard-arrow::before{right:0;top:0;width:10px;height:18px;margin:0;background:var(--ds-rule-strong);opacity:1;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 18'%3E%3Cpath d='M2 2l7 7-7 7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 18'%3E%3Cpath d='M2 2l7 7-7 7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+  .tp-tile.is-beat .toolcard-arrow::before{transform:none}
+
+  /* ---------- Charts: a card each, its chart inside the card ---------- */
+  .tp-grid{gap:12px}
+  .toolcard.tp-card{padding:16px}
+  .tp-card .toolcard-top{gap:12px}
+  .tp-card .toolcard-name{font-size:16px}
+  .tp-card .toolcard-desc{font-size:14px}
+  .tp-chart{min-width:0}
+  .tp-chart .hm-chart{max-height:150px}
+  .tp-lead .tp-chart .hm-chart{max-height:none}
+  .tp-card .toolcard-arrow{width:12px;height:18px}
+  .tp-card .toolcard-arrow::before{right:0;top:0;width:10px;height:18px;margin:0;background:var(--ds-rule-strong);opacity:1;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 18'%3E%3Cpath d='M2 2l7 7-7 7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 18'%3E%3Cpath d='M2 2l7 7-7 7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+}

@@ -129,7 +129,7 @@ function markGroups() {
   };
   const queue = () => { if (!queued) { queued = true; requestAnimationFrame(mark); } };
   const mo = new MutationObserver(queue);
-  mo.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "hidden", "data-inputs", "style"] });
+  mo.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "hidden", "data-inputs", "style", "data-closed", "data-open", "data-pv"] });
   addEventListener("resize", queue);
   queue();
   return () => { mo.disconnect(); removeEventListener("resize", queue); };

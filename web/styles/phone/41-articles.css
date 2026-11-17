@@ -1,0 +1,25 @@
+/* Phones only (under 768px): the about-this-tool articles and strategy pages.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* The folded card: its heading row is one 44px+ button; opened, the text
+     reads at the lesson scale. */
+  .seo-a-toggle{min-height:52px;font-size:17px}
+  .seo-a .body{padding:6px 16px 20px}
+  .seo-a .body > p,.seo-a .seo-main > p,.seo-a .body p{font-size:16px;line-height:1.65;color:var(--dim)}
+  .seo-a .body li{font-size:16px;line-height:1.6;margin-bottom:8px}
+  .seo-a .body ul{padding-left:20px}
+  .seo-a .body .reviewed{font-size:13px}
+  .seo-a h3,.seo-a.about h3{font-size:17px;margin:24px 0 8px}
+  .seo-a .body > h3:first-child{margin-top:12px}
+  .seo-a details{padding:0}
+  .seo-a summary{min-height:48px;padding:8px 0;font-size:16px;line-height:1.35;gap:12px}
+  .seo-a summary .about-chevron{flex:none;margin-left:auto}
+  .seo-a details p{margin:0 0 12px;font-size:16px}
+  .seo-a table{font-size:14.5px}
+  /* Related tools, lessons and sources: rows with room to tap. */
+  .seo-side li{margin:0;padding:11px 0;border-top:1px solid var(--line-soft);list-style:none}
+  .seo-side li:first-child{border-top:0}
+  .seo-a .seo-side ul{padding-left:0;margin:0 0 8px}
+  .seo-side li > a:first-child{display:inline-flex;align-items:center;min-height:44px;margin-block:-11px}
+}

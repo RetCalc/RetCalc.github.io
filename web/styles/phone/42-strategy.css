@@ -1,0 +1,30 @@
+/* Phones only (under 768px): the strategy pages' links and ledes
+   (components/shell/StrategyLinks.tsx). The two links under the lede
+   become chips a thumb can hit; the other strategies become a grouped
+   list, one 44px row each, the page's own row marked.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* Under the lede: Run the full simulator, How it works. */
+  #ddLedeLinks{gap:8px;margin-top:10px}
+  #ddLedeLinks > a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;
+    background:var(--ds-surface);box-shadow:0 0 0 .5px var(--ds-rule);
+    color:var(--ds-amber);font:600 14px/1 var(--sans);text-decoration:none;white-space:nowrap}
+  #ddLedeLinks > a{position:relative}
+  #ddLedeLinks > a::after{content:"";position:absolute;inset:-2px 0}
+  #ddLedeLinks > a:active{background:var(--dsh-fill)}
+
+  /* Other strategies: a white grouped list. */
+  #ddOtherStrategies > div:first-child{align-items:center;padding:0 4px}
+  #ddOtherStrategies > div:first-child > a{display:inline-flex;align-items:center;min-height:44px}
+  #ddOtherStrategies ul{display:block;padding:0;border-radius:14px;background:var(--ds-surface);overflow:hidden}
+  #ddOtherStrategies li{border-top:1px solid var(--ds-rule)}
+  #ddOtherStrategies li:first-child{border-top:0}
+  #ddOtherStrategies li > :is(a, span){display:flex;align-items:center;gap:8px;flex-wrap:nowrap;justify-content:flex-start;width:100%;height:auto;min-height:48px;padding:0 16px;text-align:left;white-space:normal;
+    font:500 15.5px/1.3 var(--sans);color:var(--ds-text);text-decoration:none}
+  #ddOtherStrategies li > a::after{content:"";position:static;inset:auto;flex:none;width:8px;height:8px;margin-left:auto;
+    border-top:1.6px solid var(--ds-rule-strong);border-right:1.6px solid var(--ds-rule-strong);transform:rotate(45deg)}
+  #ddOtherStrategies li > a:active{background:var(--dsh-fill)}
+  #ddOtherStrategies li > span[aria-current]{font-weight:600}
+  #ddOtherStrategies li > span[aria-current]::after{content:"This page";margin-left:auto;font:500 13px/1 var(--sans);color:var(--ds-muted)}
+}

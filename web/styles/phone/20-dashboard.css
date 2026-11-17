@@ -1,0 +1,224 @@
+/* Phones only (under 768px): the Dashboard on phones: its frame (title bar, tab bar, More), the pieces every tab is built from (ui.tsx, fields.tsx, charts.tsx), and the reading tabs (Dashboard, Plan summary, Next steps, Tools, Learn).
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs).
+   An upright iPad (768 to 1023px) keeps the Dashboard's touch layout from
+   19-dashboard.css exactly as it was. */
+@media (width < 768px){
+  /* ---------- the title bar: an app's navigation bar ----------
+     Row 1, 44px: the way back (a tool's), or today's date on the front tab,
+     at the left; Help, "•••" and the account at the right. Row 2: the tab's
+     icon and its large title on one line. Then the status chip, and the
+     page's own buttons (a tool's saved scenarios) on a row of their own.
+     The title bar's wrappers step aside (display:contents) so the pieces
+     sit on one grid. */
+  html .dsh-top,html.pwa .dsh-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;align-items:center;gap:0;
+    min-height:0;box-sizing:border-box;
+    padding:calc(var(--sb-clear) + 2px) max(10px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px))}
+  .dsh .dsh-top .dsh-title,.dsh-top .dsh-tt,.dsh-top .dsh-r,.dsh-top .dsh-acts{display:contents}
+  .dsh-top .dsh-crumb{display:none}
+  .dsh-top span.dsh-crumb{display:flex;grid-row:1;grid-column:1 / 3;align-self:center;min-height:44px;align-items:center;
+    font:500 13px/1.2 var(--sans);letter-spacing:.01em;text-transform:uppercase;color:var(--dsh-on-page)}
+  /* A tool's way back: the site's tool header's, amber, a 44px target. */
+  .dsh-pback{grid-row:1;grid-column:1 / 3;justify-self:start;display:inline-flex;align-items:center;gap:1px;min-height:44px;min-width:0;max-width:100%;
+    margin-left:-8px;padding:0 12px 0 2px;color:var(--ds-amber);font:500 16px/1 var(--sans);letter-spacing:-.01em;text-decoration:none;
+    -webkit-tap-highlight-color:transparent}
+  .dsh-pback span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .dsh-pback svg{flex:none;width:24px;height:24px;stroke-width:2.2}
+  .dsh-pback:active{opacity:.55}
+  .dsh-top .dsh-help{display:block;grid-row:1;grid-column:3}
+  .dsh-top .dsh-mbtn{grid-row:1;grid-column:4}
+  .dsh-top .dsh-acct{display:block;grid-row:1;grid-column:5;margin-left:4px}
+  /* Help: amber words, as in a tool's header on the site. */
+  .dsh-top #toolHelpBtn{height:44px;min-width:44px;margin:0;padding:0 8px;gap:6px;border:0;background:none;box-shadow:none;
+    color:var(--ds-amber);font:500 16px/1 var(--sans)}
+  .dsh-top #toolHelpBtn svg{width:20px;height:20px}
+  .dsh-top #toolHelpBtn:active{opacity:.55}
+  .dsh-top #toolHelpBtn[aria-expanded="true"]{background:var(--dsh-tint-wash)}
+  /* "•••": the page's secondary buttons, in a sheet. */
+  .dsh-mbtn{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:999px;background:none;color:var(--ds-amber);cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .dsh-mbtn svg{width:24px;height:24px;stroke-width:1.8}
+  .dsh-mbtn:active{opacity:.55}
+  /* The account: a soft round, as in the site's top bar. */
+  .dsh-acct .acct-btn button{border-color:transparent;border-radius:999px;background:var(--dsh-fill);box-shadow:none}
+  .dsh-acct .acct-btn button{position:relative;width:40px;min-width:40px;height:40px;min-height:40px;padding:0}
+  .dsh-acct .acct-btn button::after{content:"";position:absolute;inset:-2px}
+  /* The large title: one line, smaller for a long name. */
+  .dsh-top .dsh-ico{grid-row:2;grid-column:1;width:34px;height:34px;margin:4px 10px 0 0;border-radius:10px}
+  .dsh-top .dsh-ico svg{width:18px;height:18px}
+  .dsh-top h1{grid-row:2;grid-column:2 / -1;min-width:0;margin:4px 0 0;padding-right:6px;font-size:28px;line-height:1.15;letter-spacing:-.025em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dsh-top h1[data-long]{font-size:22px}
+  .dsh .dsh-top .dsh-meta{grid-row:3;grid-column:1 / -1;justify-self:start;margin:10px 0 0}
+  /* The page's own buttons, each across the width, under the title. */
+  .dsh-top .dsh-acts > :not(.dsh-msheet){grid-column:1 / -1;margin-top:12px;margin-right:6px}
+  .dsh-top .dsh-acts > [data-slot="button"]{justify-self:start}
+
+  /* ---------- "•••": a bottom sheet (Frame.tsx, useMenuSheet) ----------
+     The wrapper that holds the buttons in the title bar elsewhere, as the
+     site's sheet looks (components/ui/sheet.tsx): rising from the bottom
+     over a dimmed page, each button a full-width row. Under any dialog a
+     button opens (z 90), over the tab bar. */
+  .dsh-mscrim{position:fixed;inset:0;z-index:88;background:var(--ds-scrim);opacity:0;pointer-events:none;transition:opacity .2s ease}
+  .dsh-mscrim[data-open]{opacity:1;pointer-events:auto}
+  .dsh-top .dsh-msheet{position:fixed;left:0;right:0;bottom:0;z-index:89;display:flex;flex-direction:column;gap:8px;
+    padding:8px max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
+    border-radius:22px 22px 0 0;background:var(--ds-surface);box-shadow:var(--ds-float-up);
+    transform:translateY(105%);visibility:hidden;transition:transform .25s cubic-bezier(.2,.7,.3,1),visibility 0s linear .25s}
+  .dsh-top .dsh-msheet[data-open]{transform:none;visibility:visible;transition:transform .25s cubic-bezier(.2,.7,.3,1),visibility 0s}
+  .dsh-top .dsh-msheet::before{content:"";align-self:center;width:38px;height:5px;margin-bottom:2px;border-radius:99px;background:var(--ds-rule-strong)}
+  .dsh-msheet-h{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:-4px -10px 2px 0;
+    font:600 18px/1.3 var(--sans);letter-spacing:-.01em;color:var(--ds-text)}
+  .dsh-msheet-x{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:999px;background:none;color:var(--ds-muted);cursor:pointer}
+  .dsh-msheet-x svg{width:20px;height:20px}
+  /* The title bar holds the sheet: while it's open the bar sits over the
+     tab bar (40), under a menu (50) or dialog (90) one of its buttons opens. */
+  .dsh-top:has(.dsh-msheet[data-open]){z-index:45}
+  .dsh-top .dsh-msheet > :not(.dsh-msheet-h){width:100%;height:auto;min-height:52px;justify-content:flex-start;gap:12px;margin:0;padding:8px 16px;border:0;border-radius:14px;
+    background:var(--dsh-fill);box-shadow:none;color:var(--ds-text);font:500 16px/1.25 var(--sans);text-align:left;white-space:normal}
+  .dsh-top .dsh-msheet > :not(.dsh-msheet-h) svg{width:20px;height:20px;color:var(--ds-amber)}
+  .dsh-top .dsh-msheet > :not(.dsh-msheet-h) svg:last-child:not(:first-child){margin-left:auto;color:var(--ds-muted)}
+  .dsh-top .dsh-msheet > :not(.dsh-msheet-h):active{background:var(--dsh-fill-2)}
+  /* A button's hover text says what it makes: in the sheet, a line under its name. */
+  .dsh-top .dsh-msheet > [title]{flex-wrap:wrap;row-gap:2px;padding-block:10px}
+  .dsh-top .dsh-msheet > [title]::after{content:attr(title);flex:1 1 100%;padding-left:32px;font:400 13px/1.35 var(--sans);color:var(--ds-muted)}
+  @media (prefers-reduced-motion:reduce){ .dsh-top .dsh-msheet,.dsh-top .dsh-msheet[data-open],.dsh-mscrim{transition:none} }
+
+  /* ---------- the slim bar once the large title has scrolled away ----------
+     The page's name, centered, frosted (an iPhone app's large title
+     shrinking into its bar), Help at the right; a tool's pinned answer
+     and anything else that holds to the top sits under it. */
+  .dsh .dsh-pin{display:flex;left:0;top:0;height:calc(44px + var(--sb-clear));padding:var(--sb-clear) max(10px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));
+    justify-content:center;box-shadow:inset 0 -.5px 0 var(--ds-rule)}
+  .dsh-pin-t{flex:1 1 0;padding:0 60px;font-size:16px;font-weight:600;text-align:center}
+  .dsh-pin [data-slot="button"]{position:absolute;right:max(10px,env(safe-area-inset-right,0px));bottom:0;height:44px;border:0;background:none;box-shadow:none;
+    color:var(--ds-amber);font:500 16px/1 var(--sans)}
+  html .dsh-app[data-pinned]{--dsh-pin:calc(44px + var(--sb-clear));--pin-top:calc(var(--sb-clear) + 52px)}
+  html.pwa .dsh::before{z-index:31}
+
+  /* ---------- the tab bar: the site's own bar's measures ---------- */
+  .dsh-tb{justify-content:center;gap:3px;height:56px;min-height:56px;padding:6px 0 5px;font:500 10.5px/1.1 var(--sans);letter-spacing:.01em;
+    -webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none}
+  .dsh-tb > span:not(.sr-only):not(.dsh-tb-i){max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;overflow-wrap:normal}
+  .dsh-tb svg{width:24px;height:24px;stroke-width:1.7}
+  .dsh-tb[aria-current]{font-weight:600}
+  .dsh-tabbar{border-top:0;box-shadow:inset 0 .5px 0 var(--ds-rule)}
+
+  /* ---------- More: the site's More sheet's rows (00-shell.css) ---------- */
+  .dsh-pmore .pmore-i{min-height:50px}
+  .dsh-pmore .pmore-ico{width:32px;height:32px;border-radius:9px}
+  .dsh-pmore .pmore-ico svg{width:18px;height:18px}
+  .dsh-pmore .dsh-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--ds-series-sky)}
+  .dsh-pmore [data-slot="badge"]{flex:none}
+
+  /* ---------- the page ---------- */
+  .dsh-page{padding:16px max(16px,env(safe-area-inset-right,0px)) calc(110px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+  .dsh-pagefoot{gap:8px 20px}
+  .dsh-pagefoot-l{gap:0 6px;margin-left:-8px}
+  .dsh-pagefoot-l a{display:inline-flex;align-items:center;min-height:44px;padding:0 8px}
+
+  /* ================= the pieces every tab is built from =================
+     (components/dashboard/ui.tsx, fields.tsx, charts.tsx). The other
+     Dashboard tabs get these as they are. */
+
+  /* ---------- a tile's header: a caption on the right goes under the title ---------- */
+  .dsh .dsh-tile-h{flex-wrap:wrap;row-gap:4px}
+  .dsh .dsh-tile-h > .dsh-r:has(> .dsh-cap:only-child){flex:1 1 100%;margin:0;justify-content:flex-start}
+  .dsh .dsh-tile-h > .dsh-r > .dsh-cap:only-child{font-size:13.5px;line-height:1.35}
+
+  /* ---------- figures: a hero, then two to a row ----------
+     (.dsh-stats: the first figure, when it's the key one, takes the row
+     with a hairline under it; the rest pair up, as in the mock's 2x2.) */
+  .dsh .dsh-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px;align-items:start}
+  .dsh .dsh-stats > .dsh-stat:first-child:has(.dsh-key){grid-column:1 / -1}
+  .dsh .dsh-stats:has(> .dsh-stat:first-child .dsh-key):has(> .dsh-stat:nth-child(2)) > .dsh-stat:first-child{padding-bottom:16px;border-bottom:1px solid var(--ds-rule)}
+  .dsh .dsh-stats .dsh-fig{font-size:26px;line-height:1.12}
+  .dsh .dsh-stats .dsh-fig.dsh-key{font-size:38px}
+  .dsh .dsh-stats .dsh-fig.dsh-md{font-size:24px}
+  .dsh .dsh-stats .dsh-fig small{font-size:13px}
+  /* A figure's unit goes under it in a pair, so a long figure keeps its digits whole. */
+  .dsh .dsh-stats > .dsh-stat:not(:first-child:has(.dsh-key)) .dsh-fig small[data-u]{display:block;margin:2px 0 0}
+  .dsh .dsh-stat .dsh-label{font-size:13px;line-height:1.35}
+
+  /* ---------- "?" tips: a 44px target is 10-calc.css's; inside a label the dot keeps its line ---------- */
+  .dsh .tipglue{white-space:nowrap}
+
+  /* ---------- notes ---------- */
+  .dsh .dsh-note{font-size:14px;line-height:1.5}
+  /* A hosted tool's "Filled in from your plan" as one tap row (ToolsPage.tsx). */
+  .dsh .ptap.dsh-hnote{margin:-6px 0 4px}
+  .dsh-psub{display:block}
+  .dsh-psub > p.dsh-cap{margin-bottom:0}
+  .dsh-psub > .ptap{margin:0 0 -12px}
+
+  /* ---------- folds (ui.tsx Fold): the whole row the button, 60px and up ---------- */
+  .dsh .dsh-fold-h [data-slot="collapsible-trigger"]{min-height:60px}
+  .dsh .dsh-fold-b,.dsh .dsh-fold-below{padding-left:16px;padding-right:16px}
+
+  /* ---------- steps ("What to do next", Next steps): each a row to tap ----------
+     The step's button is the row: its words in the accent under the step,
+     and its touch area the whole card, with a chevron at the right. */
+  .dsh .dsh-steps{gap:0;margin-top:8px}
+  .dsh .dsh-step{position:relative;grid-template-columns:28px minmax(0,1fr);align-items:start;gap:2px 12px;min-height:56px;padding:14px 30px 14px 0;
+    border:0;border-radius:0;background:none;box-shadow:inset 0 -1px 0 var(--ds-rule)}
+  .dsh .dsh-step:last-child{box-shadow:none;padding-bottom:4px}
+  .dsh .dsh-step::after{content:"";position:absolute;right:0;top:50%;width:18px;height:18px;margin-top:-9px;background:var(--ds-rule-strong);pointer-events:none;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center / 100% no-repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center / 100% no-repeat}
+  .dsh .dsh-step:not(:has(> a))::after{display:none}
+  .dsh .dsh-step:not(:has(> a)){padding-right:0}
+  .dsh .dsh-step .dsh-num{margin-top:-1px}
+  .dsh .dsh-step b{font-size:15.5px;line-height:1.3}
+  .dsh .dsh-step > div > span{display:block;margin-top:2px;font-size:13.5px;line-height:1.4}
+  .dsh .dsh-step > a[data-slot="button"]{grid-column:2;justify-self:start;position:static;height:auto;min-height:0;margin-top:6px;padding:0;border:0;background:none;box-shadow:none;
+    color:var(--ds-amber);font:500 14.5px/1.3 var(--sans);text-decoration:none}
+  .dsh .dsh-step > a[data-slot="button"]::after{content:"";position:absolute;inset:0;border-radius:inherit}
+  .dsh .dsh-step:has(> a:active){background:var(--dsh-fill-2);border-radius:12px}
+  .dsh .dsh-step > a[data-slot="button"]:focus-visible{outline:0}
+  .dsh .dsh-step:has(> a:focus-visible){outline:2px solid var(--ds-focus);outline-offset:2px}
+
+  /* ---------- rows that open or go somewhere: 44px ---------- */
+  .dsh .dsh-arow{min-height:44px;font-size:14px}
+  .dsh .dsh-secs{font-size:15px}
+  .dsh .dsh-secs > div{min-height:46px;padding:2px 0}
+  .dsh .dsh-secs .dsh-go{min-height:44px}
+  /* Delete buttons in a list (Net worth, Spending...): 44px. */
+  .dsh .dsh-del [data-slot="button"]{width:44px;height:44px}
+  /* A field's own small controls stay a thumb's size. */
+  .dsh .dsh-stepper{height:48px}
+  .dsh .dsh-stepper button{width:48px}
+  .dsh .dsh-choice{min-height:56px}
+
+  /* ---------- charts and keys (charts.tsx, ui.tsx StackBar) ---------- */
+  .dsh .dsh-legend{gap:6px 14px;font-size:12.5px}
+  .dsh .dsh-tile .swipehint{margin:8px 0 2px;font-size:13px;line-height:1.4}
+  /* A key under a bar: each part a row to tap, which lights it on the bar. */
+  .dsh .dsh-lg{min-height:44px;align-items:center;-webkit-tap-highlight-color:transparent}
+
+  /* ================= the reading tabs ================= */
+
+  /* ---------- Dashboard (Overview.tsx) ---------- */
+  /* Net worth: the range switch and full screen on one row. */
+  .dsh .dsh-tile-h > .dsh-r:has(> .dsh-nwhead){flex:1 1 100%;margin-left:0}
+  .dsh .dsh-nwhead{flex:1 1 100%;flex-wrap:nowrap;gap:8px}
+  .dsh .dsh-nwhead > [data-slot="segmented"]{flex:1 1 0;min-width:0}
+  .dsh .dsh-nwhead > [data-slot="segmented"] [data-slot="segmented-item"]{flex:1 1 auto;min-width:0;padding-inline:8px;font-size:13.5px;white-space:nowrap}
+  .dsh .dsh-nwhead > :not([data-slot="segmented"]){flex:none}
+  /* Today leads; at retirement and at the end side by side under it. */
+  .dsh .dsh-nwfigs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+  .dsh .dsh-nwfigs > :first-child{grid-column:1 / -1}
+  .dsh .dsh-nwfigs .dsh-sec .dsh-fig{font-size:26px}
+  .dsh .dsh-assume .pinfo{margin-right:4px}
+  .dsh .dsh-assume .dsh-ac-chip{display:inline-flex;align-items:center;min-height:44px;vertical-align:middle}
+  .dsh .dsh-hello{padding:14px 16px;font-size:15px}
+  .dsh .dsh-hello .dsh-r{margin-left:0}
+
+  /* ---------- Plan summary (Summary.tsx, AssumptionCheck.tsx) ---------- */
+  /* How your assumptions compare: the column names the wide table has over
+     it, said on each row's figures (its header row is hidden this narrow). */
+  .dsh .dsh-ac-row:not(.dsh-ac-head) :is(.dsh-ac-yours,.dsh-ac-bal)::before{display:block;margin-bottom:2px;font:500 11.5px/1.3 var(--sans);color:var(--ds-muted)}
+  .dsh .dsh-ac-row:not(.dsh-ac-head) .dsh-ac-yours::before{content:"Yours"}
+  .dsh .dsh-ac-row:not(.dsh-ac-head) .dsh-ac-bal::before{content:"Balanced"}
+  .dsh .dsh-ac-row:not(.dsh-ac-head) .dsh-ac-fx::before{content:"At retirement ";font-size:11.5px;font-weight:500;color:var(--ds-muted)}
+  .dsh .dsh-ac-to{display:grid;place-items:center;width:44px;height:44px;margin:-8px -8px -8px 0}
+}

@@ -30,7 +30,8 @@ import { flow, mixWords, retireMix } from "./flows";
 import { hasAccounts, netWorth, useDashboard, type DashData } from "./store";
 import { useLandedOn } from "./land";
 import { Empty, Tile, Tip } from "./ui";
-import { AssumptionChip } from "./AssumptionCheck";
+import { RatingChip, useRating } from "./AssumptionCheck";
+import { InfoTap } from "@/components/phone/Words";
 import { StressLine } from "./StressTests";
 import { SinceTile } from "./Since";
 
@@ -166,6 +167,7 @@ export function Overview() {
     : [r1 ? { t: r1, label: nameOf(pr, 0) + " retires" } : null, r2 ? { t: r2, label: nameOf(pr, 1) + " retires" } : null].filter((m): m is { t: number; label: string } => !!m);
   const until = range === "recent" ? nowYear() + 3 : range === "retire" && R.retireYear ? R.retireYear + 1 : undefined;
   const steps = nextSteps(data, R);
+  const rating = useRating(pr, data.entries, R);
   const full = useFullScreen("Net worth");
   const chart = (px?: Px) => <NetWorthChart hist={hist.length ? hist : [{ t: nowYear(), v: nw }]} proj={R.path} traces={R.traces} marks={marks} until={until} describe={describe} px={px} />;
   // The entries and the plan to retirement in the Dashboard's amber; from
@@ -216,7 +218,7 @@ export function Overview() {
       <div className="dsh-r"><span className="dsh-cap">Profile {filled} of {sections.length}</span><div className="dsh-segs" aria-hidden="true">{sections.map((s, i) => <i key={s[1]} className={i < filled ? "dsh-on" : undefined} />)}</div></div></>;
 
   return (
-    <Frame current="overview" title="Dashboard" actions={R.S ? <><WorkbookButton /><ReportButton /></> : undefined}>
+    <Frame current="overview" title="Dashboard" menu={R.S ? <><WorkbookButton /><ReportButton /></> : undefined}>
       <Answer R={R} pr={pr} entries={data.entries} />
       <div className="dsh-hello">{hello}</div>
       <SinceTile data={data} R={R} />
@@ -249,9 +251,16 @@ export function Overview() {
               : <p className="dsh-cap">Your projection appears once your profile has your age, savings, retirement age and spending.</p>}
           </div>
           {full.overlay((px) => chart(px), legend)}
-          <div className="dsh-assume dsh-cap">
+          <div className="dsh-assume dsh-cap max-phone:hidden">
             In today&apos;s dollars{tax}. Assumes <b>{pct(realGrowth(pr))}</b> growth per year after inflation{R.retireYear ? ` until ${R.retireYear}` : ""}, then every market since 1926 invested <b>{mixWords(retireMix(pr))}</b>. <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#assumptions" />}>Growth is set in Profile</Button>, the mix on <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement" />}>Retirement</Button>.
-            <AssumptionChip pr={pr} entries={data.entries} R={R} />
+            <RatingChip r={rating} />
+          </div>
+          {/* Phones: what the figures are in stays in view; what they assume opens on a tap. */}
+          <div className="dsh-assume dsh-cap phone:hidden">
+            In today&apos;s dollars{tax}.<InfoTap title="What the projection assumes">
+              <p>In today&apos;s dollars{tax}. Assumes <b>{pct(realGrowth(pr))}</b> growth per year after inflation{R.retireYear ? ` until ${R.retireYear}` : ""}, then every market since 1926 invested <b>{mixWords(retireMix(pr))}</b>. <Link href="/dashboard/profile#assumptions">Growth is set in Profile</Link>, the mix on <Link href="/dashboard/retirement">Retirement</Link>.</p>
+            </InfoTap>
+            <RatingChip r={rating} />
           </div>
         </Tile>
         <div className="dsh-side"><Readiness R={R} pr={pr} entries={data.entries} /><Chance R={R} accounts={accounts} pr={pr} entries={data.entries} /></div>

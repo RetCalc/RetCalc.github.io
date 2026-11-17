@@ -1,0 +1,16 @@
+/* Phones only (under 768px): the Debt Payoff Planner.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* Each debt: the name field and its remove button are full-height touch targets. */
+  #dtList .dtrow .desc{gap:4px}
+  #dtList .dtrow .desc input{min-height:44px}
+  #dtList .dtrow .desc button{flex:none;width:44px;height:44px;min-height:44px;margin-right:-8px}
+  #dtAdd,#dtCopyBudget{min-height:44px;padding-inline:16px;font-size:15px}
+  /* The three row fields keep a comfortable height. */
+  #dtList .dtrow input{min-height:44px}
+  /* The tables scroll inside their own box, never the page. */
+  #dtCompare{min-width:520px}
+  #dtOrder{min-width:560px}
+  #dtSched{min-width:460px}
+}

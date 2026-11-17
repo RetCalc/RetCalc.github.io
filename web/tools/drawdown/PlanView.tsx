@@ -35,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
 import { cn } from "@/lib/utils";
+import { InfoTap, TapNote } from "@/components/phone/Words";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
@@ -257,7 +258,7 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
         <table id="ddStartTable" ref={table}>
           <thead><tr>
             {SORT_COLS.map(([k, label, title]) => (
-              <th key={k} {...sort.th(k)} data-sort={k} title={title}>{label}</th>
+              <th key={k} {...sort.th(k)} data-sort={k} title={title}>{label}{title ? <InfoTap title={label}>{title}</InfoTap> : null}</th>
             ))}
           </tr></thead>
           <tbody>
@@ -481,7 +482,7 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
       {chart ? chart() : <BandChart id="DD" aspect={0.5} gutter={64} pts={[]} maxX={1} ariaLabel="Portfolio balance through retirement" tip={() => null} />}
       {legendEl}
       {chart ? full.overlay(chart, legendEl) : null}
-      <Html className="mcnote" id="ddChartNote" html={note} />
+      {note ? <TapNote label="How to read this chart" className="ddtapnote"><Html className="mcnote" id="ddChartNote" html={note} /></TapNote> : <Html className="mcnote" id="ddChartNote" html={note} />}
     </Card>
   );
 }

@@ -1,0 +1,192 @@
+/* Phones only (under 768px): the Readiness Guide and Paycheck to Retirement walkthroughs and their reports.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* ---------- the Readiness Guide (tools/guide) ----------
+     An onboarding flow: one card fills the screen, progress in one slim
+     pinned row at the top, Back and Continue in a bar at the bottom within
+     a thumb's reach. styles/12-guide.css already folds the guide for a
+     phone under 640px; these rules carry that to 767px and go further. */
+
+  /* The progress card: under the title row (the pace switch and the step
+     count), a grid of your number, the chapter bars with the bow and arrow,
+     the score and Route. Pinned, it keeps only that grid: one slim row. */
+  .gd-top{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;row-gap:0;align-items:center;
+    padding:12px 14px 10px;top:calc(var(--pin-top) + 6px)}
+  .gd-top.stuck{padding:6px 10px 6px 14px;
+    box-shadow:0 calc(-8px - var(--pin-top)) 0 var(--bg),0 14px 30px -22px rgba(0,0,0,.9)}
+  [data-theme="light"] .gd-top.stuck{box-shadow:0 calc(-8px - var(--pin-top)) 0 var(--bg),0 14px 30px -24px rgba(22,32,55,.45)}
+  .gd-top-row{grid-column:1 / -1;grid-row:1;display:flex;flex-wrap:wrap;align-items:center;row-gap:8px;column-gap:12px;margin-bottom:10px}
+  .gd-title,.gd-mini{display:none}
+  .gd-top-pace{flex:1 1 100%;min-width:0}
+  .gd-top-pace [data-slot=segmented]{display:flex;width:100%}
+  .gd-top-pace [data-slot=segmented-item]{flex:1 1 0;min-height:44px}
+  .gd-count{flex:1 1 100%;order:3;margin-left:0;font-size:12px}
+  .gd-top.stuck .gd-top-row{display:none}
+  /* The strip's parts sit in the grid: your number over the bars, the
+     score beside the bars, Route at the end of both. */
+  .gd-strip{display:contents}
+  .gd-strip-n{grid-column:1 / 2;grid-row:2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    font-size:13px;line-height:1.3;color:var(--dim)}
+  .gd-strip-n b{font-variant-numeric:tabular-nums;font-weight:600}
+  .gd-strip-n b:not(.key){color:var(--text)}
+  .gd-strip-n.stale b{text-decoration:underline dotted var(--ds-rule-strong);text-underline-offset:4px}
+  .gd-strip-s{grid-column:2;grid-row:2;justify-self:end;font-size:12.5px;color:var(--dim);white-space:nowrap}
+  .gd-strip-s b{font-variant-numeric:tabular-nums;color:var(--text);font-weight:600}
+  .gd-top > .gd-prog-wrap{grid-column:1 / 2;grid-row:3;margin-top:8px;margin-bottom:6px;
+    --tail:26px;--goal:14px;--al:38px;--ah:10px;--gs:15px;--bow:16px}
+  .gd-strip-r{grid-column:2;grid-row:3;justify-self:end;align-self:center}
+  .gd-strip-r [data-slot=button]{height:36px;min-height:36px;padding-inline:14px}
+  .gd-strip-r [data-slot=button]::after{content:"";position:absolute;inset:-4px 0}
+  .gd-strip-r [data-slot=button]{position:relative}
+  /* Without a score yet, Route sits beside your number. */
+  .gd-top:not(:has(.gd-strip-s)) .gd-strip-r{grid-row:2 / 4}
+  .gd-top.stuck > .gd-prog-wrap{margin-top:7px;margin-bottom:4px}
+  .gd-seg span{display:none}
+  .gd-track{--nock:23px}
+  .gd-bow{transform:translateY(-50%) scale(.75);transform-origin:100% 50%}
+  /* The chapter bars: a 44px touch area each, over the gaps and the card,
+     without moving anything. */
+  .gd-seg{position:relative}
+  .gd-seg::after{content:"";position:absolute;left:calc(var(--gap) / -2);right:calc(var(--gap) / -2);top:-20px;bottom:-19px}
+  .gd-top.stuck .gd-seg::after{top:-12px;bottom:-12px}
+  /* The height the bar holds before the answers are read (Top.tsx), as drawn. */
+  .gd-top[data-wait]{min-height:146px}
+
+  /* The rail's cards (your number, the score and the route) are in the
+     strip and its Route sheet on a phone. */
+  .gd-grid{grid-template-columns:minmax(0,1fr)}
+  .gd-side{display:none}
+
+  /* The card: the question first, Back and Continue pinned to the bottom
+     of the screen while the card runs past it. */
+  .gd-card{padding:20px 18px 0}
+  .gd-card:empty{padding-bottom:18px}
+  .gd-q,.panel > h2.gd-q{font-size:22px;line-height:1.22}
+  .gd-lead{font-size:15px}
+  .gd-fields{grid-template-columns:minmax(0,1fr)}
+  .gd-fields.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .gd-choices.two,.gd-choices.three{grid-template-columns:minmax(0,1fr)}
+  .gd-choice{min-height:52px;align-items:center}
+  .gd-choice:has(.t > span){align-items:flex-start}
+  .gd-choice .t b{font-size:15.5px}
+  .gd-choice .t span{font-size:13.5px}
+  /* The pace choices: each one's three lines show under the one picked. */
+  .gd-pace .t .gd-pace-time{font-size:13.5px}
+  .gd-pace:not(.on) ul{display:none}
+  .gd-pace ul{font-size:14px}
+  .gd-foot{position:sticky;bottom:var(--pbar-clear);z-index:6;margin:22px -18px 0;padding:10px 18px 12px;gap:10px;
+    background:inherit;border-radius:0 0 var(--r-card,16px) var(--r-card,16px);border-top:.5px solid var(--ds-rule);
+    transition:bottom .22s cubic-bezier(.2,.7,.3,1)}
+  body:has(.ptab[data-away]) .gd-foot{bottom:env(safe-area-inset-bottom,0px)}
+  body:has(:is(input:not([type="checkbox"],[type="radio"],[type="range"],[type="button"]),textarea,[contenteditable="true"]):focus) .gd-foot{bottom:0}
+  .gd-foot > [data-slot=button]{min-height:48px}
+  .gd-foot > [data-slot=button]:last-child{flex:1 1 auto}
+  .gd-foot > .sp{display:none}
+  /* Why Continue waits: a line of its own over the buttons. */
+  .gd-foot .gd-why{order:-1;flex:1 1 100%;font-size:13.5px}
+  /* The plan card ends the guide: its way back and Start over stay at the
+     end of the card rather than over it. */
+  .gd-foot:not(:has([data-gd="next"],[data-gd="resume"])){position:static;border-top:1px solid var(--line-soft)}
+  .gd-foot:not(:has([data-gd="next"],[data-gd="resume"])) > [data-slot=button]{flex:1 1 auto}
+  /* What's going well: each badge a full sentence, so it wraps inside the card. */
+  .gd-wins [data-slot=badge]{height:auto;min-height:28px;max-width:100%;white-space:normal;text-align:left;line-height:1.35;padding-block:4px}
+
+  /* Touch: rows of small controls on the cards. */
+  .gd-picks{gap:8px}
+  .gd-map-st{min-height:44px}
+  .gd-more-detail > [data-slot=collapsible] > button{min-height:44px}
+  .gd-fac{padding:11px 0 12px}
+  .gd-map-ch [data-slot=collapsible-trigger],.gd-map-ch button{min-height:44px}
+  .gd-ch-table summary{display:flex;align-items:center;min-height:44px}
+  /* A lesson's "Goes deeper in" tools and the plan's "All the tools": a
+     44px touch area around each link's words. */
+  .gd-lesson-links a,.gd-kit-all a{position:relative}
+  .gd-lesson-links a::after,.gd-kit-all a::after{content:"";position:absolute;inset:-14px -2px}
+
+  /* What 12-guide.css lays out for a phone under 640px, from 640 to 767px too. */
+  .gd-opts{grid-template-columns:minmax(0,1fr)}
+  .gd-strat-h{display:none}
+  .gd-strat-r{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 10px}
+  .gd-strat-r .nm{grid-column:1 / -1}
+  .gd-strat-r .c{text-align:left}
+  .gd-strat-r .c i{display:block;font-style:normal;font-family:var(--sans);font-size:11px;color:var(--dimmer);margin-bottom:2px}
+  .gd-cmp-t th,.gd-cmp-t td{padding:7px 6px}
+  .gd-cmp-t td{white-space:normal}
+  .gd-bkt{grid-template-columns:1fr}
+  .gd-rng-row{grid-template-columns:92px 1fr;gap:8px}
+  .gd-hero2{grid-template-columns:1fr}
+  .gd-kit{grid-template-columns:1fr}
+
+  /* ---------- the coach and Tool Help (components/shell/CoachPanel.tsx) ----------
+     A bottom sheet, clear of the home indicator; the page pads for it
+     (--gdh). Its buttons take a finger. */
+  .gd-coach{left:0;right:0;bottom:0;width:auto;max-width:none;max-height:min(60vh,calc(100dvh - var(--pin-top) - 120px));
+    border-radius:18px 18px 0 0;border-left:0;border-right:0;border-bottom:0;
+    padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -10px 30px -18px rgba(0,0,0,.45)}
+  .gd-coach-h{align-items:center;padding:8px 6px 6px 16px}
+  .gd-coach-h [data-slot=button]{width:44px;height:44px}
+  .gd-cprog{padding:0 12px 4px}
+  .gd-cprog button{height:32px;position:relative}
+  .gd-cprog button::after{content:"";position:absolute;inset:-6px 0}
+  .gd-coach-b p,.gd-coach-b .gd-steps li{font-size:15px}
+  .gd-coach-f{padding:10px 12px 10px 16px}
+  .gd-cnav [data-slot=button],.gd-coach-fr [data-slot=button]{min-height:44px}
+  .gd-coach-next{font-size:14px}
+  /* While the coach is open, a tool's Inputs | Results switch floats over
+     it, so a step about a result can be followed there (the shell hides it
+     under the tab bar's place, 00-shell.css and 10-calc.css). The page
+     leaves room for both. */
+  body.gd-on:has(.pv-switch):not(:has(:is(input:not([type="checkbox"],[type="radio"],[type="range"],[type="button"]),textarea,[contenteditable="true"]):focus)) .pv-switch{
+    display:block;bottom:calc(var(--gdh,140px) + 10px)}
+  body.gd-on:has(.pv-switch) main{padding-bottom:calc(var(--gdh,140px) + 108px)}
+
+  /* ---------- Paycheck to Retirement (tools/plan) ---------- */
+  /* The step rail: each step a 44px key, scrolling sideways in its own box. */
+  .pw-steps{margin-inline:calc(-1 * var(--gut));padding-inline:var(--gut);scrollbar-width:none}
+  .pw-steps::-webkit-scrollbar{display:none}
+  .pw-steps [data-slot=button]{min-height:44px}
+  /* The running figures: three across, so the strip stays short. */
+  [data-pw=run] > [data-slot=card-content]{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:12px;row-gap:10px;padding:12px 14px}
+  [data-pw=run] .text-xl{font-size:17px}
+  /* Back and Next, pinned at the bottom of the screen above the tab bar. */
+  [data-pw=foot]{position:sticky;bottom:calc(var(--pbar-clear) + 8px);z-index:6;transition:bottom .22s cubic-bezier(.2,.7,.3,1);
+    box-shadow:0 0 0 .5px var(--ds-rule),0 10px 30px -14px rgba(0,0,0,.35)}
+  body:has(.ptab[data-away]) [data-pw=foot]{bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
+  body:has(:is(input:not([type="checkbox"],[type="radio"],[type="range"],[type="button"]),textarea,[contenteditable="true"]):focus) [data-pw=foot]{bottom:8px}
+  [data-pw=foot]{padding:0;gap:0;border-radius:20px}
+  [data-pw=foot] > [data-slot=card-content]{padding:10px;gap:8px}
+  [data-pw=foot] > [data-slot=card-content] > .flex-1{display:none}
+  [data-pw=foot] [data-slot=button]{min-height:46px;flex:1 1 auto}
+  [data-pw=foot] [data-slot=button][data-variant=outline]:first-child{flex:0 0 auto}
+  /* "Enter your ages and your pay to go on.": a line over the buttons. */
+  [data-pw=foot] .text-note{order:-1;flex:1 1 100%;text-align:center}
+  /* A bar's part, tapped: its name and amount under the bar. */
+  .pw-tap{margin:8px 0 0;min-height:20px;font-size:13.5px;line-height:1.4;color:var(--ds-muted)}
+  .pw-tap b{color:var(--ds-text);font-weight:600}
+  .pw-seg{cursor:pointer}
+  .pw-seg[data-on]{outline:2px solid var(--ds-text);outline-offset:-2px}
+  .pw-bar{height:44px}
+
+  /* ---------- the reports (styles/17-report.css) ----------
+     Each sheet fits the screen's width edge to edge, as a PDF viewer shows
+     it (pinch to read the small print); Print or save as PDF floats above
+     the tab bar, within reach from any page. */
+  .rp-bar{flex-direction:column;align-items:stretch;gap:14px;margin:0 0 16px}
+  .rp-bar h1{font-size:26px;line-height:1.15}
+  .rp-bar p{font-size:15px;max-width:none}
+  .rp-back{display:inline-flex;align-items:center;min-height:44px;font-size:15px}
+  .rp-bar-r{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;align-items:end}
+  .rp-name{width:auto}
+  .rp-bar-r > [data-slot=button]{position:fixed;z-index:39;left:50%;transform:translateX(-50%);bottom:calc(var(--pbar-clear) + 10px);
+    min-height:48px;padding:0 22px;border-radius:999px;font-size:15.5px;white-space:nowrap;
+    box-shadow:0 8px 24px -8px rgba(0,0,0,.4);transition:bottom .22s cubic-bezier(.2,.7,.3,1)}
+  body:has(.ptab[data-away]) .rp-bar-r > [data-slot=button]{bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+  body:has(:is(input:not([type="checkbox"],[type="radio"],[type="range"],[type="button"]),textarea,[contenteditable="true"]):focus) .rp-bar-r > [data-slot=button]{display:none}
+  .rp-stage{margin-inline:calc(-1 * var(--gut) + 4px);padding-bottom:72px}
+  .rp-page{margin-bottom:12px}
+
+  @media (prefers-reduced-motion:reduce){
+    .gd-foot,[data-pw=foot],.rp-bar-r > [data-slot=button]{transition:none}
+  }
+}

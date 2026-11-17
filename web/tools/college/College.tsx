@@ -17,6 +17,7 @@
 
 import { useRef } from "react";
 import { ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, InfoIcon, PlusIcon, XIcon } from "lucide-react";
+import { FoldToggle, useFolds } from "@/components/phone/Fold";
 import { BandChart } from "@/components/charts/BandChart";
 import { Legend } from "@/components/charts/Legend";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
@@ -64,6 +65,7 @@ function FieldWarn({ id, children }: { id: string; children: React.ReactNode }) 
 export function College() {
   const { state: s, set, setState } = useToolState(COLLEGE_DEF);
   useShareKit(COLLEGE_DEF.id, collegeShare(s));
+  const folds = useFolds(["more"]);
   const kidsRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const setKid = (i: number, patch: Partial<Kid>) =>
@@ -160,7 +162,7 @@ export function College() {
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
         <PinnedReading tone={tone} main={{ label: "Save per month", value: monthly }} side={{ label: "Total projected cost", value: total }} />
@@ -169,7 +171,7 @@ export function College() {
           {/* Screen readers' outline: the input groups below are h3s under this. */}
           <h2 className="sr-only">Your inputs</h2>
           <Card>
-            <CardContent>
+            <CardContent data-closed={folds.closed}>
               <div id="clKids" ref={kidsRef}>
                 {s.kids.map((k, i) => {
                   const first = i === 0;
@@ -226,7 +228,8 @@ export function College() {
 
               <GroupHead>The account</GroupHead>
               <MoneyField id="clSaved" labelId="clSavedLbl" label={multi ? "Currently saved, for all of them" : "Currently saved"} value={s.saved} onValueChange={set("saved")} />
-              <div className="two bottomalign max-sm:grid-cols-2">
+              <FoldToggle label="More options" sub="Investment return, tuition inflation" open={folds.isOpen("more")} onToggle={() => folds.toggle("more")} />
+              <div data-fold="more" className="two bottomalign max-sm:grid-cols-2">
                 <NumberField id="clReturn" label="Investment return" unit="%/yr" step={0.5} value={s.ret} onValueChange={set("ret")} />
                 <NumberField id="clInfl" label={<Tipped text="Tuition inflation" k="tuitioninfl" />} unit="%/yr" step={0.5} value={s.infl} onValueChange={set("infl")} />
               </div>
@@ -240,7 +243,7 @@ export function College() {
       </div>
 
       <div className="stack min-w-0 lg:col-span-2" id="tab-college">
-        <Card size="flush" className="min-w-0" id="clReading">
+        <Card size="flush" className="min-w-0" id="clReading" data-pv="out">
           <HeroReading tone={tone} sized={ready} hero={hero} figures={figures}>
             {funded ? (
               <Badge variant="positive" className="mt-3"><CircleCheckIcon aria-hidden="true" />Covered by what you&apos;ve saved</Badge>
@@ -251,12 +254,12 @@ export function College() {
           ) : null}
         </Card>
 
-        <Card id="clEachPanel" className="min-w-0" hidden={!multi || !ready}>
+        <Card id="clEachPanel" className="min-w-0" hidden={!multi || !ready} data-pv="out">
           <CardHeader><CardTitle>Each child</CardTitle></CardHeader>
           <div id="clEach" className="pb-1">{each}</div>
         </Card>
 
-        <Card className="min-w-0" hidden={!ready}>
+        <Card className="min-w-0" hidden={!ready} data-pv="out">
           <CardHeader><CardTitle>Savings over time</CardTitle></CardHeader>
           {chart ? (
             <BandChart id="Cl" pts={chart.pts} maxX={chart.maxX} enhanced noLoLine screenOnly={{ noBand: true }} ariaLabel="College savings projection"
@@ -271,7 +274,7 @@ export function College() {
           <Legend id="legendCl" items={chart ? [[SERIES.plan, "Your savings"], [SERIES.teal, multi ? "Needed then for the bills still ahead" : "Cost of college, that year"]] : []} />
         </Card>
 
-        <div className="min-w-0" hidden={!ready}>
+        <div className="min-w-0" hidden={!ready} data-pv="out">
           <Collapsible render={<Card />}>
             <CardHeader>
               <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>

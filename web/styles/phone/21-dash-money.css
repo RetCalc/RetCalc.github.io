@@ -1,0 +1,101 @@
+/* Phones only (under 768px): the Dashboard's Net worth, Home, Income, Spending and Taxes & Savings tabs.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs).
+   Scoped to these tabs' own tiles (by id) and classes; the title bar,
+   tiles, figure rows, tips and base field sizes are 20-dashboard.css's. */
+@media (width < 768px){
+  /* ---------- Figures: a hero, then two to a row ----------
+     A figure left alone on the last row takes the row, so its label fits
+     on one line (Spending's children, Home's cost to own, Net worth's
+     "against your plan"). */
+  :is(#picture, #month, #spend, #taxed, #social-security) .dsh-stats > .dsh-stat:first-child:has(.dsh-key) ~ .dsh-stat:nth-child(even):last-child,
+  .dsh-tile:has(.dsh-stats .dsh-key) > .dsh-stats > .dsh-stat:first-child:has(.dsh-key) ~ .dsh-stat:nth-child(even):last-child{grid-column:1 / -1}
+  #picture #ahead{grid-column:1 / -1}
+  /* The amount or months a phone moves out of a label sits under its figure. */
+  :is(#spend, #taxed, #month) .dsh-stat > .dsh-cap:last-child{margin-top:3px}
+
+  /* ---------- Net worth ---------- */
+  /* Whose to show: the switch takes the row beside its name. */
+  .dsh-whosebar{display:flex;align-items:center;gap:10px}
+  .dsh-whosebar > [data-slot=segmented]{flex:1 1 0;min-width:0}
+  .dsh-whosebar [data-slot=segmented-item]{flex:1 1 0;min-width:0;padding-inline:6px}
+  /* The lists: rows a thumb can hit, the total set off. */
+  :is(#assets, #debts) .dsh-ltbl tbody tr{min-height:52px;padding:10px 0}
+  :is(#assets, #debts) .dsh-ltbl td .dsh-basis{white-space:nowrap}
+  /* Plan payments and Update balances: one row, two even buttons. */
+  .dsh-editbar{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0, 1fr);gap:10px;margin-top:14px}
+  .dsh-editbar [data-slot=button]{min-height:44px;justify-content:center}
+  /* Editing: the date on its own row, full width, with what saving does under it. */
+  .dsh-asof{display:grid;grid-template-columns:auto minmax(0, 1fr);gap:8px 12px}
+  .dsh-asof [data-slot=input]{width:100%;min-height:44px;font-size:16px}
+  .dsh-asof .dsh-cap{grid-column:1 / -1}
+  /* Each asset or debt being edited: the grip and Remove are full-size targets. */
+  .dsh-elist .dsh-grip [data-slot=button],.dsh-elist .dsh-erm [data-slot=button],
+  .dsh-elist > .dsh-erow > [data-slot=button]{width:44px;height:44px}
+  .dsh-elist > [data-slot=button]{min-height:44px}
+  .dsh-elist .dsh-grip{touch-action:none}
+  .dsh-elist [data-slot=input]{min-height:44px;font-size:16px}
+  /* An entry's delete: a 44px target (40px under a finger before). */
+  #entries .dsh-del [data-slot=button]{width:44px;height:44px;margin:-6px -10px -6px 0}
+  /* Plan payments (DebtPlan.tsx): each debt's fields the dialog's full width. */
+  .dsh-debtfields .dsh-ef,.dsh-debtfields .dsh-ef [data-slot=input-group]{width:100%}
+  /* When you can spend it: each dot's touch area a full 44px. */
+  .dsh-open .dsh-hit{r:22px}
+  #spend .dsh-stbl tbody tr{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  #spend .dsh-stbl td{padding-block:10px}
+  /* The chart's readout stays inside the screen. */
+  #picture .dsh-tipbox.dsh-tip-l{left:8px}
+  #picture .dsh-tipbox.dsh-tip-r{right:8px}
+
+  /* ---------- Home ---------- */
+  /* The rate and the payment one under the other, each the full width,
+     so the payment's long label sits on one line. */
+  #mortgage .dsh-row3.dsh-pair{grid-template-columns:minmax(0, 1fr)}
+  :is(#mortgage, .dsh-tile) .dsh-row3 > div:empty{display:none}
+
+  /* ---------- Income ---------- */
+  /* Pay and how often side by side. */
+  .dsh-two:has(#match) #pay .dsh-row.dsh-pair{grid-template-columns:minmax(0, 1fr) minmax(0, 1fr)}
+  .dsh-two:has(#match) #pay .dsh-row.dsh-pair > .dsh-wide-sm{grid-column:auto}
+  .dsh-two:has(#match) #pay .dsh-row > div:empty{display:none}
+  .dsh-two:has(#match) #pay .dsh-person{padding:14px}
+  /* The match: whose on its line, the two figures side by side. */
+  #match .dsh-row3{grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);gap:10px 12px}
+  #match .dsh-row3 > .dsh-who{grid-column:1 / -1;padding-bottom:0}
+  /* Other income: the name over the amount, Remove beside the amount. */
+  #other-income .dsh-erow-3{grid-template-columns:minmax(0, 1fr) 44px;gap:8px;padding:12px;border:1px solid var(--ds-rule);border-radius:12px;background:var(--ds-ground)}
+  #other-income .dsh-erow-3 > [data-slot=input]{grid-column:1 / -1}
+  #other-income .dsh-elist{justify-items:stretch}
+  #other-income .dsh-elist > [data-slot=button]{justify-self:start}
+  /* Social Security: Estimate and Back to the estimate as full-size buttons. */
+  #social-security .dsh-perrow{gap:12px}
+  #social-security .dsh-perrow > .dsh-self-end:empty,#social-security .dsh-perrow > .dsh-self-end:not(:has(*)){display:none}
+  #social-security .dsh-perrow [data-slot=button]{min-height:44px}
+  #social-security .dsh-perrow [data-slot=button][data-variant=outline]{width:100%;justify-content:center}
+
+  /* ---------- Spending ---------- */
+  /* The college note: its button the full width, under the words. */
+  #month .dsh-tip{display:grid;gap:12px}
+  #month .dsh-tip > [data-slot=button]{min-height:44px;width:100%;justify-content:center}
+  #month .dsh-stat a{display:inline-flex;align-items:center;min-height:44px;margin-block:-12px}
+  /* How you compare: two cards to a row, an odd one out takes the row. */
+  #rules .dsh-br > .dsh-br-card:not(.dsh-br-split):nth-child(odd):nth-last-child(2){grid-column:1 / -1}
+  #rules .dsh-tile-h .dsh-r{margin-left:0;flex-basis:100%}
+  #rules .dsh-br-card .dsh-fig{font-size:34px}
+  #rules .dsh-br-name{display:block;min-height:44px;display:flex;align-items:center;justify-content:center;margin-block:-8px}
+  #rules .dsh-br-split .dsh-br-name{justify-content:flex-start;flex-wrap:wrap;column-gap:4px}
+  #rules .dsh-br-marks span[data-at="25"]{left:0;transform:none}
+  #rules .dsh-br-marks span[data-at="90"]{left:auto;right:0;transform:none}
+  #rules .dsh-br-wait a{display:inline-flex;align-items:center;min-height:44px;margin-block:-12px}
+
+  /* ---------- Taxes & Savings ---------- */
+  /* The two top cards' key rows: each a full-size row to tap. */
+  .dsh-duo .dsh-lg{min-height:44px;align-items:center}
+  /* "Pay and the match are set in Income..." keeps its lines together:
+     its links are words in a sentence, not 44px rows. */
+  #asidePaycheck p.dsh-cap [data-slot=button][data-variant=link]{min-height:0}
+  /* How your saving grows: the button under the words, not squeezed beside them. */
+  #growth [data-slot=card-header]{grid-template-columns:minmax(0, 1fr)}
+  #growth [data-slot=card-action]{grid-column:1;grid-row:auto;justify-self:start;margin-top:4px}
+  #growth [data-slot=card-action] [data-slot=button]{min-height:44px}
+}

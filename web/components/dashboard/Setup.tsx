@@ -6,11 +6,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, type ReactNode } from "react";
-import { HouseIcon, Building2Icon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
+import { useMemo, useState, type ReactNode } from "react";
+import { CheckIcon, HouseIcon, Building2Icon, ListChecksIcon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Sheet, SheetBody, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { NetWorthChart } from "./charts";
 import { Note } from "./ui";
@@ -216,6 +217,40 @@ function Summary({ pr, done }: { pr: Profile; done: (id: string) => boolean }) {
   );
 }
 
+/** On a phone, where "Your plan so far" can't sit beside the steps: a
+    button in the top bar that opens it in a sheet, with the steps by name
+    (on a wide screen they're only the marks' hover titles). Phone only:
+    the button is display:none from 768px. */
+function PlanSheet({ list, at, last, pr, done }: { list: Step[]; at: number; last: boolean; pr: Profile; done: (id: string) => boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" className="dsh-psbtn phone:hidden" aria-haspopup="dialog" onClick={() => setOpen(true)}>
+        <ListChecksIcon aria-hidden="true" /><span>Your plan</span>
+      </button>
+      {open ? (
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent aria-describedby={undefined}>
+            <SheetHeader><SheetTitle>Your plan so far</SheetTitle></SheetHeader>
+            <SheetBody><div className="dsh-psheet">
+              <ol className="dsh-psteps" aria-label="Steps">
+                {list.map((s, i) => (
+                  <li key={s.id} data-state={i < at ? "done" : i === at ? "now" : undefined}>
+                    <span className="dsh-psteps-n">{i < at ? <CheckIcon aria-hidden="true" /> : i + 1}</span>{s.label}
+                    {i === at ? <span className="sr-only"> (this step)</span> : null}
+                  </li>
+                ))}
+                <li data-state={last ? "now" : undefined}><span className="dsh-psteps-n">{list.length + 1}</span>All set</li>
+              </ol>
+              <Summary pr={pr} done={done} />
+            </div></SheetBody>
+          </SheetContent>
+        </Sheet>
+      ) : null}
+    </>
+  );
+}
+
 export function Setup() {
   const { data, update } = useDashboard();
   const profiles = useProfiles();
@@ -293,7 +328,7 @@ export function Setup() {
       <header className="dsh-setup-top">
         <Link href="/" className="dsh-brand" aria-label="RetCalc home"><Brandmark /><span>RetCalc</span></Link>
         <span className="dsh-cap">{which ? <>Set up <b>{profileLabel(which, data)}</b></> : "Set up your Dashboard"}</span>
-        <div className="dsh-r"><Button variant="link" onClick={later}>Save and finish later</Button></div>
+        <div className="dsh-r"><PlanSheet list={list} at={at} last={last} pr={pr} done={done} /><Button variant="link" onClick={later}>Save and finish later</Button></div>
       </header>
       <div className="dsh-prog" aria-hidden="true">
         {list.map((s, i) => <i key={s.id} className={i < at ? "dsh-on" : i === at ? "dsh-cur" : undefined} title={s.label} />)}

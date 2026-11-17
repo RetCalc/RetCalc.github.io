@@ -45,6 +45,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 import { CheckIcon, ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, InfoIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { InfoTap, TapNote } from "@/components/phone/Words";
 
 const stateName = (code: string) => yearData().states.tax[code]?.n || code;
 /* Where each year's spending comes from, in the chart series. The engine
@@ -93,6 +94,8 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
   const [balView, setBalView] = useState<"acct" | "hist">("acct");
   const balFull = useFullScreen(balView === "hist" ? "Total balance, every start since " + HIST_START : "Account balances");
   const [tracesOn, setTracesOn] = useState(true);
+  // Phones: the inputs a first visit leaves alone, folded (MoreRow).
+  const [more, setMore] = useState(false);
   const compareRef = useRef<HTMLTableElement>(null), ladderRef = useRef<HTMLTableElement>(null), tableRef = useRef<HTMLTableElement>(null);
 
   useHouseholdFill("bridge", s, setState, (h, c) => {
@@ -158,12 +161,15 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
     toast("Loaded a year of withdrawals at 60 into Income Tax");
   };
 
+  const compareNote = R ? "Success rates " + (R.mc ? "come from " + BR_TRIALS + " random sequences of historical years" : "come from every start year since " + HIST_START) +
+    ". Tax, penalties, premiums and the balance at 59½ are the steady path at the long-run average return of " +
+    pctStr(R.ctx.real, 1) + " real" + (budget ? ", taking out your strategy's median withdrawal each year" : "") + ". “Holds” means reaching 59½ without running short or touching penalized money the plan didn't intend to." : "";
   const P = S ? S[path]! : null;
   const rows = P?.run.rows ?? [];
   const F = readingFigures(R);
   const two = "two bottomalign max-sm:grid-cols-2";
   const sepp = (
-    <div className={two}>
+    <div className={cn(two, !t72 && "pm")}>
       <SelectField id="brSeppMethod" label={<Tipped text="72(t) method" k="brseppmethod" />} value={s.seppMethod} onChange={set("seppMethod")}>
         <option value="amort">Amortization</option>
         <option value="rmd">RMD</option>
@@ -174,12 +180,12 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
         <PinnedReading tone={F.tone} main={{ label: "Best way to 59½", value: F.best }} side={{ label: "Holds up in", value: F.hold }} />
 
-        <aside id="asideBR" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+        <aside id="asideBR" className={cn("max-lg:static max-lg:max-h-none max-lg:overflow-visible", more && "pm-open")}>
           {/* Screen readers' outline: the input groups below are h3s under this. */}
           <h2 className="sr-only">Your inputs</h2>
           <Card>
@@ -226,26 +232,28 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               </div>
               </>}
 
-              <GroupHead>Income</GroupHead>
-              <div className={two}>
+              <MoreRow open={more} onToggle={() => setMore((o) => !o)}
+                sub={t72 ? "Part-time work, health insurance, conversions" : "Part-time work, health insurance, conversions, 72(t)"} />
+              <GroupHead className="pm">Income</GroupHead>
+              <div className={cn(two, "pm")}>
                 <MoneyField id="brWork" label={<>Part-time work <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="/yr" value={s.work} onValueChange={set("work")} />
                 <NumberField id="brWorkUntil" label="Until" unit="yrs old" max={80} value={s.workUntil} onValueChange={set("workUntil")} />
               </div>
 
-              <GroupHead>Health insurance</GroupHead>
-              <SelectField id="brAca" className="field-stacked" label={<Tipped text="Premiums" k="braca" />} value={s.aca} onChange={setAca}>
+              <GroupHead className="pm">Health insurance</GroupHead>
+              <SelectField id="brAca" className="field-stacked pm" label={<Tipped text="Premiums" k="braca" />} value={s.aca} onChange={setAca}>
                 <option value="1">ACA plan, with your income&apos;s subsidy</option>
                 <option value="0">Leave health insurance out</option>
               </SelectField>
-              <div className={two} id="brAcaWrap" hidden={!aca}>
+              <div className={cn(two, "pm")} id="brAcaWrap" hidden={!aca}>
                 {locked.has("household") ? null : <NumberField id="brHousehold" label="Household size" unit="people" max={10} value={s.household} onValueChange={set("household")} />}
                 <Field id="brPremium" label={<>Benchmark premium <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="brpremium" /></span></>}>
                   <Affixed prefix="$" suffix="/mo"><MoneyInput id="brPremium" nonNeg placeholder="estimate" value={s.premium} onValueChange={set("premium")} /></Affixed>
                 </Field>
               </div>
 
-              <GroupHead>How the plans work</GroupHead>
-              <SelectField id="brFill" className="field-stacked" label={<Tipped text="Blended plan converts" k="brfill" />} value={s.fill} onChange={set("fill")}>
+              <GroupHead className="pm">How the plans work</GroupHead>
+              <SelectField id="brFill" className="field-stacked pm" label={<Tipped text="Blended plan converts" k="brfill" />} value={s.fill} onChange={set("fill")}>
                 {FILLS.map(([v, label]) => <option key={v} value={v} disabled={v === "aca" && !aca}>{label}</option>)}
               </SelectField>
               {t72 ? null : sepp}
@@ -254,7 +262,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
         </aside>
       </div>
 
-      <div className="stack min-w-0 lg:col-span-2" id="tab-bridge">
+      <div className="stack min-w-0 lg:col-span-2" id="tab-bridge" data-pv="out">
         <Reading R={R} F={F} ctx={ctx} seppMax={seppMax} mode={mode} setMode={budget ? null : setMode} t72={t72} />
 
         {/* Nothing to compare or follow until there's a plan. */}
@@ -277,10 +285,12 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               and <CircleXIcon className="relative -top-px inline size-3.5 align-middle text-destructive" role="img" aria-label="a cross" /> under 80%; between, no mark.
               Pay the 10% penalty isn&apos;t marked, since only running short counts for it.
             </p>
-            <div className="hint max-w-copy px-4.5 pt-0 pb-3.5" id="brCompareNote">
-              {R ? "Success rates " + (R.mc ? "come from " + BR_TRIALS + " random sequences of historical years" : "come from every start year since " + HIST_START) +
-                ". Tax, penalties, premiums and the balance at 59½ are the steady path at the long-run average return of " +
-                pctStr(R.ctx.real, 1) + " real" + (budget ? ", taking out your strategy's median withdrawal each year" : "") + ". “Holds” means reaching 59½ without running short or touching penalized money the plan didn't intend to." : ""}
+            <div className="hint max-w-copy px-4.5 pt-0 pb-3.5 max-phone:hidden" id="brCompareNote">
+              {R ? compareNote : ""}
+            </div>
+            {/* Phones: the method behind a tap. */}
+            <div className="hint px-4.5 pt-0 pb-3.5 phone:hidden">
+              {R ? <TapNote label="How these are worked out" title="Ways to 59½">{compareNote}</TapNote> : null}
             </div>
           </Card>
 
@@ -376,8 +386,24 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
   );
 }
 
-function GroupHead({ children }: { children: React.ReactNode }) {
-  return <h3 className="m-0 mt-1 mb-3 border-t border-border pt-4 text-sm font-semibold">{children}</h3>;
+function GroupHead({ className, children }: { className?: string; children: React.ReactNode }) {
+  return <h3 className={cn("m-0 mt-1 mb-3 border-t border-border pt-4 text-sm font-semibold", className)}>{children}</h3>;
+}
+
+/** Phones only: a row that folds the inputs a first visit leaves alone
+    (each marked `pm`; the aside gets `pm-open` while it's open, and
+    styles/phone/tool-roth.css hides them otherwise). A plain row rather
+    than PhoneFold: wrapping the fields would break the inputs column's
+    `card-content > .field` styles on wide screens. Not shown from 768px. */
+function MoreRow({ open, onToggle, label = "More options", sub }: { open: boolean; onToggle: () => void; label?: string; sub: string }) {
+  return (
+    <p className="pfold pmore phone:hidden" data-open={open ? "" : undefined}>
+      <button type="button" className="pfold-t" aria-expanded={open} onClick={onToggle}>
+        <span className="pfold-l"><b>{label}</b><small>{sub}</small></span>
+        <ChevronDownIcon aria-hidden="true" />
+      </button>
+    </p>
+  );
 }
 
 /* ---- results ---- */
@@ -492,7 +518,9 @@ function CompareRows({ R, sel, onPick }: { R: BridgeRun; sel: RunPlan; onPick: (
             }}>
             {name}
             {p.penaltyPlanned
-              ? <td title="Counts only running short, since the penalty is the plan">{holdPct(t.hold, t.of)}</td>
+              ? <td title="Counts only running short, since the penalty is the plan">{holdPct(t.hold, t.of)}
+                {/* Phones: the title's words behind a tap. */}
+                <InfoTap title={p.name}>Counts only running short, since the penalty is the plan.</InfoTap></td>
               : <HoldCell hold={t.hold} of={t.of} />}
             <td>{money(st.tax)}</td>
             <td>{money(st.pen)}</td>
@@ -655,11 +683,18 @@ function Ladder({ rows, ctx, tableRef }: { rows: BrRow[]; ctx: BrCtx; tableRef: 
           </tbody>
         </table>
       </div>
-      <div className="hint pt-0 px-4.5 pb-3.5" id="brLadderNote">
+      <div className="hint pt-0 px-4.5 pb-3.5 max-phone:hidden" id="brLadderNote">
         {conv.length ? "Converted before 59½: " + money(conv.reduce((a, r) => a + r.C, 0)) +
           ". A conversion's five-year clock starts on January 1 of the year you make it, so a " +
           "conversion made any time in " + yearData().year + " is penalty-free from January 1, " + (yearData().year + 5) + ". The tax column is " +
           "the whole year's tax, conversion included." : ""}
+      </div>
+      {/* Phones: the total, with the five-year rule behind a tap. */}
+      <div className="hint pt-0 px-4.5 pb-3.5 phone:hidden">
+        {conv.length ? <>{"Converted before 59½: " + money(conv.reduce((a, r) => a + r.C, 0)) + ". "}
+          <TapNote inline label="When each rung opens" title="The conversion ladder">{"A conversion's five-year clock starts on January 1 of the year you make it, so a " +
+          "conversion made any time in " + yearData().year + " is penalty-free from January 1, " + (yearData().year + 5) + ". The tax column is " +
+          "the whole year's tax, conversion included."}</TapNote></> : ""}
       </div>
     </Card>
   );

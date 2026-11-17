@@ -38,6 +38,7 @@ import { Readiness, timeline } from "./Overview";
 import { Timeline } from "./charts";
 import { entryFrom, netWorth, sum, useDashboard, type Entry, type Profile } from "./store";
 import { Fold, Note, Tile, TipLabel, To } from "./ui";
+import { TapNote } from "@/components/phone/Words";
 import { healthGap, healthWords } from "./health";
 
 /** The answer, from the plan itself: what you'll have at retirement, what
@@ -59,9 +60,16 @@ function PlanHero() {
         {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text={"Social Security" + (R.ssYear ? ", from " + R.ssYear : "")} id="ssTotal" /></div><div className="dsh-fig dsh-md">{money(ss)}<small data-u="/mo">per month</small></div></div> : null}
         <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? pctDown(R.success) + "%" : "—"}</div></div>
       </div>
-      <p className="dsh-cap dsh-mt">
+      <p className={R.success != null ? "dsh-cap dsh-mt max-phone:hidden" : "dsh-cap dsh-mt"}>
         {R.success != null ? <>Your plan lasted to {toAges(R)} in <b>{lastedWords(R.success, R.runs)}</b>, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of your spending and taxes once it starts, and savings pay the rest. In today&apos;s dollars{tax}.</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}
       </p>
+      {/* Phones: the dollars the figures are in, and the sentence on a tap. */}
+      {R.success != null ? <div className="dsh-psub phone:hidden">
+        <p className="dsh-cap dsh-mt">In today&apos;s dollars{tax}.</p>
+        <TapNote label="How your plan was tested" title="Your plan">
+          <p>Your plan lasted to {toAges(R)} in <b>{lastedWords(R.success, R.runs)}</b>, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of your spending and taxes once it starts, and savings pay the rest. In today&apos;s dollars{tax}.</p>
+        </TapNote>
+      </div> : null}
     </Tile>
   );
 }
@@ -127,7 +135,7 @@ export function Summary() {
   const H = holdings(data.entries, pr);
 
   return (
-    <Frame current="summary" title="Plan summary" actions={<><WorkbookButton /><ReportButton /></>}>
+    <Frame current="summary" title="Plan summary" menu={<><WorkbookButton /><ReportButton /></>}>
       {S ? (
         <div className="dsh-psum">
           <PlanHero />
@@ -225,7 +233,10 @@ function HealthCover({ pr, R }: { pr: Profile; R: Results }) {
           <div className="dsh-stat"><div className="dsh-label">With no job&apos;s plan</div><div className="dsh-fig dsh-md">{gap.years} {gap.years === 1 ? "year" : "years"}</div><div className="dsh-cap dsh-mt6">{gap.from} to {gap.to}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Your plan counts</div><div className="dsh-fig dsh-md">{R.S && R.S.hcYr > 0 ? money(R.S.hcYr / 12) : "—"}<small data-u="/mo">per month</small></div><div className="dsh-cap dsh-mt6">for marketplace cover, on top of your spending</div></div>
         </div>
-        <p className="dsh-cap dsh-mt">{healthWords(pr, gap)} Until Medicare starts, cover is a marketplace plan priced on your income, and it&apos;s often one of the biggest costs of retiring early.</p>
+        <p className="dsh-cap dsh-mt max-phone:hidden">{healthWords(pr, gap)} Until Medicare starts, cover is a marketplace plan priced on your income, and it&apos;s often one of the biggest costs of retiring early.</p>
+        <div className="dsh-psub phone:hidden"><TapNote label="Who it covers, and when" title="Health cover before Medicare">
+          <p>{healthWords(pr, gap)} Until Medicare starts, cover is a marketplace plan priced on your income, and it&apos;s often one of the biggest costs of retiring early.</p>
+        </TapNote></div>
       </Tile>
     </div>
   );

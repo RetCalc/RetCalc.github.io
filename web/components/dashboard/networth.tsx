@@ -13,6 +13,7 @@ import { ownerOf } from "./kinds";
 import { sum, type Entry, type Item, type Profile } from "./store";
 import { aheadOf, planLine, type Snapped } from "./progress";
 import { Tip } from "./ui";
+import { Short } from "@/components/phone/Words";
 
 /** A person's name for a "whose" choice. */
 export const whoName = (names: [string, string], i: 0 | 1) => names[i].trim() || (i ? "Your partner" : "You");
@@ -91,7 +92,7 @@ export function WorthOverTime({ entries, view, plan }: { entries: Entry[]; view:
         {nwNow}
         {ago ? <div className="dsh-stat"><div className="dsh-label">In the last 12 months</div><div className="dsh-fig dsh-md">{chg(last.nw - ago.nw)}</div></div> : null}
         <div className="dsh-stat"><div className="dsh-label">Since {longDate(first.date)}</div><div className="dsh-fig dsh-md">{chg(last.nw - first.nw)}</div></div>
-        {perYear != null ? <div className="dsh-stat"><div className="dsh-label">Growth per year, on average</div><div className="dsh-fig dsh-md">{(perYear * 100).toFixed(1)}%</div></div> : null}
+        {perYear != null ? <div className="dsh-stat"><div className="dsh-label"><Short phone="Avg. growth per year">Growth per year, on average</Short></div><div className="dsh-fig dsh-md">{(perYear * 100).toFixed(1)}%</div></div> : null}
         {ahead && plan ? <div className="dsh-stat" id="ahead"><div className="dsh-label">Against your plan from {longDate(plan.date)} <Tip id="ahead" title="Ahead of your plan" /></div>
           <div className="dsh-fig dsh-md"><span className={ahead.by >= 0 ? "dsh-up" : "dsh-dn"}>{money(Math.round(Math.abs(ahead.by) / 100) * 100)} {ahead.by >= 0 ? "ahead" : "behind"}</span></div></div> : null}
       </div>
@@ -264,7 +265,8 @@ export function ReadyToSpend({ items, pr, names }: { items: Item[]; pr: Profile;
   return (
     <>
       <div className="dsh-stats">
-        <div className="dsh-stat"><div className="dsh-label">Can be spent today · {Math.round((now / R.total) * 100)}%</div><div className="dsh-fig dsh-md">{money(now)}</div></div>
+        <div className="dsh-stat"><div className="dsh-label"><Short phone="Can be spent today">Can be spent today · {Math.round((now / R.total) * 100)}%</Short></div><div className="dsh-fig dsh-md">{money(now)}</div>
+          <div className="dsh-cap phone:hidden">{Math.round((now / R.total) * 100)}% of these savings</div></div>
         <div className="dsh-stat"><div className="dsh-label">Opens later</div><div className="dsh-fig dsh-md">{money(R.total - now)}</div></div>
       </div>
       {R.undated ? null : <Openings steps={R.steps} active={active} onActive={setActive} />}
@@ -381,8 +383,9 @@ export function TaxMix({ items }: { items: Item[] }) {
   return (
     <>
       <div className="dsh-stats">
-        <div className="dsh-stat"><div className="dsh-label">Taxed when spent · {money(taxed)}</div><div className="dsh-fig dsh-md">{pct(taxed)}%</div></div>
-        <div className="dsh-stat"><div className="dsh-label">Comes out tax-free · {money(free)}</div><div className="dsh-fig dsh-md">{pct(free)}%</div></div>
+        {/* A phone gives each label its own line and the amount under the share. */}
+        <div className="dsh-stat"><div className="dsh-label"><Short phone="Taxed when spent">Taxed when spent · {money(taxed)}</Short></div><div className="dsh-fig dsh-md">{pct(taxed)}%</div><div className="dsh-cap phone:hidden">{money(taxed)}</div></div>
+        <div className="dsh-stat"><div className="dsh-label"><Short phone="Comes out tax-free">Comes out tax-free · {money(free)}</Short></div><div className="dsh-fig dsh-md">{pct(free)}%</div><div className="dsh-cap phone:hidden">{money(free)}</div></div>
       </div>
       <div ref={ref} className="dsh-mt">
         <svg className="dsh-bars" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={parts.map((c) => `${c.name} ${money(c.v)}, ${pct(c.v)}%`).join("; ")} {...touchRead(setHover)}>

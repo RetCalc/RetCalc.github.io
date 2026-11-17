@@ -22,6 +22,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { HeroReading } from "@/components/common/Reading";
 import { ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, CircleCheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PhoneFold, TapNote } from "@/components/phone/Words";
 
 export const OP_COLORS = { ss: SERIES.sky, pension: SERIES.gray, trad: SERIES.rose, brok: SERIES.lavender, roth: SERIES.teal };
 type Src = keyof typeof OP_COLORS;
@@ -176,7 +177,7 @@ function Roadmap({ res }: { res: Result }) {
 }
 
 /* ---- what makes the difference ---- */
-function Moves({ res }: { res: Result }) {
+function Moves({ res, tool }: { res: Result; tool?: boolean }) {
   const C = who(res), T0 = res.base.T, goal = res.goal;
   const val = (s: PlStats) => (goal === "spend" ? s.maxSpend || 0 : goal === "last" ? s.survived : s.medLegacy);
   const fmt = (d: number) => (goal === "spend" ? opSigned(d) + " per year"
@@ -211,7 +212,7 @@ function Moves({ res }: { res: Result }) {
         }
         const w = Math.round((Math.abs(d) / big) * 100), cls = d >= 0 ? "pos" : "neg";
         return (
-          <div className="op-move" key={st.key}><div className="op-move-t"><b>{h}</b>{p ? <p>{p}</p> : null}</div>
+          <div className="op-move" key={st.key}><div className="op-move-t"><b>{h}</b>{p ? (tool ? <TapNote label="Why this helps" title={h}><p>{p}</p></TapNote> : <p>{p}</p>) : null}</div>
             <div className="op-move-v"><em className={cls}>{fmt(d)}</em><i className="op-bar"><b className={cls + " w-(--w)"} style={{ "--w": w + "%" } as React.CSSProperties}></b></i></div></div>
         );
       })}
@@ -396,7 +397,7 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
   const sameNote = <><b>The way you&apos;d run it is already the best plan we found</b> for this goal. Nothing we tried did better, which usually means Social Security
     {res.married ? " at " + opClaims(res.base.T, { married: true }) : ""} and drawing brokerage, then traditional, then Roth already suits your numbers.</>;
   const roadmap = wrap("Your roadmap", "on the average path, in today's dollars", <Roadmap res={res} />, "op-roadsec");
-  const moves = wrap("What makes the difference", { legacy: "median left after tax", last: "markets lasted", spend: "safe spending" }[res.goal], <Moves res={res} />);
+  const moves = wrap("What makes the difference", { legacy: "median left after tax", last: "markets lasted", spend: "safe spending" }[res.goal], <Moves res={res} tool={tool} />);
   const flow = wrap("Where each year's money comes from", "your roadmap, average path", <>
     {tool ? null : legend([...used.map((k) => sw(k, null, SRC_NAMES[k])), ...(rb.some((r) => r.surplus > 1) ? [sw("reinv", "rei", "Not needed, reinvested")] : []),
       ...(rb.some((r) => r.conv > 1) ? [sw("conv", "hol", "Converted to Roth")] : []), sw("live", "liv", "What you live on")])}
@@ -414,7 +415,8 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
       { name: "The usual way", color: SERIES.gray, dash: "5 4", pts: r0.map((r) => ({ x: r.age, y: spent(r) })) },
       { name: "Your roadmap", color: SERIES.plan, w: 2.4, pts: rb.map((r) => ({ x: r.age, y: spent(r) })) }]} />
     {tool ? taxLegend : null}
-    <p className="op-cap">Paying some tax early, in the low-income years, usually means paying much less later.</p>
+    {tool ? <TapNote label="Why paying some tax early helps" title="Tax and premiums each year"><p className="op-cap">Paying some tax early, in the low-income years, usually means paying much less later.</p></TapNote>
+      : <p className="op-cap">Paying some tax early, in the low-income years, usually means paying much less later.</p>}
   </>) : null;
   const balLegend = legend(<><span><s className="bg-series-plan"></s>After tax, your roadmap</span><span><s className="bg-series-gray"></s>After tax, the usual way</span>
     <span><s className="bg-series-rose"></s>Traditional</span><span><s className="bg-series-teal"></s>Roth</span><span><s className="bg-series-lavender"></s>Brokerage</span></>);
@@ -478,7 +480,7 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
       {dimmed(balChart)}
       {dimmed(<YearCard rows={rb} />)}
       {alts ? dimmed(alts) : null}
-      {dimmed(fine)}
+      {dimmed(<PhoneFold label="How this works" sub="What every plan assumes">{fine}</PhoneFold>)}
     </div>
   );
 }

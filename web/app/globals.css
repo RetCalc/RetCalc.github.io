@@ -39,6 +39,44 @@
 @import "../styles/18-tool-picker.css" layer(legacy);
 @import "../styles/20-dash-landing.css" layer(legacy);
 
+/* The phone redesign (under 768px), outside the layers so it wins over the
+   utilities and the old styles alike. Every file is one media query and
+   nothing else, checked by scripts/phone/check.mjs, so none of it can reach
+   a tablet or desktop. */
+@import "../styles/phone/00-shell.css";
+@import "../styles/phone/05-words.css";
+@import "../styles/phone/10-calc.css";
+@import "../styles/phone/11-charts.css";
+@import "../styles/phone/20-dashboard.css";
+@import "../styles/phone/21-dash-money.css";
+@import "../styles/phone/22-dash-plan.css";
+@import "../styles/phone/23-dash-account.css";
+@import "../styles/phone/30-home.css";
+@import "../styles/phone/31-picker.css";
+@import "../styles/phone/32-pages.css";
+@import "../styles/phone/40-learn.css";
+@import "../styles/phone/41-articles.css";
+@import "../styles/phone/42-strategy.css";
+@import "../styles/phone/50-guide.css";
+@import "../styles/phone/60-install.css";
+@import "../styles/phone/tool-advanced.css";
+@import "../styles/phone/tool-backtest.css";
+@import "../styles/phone/tool-basic.css";
+@import "../styles/phone/tool-bridge.css";
+@import "../styles/phone/tool-budget.css";
+@import "../styles/phone/tool-college.css";
+@import "../styles/phone/tool-compare.css";
+@import "../styles/phone/tool-debt.css";
+@import "../styles/phone/tool-drawdown.css";
+@import "../styles/phone/tool-fire.css";
+@import "../styles/phone/tool-healthcare.css";
+@import "../styles/phone/tool-mortgage.css";
+@import "../styles/phone/tool-optimizer.css";
+@import "../styles/phone/tool-rentbuy.css";
+@import "../styles/phone/tool-roth.css";
+@import "../styles/phone/tool-social.css";
+@import "../styles/phone/tool-tax.css";
+
 
 /* The site's theme script sets data-theme="dark" or "light" on <html>. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
@@ -110,6 +148,10 @@
 @theme {
   /* Where the homepage's reading has room for its two zones side by side. */
   --breakpoint-wide: 1100px;
+  /* The phone redesign's cut-off, in pixels (Tailwind's md is 48rem, which
+     moves with the browser's font size): max-phone: styles a phone only,
+     phone:hidden keeps a phone-only element off tablets and desktops. */
+  --breakpoint-phone: 768px;
   --text-fine: 11px;
   /* DESIGN.md's Label step: field hints, readout labels, legend entries. */
   --text-label: 11.5px;

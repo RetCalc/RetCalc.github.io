@@ -28,6 +28,7 @@ import { longDate, money, money10, pctDown, shortMoney } from "./format";
 import { planRef } from "./progress";
 import { ASSET_GROUPS, ASSET_KINDS, BASIS_KINDS, DEBT_GROUPS, DEBT_KINDS, groupOf, kindName, ownerOf, type Group } from "./kinds";
 import { Tile, TipLabel } from "./ui";
+import { InfoTap, TapNote } from "@/components/phone/Words";
 import { ReadyToSpend, TaxMix, WhoseFilter, WorthOverTime, only, touchRead, whoName, type Who } from "./networth";
 import { pctTxt, useTyped } from "./fields";
 import { entryFrom, netWorth, newId, sum, today, useDashboard, withEntry, type Entry, type Item, type Profile } from "./store";
@@ -115,7 +116,15 @@ function List({ items, side, names }: { items: Item[]; side: Item["side"]; names
     growth past its contributions), after its amount. */
 function Gain({ item }: { item: Item }) {
   const d = item.value - (item.basis ?? 0), what = item.kind === "roth" ? "growth past your contributions" : d >= 0 ? "gain" : "loss";
-  return <span className={d >= 0 ? "dsh-basis dsh-up" : "dsh-basis dsh-dn"} title={`${money(Math.abs(d))} ${what}`}>({d >= 0 ? "+" : "−"}{money(Math.abs(d))})</span>;
+  // On a phone the title's words show (a Roth's behind a tap): a finger
+  // can't hover. Two whole versions, so the desktop's text run is untouched.
+  const amt = (d >= 0 ? "+" : "−") + money(Math.abs(d));
+  return (
+    <span className={d >= 0 ? "dsh-basis dsh-up" : "dsh-basis dsh-dn"} title={`${money(Math.abs(d))} ${what}`}>
+      <span className="max-phone:hidden">({d >= 0 ? "+" : "−"}{money(Math.abs(d))})</span>
+      <span className="phone:hidden">{item.kind === "roth" ? <>({amt}<InfoTap title={item.name || kindName(item.kind)}>{money(Math.abs(d))} {what}.</InfoTap>)</> : `(${amt} ${what})`}</span>
+    </span>
+  );
 }
 
 /** A field in an editable row, with its column's name over it on a phone
@@ -177,7 +186,7 @@ function EditList({ items, side, names, onChange }: { items: Item[]; side: Item[
       <Button variant="outline" size="sm" onClick={() => { setGone(null); onChange([...items, { id: newId(), side, kind: kinds[0].kind, name: "", value: 0, ...(side === "debt" ? { rate: null } : {}) }]); }}>
         <PlusIcon aria-hidden="true" />{side === "asset" ? "Add an asset" : "Add a debt"}
       </Button>
-      {debt ? null : <p className="dsh-cap">What you put in is optional: for a brokerage account its <TipLabel text="cost basis" id="costBasis" />, for a Roth <TipLabel text="your own contributions" id="rothContrib" />. A 457(b) is its own type because it can be drawn from without the 10% penalty once you leave that job.{whose ? " Say whose each retirement account is, since each opens at its owner's 59½. Shared counts half each." : ""}</p>}
+      {debt ? null : <TapNote label="About what you put in" title="What you put in"><p className="dsh-cap">What you put in is optional: for a brokerage account its <TipLabel text="cost basis" id="costBasis" />, for a Roth <TipLabel text="your own contributions" id="rothContrib" />. A 457(b) is its own type because it can be drawn from without the 10% penalty once you leave that job.{whose ? " Say whose each retirement account is, since each opens at its owner's 59½. Shared counts half each." : ""}</p></TapNote>}
     </div>
   );
 }

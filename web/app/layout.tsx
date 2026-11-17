@@ -20,9 +20,13 @@ import { ToolHelp } from "@/tools/help/ToolHelp";
 import { SITE } from "@/lib/site";
 import { STANDALONE_SCRIPT, THEME_SCRIPT } from "@/lib/theme-script";
 import { TOOL_RAIL_SCRIPT } from "@/lib/tool-rail-script";
+import SPLASH from "@/lib/splash.json";
 
 import "./globals.css";
 import { PaneMotion } from "@/components/shell/PaneMotion";
+import { PhoneTabBar } from "@/components/phone/TabBar";
+import { InstallPrompt } from "@/components/phone/install";
+import { ServiceWorker } from "@/components/phone/ServiceWorker";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { IBM_Plex_Sans, Inter } from "next/font/google";
@@ -75,7 +79,9 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
-  appleWebApp: { capable: true, title: "RetCalc", statusBarStyle: "black-translucent" },
+  /* startupImage: the home-screen app's launch pictures, the page's ground
+     with the icon, one per iPhone size and theme (scripts/pwa/splash.mjs). */
+  appleWebApp: { capable: true, title: "RetCalc", statusBarStyle: "black-translucent", startupImage: SPLASH },
 };
 
 export const viewport: Viewport = {
@@ -83,7 +89,14 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   colorScheme: "dark light",
-  themeColor: "#0e1116",
+  /* The browser's own bars (Safari's toolbar tint, the installed app's
+     status bar on Android) match the page's ground in each theme; the
+     manifest's colors are the light pair. A theme chosen by hand is applied
+     by lib/theme.ts (syncThemeColor). */
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -112,6 +125,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </div>
             <PaneMotion />
             <Footer />
+            {/* Phones only (under 768px): the app's bottom tab bar, and the
+                once-only "Add to Home Screen" hint for iPhone Safari. */}
+            <PhoneTabBar />
+            <InstallPrompt />
+            <ServiceWorker />
             <Tooltips />
             <SelectMenus />
             <PageEffects />

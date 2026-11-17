@@ -1,0 +1,12 @@
+/* Phones only (under 768px): the Healthcare Cost Planner.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* The folded "More options" field (Your own quote). */
+  #asideHC [data-closed~="more"] .hcfold{display:none}
+  /* The tool's own buttons: 44px to touch. */
+  #hcCopyTax,#hcGoTax{min-height:44px}
+  #hcGoTax{padding-inline:8px}
+  /* Fold headings in the result cards (plan tiers, enhanced credits). */
+  #hcACABody [data-slot="collapsible-trigger"]{min-height:44px}
+}

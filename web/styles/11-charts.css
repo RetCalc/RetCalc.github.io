@@ -130,57 +130,9 @@ svg{display:block;width:100%;height:auto}
   th,td{padding:8px 9px;font-size:12.5px}
   .swipehint{display:block}
 }
-/* ===== phone bottom tab bar (home-screen web app only) =====
-   In the installed iOS web app the tab rail leaves the top of the page and
-   docks at the bottom edge, within thumb reach on tall iPhones. Gated on the
-   html.pwa class (set at load from navigator.standalone / display-mode), so a
-   plain Safari tab — which has its own bottom toolbar — keeps the top rail.
-   No sticky-rail script change is needed: that code reads "stuck" from the
-   bar's top offset, and a fixed-bottom bar never reads as stuck. Left/right
-   insets keep the buttons clear of the notch in landscape; the bottom inset
-   lifts them off the home indicator. */
-@media (max-width:640px){
-  html.pwa .navbar{
-    position:fixed;top:auto;bottom:0;left:0;right:0;z-index:40;
-    border-top:1px solid var(--line);border-bottom:0;
-    background:var(--panel);
-    padding-bottom:env(safe-area-inset-bottom,0px);
-    box-shadow:var(--ds-float-up);
-    view-transition-name:tabbar} /* steady through page changes: 03-navigation.css */
-  /* With the rail at the bottom, the Guide's progress card pins to the top. */
-  html.pwa .gd-top{top:var(--sb-clear)}
-  /* On a fixed-bottom bar the scroll shadow shouldn't change, so keep it. */
-  html.pwa .navbar.stuck{background:var(--panel);box-shadow:var(--ds-float-up)}
-  html.pwa nav[role=tablist]{overflow-x:visible;gap:0}
-  html.pwa nav[role=tablist] button{
-    flex:1 1 0;margin-right:0;min-height:70px;padding:10px 1px 9px;
-    display:flex;align-items:center;justify-content:center;
-    font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
-  html.pwa nav[role=tablist] button[aria-selected="true"]{color:var(--text);font-weight:700}
-  /* The active indicator rides the top edge of the button in a bottom bar. */
-  html.pwa nav[role=tablist] button::after{top:0;bottom:auto;left:0;right:0;width:auto;height:2px;
-    -webkit-mask:none;mask:none;background:var(--ds-amber);border-radius:2px;
-    transform:scaleX(0);transition:transform .22s cubic-bezier(.2,.7,.3,1)}
-  html.pwa nav[role=tablist] button[aria-selected="true"]::after{opacity:1;transform:scaleX(1)}
-  html.pwa nav[role=tablist] button:not([aria-selected="true"]):hover::after{opacity:0}
-  /* The bottom bar marks its tab with its own top-edge bar instead. */
-  html.pwa nav[role=tablist] .tabmark{display:none}
-  html.pwa nav[role=tablist] button[aria-selected="true"]::after{transition:transform .22s cubic-bezier(.2,.7,.3,1)}
-  /* Room so the fixed (taller) bar never covers the last panel, and lift
-     toasts above it. */
-  html.pwa main{padding-bottom:30px}
-  html.pwa .toast{bottom:calc(90px + env(safe-area-inset-bottom,0px))}
-  /* With no rail at the top, the page starts just below the iOS status-bar
-     blur (1.8x the safe-area inset: it runs taller than the inset says),
-     and anything sticky (a tool's pinned reading, the Guide's progress card)
-     pins there instead of under a rail. The status-bar strip is painted
-     solid the whole time, so the page never scrolls into the blur. If the
-     first line dips into the blur, nudge the 1.8 up toward 2; if there's
-     too much dead space, down. */
-  html.pwa{--navh:0px;--sb-clear:calc(env(safe-area-inset-top,0px) * 1.8)}
-  html.pwa main{padding-top:calc(var(--sb-clear) + 14px)}
-  html.pwa .sbcover{height:var(--sb-clear);background:var(--bg);opacity:1}
-}
+/* (The home-screen app's bottom-docked header lived here. The phone
+   redesign gives every phone a bottom tab bar and keeps the header as a
+   slim top bar: components/phone/TabBar.tsx, styles/phone/00-shell.css.) */
 /* The same status-bar blur covers the top of a pop-up tall enough to reach
    it (the strategy guide), hiding its first lines and close button. Start
    pop-ups below it, and clear the home indicator at the bottom. Web app only. */
@@ -192,9 +144,6 @@ html.pwa .popup-overlay{
    stack them instead — normal phones keep the two-column layout above. */
 @media (max-width:400px){
   .two{grid-template-columns:1fr}
-}
-@media (max-width:360px){
-  html.pwa nav[role=tablist] button{font-size:14px}
 }
 /* iOS zooms the page when a focused field is under 16px. Keyed to touch
    devices rather than width, so landscape phones are covered too. */

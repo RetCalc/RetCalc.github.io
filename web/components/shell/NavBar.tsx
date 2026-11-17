@@ -19,6 +19,7 @@ import type { StateOption } from "@/lib/states";
 import { HouseholdChip } from "@/components/household/HouseholdBar";
 import { AccountButton } from "@/components/account/AccountButton";
 import { BrandLink, ThemeButton } from "./Masthead";
+import { PhoneBarTitle } from "@/components/phone/BarTitle";
 
 export { slugFromPath };
 
@@ -120,6 +121,8 @@ export function NavBar({ states }: { states: StateOption[] }) {
       <div className={`sbcover${stuck ? " stuck" : ""}`} id="sbCover" aria-hidden="true" />
       <header ref={navbar} className={`navbar oneline${stuck ? " stuck" : ""}`}>
         <BrandLink tagline={false} />
+        {/* Phones only: the page's name, once its heading has scrolled away. */}
+        <PhoneBarTitle />
         <nav role="tablist" aria-label="Sections" className={sliding ? "sliding" : undefined}>
           {TABS.map((t, i) => {
             const selected = t.tab === tab;

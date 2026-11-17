@@ -1,0 +1,176 @@
+/* Phones only (under 768px): the Dashboard's Profile, setup, front page, Next steps, About and report.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+
+  /* ================= Profile (Profile.tsx, Profiles.tsx) =================
+     A phone form: grouped cards, 44px fields with 16px text, choices two
+     to a row. The page is the one with the Household tile. */
+  .dsh:has(#household) .dsh-tile input[data-slot="input"]{height:44px;font-size:16px}
+  .dsh:has(#household) .dsh-tile .dsh-choices,
+  .dsh-setup .dsh-choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .dsh:has(#household) .dsh-tile .dsh-choice,.dsh-setup .dsh-choice{min-height:0;padding:12px 14px}
+  .dsh:has(#household) .dsh-tile .dsh-choice b,.dsh-setup .dsh-choice b{font-size:15px}
+  .dsh:has(#household) .dsh-tile .dsh-choice span,.dsh-setup .dsh-choice span{font-size:13px;line-height:1.35}
+  /* A section link (#children, #pay...) lands below the slim bar. */
+  .dsh:has(#household) .dsh-tile[id]{scroll-margin-top:calc(var(--sb-clear) + 56px)}
+  /* Links in a tile's header and foot (More in Income, Back to the usual): 44px. */
+  .dsh:has(#household) .dsh-tile-h [data-slot="button"],.dsh:has(#household) .dsh-foot [data-slot="button"]{min-height:44px}
+  .dsh:has(#household) .dsh-foot{margin-top:4px}
+  /* Assumptions: the growth after inflation across the row, its unit beside it. */
+  #assumptions .dsh-presets-fields > .dsh-stats > .dsh-stat{grid-column:1 / -1}
+  #assumptions .dsh-presets-fields > .dsh-stats .dsh-fig small[data-u]{display:inline;margin:0 0 0 4px}
+  /* The growth note behind its tap, with today's dollars kept in view. */
+  .dsh .dsh-pa-tap{margin:-4px 0 0 -2px}
+  .dsh .dsh-pa-today{margin-top:2px;font-size:13.5px}
+  /* Profiles: each a row, Open and its "•••" 44px. */
+  .dsh .dsh-profiles [data-slot="button"]{min-height:44px;min-width:44px}
+  .dsh .dsh-profiles [data-slot="badge"]{min-height:28px}
+  .dsh .dsh-profiles .dsh-profile-t b{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+  /* The New profile, Rename, Delete and Reset dialogs: their buttons a thumb's size. */
+  [data-slot="dialog-content"] form .dsh-navbtns [data-slot="button"],
+  [data-slot="dialog-content"]:has(#dshProfTitle,#dshResetTitle) .dsh-navbtns [data-slot="button"]{min-height:44px}
+  [data-slot="dialog-content"] #dshProfName,[data-slot="dialog-content"] #dshProfRename{height:44px;font-size:16px}
+
+  /* ================= Setup (Setup.tsx) =================
+     One step to a screen, as an app's onboarding: Back and Continue held
+     at the bottom within a thumb's reach, Skip under them, and "Your plan
+     so far" (beside the steps on a wide screen) behind a button in the bar. */
+  .dsh-setup-top{height:auto;min-height:56px;gap:6px}
+  .dsh-setup-top .dsh-brand{min-width:44px;min-height:44px;justify-content:center}
+  .dsh-setup-top .dsh-r{gap:2px;font-size:15px}
+  .dsh-setup-top .dsh-r [data-slot="button"]{min-height:44px;padding-inline:8px;font-size:15px}
+  .dsh-psbtn{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 10px;border:0;border-radius:999px;background:var(--dsh-fill);
+    color:var(--ds-text);font:500 15px/1 var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .dsh-psbtn svg{width:18px;height:18px;color:var(--ds-amber)}
+  .dsh-psbtn:active{background:var(--dsh-fill-2)}
+  .dsh-psbtn:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
+  .dsh-prog{gap:3px}
+  .dsh-sbody{padding-top:22px;padding-bottom:0}
+  /* A short step still puts its buttons at the bottom of the screen. */
+  .dsh-sbody > div:first-child{display:flex;flex-direction:column}
+  .dsh-setup .dsh-sbody > div:first-child > .dsh-navbtns{margin-top:auto}
+  .dsh-sbody > div:first-child > .dsh-fields{margin-bottom:28px}
+  .dsh-sbody > div:first-child > .dsh-cap:nth-last-child(2){margin-bottom:28px}
+  .dsh-q-title{font-size:26px;letter-spacing:-.02em}
+  .dsh-q-help{font-size:15.5px;line-height:1.5}
+  .dsh-setup .dsh-sbody > div > .dsh-fields{margin-top:20px}
+  .dsh-setup .dsh-stepper{height:48px}
+  .dsh-setup .dsh-stepper button{width:48px}
+  .dsh-setup input[data-slot="input"]{height:44px;font-size:16px}
+  .dsh-setup .dsh-ready{gap:10px}
+  .dsh-setup .dsh-ready .dsh-tile{padding:14px 16px}
+  /* The step's buttons: a bar along the bottom, over the page. */
+  .dsh-setup .dsh-navbtns{position:sticky;bottom:0;z-index:5;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;
+    margin:28px calc(-1 * max(16px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+    padding:12px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+    background:var(--dsh-glass);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+    box-shadow:inset 0 .5px 0 var(--ds-rule)}
+  .dsh-setup .dsh-navbtns > [data-slot="button"]{height:50px;min-width:88px;font-size:16.5px}
+  .dsh-setup .dsh-navbtns > [data-slot="button"]:only-of-type{grid-column:1 / -1}
+  .dsh-setup .dsh-navbtns .dsh-skip{position:static;grid-column:1 / -1;justify-self:center;margin:-4px 0 0;padding:0;border:0;background:none}
+  .dsh-setup .dsh-navbtns .dsh-skip [data-slot="button"]{min-height:44px;font-size:15px}
+  /* "Your plan so far", in its sheet: the steps by name, then the summary. */
+  .dsh-psteps{list-style:none;display:grid;gap:2px;margin:0 0 16px;padding:0;font-size:15px;color:var(--ds-muted)}
+  .dsh-psteps li{display:flex;align-items:center;gap:12px;min-height:36px}
+  .dsh-psteps li[data-state="done"]{color:var(--ds-text)}
+  .dsh-psteps li[data-state="now"]{color:var(--ds-text);font-weight:600}
+  .dsh-psteps-n{display:inline-grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;
+    box-shadow:inset 0 0 0 1.5px var(--ds-rule-strong);font:600 12px/1 var(--sans);color:var(--ds-muted)}
+  .dsh-psteps-n svg{width:14px;height:14px}
+  .dsh-psteps li[data-state="done"] .dsh-psteps-n{background:var(--ds-text);box-shadow:none;color:var(--ds-surface)}
+  .dsh-psteps li[data-state="now"] .dsh-psteps-n{background:var(--ds-amber);box-shadow:none;color:var(--ds-on-amber)}
+  .dsh-psheet .dsh-sum{display:block;position:static;margin:0;padding:14px 16px;border:0;border-radius:14px;background:var(--dsh-fill);box-shadow:none}
+  .dsh-psheet .dsh-sum > h2{display:none}
+  .dsh-psheet .dsh-facts{font-size:14.5px}
+  .dsh-psheet .dsh-facts div{border-top-color:var(--ds-rule)}
+  .dsh-psheet .dsh-facts dt{color:var(--ds-text)}
+  .dsh-psheet .dsh-facts dd{color:var(--ds-muted)}
+
+  /* ================= the front page (Landing.tsx) =================
+     /dashboard signed out and /financial-dashboard. Full-width calls to
+     action, even spacing between sections, the phone picture with the
+     tour on its screen, and the wide screenshots at a size that reads,
+     swiped sideways inside their frames. */
+  .dl-hero{padding-top:20px}
+  .dl-eyebrow{font-size:14px}
+  .dl-display{margin-top:12px;font-size:40px;line-height:1.02}
+  .dl-lede{margin-top:16px;font-size:17px;line-height:1.5}
+  .dl-ctas{flex-direction:column;align-items:stretch;gap:10px;margin-top:24px}
+  .dl-ctas > *{width:100%;min-height:52px;font-size:17px}
+  .dl-started{margin-top:18px;padding:12px 14px;font-size:14.5px}
+  .dl-fine{flex-direction:column;align-items:center;gap:6px;margin-top:18px}
+  /* The phone and its tour, from 640px down on the main site; here under 768. */
+  .dl-stage{margin-top:36px}
+  .dl-stage .dl-window{display:none}
+  .dl-phone-tour{display:block}
+  .dl-phone{position:relative;width:min(288px,78%);margin:0 auto;padding:10px;border-radius:50px;background:#0b0c0e;
+    box-shadow:inset 0 0 0 1.5px #26282c,0 0 0 1.5px #85878c,0 0 0 3px #3b3d42}
+  .dl-ph-screen{position:relative;overflow:hidden;border-radius:40px;background:var(--ds-ground)}
+  .dl-ph-screen img{width:100%;height:auto;vertical-align:top}
+  .dl-ph-island{position:absolute;top:1.4%;left:50%;width:32%;height:4.3%;transform:translateX(-50%);border-radius:999px;background:#000}
+  .dl-ph-btn{position:absolute;width:3.5px;background:linear-gradient(90deg,#4a4c51,#a3a5aa 60%,#5d5f64)}
+  .dl-ph-act,.dl-ph-up,.dl-ph-dn{left:-4px;border-radius:2px 0 0 2px}
+  .dl-ph-act{top:17%;height:5%}
+  .dl-ph-up{top:25%;height:8.5%}
+  .dl-ph-dn{top:35.5%;height:8.5%}
+  .dl-ph-pwr{right:-4px;top:28%;height:12.5%;border-radius:0 2px 2px 0}
+  /* The whole screen is the play target, with a play mark in its middle. */
+  .dl-ph-play{position:absolute;inset:0;display:grid;place-items:center;margin:0;padding:0;border:0;border-radius:inherit;background:none;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .dl-ph-play svg{box-sizing:content-box;width:26px;height:26px;padding:19px 17px 19px 21px;border-radius:50%;background:var(--ds-amber);color:var(--ds-on-amber);
+    fill:currentColor;box-shadow:0 6px 20px rgb(0 0 0 / .28);transition:transform .15s ease}
+  .dl-ph-play:active svg{transform:scale(.94)}
+  .dl-ph-play:focus-visible{outline:3px solid var(--ds-focus);outline-offset:-6px}
+  .dl-ph-video{z-index:1;object-fit:contain}
+  .dl-phone-tour[data-playing] .dl-ph-island{z-index:2}
+  .dl-mplay{display:flex;justify-content:center;margin-top:20px}
+  .dl-mplay [data-slot="button"]{min-height:52px}
+  .dl-phone-tour[data-playing] .dl-mplay{visibility:hidden}
+  /* Sections: the same rhythm all the way down. */
+  .dl-sec{margin-top:72px}
+  .dl-h2{font-size:31px;line-height:1.08}
+  .dl-h2-sm{font-size:29px}
+  .dl-sub{margin-top:12px;font-size:16.5px;line-height:1.5}
+  .dl-points{gap:10px;margin-top:18px;font-size:16px}
+  .dl-steps{gap:14px;margin-top:28px}
+  .dl-step-t{padding:20px 18px 18px}
+  .dl-pic{padding:18px 18px 0}
+  .dl-feature,.dl-flip{gap:22px}
+  /* A wide screenshot at a size that reads, swiped inside its frame. */
+  .dl-feature .dl-shot,.dl-shot.dl-wide{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+  .dl-feature .dl-shot::-webkit-scrollbar,.dl-shot.dl-wide::-webkit-scrollbar{display:none}
+  .dl-feature .dl-shot img{width:600px;max-width:none}
+  .dl-feature .dl-shot img[src*="savings-"]{width:480px}
+  .dl-shot.dl-wide{margin-top:28px}
+  .dl-shot.dl-wide img{width:940px;max-width:none}
+  .dl .dl-swipe{display:block;margin:-12px 2px 0;padding:0;font-size:13px;line-height:1.4;color:var(--ds-muted)}
+  .dl-center .dl-swipe{margin-top:8px}
+  /* What's in the Dashboard: a list of rows, the icon beside each. */
+  .dl-pages{margin-top:28px;border-radius:16px}
+  .dl-page{display:grid;grid-template-columns:22px minmax(0,1fr);column-gap:14px;align-items:start;padding:14px 16px}
+  .dl-page svg{grid-row:1 / span 2;margin-top:1px}
+  .dl-page h3{margin:0 0 2px;font-size:16px}
+  .dl-page p{grid-column:2;font-size:14.5px;line-height:1.45}
+  .dl-trust{gap:24px}
+  .dl-trust > div{display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:14px;align-items:start}
+  .dl-trust .dl-ic{grid-row:1 / span 2}
+  .dl-trust h3{margin:2px 0 4px}
+  .dl-trust p{grid-column:2}
+  .dl-trust a{display:inline-block;min-height:28px}
+  .dl-final{margin:72px 0 8px;padding:36px 20px;border-radius:24px}
+  .dl-final .dl-ctas{margin-top:22px}
+
+  /* ================= About and What's new (About.tsx, WhatsNew.tsx) =================
+     Reading pages: the text as it is, each folded row 52px. */
+  .dsh-about [data-slot="collapsible-trigger"]{min-height:52px}
+  .dsh-about .about-wn-h{flex-wrap:wrap}
+  .dsh-about #about-whatsnew [data-slot="button"]{min-height:44px}
+  [data-slot="dialog-content"]:has(#wnAllTitle) .dsh-menu-h [data-slot="button"]{width:44px;height:44px}
+  .dsh-about .about-group{scroll-margin-top:calc(var(--sb-clear) + 56px)}
+  .dsh-about [id^="about-"]{scroll-margin-top:calc(var(--sb-clear) + 56px)}
+
+  /* The printed report (report/Report.tsx) shares the Guide report's phone
+     layout in 50-guide.css: sheets edge to edge, the way back 44px, and
+     Print or save as PDF floating over the tab bar. Nothing of its own here. */
+}

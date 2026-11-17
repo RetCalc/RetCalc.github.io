@@ -65,29 +65,31 @@ function Tour() {
 function PhoneTour() {
   const [playing, setPlaying] = useState(false);
   return (
-    <div className="dl-phone-tour">
-      {playing ? (
-        <div className="dl-mtour">
-          <video className="dl-video" src="/dashboard-landing/dashboard-tour.mp4" controls autoPlay playsInline
-            aria-label="A 90-second tour of the Dashboard, with music and on-screen text" onEnded={() => setPlaying(false)} />
+    <div className="dl-phone-tour" data-playing={playing ? "" : undefined}>
+      <div className="dl-phone">
+        <i className="dl-ph-btn dl-ph-act" aria-hidden="true" /><i className="dl-ph-btn dl-ph-up" aria-hidden="true" />
+        <i className="dl-ph-btn dl-ph-dn" aria-hidden="true" /><i className="dl-ph-btn dl-ph-pwr" aria-hidden="true" />
+        <div className="dl-ph-screen">
+          <Shot name="mobile" w={1170} h={2532} sizes="300px" alt="The Dashboard on a phone: the one-line answer, Update balances, net worth, and the tabs along the bottom" />
+          {/* Pressed, the video plays on the phone's screen, so nothing
+              around it moves; its controls offer full screen. When it ends,
+              the picture comes back. */}
+          {playing ? (
+            <video className="dl-video dl-ph-video" src="/dashboard-landing/dashboard-tour.mp4" controls autoPlay playsInline
+              aria-label="A 90-second tour of the Dashboard, with music and on-screen text" onEnded={() => setPlaying(false)} />
+          ) : (
+            <button type="button" className="dl-ph-play" aria-label="Watch the 90-second tour" onClick={() => setPlaying(true)}>
+              <PlayIcon aria-hidden="true" />
+            </button>
+          )}
+          <span className="dl-ph-island" aria-hidden="true" />
         </div>
-      ) : (
-        <>
-          <div className="dl-phone">
-            <i className="dl-ph-btn dl-ph-act" aria-hidden="true" /><i className="dl-ph-btn dl-ph-up" aria-hidden="true" />
-            <i className="dl-ph-btn dl-ph-dn" aria-hidden="true" /><i className="dl-ph-btn dl-ph-pwr" aria-hidden="true" />
-            <div className="dl-ph-screen">
-              <Shot name="mobile" w={1170} h={2532} sizes="300px" alt="The Dashboard on a phone: the one-line answer, Update balances, net worth, and the tabs along the bottom" />
-              <span className="dl-ph-island" aria-hidden="true" />
-            </div>
-          </div>
-          <div className="dl-mplay">
-            <Button size="xl" variant="outline" onClick={() => setPlaying(true)}>
-              <PlayIcon data-icon="inline-start" aria-hidden="true" />Watch the 90-second tour
-            </Button>
-          </div>
-        </>
-      )}
+      </div>
+      <div className="dl-mplay">
+        <Button size="xl" variant="outline" disabled={playing} onClick={() => setPlaying(true)}>
+          <PlayIcon data-icon="inline-start" aria-hidden="true" />Watch the 90-second tour
+        </Button>
+      </div>
     </div>
   );
 }
@@ -106,6 +108,7 @@ function Feature({ kicker, title, sub, points, flip, children }: { kicker: strin
         {points ? <Points items={points} /> : null}
       </div>
       <div className="dl-shot">{children}</div>
+      <p className="dl-swipe phone:hidden">Swipe the picture sideways to see all of it.</p>
     </section>
   );
 }
@@ -237,6 +240,7 @@ export function Landing({ signedIn = false, standalone }: { signedIn?: boolean; 
         <h2 className="dl-h2">The years ahead, on a timeline.</h2>
         <p className="dl-sub">Retirement, Medicare, Social Security, daycare and college, year by year for each person in your household.</p>
         <div className="dl-shot dl-wide"><Shot name="timeline" w={2600} h={673} sizes="(max-width: 1330px) 100vw, 1290px" alt="Timeline of retirement, Medicare, Social Security and college for each person" /></div>
+        <p className="dl-swipe phone:hidden">Swipe the picture sideways to see all of it.</p>
       </section>
 
       <section className="dl-sec dl-center">

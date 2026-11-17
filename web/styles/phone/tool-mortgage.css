@@ -1,0 +1,12 @@
+/* Phones only (under 768px): the Mortgage Calculator.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* Extras card: its inputs show in Inputs, its before-and-after panels in
+     Results. With no panel to show, the card has nothing for Results. */
+  body[data-pv="out"] #moExtrasCard:has(#moExtraPanel[hidden]){display:none}
+  /* The table scrolls inside its own box, never the page. */
+  #moTable{min-width:420px}
+  /* Folded groups (tools/FoldToggle.tsx). */
+  #asideMort [data-closed~="more"] [data-fold="more"]{display:none}
+}

@@ -16,6 +16,8 @@ import { ChevronDown, X } from "lucide-react";
 import { useBusyState } from "@/lib/busy";
 import { Html } from "@/components/common/Html";
 import { Button } from "@/components/ui/button";
+import { isPhone } from "@/components/phone/usePhone";
+import { showPhoneView, type PhoneView } from "@/components/phone/ViewSwitch";
 
 export interface CoachTask { h: string; ok?: boolean }
 
@@ -145,9 +147,32 @@ export function CoachPanel({ id, label, sub, title, min, onToggle, onClose, clos
   );
 }
 
+/** On a phone, the view (Inputs or Results, components/phone/ViewSwitch.tsx)
+    a part's target sits in, when it isn't the view on screen; null when the
+    target is on screen, or isn't in either view. */
+function otherView(sel: string): PhoneView | null {
+  if (!isPhone()) return null;
+  const now = document.body.getAttribute("data-pv");
+  if (!now) return null;
+  for (const one of sel.split(" || ")) {
+    let all: Element[] = [];
+    try { all = [...document.querySelectorAll(one)]; } catch { return null; }
+    if (all.some((e) => e.getClientRects().length)) return null;
+    for (const e of all) {
+      const v = e.closest("[data-pv]")?.getAttribute("data-pv");
+      if ((v === "in" || v === "out") && v !== now) return v;
+    }
+  }
+  return null;
+}
+
 /** Brings the part of the tool a tour part is about into view, clear of
     the tab rail at the top and the panel at the bottom. */
 export function revealFor(sel: string) {
+  // On a phone a tool shows its inputs or its results, one at a time: a
+  // part about the other view brings that view up, then comes back here.
+  const view = otherView(sel);
+  if (view) { showPhoneView(view); setTimeout(() => revealFor(sel), 60); return; }
   const f = findTarget(sel);
   if (!f) return;
   // A Drawdown Simulator setting only shown in Advanced brings Advanced up.
@@ -203,7 +228,7 @@ export function useFoldOnType(active: boolean, folded: () => boolean, fold: () =
     if (!active) return;
     const onFocus = (e: FocusEvent) => {
       const el = e.target as Element;
-      if (latest.current.folded() || !el.matches?.("input,select,textarea") || el.closest(".gd-coach") || !window.matchMedia("(max-width:640px)").matches) return;
+      if (latest.current.folded() || !el.matches?.("input,select,textarea") || el.closest(".gd-coach") || !isPhone()) return;
       latest.current.fold();
     };
     document.addEventListener("focusin", onFocus);

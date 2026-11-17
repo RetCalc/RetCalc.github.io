@@ -20,6 +20,8 @@ import { useRouter } from "next/navigation";
 import { Legend } from "@/components/charts/Legend";
 import { MultiChart } from "@/components/charts/MultiChart";
 import { Field, NumberField, SelectField } from "@/components/fields/Field";
+import { FoldToggle, useFolds } from "@/components/phone/Fold";
+import { TapNote } from "@/components/phone/Words";
 import { Modal } from "@/components/shell/Modal";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
@@ -81,6 +83,7 @@ export function Backtest() {
   const [roll, setRoll] = useState<"nom" | "real">("nom");
   const [mixOpen, setMixOpen] = useState(false);
   const sort = useSort<SortCol>("year", 1);
+  const folds = useFolds(["more"]);
   const rollTable = useRef<HTMLTableElement>(null), yearTable = useRef<HTMLTableElement>(null);
 
   const from = Math.max(BT_FIRST, Math.min(BT_LAST, Math.round(parseNum(s.from) || BT_FIRST)));
@@ -125,14 +128,14 @@ export function Backtest() {
   const btFull = useFullScreen("Growth of $10,000");
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the mix and the years are on screen. */}
         <PinnedReading main={{ label: "Return, per year", value: hero.value }} side={{ label: "After inflation", value: figures[0].value }} />
 
         <aside id="asideBT" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardContent>
+            <CardContent data-closed={folds.closed}>
               <Field id="btMixBtn" className="field-stacked" label={<Tipped text="Asset mix" k="btmix" />}>
                 <Button variant="outline" size="lg" className="w-full justify-between" id="btMixBtn" onClick={() => setMixOpen(true)}><span id="btMixText" className="min-w-0 flex-1 truncate text-left">{mixText(B)}</span>
                   <ChevronRightIcon className="text-muted-foreground" aria-hidden="true" /></Button>
@@ -143,15 +146,16 @@ export function Backtest() {
                 </div>
                 <div className="hint" id="btMixNote">{mixNote(B, rb, from)}</div>
               </Field>
-              <SelectField id="btRebal" className="field-stacked" label={<Tipped text="Rebalancing" k="btrebal" />} value={s.rebal} onChange={set("rebal")}>
+              <FoldToggle label="More options" sub="Rebalancing: how often, and what the mix drifts to" open={folds.isOpen("more")} onToggle={() => folds.toggle("more")} />
+              <SelectField id="btRebal" className="field-stacked btfold" label={<Tipped text="Rebalancing" k="btrebal" />} value={s.rebal} onChange={set("rebal")}>
                 <option value="year">Every year</option>
                 <option value="every">Every few years</option>
                 <option value="band">When it drifts from the mix</option>
                 <option value="never">Never</option>
               </SelectField>
-              <NumberField id="btRebalN" wrapId="btRebalNWrap" hidden={B.rebal !== "every"} label="Rebalance every" unit="years" max={30} value={s.rebalN} onValueChange={set("rebalN")} />
-              <NumberField id="btRebalBand" wrapId="btRebalBandWrap" hidden={B.rebal !== "band"} label="When any holding is off by more than" unit="points" max={50} value={s.rebalBand} onValueChange={set("rebalBand")} />
-              <div className="hint -mt-1.5 mx-0 mb-3" id="btRebalNote">{rebalNote(B)}</div>
+              <NumberField id="btRebalN" className="btfold" wrapId="btRebalNWrap" hidden={B.rebal !== "every"} label="Rebalance every" unit="years" max={30} value={s.rebalN} onValueChange={set("rebalN")} />
+              <NumberField id="btRebalBand" className="btfold" wrapId="btRebalBandWrap" hidden={B.rebal !== "band"} label="When any holding is off by more than" unit="points" max={50} value={s.rebalBand} onValueChange={set("rebalBand")} />
+              <div className="hint btfold -mt-1.5 mx-0 mb-3" id="btRebalNote">{rebalNote(B)}</div>
 
               <div role="group" aria-labelledby="btPeriodLabel" className="mt-1 border-t border-border pt-4">
                 <div className="mb-1.5 text-label text-muted-foreground" id="btPeriodLabel">Period</div>
@@ -181,7 +185,7 @@ export function Backtest() {
         </aside>
       </div>
 
-      <div className="stack min-w-0 lg:col-span-2" id="tab-backtest">
+      <div className="stack min-w-0 lg:col-span-2" id="tab-backtest" data-pv="out">
         <Card size="flush" className="min-w-0" id="btReading">
           <HeroReading hero={hero} figures={figures} under />
 
@@ -203,8 +207,8 @@ export function Backtest() {
           {/* Taking the figures on to a plan. */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 border-t border-border px-5.5 py-4 max-sm:px-4">
             <Button variant="outline" id="btUseRate" onClick={useInAdvanced}>Use these figures in Advanced</Button>
-            <p className="m-0 max-w-copy min-w-0 flex-1 basis-64 text-note text-muted-foreground" id="btUseNote">{"Sends " + pctStr(B.cagr, 2) + " return, " + pctStr(B.vol, 2) + " volatility and " +
-              pctStr(B.inflCagr, 2) + " inflation to Advanced, so the return stays paired with the inflation it was earned alongside."}</p>
+            <TapNote label="What this sends" title="What this sends to Advanced"><p className="m-0 max-w-copy min-w-0 flex-1 basis-64 text-note text-muted-foreground" id="btUseNote">{"Sends " + pctStr(B.cagr, 2) + " return, " + pctStr(B.vol, 2) + " volatility and " +
+              pctStr(B.inflCagr, 2) + " inflation to Advanced, so the return stays paired with the inflation it was earned alongside."}</p></TapNote>
           </div>
         </Card>
 
@@ -270,9 +274,9 @@ export function Backtest() {
             yFmt={(v) => (v * 100).toFixed(0) + "%"} valFmt={(v) => pctStr(v, 2)}
             series={[{ name: "Annual", color: RED, pts: annual, width: 1.9 }, { name: "Ten-year average", color: BLUE, pts: decadeInflation(B), dash: "5 4", width: 2.2 }]} />
           <Legend id="legendBTI" items={[[RED, "Annual"], [BLUE, "Ten-year average"]]} />
-          <CardContent><div className="hint m-0 max-w-copy">A high return in a high-inflation
+          <CardContent><TapNote label="Why inflation matters here" title="Return and inflation"><div className="hint m-0 max-w-copy">A high return in a high-inflation
             year buys less than a modest one in a quiet year, so the reading above shows both.
-            Single years swing hard, so the ten-year line is the better guide for a plan.</div></CardContent>
+            Single years swing hard, so the ten-year line is the better guide for a plan.</div></TapNote></CardContent>
         </Card>
 
         <Card className="min-w-0">

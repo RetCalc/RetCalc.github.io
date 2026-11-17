@@ -33,6 +33,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { SERIES } from "@/lib/hues";
 import { ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, InfoIcon, MinusIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TapNote } from "@/components/phone/Words";
 
 const TONE: Record<HeroTone, string> = { answer: "text-primary", gain: "text-gain", loss: "text-destructive", text: "text-foreground" };
 
@@ -59,6 +60,8 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
   const [view, setView] = useState<"bal" | "tax">("bal");
   const [tableView, setTableView] = useState<"plan" | "base">(rmdPage ? "base" : "plan");
   const tableRef = useRef<HTMLTableElement>(null);
+  // Phones: the inputs a first visit leaves alone, folded (MoreRow).
+  const [more, setMore] = useState(false);
 
   useHouseholdFill("roth", s, setState, (h, c) => {
     const next: RothInputs = { ...c, status: h.status === "m" ? "m" : "s" };
@@ -153,7 +156,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
         {rmdPage ? (
@@ -162,7 +165,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
           <PinnedReading tone={savedTone} main={{ label: "Lifetime tax saved", value: savedVal }} side={{ label: "Net worth vs doing nothing", value: nwVal }} />
         )}
 
-        <aside id="asideRC" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+        <aside id="asideRC" className={cn("max-lg:static max-lg:max-h-none max-lg:overflow-visible", more && "pm-open")}>
           {/* Screen readers' outline: the input groups below are h3s under this. */}
           <h2 className="sr-only">Your inputs</h2>
           <Card>
@@ -226,18 +229,19 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
                 <MoneyField id="rcSpSS" label="Spouse's benefit" unit="/yr" value={s.spSS} onValueChange={set("spSS")} />
                 <NumberField id="rcSpSSAge" label="Claim at" unit="yrs old" max={70} value={s.spSSAge} onValueChange={set("spSSAge")} />
               </div>
-              <div className={two}>
+              <MoreRow open={more} onToggle={() => setMore((o) => !o)} sub={(married ? "Other income, survivor, " : "Other income, ") + "IRMAA, heirs' rate, discount rate"} />
+              <div className={cn(two, "pm")}>
                 <MoneyField id="rcOther" label={<Tipped text="Other income" k="rcother" />} unit="/yr" value={s.other} onValueChange={set("other")} />
                 <NumberField id="rcOtherStart" label="Starting at" unit="yrs old" max={100} value={s.otherStart} onValueChange={set("otherStart")} />
               </div>
-              <NumberField id="rcDeath" wrapId="rcDeathWrap" hidden={!married} label={<Tipped text="Survivor transition" k="rcwidow" />} unit="yrs away" max={45} value={s.death} onValueChange={set("death")} />
+              <NumberField id="rcDeath" wrapId="rcDeathWrap" className="pm" hidden={!married} label={<Tipped text="Survivor transition" k="rcwidow" />} unit="yrs away" max={45} value={s.death} onValueChange={set("death")} />
 
-              <GroupHead>How to score it</GroupHead>
-              <SelectField id="rcIrmaaOn" className="field-stacked" label={<Tipped text="Medicare IRMAA" k="irmaa" />} value={s.irmaaOn} onChange={set("irmaaOn")}>
+              <GroupHead className="pm">How to score it</GroupHead>
+              <SelectField id="rcIrmaaOn" className="field-stacked pm" label={<Tipped text="Medicare IRMAA" k="irmaa" />} value={s.irmaaOn} onChange={set("irmaaOn")}>
                 <option value="1">Include the surcharge</option>
                 <option value="0">Ignore it</option>
               </SelectField>
-              <div className={two}>
+              <div className={cn(two, "pm")}>
                 <NumberField id="rcHeir" label={<Tipped text="Rate on what's left" k="rcheir" />} unit="%" max={60} value={s.heir} onValueChange={set("heir")} />
                 <NumberField id="rcDisc" label={<Tipped text="Discount rate" k="rcdisc" />} unit="%" step={0.5} max={15} value={s.disc} onValueChange={set("disc")} />
               </div>
@@ -247,7 +251,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
       </div>
 
       <div className="stack min-w-0 lg:col-span-2" id="tab-roth">
-        <Card size="flush" className="min-w-0">
+        <Card size="flush" className="min-w-0" data-pv="out">
           {/* The verdict is the answer; the figures are its evidence. */}
           <div className="border-b border-border px-5.5 py-4.5 max-sm:px-4">
             {R && V ? (
@@ -296,8 +300,9 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
           </div>
         </Card>
 
-        {/* The levers this page tests, next to their effect. */}
-        <Card>
+        {/* The levers this page tests, next to their effect. On a phone,
+            inputs: they come after the rest of them. */}
+        <Card data-pv="in">
           <CardHeader>
             <CardTitle>The conversion plan</CardTitle>
             <CardDescription>What to test against doing nothing.</CardDescription>
@@ -338,7 +343,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
         </Card>
 
         {/* Nothing to draw or compare until there's a plan. */}
-        <div className="stack" hidden={!R}>
+        <div className="stack" hidden={!R} data-pv="out">
           <Card className="min-w-0">
             <CardHeader>
               <CardTitle id="rcChartTitle">{view === "bal" ? "Traditional balance" : "Tax paid each year"}</CardTitle>
@@ -380,9 +385,13 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
                 </div>
               </div>
               <p className="mt-3.5 mb-0 text-label text-muted-foreground">Pairs read converting first, then doing nothing.</p>
-              <div className="hint mt-1.5">Every figure is in today&apos;s dollars.
+              <div className="hint mt-1.5 max-phone:hidden">Every figure is in today&apos;s dollars.
                 Brackets, the standard deduction and the IRMAA thresholds are held fixed in
                 real terms, which is what indexing does to them in practice.</div>
+              {/* Phones: the method sentence behind a tap. */}
+              <div className="hint mt-1.5 phone:hidden">Every figure is in today&apos;s dollars.{" "}
+                <TapNote inline label="How brackets are held" title="Brackets and thresholds">Brackets, the standard deduction and the IRMAA thresholds are held fixed in
+                real terms, which is what indexing does to them in practice.</TapNote></div>
             </CardContent>
           </Card>
 
@@ -425,8 +434,24 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
   );
 }
 
-function GroupHead({ children }: { children: ReactNode }) {
-  return <h3 className="m-0 mt-1 mb-3 border-t border-border pt-4 text-sm font-semibold">{children}</h3>;
+function GroupHead({ className, children }: { className?: string; children: ReactNode }) {
+  return <h3 className={cn("m-0 mt-1 mb-3 border-t border-border pt-4 text-sm font-semibold", className)}>{children}</h3>;
+}
+
+/** Phones only: a row that folds the inputs a first visit leaves alone
+    (each marked `pm`; the aside gets `pm-open` while it's open, and
+    styles/phone/tool-roth.css hides them otherwise). A plain row rather
+    than PhoneFold: wrapping the fields would break the inputs column's
+    `card-content > .field` styles on wide screens. Not shown from 768px. */
+function MoreRow({ open, onToggle, label = "More options", sub }: { open: boolean; onToggle: () => void; label?: string; sub: string }) {
+  return (
+    <p className="pfold pmore phone:hidden" data-open={open ? "" : undefined}>
+      <button type="button" className="pfold-t" aria-expanded={open} onClick={onToggle}>
+        <span className="pfold-l"><b>{label}</b><small>{sub}</small></span>
+        <ChevronDownIcon aria-hidden="true" />
+      </button>
+    </p>
+  );
 }
 
 function Fact({ k, id, children }: { k: ReactNode; id: string; children: ReactNode }) {

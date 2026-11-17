@@ -1,0 +1,140 @@
+/* Phones only (under 768px): the calculator pattern shared by every tool: answer bar, Inputs and Results views, compact tool header.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* ---------- Inputs and Results: two views (components/phone/ViewSwitch.tsx) ----------
+     On a page with the switch, a block marked data-pv="in" shows in the
+     Inputs view only and one marked data-pv="out" in the Results view
+     only. Before the switch has run (the pre-built page), the Inputs view
+     shows, which is what it starts on. display:none keeps both mounted. */
+  body:has(.pv-switch):not([data-pv="out"]) [data-pv="out"]{display:none !important}
+  body:has(.pv-switch)[data-pv="out"] [data-pv="in"]{display:none !important}
+  .pv-anchor{display:block;height:0}
+  /* The switch: a frosted pill floating over the page, above the tab bar,
+     and down at the home indicator when the tab bar slides away. */
+  .pv-switch{position:fixed;z-index:39;left:50%;bottom:calc(var(--pbar-clear) + 10px);transform:translateX(-50%);
+    width:min(260px,calc(100vw - 32px));padding:0;border-radius:999px;
+    background:var(--dsh-glass);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+    box-shadow:0 0 0 .5px var(--ds-rule),0 6px 20px -6px rgba(0,0,0,.28);
+    transition:bottom .22s cubic-bezier(.2,.7,.3,1)}
+  body:has(.ptab[data-away]) .pv-switch{bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+  /* The Dashboard's own tab bar is a little taller than the site's. */
+  body:has(.dsh) .pv-switch{bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+  body:has(.dsh-tabbar[data-away]) .pv-switch{bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+  .pv-switch [data-slot=segmented]{display:flex;width:100%;padding:4px;border:0;border-radius:999px;background:transparent}
+  .pv-switch [data-slot=segmented-item]{flex:1 1 0;min-height:44px;border-radius:999px;font:600 14.5px/1 var(--sans);letter-spacing:-.01em;color:var(--ds-text)}
+  .pv-switch [data-slot=segmented-item][data-pressed]{background:var(--ds-text);color:var(--ds-surface);box-shadow:none}
+  /* While typing, the keyboard has the bottom of the screen; the Guide's
+     coach holds it during a trip. */
+  body:has(:is(input:not([type="checkbox"],[type="radio"],[type="range"],[type="button"]),textarea,[contenteditable="true"]):focus) .pv-switch,
+  body.gd-on .pv-switch{display:none}
+  /* Room under the page's last line for the switch as well as the tab bar. */
+  body:has(.pv-switch) main{padding-bottom:calc(84px + var(--pbar-clear))}
+  body:has(.pv-switch):has(.dsh) main{padding-bottom:0}
+  body:has(.pv-switch) .dsh-page{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+  @media (prefers-reduced-motion:reduce){ .pv-switch{transition:none} }
+
+  /* ---------- a tool's header (components/shell/ToolHeader.tsx) ----------
+     An iPhone screen header in the site's own look: the way back and Help
+     on one row (back on the left, the action on the right, both 44px
+     targets in the accent), then the small icon with the name at a phone
+     title size, the description whole but smaller, and the saved
+     scenarios as one 44px row. The header's two wrappers step aside
+     (display:contents) so their pieces sit on one grid. */
+  .toolback{margin:-4px 0 0;gap:0}
+  .toolhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:0 10px;flex:1 1 100%;margin:0}
+  .toolhead-t,.toolhead-ctl{display:contents}
+  .toolhead-back{grid-row:1;grid-column:1 / 3;justify-self:start;min-height:44px;margin:0 0 0 -8px;padding:0 12px 0 2px;gap:1px;
+    font:500 16px/1 var(--sans);letter-spacing:-.01em;color:var(--ds-amber)}
+  .toolhead-back svg{width:24px;height:24px;stroke-width:2.2}
+  .toolhead-back:active{opacity:.55}
+  .toolhead-back:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px;border-radius:10px}
+  .toolhead #toolHelpBtn{grid-row:1;grid-column:3;justify-self:end;align-self:center;height:44px;min-width:44px;margin:0 -10px 0 0;padding:0 10px;gap:6px;
+    border:0;background:none;box-shadow:none;color:var(--ds-amber);font:500 16px/1 var(--sans)}
+  .toolhead #toolHelpBtn svg{width:20px;height:20px}
+  .toolhead #toolHelpBtn:active{opacity:.55}
+  .toolhead #toolHelpBtn[aria-expanded="true"]{background:var(--dsh-tint-wash)}
+  .toolhead-icon{grid-row:2;grid-column:1;width:36px;height:36px;padding:6px;border-radius:10px}
+  .toolhead-name{grid-row:2;grid-column:2 / 4;min-width:0;font-size:26px;line-height:1.12;letter-spacing:-.025em;text-wrap:balance}
+  .toolhead-t > :not(.toolhead-back,.toolhead-name){grid-column:1 / -1}
+  .toolhead-desc{margin:8px 0 0;font-size:14.5px;line-height:1.45}
+  .toolhead > .toolhead-ctl > .scgroup{grid-column:1 / -1;order:5;margin-top:12px}
+
+  /* ---------- the calculator's header (components/shell/ToolBar.tsx) ---------- */
+  .toolbar{gap:10px;margin-top:2px}
+  .toolbar-t{flex:1 1 100%}
+  .toolbar-h{gap:10px}
+  .toolbar .toolhead-name{font-size:26px;line-height:1.12;letter-spacing:-.025em}
+  .toolbar-h > [data-slot=segmented]{flex:1 1 100%}
+  .toolbar-h + .toolhead-desc{margin-top:8px}
+  .toolbar .scgroup{flex:1 1 100%;margin-left:0}
+
+  /* ---------- saved scenarios (components/shell/ScenarioBar.tsx) ----------
+     The picker takes the room; Save, Share and Reset are 44px squares. */
+  .scgroup{min-height:44px;border-color:transparent;box-shadow:var(--dsh-card-shadow)}
+  .scgroup .btn{width:44px;flex:none;padding:0;color:var(--ds-muted)}
+  .scgroup .btn svg{width:19px;height:19px}
+  .scgroup .btn:active{background:var(--dsh-fill-2);color:var(--ds-text)}
+  .scgroup [data-slot=native-select]{font-size:16px}
+
+  /* ---------- shared controls at a thumb's size ---------- */
+  /* Segmented switches (components/ui/segmented.tsx stays as it is). */
+  [data-slot=segmented-item]{min-height:44px}
+  /* The ⓘ tips: the dot's glyph moves to ::before so the element itself can
+     be a 44px target (a mask on the element would clip taps to the glyph),
+     its margins pulled in so nothing around it moves. */
+  .tipdot{width:44px;height:44px;margin:-14px -14px -14px -10px;background:none;-webkit-mask:none;mask:none;vertical-align:middle}
+  .tipdot.dsh-ok,.tipdot.dsh-warn{width:44px;height:44px}
+  .tipdot::after{display:none}
+  .tipdot::before{content:"";position:absolute;inset:13px;background:currentColor;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 16.5v-5M12 7.8h.01'/%3E%3C/svg%3E") center / 100% no-repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 16.5v-5M12 7.8h.01'/%3E%3C/svg%3E") center / 100% no-repeat}
+  .tipdot.dsh-ok::before{
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='m8.5 12 2.4 2.4 4.6-4.8'/%3E%3C/svg%3E");
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='m8.5 12 2.4 2.4 4.6-4.8'/%3E%3C/svg%3E")}
+  .tipdot.dsh-warn::before{
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 7.5v5M12 16.3h.01'/%3E%3C/svg%3E");
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 7.5v5M12 16.3h.01'/%3E%3C/svg%3E")}
+  .tipdot:focus-visible{outline-offset:-10px;border-radius:50%}
+  /* Fields: 44px tall, 16px text (iOS zooms into anything smaller). */
+  [data-slot=input-group]{min-height:44px}
+  [data-slot=input-group-control]{font-size:16px}
+  select[data-slot=native-select]:not([data-variant=joined],[data-variant=inline]){min-height:44px;font-size:16px}
+  /* Checkbox-style switches ("Split by account type", "Glide path"). */
+  [data-slot=toggle][data-variant=check]{min-height:44px;font-size:14px}
+  [data-checkrow]{min-height:44px;padding-block:0}
+  [data-checkrow] > [data-slot=toggle][data-variant=checkInline]{min-height:44px;font-size:14px}
+  /* The ± in front of a rate (SignFlip): the field's full height. */
+  [data-slot=toggle][data-variant=sign]{align-self:stretch;min-width:44px;margin-block:-1px}
+  /* Text buttons that sit on their own line ("Convert frequency", "How the
+     strategies compare"): a full-height row to tap. */
+  main [data-slot=button][data-variant=link]:not(p *,li *,span *,td *,th *,label *,h2 *,h3 *,footer *){min-height:44px}
+  /* CSV (components/common/CsvButton.tsx): a 44px target around the same
+     small pill: a clear 10px border all round (the fill stops inside it),
+     pulled back by a matching margin so nothing around it moves. */
+  [data-slot=button][aria-label$=" as CSV"]{box-sizing:border-box;height:44px;min-width:68px;margin:-10px;padding:0 10px;
+    border:10px solid transparent !important;background-clip:padding-box}
+  [data-slot=button][aria-label$=" as CSV"]::after{display:none}
+
+  /* ---------- the answer bar (PinnedReading in components/common/Reading.tsx) ----------
+     Compact, pinned under the top bar, and a button to the Results view. */
+  [data-pinned-reading]{margin-bottom:12px;padding:8px 14px 9px;border-color:transparent;border-radius:16px;
+    background:var(--dsh-glass);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+    box-shadow:var(--dsh-card-shadow)}
+  [data-pinned-reading] .text-label{font-size:12px;line-height:1.3}
+  [data-pinned-reading] .text-2xl{font-size:22px;line-height:1.15}
+  html:has([data-pinned-reading]){scroll-padding-top:calc(var(--sb-clear) + var(--navh) + 72px)}
+  .pin-go{width:100%;align-items:center;font:inherit;text-align:left;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pin-go > .text-right{margin-left:auto}
+  .pin-go-chev{flex:none;width:18px;height:18px;margin:0 -6px 0 -10px;color:var(--ds-rule-strong)}
+  .pin-go:active{background:var(--dsh-fill-2)}
+  .pin-go:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
+
+  /* ---------- the Results view's headline (HeroReading) ----------
+     The hero leads at full size; the secondary figures sit two to a row
+     (a long one takes its row), at a size two can share. */
+  .hero-r{padding:20px 16px 18px}
+  .hero-figs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px;margin-top:16px;padding-top:14px}
+  .hero-figs > [data-long]{grid-column:1 / -1}
+  .hero-figs > div > .text-3xl,.hero-figs > div > .text-2xl{font-size:26px;line-height:1.15}
+}

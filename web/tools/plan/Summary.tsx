@@ -20,6 +20,7 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { money, pctStr } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 import { cn } from "@/lib/utils";
+import { isPhone } from "@/components/phone/usePhone";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { copyToTools } from "./copy";
 import { ageSpan, ageText } from "./kids";
@@ -83,6 +84,8 @@ export function Hero({ S, stages }: { S: PlanSummary; stages: boolean }) {
 type Part = { label: string; v: number; c: string };
 export function PayCard({ S }: { S: PlanSummary }) {
   const [unit, setUnit] = useState<"year" | "month" | "check">("year");
+  // On a phone, the part of the bar last tapped (its amount is in a title= on wider screens).
+  const [tapped, setTapped] = useState<string | null>(null);
 
   const y = S.pay, mult = unit === "year" ? S.p : unit === "month" ? S.p / 12 : 1;
   const k = (v: number) => v * mult;
@@ -114,13 +117,15 @@ export function PayCard({ S }: { S: PlanSummary }) {
         <CardAction><Segmented size="compact" attr="data-ppunit" options={units} value={unit} onChange={setUnit} /></CardAction>
       </CardHeader>
       <CardContent>
-        <div className="flex h-9 w-full overflow-hidden rounded-md" role="img"
+        <div className="pw-bar flex h-9 w-full overflow-hidden rounded-md" role="img"
           aria-label={cols.map((c) => c.h + " " + money(k(sum(c.parts)))).join(", ")}>
-          {all.map((x) => <div key={x.label} title={x.label + ": " + money(k(x.v))} className="h-full w-(--w) border-r border-card bg-(--c) last:border-r-0" style={{ "--w": (x.v / gross) * 100 + "%", "--c": x.c } as React.CSSProperties}></div>)}
+          {all.map((x) => <div key={x.label} title={x.label + ": " + money(k(x.v))} className="pw-seg h-full w-(--w) border-r border-card bg-(--c) last:border-r-0" style={{ "--w": (x.v / gross) * 100 + "%", "--c": x.c } as React.CSSProperties}
+            data-on={tapped === x.label ? "" : undefined} onClick={() => { if (isPhone()) setTapped(x.label); }}></div>)}
         </div>
         <div className="mt-1.5 flex w-full text-label text-muted-foreground tabular-nums" aria-hidden="true">
           {cols.map((c) => <div key={c.h} className="w-(--w) min-w-0 truncate pr-2" style={{ "--w": (sum(c.parts) / gross) * 100 + "%" } as React.CSSProperties}>{pctStr(sum(c.parts) / gross, 0)}</div>)}
         </div>
+        <TapLine shown={(() => { const x = all.find((p) => p.label === tapped); return x ? <><b>{x.label}</b>: {money(k(x.v))}</> : null; })()} />
         <div className={cn("mt-5 grid gap-x-8 gap-y-5 max-sm:grid-cols-1", cols.length === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3")}>
           {cols.map((c) => (
             <div key={c.h} className="min-w-0">
@@ -141,6 +146,11 @@ export function PayCard({ S }: { S: PlanSummary }) {
       </CardContent>
     </Card>
   );
+}
+
+/** Phones only: what the bar part last tapped says, or how to read one. */
+function TapLine({ shown, hint = "Tap a part of the bar for its amount." }: { shown: React.ReactNode; hint?: string }) {
+  return <p className="pw-tap phone:hidden" aria-live="polite">{shown ?? hint}</p>;
 }
 
 /* ---- each account ---- */
@@ -331,11 +341,13 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
   const at = (age: number) => ((age - a0) / span) * 100 + "%";
   const ticks = Array.from({ length: Math.floor(span / 5) + 1 }, (_, i) => a0 + i * 5).filter((t) => t < a1 - 1).concat(a1);
   const gone = K.without - S.atRetire.total;
+  // On a phone, the stretch last tapped (what its title= says on wider screens).
+  const [tapped, setTapped] = useState<string | null>(null);
   /** One stretch along the years: a tinted bar with its edge in the
       color, and the monthly cost written in where it fits (on a phone's
       narrower bar, without "/mo", or in thousands). */
   const Seg = ({ from, to, monthly, c, title }: { from: number; to: number; monthly: number; c: string; title: string }) => (
-    <div title={title} className="@container absolute inset-y-0 left-(--l) flex w-(--w) items-center overflow-hidden rounded-sm border-l-3 border-l-(--c) px-1.5 text-label whitespace-nowrap tabular-nums"
+    <div title={title} data-on={tapped === title ? "" : undefined} onClick={() => { if (isPhone()) setTapped(title); }} className="pw-seg @container absolute inset-y-0 left-(--l) flex w-(--w) items-center overflow-hidden rounded-sm border-l-3 border-l-(--c) px-1.5 text-label whitespace-nowrap tabular-nums"
       style={{ "--l": at(from), "--w": ((to - from) / span) * 100 + "%", "--c": c } as React.CSSProperties}>
       <span className="absolute inset-0 bg-(--c) opacity-25" aria-hidden="true"></span>
       {(to - from) / span > 0.09 ? <>
@@ -386,6 +398,7 @@ export function ChildrenCost({ S, withoutWords = "saving today's amounts all the
             </div>
           </div>
         </div></div>
+        <TapLine shown={tapped} hint="Tap a bar for its years and what it costs per month." />
         <div className="legend mt-2 px-0!">
           <span><i className="bg-series-rose"></i>Before school (childcare)</span><span><i className="bg-series-lavender"></i>At school</span>
           <span><i className="bg-series-sky"></i>All the children, per month</span><span>{dash ? "Along the bottom, " + (ageWho ?? "your age") : "Ages are yours"}</span>

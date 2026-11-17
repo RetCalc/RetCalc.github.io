@@ -1,0 +1,11 @@
+/* Phones only (under 768px): the Retirement Plan Optimizer.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs).
+   Its "More options" rows are styled in tool-roth.css, with the Roth's. */
+@media (width < 768px){
+  /* Buttons the tool draws: a finger's height. */
+  #opCopy,.op-run [data-op="stop"],#tab-optimizer [data-op="run"],#opOut [data-slot="button"]{min-height:44px}
+  #tab-optimizer [data-slot="collapsible-trigger"]{min-height:44px}
+  /* The year table scrolls sideways in its own box. */
+  #tab-optimizer .scroll{max-width:100%;overscroll-behavior-x:contain}
+}

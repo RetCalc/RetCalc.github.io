@@ -37,6 +37,8 @@ import { PlanFacts, TipLabel, To } from "./ui";
 import { STATE_OPTIONS } from "@/lib/states";
 import { parseNum } from "@/lib/format";
 import { Hosted } from "./host";
+import { PhoneViewSwitch } from "@/components/phone/ViewSwitch";
+import { TapNote } from "@/components/phone/Words";
 import { newId, useDashboard, type Entry, type Profile } from "./store";
 import { CHILDREN_ID, acctWord, newScenario, scenarioName, scenarioSentence, type Scenario, type ScenarioKind } from "./scenarios";
 import { ChangeDialog, ChangesDialog, INCOME_KIND, LUMP_KIND, SAVE_LESS_KIND, SPENDING_KIND, PickKind, RETURNS_KIND, fx, kindClass, type ChangeTip, type Years } from "@/components/changes/ChangeUI";
@@ -338,6 +340,8 @@ export function Calculator() {
 
   return (
     <Frame current="calculator" title="Calculator">
+      {/* Phones: the plan's inputs and changes, and what they come to, one tap apart. */}
+      <PhoneViewSwitch inLabel="Your plan" outLabel="Results" />
       {changed ? (
         <p className="dsh-cap dsh-mt6">Your own changes here are saved in place of the plan&apos;s figures, and this result is your savings at retirement on every tab.{" "}
           <Button variant="link" size="inline" onClick={() => { setProfile((p) => ({ ...p, calcOwn: undefined })); setRev((r) => r + 1); }}>Use the plan&apos;s figures</Button></p>
@@ -379,5 +383,5 @@ function CalcFacts({ pr, entries }: { pr: Profile; entries: Entry[] }) {
     ["Taxes in retirement", `${s.saStatus === "m" ? "Married filing jointly" : "Single"}, ${STATE_OPTIONS.find((o) => o.code === s.saState)?.name ?? s.saState}`],
     ["Inflation", `${+(pr.assume.inflation * 100).toFixed(2)}% per year`],
   ];
-  return <PlanFacts id="calcFacts" rows={rows} note={<>Balances and cost basis come from <To href="/dashboard/accounts#assets">Net worth</To>, pay and the match from <To href="/dashboard/income#pay">Income</To>, filing status, state and inflation from <To href="/dashboard/profile">Profile</To>. Change them there.</>} />;
+  return <PlanFacts id="calcFacts" rows={rows} note={<TapNote inline label="Where these come from">Balances and cost basis come from <To href="/dashboard/accounts#assets">Net worth</To>, pay and the match from <To href="/dashboard/income#pay">Income</To>, filing status, state and inflation from <To href="/dashboard/profile">Profile</To>. Change them there.</TapNote>} />;
 }

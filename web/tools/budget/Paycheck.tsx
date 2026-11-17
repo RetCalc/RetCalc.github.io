@@ -9,7 +9,7 @@
    engine), and the itemized paycheck under it is the receipt. Designed in
    the mocks of 2026-10-15 (the tab) and 2026-10-18 (the sliders). */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Donut, type DonutPart } from "@/components/charts/Donut";
 import { ShareBar } from "@/components/charts/Legend";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
@@ -28,6 +28,7 @@ import { DASH, groupDigits, money } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 import { STATE_OPTIONS } from "@/lib/states";
 import { cn } from "@/lib/utils";
+import { InfoTap } from "@/components/phone/Words";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { BracketsCard, StateRulesCard } from "@/tools/tax/TaxTables";
 import { NEWEST_YEAR, yearData } from "@/lib/engine/typed";
@@ -45,6 +46,7 @@ import {
 
 type SetState = (fn: (c: BudgetInputs) => BudgetInputs) => void;
 
+const TWO_NOTE = "Planned by the month, since two paychecks rarely line up. The itemized paycheck shows each of your checks. Taxed together as a joint return.";
 const FREQS = [["52", "Every week"], ["26", "Every two weeks"], ["24", "Twice a month"], ["12", "Monthly"]] as const;
 /** The donut's four parts, in order. */
 const PART_COLORS = [SERIES.teal, SERIES.rose, SERIES.lavender, SERIES.plan];
@@ -82,6 +84,19 @@ export function Paycheck({ s, set, setState }: {
   // are kept in cents, and taxes and pay aren't.
   const left = Math.abs(r.left) < 0.01 ? 0 : r.left;
   const [active, setActive] = useState<number | null>(null);
+  /* A tap (or click) on a slice or a bar selects that part and shows it in
+     the donut's center; another part's tap moves to it, and a tap on the
+     donut's middle clears it. Hover does the same with a mouse. */
+  // After a touch the browser sends a mouse leave of its own: a part picked
+  // by a finger stays picked until another tap.
+  const touched = useRef(false);
+  const leave = () => { if (!touched.current) setActive(null); };
+  const pointer = (e: React.PointerEvent) => { touched.current = e.pointerType !== "mouse"; };
+  const pick = (e: React.MouseEvent) => {
+    const t = (e.target as Element).closest("circle[data-idx], .bar[data-idx]");
+    if (t) setActive(+(t.getAttribute("data-idx") ?? 0));
+    else if ((e.target as Element).closest("svg")) setActive(null);
+  };
 
 
   // The health premiums' field: the Budget's row per check until typed over.
@@ -98,7 +113,7 @@ export function Paycheck({ s, set, setState }: {
 
   return (
     <>
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         <PinnedReading tone={empty ? "text" : short ? "loss" : "answer"}
           main={{ label: "Saved and invested, each " + per, value: empty ? DASH : money(r.saved) }}
           side={{ label: short ? "Short" : "Unassigned", value: empty ? DASH : money(left) }} />
@@ -132,7 +147,9 @@ export function Paycheck({ s, set, setState }: {
                           {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                         </SelectField>
                       </div>
-                      <div className="hint -mt-1.5 mb-3.5">Planned by the month, since two paychecks rarely line up. The itemized paycheck shows each of your checks. Taxed together as a joint return.</div>
+                      <div className="hint -mt-1.5 mb-3.5 max-phone:hidden">{TWO_NOTE}</div>
+                      {/* Phones: the short form, the whole note a tap away. */}
+                      <div className="hint -mt-1.5 mb-3.5 phone:hidden">Planned by the month, taxed as a joint return.<InfoTap title="Two incomes">{TWO_NOTE}</InfoTap></div>
                     </>
                   ) : (
                     <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
@@ -200,7 +217,7 @@ export function Paycheck({ s, set, setState }: {
       </div>
 
       <div className="stack min-w-0 lg:col-span-2" id="tab-paycheck">
-        <Card size="flush" className="min-w-0" hidden={scope?.slots?.noReading}>
+        <Card size="flush" className="min-w-0" hidden={scope?.slots?.noReading} data-pv="out">
           <HeroReading tone={empty ? "text" : "answer"} sized={!empty} row
             hero={{ label: "Saved and invested, each " + per, id: "pcSaved", value: empty ? DASH : money(r.saved), noteId: "pcSavedNote",
               note: empty ? "Enter your gross pay to begin" : ((r.saved / r.check) * 100).toFixed(1) + "% of gross pay" + (r.match > 0 ? ", plus " + money(r.match) + (two ? " in employer matches" : " from your employer") : "") }}
@@ -219,11 +236,11 @@ export function Paycheck({ s, set, setState }: {
                     const c = (e.target as Element).closest("circle[data-idx]");
                     setActive(c ? +(c.getAttribute("data-idx") ?? 0) : null);
                   }}
-                  onMouseLeave={() => setActive(null)}>
+                  onMouseLeave={leave} onClick={pick} onPointerDown={pointer}>
                   <Donut parts={parts} center={money(r.check)} centerLabel={two ? "Each month" : "Each check"} active={active} hatch="pch" />
                 </svg>
               </div>
-              <div className="w-full min-w-0 flex-1" onMouseLeave={() => setActive(null)}
+              <div className="w-full min-w-0 flex-1" onMouseLeave={leave} onClick={pick} onPointerDown={pointer}
                 onMouseOver={(e) => {
                   const b = (e.target as Element).closest(".bar[data-idx]");
                   if (b) setActive(+(b.getAttribute("data-idx") ?? 0));
@@ -348,11 +365,13 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
   const plan = (s.pcPlan in PC_PLANS ? s.pcPlan : "") as PcPlan | "";
   const sp = pcSplit(pi);
   return (
-    <Card className="min-w-0">
+    // The sliders are decisions: on a phone they're with the inputs.
+    <Card className="min-w-0" data-pv="in">
       <CardHeader>
         <CardTitle>Where the rest goes</CardTitle>
         <CardAction>
-          {scope ? null : <Button variant="outline" size="sm" id="pcCopyOut" disabled={empty} title="Copy what goes into each account into Advanced" onClick={copyOut}>Copy to Advanced</Button>}
+          {scope ? null : <div className="phone:contents max-phone:flex max-phone:items-center"><Button variant="outline" size="sm" id="pcCopyOut" disabled={empty} title="Copy what goes into each account into Advanced" onClick={copyOut}>Copy to Advanced</Button>
+            <InfoTap title="Copy to Advanced"><p>Copy what goes into each account into the Advanced Calculator, split by account type.</p></InfoTap></div>}
         </CardAction>
       </CardHeader>
       <CardContent>
@@ -377,6 +396,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
             : "A plan sets every slider at once. Drag from there."}
         </p> : null}
 
+        <p className="mt-1 mb-1 text-note text-muted-foreground phone:hidden">Max puts in as much as a line takes, or what&apos;s left.</p>
         <div id="pcSliders">
           {pi.order.map((k) => {
             const line = PC_LINES[k], v = pi.amounts[k], cap = pcCap(pi, k, pi.amounts);
@@ -534,18 +554,20 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   const csv = () => empty ? null : [["Line", ...heads], ...rows.map((x) => x.v == null ? [x.label] : [(x.kind === "sub" ? "  " : "") + x.label, ...vals(x).map((y) => (y == null ? "" : y.toFixed(2)))])];
 
   return (
-    <Card className="min-w-0" hidden={empty}>
+    <Card className="min-w-0" hidden={empty} data-pv="out">
       <CardHeader>
         <CardTitle>Itemized paycheck</CardTitle>
         <CardAction>
           <div className="flex flex-wrap justify-end gap-2">
             {/* A walkthrough has the tax tables below and stays put. */}
-            {scope ? null : <Button variant="outline" size="sm" id="pcToTax" title="Open Income Tax with this pay, state and these pre-tax deductions" onClick={openTax}>Open in Income Tax</Button>}
+            {scope ? null : <span className="phone:contents max-phone:flex max-phone:items-center"><Button variant="outline" size="sm" id="pcToTax" title="Open Income Tax with this pay, state and these pre-tax deductions" onClick={openTax}>Open in Income Tax</Button>
+              <InfoTap title="Open in Income Tax"><p>Open the Income Tax Calculator with this pay, state and these pre-tax deductions.</p></InfoTap></span>}
             <CsvButton id="pcCsv" label="itemized paycheck" title="Download the itemized paycheck as a CSV" rows={csv} filename="retcalc-paycheck.csv" />
           </div>
         </CardAction>
       </CardHeader>
       {/* The whole stub, never cut off at a height: it scrolls sideways only. */}
+      <div className="swipehint phone:hidden">Swipe the table sideways to see every column.</div>
       <div className="overflow-x-auto">
         <table id="pcStub">
           <thead><tr><th>Line</th>{heads.map((h) => <th key={h} className="whitespace-nowrap">{h}</th>)}</tr></thead>

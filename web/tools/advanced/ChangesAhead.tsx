@@ -16,6 +16,7 @@ import { CheckToggle } from "@/components/fields/CheckToggle";
 import { Modal, ModalTop } from "@/components/shell/Modal";
 import { Tipped } from "@/components/shell/Tooltips";
 import { KV } from "@/components/common/Readout";
+import { InfoTap, Short } from "@/components/phone/Words";
 import { CHILDREN_KIND, ChangeDialog, ChangesDialog, LUMP_KIND, PickKind, RETURNS_KIND, SAVING_KIND, fx, kindClass, type ChangeTip, type Kind, type Years } from "@/components/changes/ChangeUI";
 import { CHILDREN_ID, acctWord, newScenario, scenarioName, scenarioSentence, type Scenario } from "@/components/dashboard/scenarios";
 import { DASH, fmtNum, money, parseNum, pctStr } from "@/lib/format";
@@ -48,6 +49,9 @@ const stored = (c: Scenario, Y: Years): Scenario => ({ ...c, from: Math.max(0, c
 function fvOf(s: AdvancedInputs, household: Household | null, freed?: Freed): number {
   return changesOn(s) ? changesCompute(s, household, freed).V.R.fvReal : advancedCompute(s, household).R.fvReal;
 }
+
+/** What the list is: on a phone, behind the ⓘ by its heading. */
+const ABOUT = "What you see coming, and what each does to your savings at the end. The figures above are where the plan starts.";
 
 const newId = () => "c" + Math.random().toString(36).slice(2, 9);
 const TIPS: Record<ChangeTip, string> = { from: "chgfrom", amount: "chgamount", pct: "chgpct", acct: "chgacct", lump: "chglump", return: "chgreturn" };
@@ -167,11 +171,12 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
 
   const C = useMemo(() => (rows.length ? compileChanges(s, household, freed) : null), [rows.length, s, household, freed]);
   const n = C?.shown.length ?? 0;
+  const stagesWhy = <>Your figures above and the changes ahead, as the {n === 1 ? "stage" : n + " stages"} the calculator runs.</>;
 
   return (
     <>
-      <h3 className="m-0 mt-1 mb-1 border-t border-border pt-4 text-sm font-semibold">Changes ahead</h3>
-      <p className="hint mt-0 mb-2.5">What you see coming, and what each does to your savings at the end. The figures above are where the plan starts.</p>
+      <h3 className="m-0 mt-1 mb-1 border-t border-border pt-4 text-sm font-semibold">Changes ahead<InfoTap title="Changes ahead">{ABOUT}</InfoTap></h3>
+      <p className="hint mt-0 mb-2.5"><Short phone="What each does to your savings at the end.">{ABOUT}</Short></p>
       {rows.length ? (
         <ol className="dsh-sc-rows" aria-label="Changes ahead">
           {rows.map((r, i) => (
@@ -188,8 +193,8 @@ export function ChangesAhead({ s, setState, household, freed }: { s: AdvancedInp
         <Button variant="outline" className="flex-1" id="btnAddChange" onClick={() => setDlg({ at: "pick" })}><PlusIcon aria-hidden="true" />Add a change</Button>
       </div>
       {rows.length ? <>
-        <h4 className="m-0 mb-1 text-sm font-semibold">The stages behind this</h4>
-        <p className="hint mt-0 mb-2.5">Your figures above and the changes ahead, as the {n === 1 ? "stage" : n + " stages"} the calculator runs.</p>
+        <h4 className="m-0 mb-1 text-sm font-semibold">The stages behind this<InfoTap title="The stages behind this">{stagesWhy}</InfoTap></h4>
+        <p className="hint mt-0 mb-2.5 max-phone:hidden">{stagesWhy}</p>
         <Button variant="outline" className="mb-3.5 w-full" id="btnStagesBehind" onClick={() => setDlg({ at: "stages" })}>{n === 1 ? "See the stage" : "See the " + n + " stages"}</Button>
       </> : null}
 

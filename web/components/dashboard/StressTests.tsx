@@ -89,7 +89,7 @@ function Row({ t, S, R, two, cover, pct, onEdit }: { t: StressTest; S: Stress; R
         <TipLabel text={name} id={STRESS_TIPS[t.id]} />
         {sub ? <span className="dsh-cap">{sub}{t.id === "death" && cover ? <> <Tip id="lifeCover" title="Life insurance that would cover it" /></> : null}</span> : null}
       </div>
-      <div className="dsh-st-when" role="cell">{t.id === "market" ? when : <Button variant="link" size="inline" onClick={() => onEdit(t.id)} title="Change what this test assumes">{when || "Set it"}</Button>}</div>
+      <div className="dsh-st-when" role="cell">{t.id === "market" ? when : <Button variant="link" size="inline" onClick={() => onEdit(t.id)} title="Change what this test assumes">{when || "Set it"}<span className="dsh-st-change phone:hidden">Change</span></Button>}</div>
       {t.id === "market" && t.starts ? (
         <ul className="dsh-st-years" role="cell" aria-label="Each start">
           {t.starts.map((s) => (

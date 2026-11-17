@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { NEW } from "../playwright.config";
+import { reveal } from "./phone";
 import { FIXTURES } from "../scripts/baseline/guide-fixtures.mjs";
 
 /* The Retirement Readiness Guide (doc 3, "End-to-end"): both paces, the
@@ -429,6 +430,7 @@ test("a trip into Income Tax brings take-home back, marked as the tool's, with a
   await page.reload();
   await expect(page.locator("#gdCoach")).toBeVisible();
   await expect(page.locator("#txGross")).toHaveValue("95,000");
+  await reveal(page, '[data-view="take"]');
   await page.locator('[data-view="take"]').click();
   await page.locator("#gdCoachBack").click();
   await expect(page.locator("#gdCard .gd-callout.ok")).toContainText("From Income Tax");

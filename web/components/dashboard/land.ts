@@ -7,6 +7,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { isPhone } from "@/components/phone/usePhone";
 
 /** Parts that live inside a tool, which has no ids of its own to point at. */
 const INSIDE: Record<string, () => Element | null | undefined> = {
@@ -37,10 +38,13 @@ function land() {
     const glow = el.matches('.dsh-tile, [data-slot="card"]') ? el : el.querySelector(':scope > .dsh-tile, :scope > [data-slot="card"]') ?? el;
     window.requestAnimationFrame(() => {
       const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const go = (behavior: ScrollBehavior) => window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 16, behavior });
+      // On a phone the slim title bar pins over the top of the page once it
+      // scrolls: the part lands just under it.
+      const room = isPhone() ? (document.querySelector(".dsh-pin")?.getBoundingClientRect().height || 44) + 12 : 16;
+      const go = (behavior: ScrollBehavior) => window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - room, behavior });
       go(still ? "auto" : "smooth");
       // A tool that loads above it can still push it down: once more, if so.
-      window.setTimeout(() => { if (Math.abs(el.getBoundingClientRect().top - 16) > 24) go("auto"); }, 900);
+      window.setTimeout(() => { if (Math.abs(el.getBoundingClientRect().top - room) > 24) go("auto"); }, 900);
       glow.removeAttribute("data-landed");
       void (glow as HTMLElement).offsetWidth;
       glow.setAttribute("data-landed", "");

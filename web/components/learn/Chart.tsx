@@ -6,10 +6,12 @@
    bars can carry their values). Pointing at the chart reads off every
    series at that point. The same figures sit in a table for screen
    readers. The drawing is laid out at the width it's shown (up to 720),
-   so its labels stay their real size on a phone. */
+   so its labels stay their real size on a phone. On a phone the read-off
+   stays after a finger lifts, until the next touch moves it. */
 
 import { useEffect, useRef, useState } from "react";
 import type { ChartSpec } from "@/lib/learn/lessons";
+import { isPhone } from "@/components/phone/usePhone";
 
 const TONE: Record<string, string> = {
   good: "var(--ds-gain)", bad: "var(--ds-loss)", accent: "var(--ds-amber)", neutral: "var(--ds-series-sky)", muted: "var(--ds-muted)",
@@ -110,7 +112,7 @@ export function Chart({ spec, label }: { spec: ChartSpec; label: string }) {
           {spec.series.map((s, k) => <span key={s.name}><i className={bars ? "bar" : s.dash ? "dash" : undefined} style={{ "--c": toneOf(s.tone, k) } as React.CSSProperties} />{s.name}</span>)}
         </div>
       ) : null}
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} onPointerMove={point} onPointerDown={point} onPointerLeave={() => setHov(null)}>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label} onPointerMove={point} onPointerDown={point} onPointerLeave={(e) => { if (e.pointerType === "touch" && isPhone()) return; setHov(null); }}>
         {spec.band ? (() => {
           const a = Xv(spec.band.from), b = Xv(spec.band.to);
           if (a == null || b == null) return null;

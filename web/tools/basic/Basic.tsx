@@ -38,6 +38,10 @@ import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SERIES } from "@/lib/hues";
+import { InfoTap, Short } from "@/components/phone/Words";
+
+const TODAY_NOTE = "Every figure here is in today's dollars, so you can compare it to what money is worth now. It assumes you nudge your contribution up a little each year to keep pace with inflation.";
+const MORE_NOTE = "The Advanced Calculator does everything this does plus taxes, fees, contribution growth, and a simulation of good and bad market runs. It also takes the changes you see coming: saving more after a raise, less while the kids are young, or nothing after you stop. This will carry your answers over so you don't have to retype them.";
 
 type Row = { year: number; end: number; growth: number; contrib: number };
 
@@ -70,7 +74,9 @@ function MilestoneMarks({ g, marks }: { g: ChartGeometry; marks: ReturnType<type
       {placed.map((m) => (
         <g key={m.key}>
           <line x1={m.x} x2={m.x} y1={m.y - 6} y2={m.y + 6} stroke="var(--ds-text)" strokeOpacity={0.7} strokeWidth={g.narrow ? 1.8 : 1.2} />
-          {m.label ? <text x={m.x} y={m.y - 11} textAnchor="middle" fontSize={fs} fill="var(--axis)">{m.label}</text> : null}
+          {/* On a narrow chart a name near the right edge ends at its mark
+              instead of running off the drawing. */}
+          {m.label ? <text x={m.x} y={m.y - 11} textAnchor={g.narrow && m.x > g.W - fs * 2.5 ? "end" : "middle"} fontSize={fs} fill="var(--axis)">{m.label}</text> : null}
         </g>
       ))}
     </g>
@@ -150,7 +156,7 @@ export function Basic() {
   );
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3" id="tab-simple" role="tabpanel" aria-labelledby="tabbtn-calc">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the questions are on screen. */}
         <PinnedReading main={{ label: fvLabel, value: fv }} side={{ label: "Income, per month", value: perMonth }} />
@@ -189,7 +195,7 @@ export function Basic() {
         </aside>
       </div>
 
-      <Card size="flush" className="min-w-0 lg:col-span-2" id="homeReading">
+      <Card size="flush" className="min-w-0 lg:col-span-2" id="homeReading" data-pv="out">
         <HeroReading sized={!!R}
           hero={{ label: fvLabel, id: "qFV", value: fv, noteId: "qFVnote", note: !R ? "" : example
             ? "Someone aged " + fmtNum(p.age) + " with " + money(p.initial) + " saved: enter your own numbers to see yours"
@@ -213,9 +219,9 @@ export function Basic() {
               <KV k="You add" id="qSpan" v={R ? money(p.contrib, p.contrib % 1 ? 2 : 0) + " " + PERIOD_ADV[p.period] : DASH} />
             </div>
           </div>
-          <div className="hint mt-3 max-w-copy">Every figure here is in today&apos;s dollars,
-            so you can compare it to what money is worth now. It assumes you nudge your
-            contribution up a little each year to keep pace with inflation.</div>
+          {/* Phones: the dollars line, its reason and assumption a tap away. */}
+          <div className="hint mt-3 max-w-copy"><Short phone="Every figure here is in today's dollars, with your saving rising with inflation.">{TODAY_NOTE}</Short>
+            <InfoTap title="Today's dollars">{TODAY_NOTE}</InfoTap></div>
         </div>
 
         <div className="border-t border-border pt-4" hidden={!pts.length}>
@@ -226,7 +232,7 @@ export function Basic() {
         </div>
       </Card>
 
-      <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:col-span-3 lg:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:col-span-3 lg:grid-cols-2" data-pv="out">
         <Card hidden={!R}>
           <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
           <CardContent id="msBodyQ">{R ? <Milestones rows={R.years} alreadyReal /> : null}</CardContent>
@@ -235,19 +241,15 @@ export function Basic() {
         {/* Where to take these numbers next: Advanced, for more detail and
             for saving that changes over time. */}
         <Card>
-          <CardHeader><CardTitle>Want more detail?</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Want more detail?<InfoTap title="The Advanced Calculator">{MORE_NOTE}</InfoTap></CardTitle></CardHeader>
           <CardContent>
-            <p className="hint mt-0">The Advanced Calculator does everything this does
-              plus taxes, fees, contribution growth, and a simulation of good and bad market
-              runs. It also takes the changes you see coming: saving more after a raise, less
-              while the kids are young, or nothing after you stop. This will carry your answers
-              over so you don&apos;t have to retype them.</p>
+            <p className="hint mt-0"><Short phone="The Advanced Calculator adds taxes, fees, savings that change over time, and good and bad markets. Your answers carry over.">{MORE_NOTE}</Short></p>
             <OpenInAdvanced basic={s} />
           </CardContent>
         </Card>
       </div>
 
-      <Collapsible className="min-w-0 lg:col-span-3" render={<Card />}>
+      <Collapsible className="min-w-0 lg:col-span-3" render={<Card />} data-pv="out">
         <CardHeader>
           <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
           <CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction>

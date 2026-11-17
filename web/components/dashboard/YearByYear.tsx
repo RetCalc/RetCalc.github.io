@@ -9,7 +9,7 @@
    spending, and where each year's income goes. */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CalendarRangeIcon, ChartColumnIcon, PencilIcon, PlusIcon, SlidersHorizontalIcon, TableIcon } from "lucide-react";
+import { CalendarRangeIcon, ChartColumnIcon, ChevronRightIcon, ListIcon, PencilIcon, PlusIcon, SlidersHorizontalIcon, TableIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { Affixed, NumberField, SelectField } from "@/components/fields/Field";
@@ -32,6 +32,9 @@ import { KEEP_CHOICES, pctWord } from "./yearly";
 import { Tile, TipLabel, To } from "./ui";
 import { useTyped } from "./fields";
 import { CsvButton } from "@/components/common/CsvButton";
+import { Sheet, SheetBody, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { TapNote } from "@/components/phone/Words";
+import { usePhone } from "@/components/phone/usePhone";
 
 /** The kinds this page adds: pay, spending, and saving outright. */
 const KINDS: Kind[] = [INCOME_KIND, SPENDING_KIND, SAVE_LESS_KIND];
@@ -53,6 +56,9 @@ export function YearByYear() {
   // A year's taxes, opened to see how they're worked out.
   const [taxAt, setTaxAt] = useState<CashYear | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  // Phones: the years as a list (a year opens in a sheet), or the whole table.
+  const [phoneTable, setPhoneTable] = useState(false);
+  const phone = usePhone();
   useEffect(() => {
     if (!flash) return;
     const t = setTimeout(() => setFlash(null), 9000);
@@ -117,7 +123,10 @@ export function YearByYear() {
             {KEEP_CHOICES.map((c) => <option key={String(c.v)} value={c.v == null ? "same" : String(c.v)}>{c.label}</option>)}
           </SelectField>
         </div>
-        <p className="dsh-cap dsh-mt6">Raises are beyond inflation. Taxes come from your paycheck&apos;s own figures each year, and saving follows take-home pay as set here, each account up to its limit with the rest in the next. What&apos;s spent is what&apos;s left. Children&apos;s costs and college come out of saving, as on <To href="/dashboard/profile#children">Profile</To>. Debt payments you&apos;ve planned on <To href="/dashboard/accounts#debts">Net worth</To>, and your mortgage, stay the same in dollars, so they take a little less each year after inflation; what they free, and all of it once they&apos;re paid off, goes to saving. When pay changes other than by a raise ({names ? `a pay change below, or ${names[1]} stopping work` : "a pay change below"}), spending carries on and saving takes the difference, each account within the limits that pay allows.</p>
+        <p className="dsh-cap dsh-mt6 max-phone:hidden">Raises are beyond inflation. Taxes come from your paycheck&apos;s own figures each year, and saving follows take-home pay as set here, each account up to its limit with the rest in the next. What&apos;s spent is what&apos;s left. Children&apos;s costs and college come out of saving, as on <To href="/dashboard/profile#children">Profile</To>. Debt payments you&apos;ve planned on <To href="/dashboard/accounts#debts">Net worth</To>, and your mortgage, stay the same in dollars, so they take a little less each year after inflation; what they free, and all of it once they&apos;re paid off, goes to saving. When pay changes other than by a raise ({names ? `a pay change below, or ${names[1]} stopping work` : "a pay change below"}), spending carries on and saving takes the difference, each account within the limits that pay allows.</p>
+        {/* Phones: what the raise fields mean stays; how the years are worked out is a tap away. */}
+        <p className="dsh-cap dsh-mt6 phone:hidden">Raises are beyond inflation.{" "}
+          <TapNote inline label="How the years are worked out">Raises are beyond inflation. Taxes come from your paycheck&apos;s own figures each year, and saving follows take-home pay as set here, each account up to its limit with the rest in the next. What&apos;s spent is what&apos;s left. Children&apos;s costs and college come out of saving, as on <To href="/dashboard/profile#children">Profile</To>. Debt payments you&apos;ve planned on <To href="/dashboard/accounts#debts">Net worth</To>, and your mortgage, stay the same in dollars, so they take a little less each year after inflation; what they free, and all of it once they&apos;re paid off, goes to saving. When pay changes other than by a raise ({names ? `a pay change below, or ${names[1]} stopping work` : "a pay change below"}), spending carries on and saving takes the difference, each account within the limits that pay allows.</TapNote></p>
         <div className="dsh-yby-changes dsh-mt">
           <div className="dsh-label">Changes ahead</div>
           {changes.length ? (
@@ -134,12 +143,15 @@ export function YearByYear() {
                 </li>
               ))}
             </ul>
-          ) : <p className="dsh-cap">None yet. A promotion, part-time years, a bigger house: add one here, or click a pay or spending figure in the table.</p>}
+          ) : <>
+            <p className="dsh-cap max-phone:hidden">None yet. A promotion, part-time years, a bigger house: add one here, or click a pay or spending figure in the table.</p>
+            <p className="dsh-cap phone:hidden">None yet. A promotion, part-time years, a bigger house: add one here, or tap a year below to type its pay or spending.</p>
+          </>}
           <Button variant="outline" size="sm" onClick={() => setDlg({ at: "pick" })}><PlusIcon aria-hidden="true" />Add a change</Button>
         </div>
       </Tile>
 
-      <Tile id="table" icon={TableIcon} title="Every year to retirement" className="dsh-r4" right={
+      <Tile id="table" icon={TableIcon} title="Every year to retirement" className={phoneTable ? "dsh-r4 dsh-yby-tblon" : "dsh-r4"} right={
         <div className="dsh-yby-tools">
           <Segmented aria-label="Dollars">
             <SegmentedItem pressed={!future} onPressedChange={() => setFuture(false)}>Today&apos;s dollars</SegmentedItem>
@@ -148,12 +160,24 @@ export function YearByYear() {
           <CsvButton label="Year by year" filename={`retcalc-year-by-year-${future ? "future" : "todays"}-dollars.csv`} rows={csvRows} />
         </div>
       }>
+        {/* Phones: each year a row to tap, or the whole table to swipe. */}
+        <div className="dsh-yby-pick phone:hidden">
+          <Segmented size="fill" aria-label="Show the years as">
+            <SegmentedItem pressed={!phoneTable} onPressedChange={() => setPhoneTable(false)}><ListIcon aria-hidden="true" />Years</SegmentedItem>
+            <SegmentedItem pressed={phoneTable} onPressedChange={() => setPhoneTable(true)}><TableIcon aria-hidden="true" />Table</SegmentedItem>
+          </Segmented>
+        </div>
+        <YearList years={years} names={names} other={other} f={f} age2now={age2now} pr={pr} a={a}
+          onPay={(y, who) => setCell({ what: who ? "pay1" : "pay0", year: y.year, k: y.k, value: yr(y.pay[who]), label: names ? names[who] + "'s pay" : "Your pay", edit: y.edits.find((e) => e.what === (who ? "pay1" : "pay0")) ?? null })}
+          onSpend={(y) => setCell({ what: "spend", year: y.year, k: y.k, value: yr(y.spending), label: "Spending", edit: y.edits.find((e) => e.what === "spend") ?? null, y })}
+          onTax={setTaxAt} />
         <YearTable years={years} names={names} other={other} f={f} age2now={age2now} pr={pr} a={a}
           onPay={(y, who) => setCell({ what: who ? "pay1" : "pay0", year: y.year, k: y.k, value: yr(y.pay[who]), label: names ? names[who] + "'s pay" : "Your pay", edit: y.edits.find((e) => e.what === (who ? "pay1" : "pay0")) ?? null })}
           onSpend={(y) => setCell({ what: "spend", year: y.year, k: y.k, value: yr(y.spending), label: "Spending", edit: y.edits.find((e) => e.what === "spend") ?? null, y })}
           onTax={setTaxAt} />
         {flash ? <p className="dsh-cap dsh-mt6 dsh-yby-flash" role="status">{flash}</p> : null}
-        <p className="dsh-cap dsh-mt6">Per year. Click a spending or tax figure to see how it&apos;s worked out, and a pay or spending figure to type your own; a dot marks one you&apos;ve typed. {future ? `Each year's dollars: prices rise ${pctWord(infl)} per year.` : "Today's dollars: what each year's money buys at today's prices."} Savings grow at {pctWord(realGrowth(pr))} per year beyond inflation on <To href="/dashboard/retirement">Retirement</To>.</p>
+        <p className="dsh-cap dsh-mt6 max-phone:hidden">Per year. Click a spending or tax figure to see how it&apos;s worked out, and a pay or spending figure to type your own; a dot marks one you&apos;ve typed. {future ? `Each year's dollars: prices rise ${pctWord(infl)} per year.` : "Today's dollars: what each year's money buys at today's prices."} Savings grow at {pctWord(realGrowth(pr))} per year beyond inflation on <To href="/dashboard/retirement">Retirement</To>.</p>
+        <p className="dsh-cap dsh-mt6 phone:hidden">Per year. {phoneTable ? "Tap a spending or tax figure to see how it's worked out, and a pay or spending figure to type your own" : "Tap a year to see all its figures, how its spending and taxes are worked out, and to type your own"}; a dot marks one you&apos;ve typed. {future ? `Each year's dollars: prices rise ${pctWord(infl)} per year.` : "Today's dollars: what each year's money buys at today's prices."} Savings grow at {pctWord(realGrowth(pr))} per year beyond inflation on <To href="/dashboard/retirement">Retirement</To>.</p>
       </Tile>
 
       <div className="dsh-grid dsh-two">
@@ -167,7 +191,7 @@ export function YearByYear() {
 
       {taxAt ? <TaxWhyDialog y={taxAt} future={future} f={f} onClose={() => setTaxAt(null)} /> : null}
       {cell ? <QuickEdit cell={cell} future={future} f={f} infl={infl} y0={y0.year} pr={pr} onSave={(e) => putEdit(e, cell)} onReset={() => putEdit(null, cell)} onClose={() => setCell(null)} /> : null}
-      {dlg?.at === "pick" ? <PickKind kinds={KINDS} note="What do you see coming? Pick one, then give it ages and amounts." foot="To set a single year's pay or spending, click it in the table." close={() => setDlg(null)} pick={(k) => open(k.kind, k.over)} /> : null}
+      {dlg?.at === "pick" ? <PickKind kinds={KINDS} note="What do you see coming? Pick one, then give it ages and amounts." foot={phone ? "To set a single year's pay or spending, tap that year." : "To set a single year's pay or spending, click it in the table."} close={() => setDlg(null)} pick={(k) => open(k.kind, k.over)} /> : null}
       {dlg?.at === "edit" ? (
         <ChangeDialog s={dlg.s} fresh={dlg.fresh} years={{ base: age, end: retire, ages: true }} accounts saveLess label={tipLabel} names={names} sentence={sentence} effectOf={effectOf}
           where={(k) => `The rest comes out of your other accounts once ${acctWord(k)} runs out, the 401(k) up to the match last.`}
@@ -197,19 +221,18 @@ function csvRows(): string[][] | null {
     .map((tr) => [...tr.querySelectorAll("th,td")].flatMap((c) => [text(c), ...Array.from({ length: ((c as HTMLTableCellElement).colSpan || 1) - 1 }, () => "")]));
 }
 
-/* ---------- the table ---------- */
-
-function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend, onTax }: {
-  years: CashYear[]; names: [string, string] | null; other: boolean; f: (k: number) => number; age2now: number | null; pr: Profile; a: Answers;
-  onPay: (y: CashYear, who: 0 | 1) => void; onSpend: (y: CashYear) => void; onTax: (y: CashYear) => void;
-}) {
+/** What's going on in a year, said where it starts: a change starting or
+    ending, someone stopping work, the children's stage, college, a debt
+    paid off, and spending saving can't cover. */
+type YearNote = { text: string; warn?: boolean };
+function yearNotes(years: CashYear[], names: [string, string] | null, pr: Profile, a: Answers, f: (k: number) => number) {
   const m = (v: number, k: number) => money(Math.round(yr(v) * f(k)));
   const live = liveScenarios(pr.scenarios), kids = kidsOf(a);
   // The children's stage each year ("A child in childcare", "School years"),
   // said only when it changes.
   const stage = (y: CashYear) => (kids.length ? labelAt(a, kids, y.age, []) : "");
-  const notesOf = (y: CashYear, i: number): { text: string; warn?: boolean }[] => {
-    const out: { text: string; warn?: boolean }[] = [];
+  return (y: CashYear, i: number): YearNote[] => {
+    const out: YearNote[] = [];
     const prev = years[i - 1];
     if (names && prev && prev.works[1] && !y.works[1]) out.push({ text: `${names[1]} stops work` });
     for (const id of y.tags) {
@@ -224,6 +247,114 @@ function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend, onT
     if (y.short > 0.5) out.push({ text: `${m(y.short, y.k)} more than saving covers`, warn: true });
     return out;
   };
+}
+
+/* ---------- phones: the years as a list ---------- */
+
+/** Phones only: a row a year with its headline figures (income, spending,
+    saved) and what's going on; a tap opens the year in a sheet with every
+    figure the table has, how spending and taxes are worked out, and pay or
+    spending to type over. Nothing on wider screens. */
+function YearList({ years, names, other, f, age2now, pr, a, onPay, onSpend, onTax }: {
+  years: CashYear[]; names: [string, string] | null; other: boolean; f: (k: number) => number; age2now: number | null; pr: Profile; a: Answers;
+  onPay: (y: CashYear, who: 0 | 1) => void; onSpend: (y: CashYear) => void; onTax: (y: CashYear) => void;
+}) {
+  const [at, setAt] = useState<number | null>(null);
+  const m = (v: number, k: number) => money(Math.round(yr(v) * f(k)));
+  const notesOf = yearNotes(years, names, pr, a, f);
+  const savedOf = (y: CashYear) => y.saved.trad + y.saved.roth + y.saved.hsa + y.saved.brok + y.ef;
+  const typed = (y: CashYear, ...w: YearEdit["what"][]) => y.edits.some((e) => w.includes(e.what));
+  const ages = (y: CashYear) => (names && age2now != null ? `Ages ${y.age} and ${age2now + y.k}` : `Age ${y.age}`);
+  const sum = (g: (y: CashYear) => number) => years.reduce((t, y) => t + yr(g(y)) * f(y.k), 0);
+  const y = at != null ? years[at] : null;
+  // The sheet closes first, then the window it asks for opens.
+  const then = (go: () => void) => { setAt(null); window.setTimeout(go, 260); };
+  return (
+    <div className="dsh-ylist phone:hidden">
+      <ol className="dsh-ylist-rows" aria-label="Every year to retirement">
+        {years.map((x, i) => {
+          const notes = notesOf(x, i);
+          return (
+            <li key={x.year}>
+              <button type="button" className="dsh-ylist-row" data-now={i === 0 ? "" : undefined} aria-haspopup="dialog" onClick={() => setAt(i)}>
+                <span className="dsh-ylist-y"><b>{x.year}</b><small>{names && age2now != null ? `${x.age} · ${age2now + x.k}` : x.age}</small></span>
+                <span className="dsh-ylist-f"><small>Income</small><b>{m(x.income, x.k)}{typed(x, "pay0", "pay1") ? <i className="dsh-yby-dot" aria-label=", pay typed" /> : null}</b></span>
+                <span className="dsh-ylist-f"><small>Spending</small><b>{m(x.spending, x.k)}{typed(x, "spend") ? <i className="dsh-yby-dot" aria-label=", typed" /> : null}</b></span>
+                <span className="dsh-ylist-f"><small>Saved</small><b>{m(savedOf(x) + x.match, x.k)}</b></span>
+                <ChevronRightIcon className="dsh-ylist-chev" aria-hidden="true" />
+                {notes.length ? <span className="dsh-ylist-notes">{notes.map((n, j) => <span key={j} className={n.warn ? "dsh-dn" : undefined}>{n.text}</span>)}</span> : null}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+      <dl className="dsh-ylist-total">
+        <div><dt>All {years.length} years</dt><dd /></div>
+        <div><dt>Income</dt><dd>{money(sum((x) => x.income))}</dd></div>
+        <div><dt>Spending</dt><dd>{money(sum((x) => x.spending))}</dd></div>
+        <div><dt>Saved, with the match</dt><dd>{money(sum((x) => savedOf(x) + x.match))}</dd></div>
+      </dl>
+      <Sheet open={y != null} onOpenChange={(o) => { if (!o) setAt(null); }}>
+        <SheetContent aria-describedby={undefined}>
+          {y ? <>
+            <SheetHeader><SheetTitle>{y.year}<span className="dsh-ylist-sub">{ages(y)}</span></SheetTitle></SheetHeader>
+            <SheetBody>
+              {notesOf(y, at!).length ? <ul className="dsh-ylist-what" aria-label="What's going on">{notesOf(y, at!).map((n, j) => <li key={j} className={n.warn ? "dsh-dn" : undefined}>{n.text}</li>)}</ul> : null}
+              <h3 className="dsh-ylist-h">Coming in</h3>
+              <div className="dsh-ylist-dl">
+                {([0, 1] as const).slice(0, names ? 2 : 1).map((who) => {
+                  const label = names ? names[who] + "'s pay" : "Pay";
+                  if (!y.works[who]) return <YearFig key={who} label={label} value="Stopped" />;
+                  const e = y.edits.find((x) => x.what === (who ? "pay1" : "pay0"));
+                  return <YearFig key={who} label={label} value={m(y.pay[who], y.k)} sub={e ? typedWords(e) : `Tap to type ${names ? names[who] + "'s" : "your"} pay in ${y.year}`} typed={!!e} onClick={() => then(() => onPay(y, who))} />;
+                })}
+                {other ? <YearFig label="Other income" value={m(y.other, y.k)} /> : null}
+                <YearFig label="Income" value={m(y.income, y.k)} strong />
+              </div>
+              <h3 className="dsh-ylist-h">Going out</h3>
+              <div className="dsh-ylist-dl">
+                <YearFig label="Taxes" value={m(y.taxes, y.k)} sub={`How taxes in ${y.year} are worked out`} onClick={() => then(() => onTax(y))} />
+                {(() => { const e = y.edits.find((x) => x.what === "spend"); return <YearFig label="Spending" value={m(y.spending, y.k)} sub={(e ? typedWords(e) + ". " : "") + `How spending in ${y.year} is worked out, or type your own`} typed={!!e} onClick={() => then(() => onSpend(y))} />; })()}
+              </div>
+              <h3 className="dsh-ylist-h">Saved</h3>
+              <div className="dsh-ylist-dl">
+                <YearFig label="Traditional" value={m(y.saved.trad, y.k)} />
+                <YearFig label="Roth and HSA" value={m(y.saved.roth + y.saved.hsa, y.k)} />
+                <YearFig label="Brokerage" value={m(y.saved.brok, y.k)} />
+                {y.ef > 0.5 ? <YearFig label="Emergency fund" value={m(y.ef, y.k)} /> : null}
+                <YearFig label="Employer match" value={m(y.match, y.k)} />
+                <YearFig label="All saved" value={m(savedOf(y) + y.match, y.k)} strong />
+              </div>
+            </SheetBody>
+          </> : null}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+/** How long a typed figure holds, in words. */
+const typedWords = (e: YearEdit) => (e.once ? "Typed for this year only" : "Typed, from this year to retirement");
+
+/** A figure in a year's sheet; with `onClick`, a row to tap (44px and up). */
+function YearFig({ label, value, sub, strong, typed, onClick }: { label: string; value: string; sub?: string; strong?: boolean; typed?: boolean; onClick?: () => void }) {
+  const body = <>
+    <span className="dsh-ylist-k">{label}{sub ? <small>{sub}</small> : null}</span>
+    <span className="dsh-ylist-v">{value}{typed ? <i className="dsh-yby-dot" aria-hidden="true" /> : null}</span>
+  </>;
+  return onClick
+    ? <button type="button" className="dsh-ylist-fig" data-strong={strong ? "" : undefined} onClick={onClick}>{body}<ChevronRightIcon className="dsh-ylist-chev" aria-hidden="true" /></button>
+    : <div className="dsh-ylist-fig" data-strong={strong ? "" : undefined}>{body}</div>;
+}
+
+/* ---------- the table ---------- */
+
+function YearTable({ years, names, other, f, age2now, pr, a, onPay, onSpend, onTax }: {
+  years: CashYear[]; names: [string, string] | null; other: boolean; f: (k: number) => number; age2now: number | null; pr: Profile; a: Answers;
+  onPay: (y: CashYear, who: 0 | 1) => void; onSpend: (y: CashYear) => void; onTax: (y: CashYear) => void;
+}) {
+  const m = (v: number, k: number) => money(Math.round(yr(v) * f(k)));
+  const notesOf = yearNotes(years, names, pr, a, f);
   // A figure typed here: marked, and said how long it holds.
   const dot = (y: CashYear, w: YearEdit["what"]) => {
     const e = y.edits.find((x) => x.what === w);

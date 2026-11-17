@@ -3,31 +3,38 @@
 /* Full screen for a chart: a button for its card's header, and the chart
    again over the whole page, drawn at the size it has there (one unit to
    a pixel, so its labels keep their size) with whatever goes under it (a
-   legend). Escape or the button closes it. Not on phones or touch screens
-   (styles/11-charts.css). Advanced's chart has its own, in Projection.tsx. */
+   legend). Escape or the button closes it. Not on touch screens from 768px
+   up (styles/11-charts.css). On a phone (under 768px) it is: opened there,
+   the overlay carries its own layout (it stays open when the phone is
+   turned sideways, past 768px, which is the point of opening it), clears
+   the notch and the home indicator, and closes with a Done button
+   (styles/phone/11-charts.css). Advanced's chart has its own, in
+   Projection.tsx. */
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { MaximizeIcon, MinimizeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { isPhone } from "@/components/phone/usePhone";
 
 export type Px = { w: number; h: number };
 
 /** The button, and the overlay to render beside the chart. `chart` draws
     the chart at a size; `under` goes below it in full screen. */
 export function useFullScreen(title: string) {
-  const [open, setOpen] = useState(false);
+  // Open, and whether it was opened on a phone.
+  const [open, setOpen] = useState<false | "desk" | "phone">(false);
   const button = (
     <span className="chart-fullbtn">
-      <Button variant="outline" size="icon" aria-label="Full screen" title="Full screen" onClick={() => setOpen(true)}><MaximizeIcon aria-hidden="true" /></Button>
+      <Button variant="outline" size="icon" aria-label="Full screen" title="Full screen" onClick={() => setOpen(isPhone() ? "phone" : "desk")}><MaximizeIcon aria-hidden="true" /></Button>
     </span>
   );
   const overlay = (chart: (px: Px) => ReactNode, under?: ReactNode) =>
-    open ? <FullOverlay title={title} chart={chart} under={under} close={() => setOpen(false)} /> : null;
+    open ? <FullOverlay title={title} chart={chart} under={under} phone={open === "phone"} close={() => setOpen(false)} /> : null;
   return { button, overlay };
 }
 
-function FullOverlay({ title, chart, under, close }: { title: string; chart: (px: Px) => ReactNode; under?: ReactNode; close: () => void }) {
+function FullOverlay({ title, chart, under, phone, close }: { title: string; chart: (px: Px) => ReactNode; under?: ReactNode; phone: boolean; close: () => void }) {
   const host = useRef<HTMLDivElement>(null);
   const [px, setPx] = useState<Px | null>(null);
   // The room the chart has: the box under the title and above what goes
@@ -51,11 +58,13 @@ function FullOverlay({ title, chart, under, close }: { title: string; chart: (px
     return () => window.removeEventListener("keydown", key);
   }, [close]);
   return createPortal(
-    <div className="chart-full chart-full-any" role="dialog" aria-label={title + ", full screen"}>
+    <div className={phone ? "chart-full-any pchart-full fixed inset-0 z-95 bg-background p-3" : "chart-full chart-full-any"} role="dialog" aria-label={title + ", full screen"}>
       <div className="chart-full-head">
         <h2 className="m-0 text-base font-semibold">{title}</h2>
-        <Button variant="outline" size="icon" aria-label="Close full screen" title="Close full screen" onClick={close}><MinimizeIcon aria-hidden="true" /></Button>
+        {phone ? <Button variant="outline" aria-label="Done, close full screen" onClick={close}>Done</Button>
+          : <Button variant="outline" size="icon" aria-label="Close full screen" title="Close full screen" onClick={close}><MinimizeIcon aria-hidden="true" /></Button>}
       </div>
+      {phone ? <p className="pchart-turn m-0 landscape:hidden text-label text-muted-foreground">Turn your phone sideways for a wider chart.</p> : null}
       <div className="chart-full-host" ref={host}>{px ? chart(px) : null}</div>
       {under ? <div className="chart-full-under">{under}</div> : null}
     </div>,
