@@ -8,8 +8,8 @@
    2. The Dashboard: the real screen lying in space, its cards lifted off
       it, coming upright and settling as the page scrolls. On a phone, two
       iPhones instead of the laptop screen.
-   3. Every tool, by name and the question it answers; pointing at one
-      floats its picture beside the pointer (on a phone, cards to swipe).
+   3. Every tool as a card with its picture, in three belts that drift
+      slowly, right, left, right (on a phone, three rows to swipe).
    4. The record the plans are tested against, each year since 1926.
    5. The close.
 
@@ -71,11 +71,11 @@ export function Home({ data }: { data: HomeData }) {
         <Link href="/dashboard" className="hx-phones phone:hidden" data-scrub="" aria-label="Open My Dashboard">
           <div className="hx-phone hx-p1">
             <i className="hx-island" aria-hidden="true" />
-            <Shot name="mobile" w={1170} h={2532} sizes="(min-width: 768px) 1px, 60vw" alt="The Dashboard on an iPhone" />
+            <Shot name="phone-networth" w={1206} h={2622} sizes="(min-width: 768px) 1px, 60vw" alt="The Dashboard's net worth chart on an iPhone" />
           </div>
           <div className="hx-phone hx-p2">
             <i className="hx-island" aria-hidden="true" />
-            <Shot name="phone-networth" w={1206} h={2622} sizes="(min-width: 768px) 1px, 60vw" alt="The Dashboard's net worth chart on an iPhone" />
+            <Shot name="phone-summary" w={804} h={1748} sizes="(min-width: 768px) 1px, 60vw" alt="The Dashboard's Plan summary on an iPhone" />
           </div>
         </Link>
 
@@ -158,26 +158,21 @@ function ToolViz({ sub, data }: { sub: ToolSub; data: HomeData }) {
   }
 }
 
-/** Every tool. With a mouse, the row under the pointer floats its picture
-    beside it; on a phone each group is a row of cards to swipe. */
+/** Every tool, as a card with its picture. On a desktop each group is a
+    belt of cards that drifts slowly on its own, the first to the right,
+    the next to the left, the third to the right, and stops under the
+    pointer; the cards repeat so the belt never ends. On a phone each group
+    is one row to swipe, with no repeats. */
 function Tools({ data }: { data: HomeData }) {
-  const box = useRef<HTMLElement>(null);
-  const place = (x: number, y: number) => {
-    const el = box.current;
-    if (!el) return;
-    el.style.setProperty("--mx", x + "px");
-    el.style.setProperty("--my", y + "px");
-    el.toggleAttribute("data-flip", x > innerWidth - 440);
-  };
-  /** Plays a row's picture from the start each time it's pointed at. */
-  const replay = (e: React.SyntheticEvent<HTMLElement>) => {
-    const row = e.currentTarget;
-    row.setAttribute("data-draw", "pending");
-    requestAnimationFrame(() => requestAnimationFrame(() => row.setAttribute("data-draw", "go")));
+  /** Draws a card's picture again each time the pointer comes to it. */
+  const replay = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== "mouse") return;
+    const card = e.currentTarget;
+    card.setAttribute("data-draw", "pending");
+    requestAnimationFrame(() => requestAnimationFrame(() => card.setAttribute("data-draw", "go")));
   };
   return (
-    <section className="hx-tools" ref={box} aria-labelledby="hxTools"
-      onPointerMove={(e) => { if (e.pointerType === "mouse") place(e.clientX, e.clientY); }}>
+    <section className="hx-tools" aria-labelledby="hxTools">
       <div className="hx-in">
         <div className="hx-head">
           <h2 className="hx-h2" id="hxTools" data-rv="">A calculator, a guide and 14 tools.</h2>
@@ -190,26 +185,32 @@ function Tools({ data }: { data: HomeData }) {
           <Link href="/guide"><b>Guide</b><span>Step by step, starting with a readiness score.</span><ArrowRightIcon aria-hidden="true" /></Link>
           <Link href="/learn"><b>Learn</b><span>{data.lessons} short lessons, from compound interest to Roth conversions.</span><ArrowRightIcon aria-hidden="true" /></Link>
         </nav>
-        <div className="hx-groups">
-          {TOOL_GROUPS.map((g) => (
-            <div key={g.label} className="hx-group">
-              <h3>{g.title}</h3>
-              <ul>
-                {g.cards.map((c) => (
-                  <li key={c.sub}>
-                    <Link href={"/" + c.path} className="hx-tool" data-draw="" data-draw-at="0.6" onPointerEnter={(e) => { if (e.pointerType === "mouse") replay(e); }}
-                      onFocus={(e) => { const r = e.currentTarget.getBoundingClientRect(); place(r.right - 40, r.top + r.height / 2); }}>
-                      <span className="hx-peek" aria-hidden="true"><ToolViz sub={c.sub} data={data} /></span>
-                      <span className="hx-tool-n">{c.name}</span>
-                      <span className="hx-tool-q">{c.q}</span>
-                      <ArrowRightIcon aria-hidden="true" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+      </div>
+      <div className="hx-rows">
+        {TOOL_GROUPS.map((g, gi) => {
+          // Enough cards in each half of the belt to outrun a wide screen.
+          const reps = Math.ceil(8 / g.cards.length);
+          const half = (copy: boolean) => Array.from({ length: reps }, (_, r) => g.cards.map((c) => {
+            const extra = copy || r > 0;
+            return (
+              <li key={`${copy ? "b" : "a"}${r}${c.sub}`} className={extra ? "hx-copy" : undefined} aria-hidden={extra || undefined}>
+                <Link href={"/" + c.path} className="hx-tool" data-draw="" data-draw-at="0.6" tabIndex={extra ? -1 : undefined} onPointerEnter={replay}>
+                  <span className="hx-peek" aria-hidden="true"><ToolViz sub={c.sub} data={data} /></span>
+                  <span className="hx-tool-n">{c.name}<ArrowRightIcon aria-hidden="true" /></span>
+                  <span className="hx-tool-q">{c.q}</span>
+                </Link>
+              </li>
+            );
+          }));
+          return (
+            <div key={g.label} className="hx-row" data-dir={gi % 2 ? "left" : "right"}>
+              <h3 className="hx-in">{g.title}</h3>
+              <div className="hx-belt">
+                <ul className="hx-track" style={{ "--n": reps * g.cards.length } as React.CSSProperties}>{half(false)}{half(true)}</ul>
+              </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </section>
   );

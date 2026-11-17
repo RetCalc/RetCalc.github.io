@@ -28,7 +28,6 @@
   .hx-bal{margin:0;text-align:right}
   .hx-bal b{font-size:30px}
   .hx-bal span{font-size:13px;margin-top:2px}
-  .hx .hx-note{grid-column:1 / -1;margin-top:8px;max-width:none;font-size:12px;line-height:1.35}
 
   .hx-deck{grid-area:2 / 1;align-self:start;margin:0;transform:none;opacity:calc(var(--h) * 2 - 1)}
   .hx-stage:not([data-live]) .hx-deck{visibility:hidden}
@@ -60,7 +59,7 @@
   .hx-dash-head a{width:100%;min-height:52px;justify-content:center;border-radius:14px;font-size:17px;box-sizing:border-box}
   .hx-phones{display:block;position:relative;height:128vw;margin-top:34px;perspective:900px;perspective-origin:50% 40%;--s:0}
   .hx-phones img{width:100%;height:auto;vertical-align:top}
-  .hx-phones .hx-phone{width:54%;border-width:4px;will-change:transform}
+  .hx-phones .hx-phone{--pw:54vw;will-change:transform}
   .hx-p1{left:7%;top:0;z-index:2;
     transform:translateX(calc((1 - var(--s)) * -18%)) rotateY(calc((1 - var(--s)) * 42deg)) rotateZ(calc(-4deg - (1 - var(--s)) * 6deg))}
   .hx-p2{right:5%;top:11%;
@@ -75,20 +74,20 @@
   .hx-trio a{padding:16px 0;min-height:44px}
   .hx-trio a + a{border-left:0;border-top:1px solid var(--ds-rule);padding-left:0}
   .hx-trio b{font-size:22px}
-  .hx-groups{grid-template-columns:minmax(0,1fr);gap:26px;margin-top:30px}
-  .hx .hx-group h3{font-size:15px;margin-bottom:8px}
-  .hx-group ul{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
-    margin-inline:calc(var(--hx-pad) * -1);padding:4px var(--hx-pad) 12px;scroll-padding-inline:var(--hx-pad)}
-  .hx-group ul::-webkit-scrollbar{display:none}
-  .hx-group li{flex:0 0 78%;scroll-snap-align:start}
-  .hx-tool{display:flex;flex-direction:column;gap:4px;box-sizing:border-box;height:100%;padding:16px;border:0;border-radius:20px;background:var(--ds-surface)}
+  .hx-rows{gap:24px;margin-top:30px}
+  .hx .hx-row h3{margin-bottom:8px}
+  .hx-belt{overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-block:0;padding-block:4px 12px;scroll-padding-inline:var(--hx-pad);
+    -webkit-mask-image:none;mask-image:none}
+  .hx-belt::-webkit-scrollbar{display:none}
+  .hx-track{animation:none;padding-inline:var(--hx-pad)}
+  .hx-copy{display:none}
+  .hx-track li{flex:0 0 78vw;padding-right:12px;scroll-snap-align:start}
+  .hx-tool{padding:16px;border-radius:20px;box-shadow:none;transition:none}
+  .hx-tool:hover,.hx-tool:focus-visible{transform:none;box-shadow:none}
   .hx-tool:active{background:var(--ds-raised)}
-  .hx-tool > svg{display:none}
   .hx-tool-n{font-size:19px}
-  .hx-groups:has(.hx-tool:hover) .hx-tool:not(:hover){opacity:1}
-  .hx-peek{display:block;position:static;width:auto;height:118px;margin-bottom:10px;padding:0;border-radius:0;background:none;box-shadow:none;
-    translate:none;opacity:1;scale:1;rotate:0deg;transition:none}
-  .hx-peek svg.hm-chart{height:100%;width:100%}
+  .hx-tool-n svg{display:none}
+  .hx-peek{height:118px;margin-bottom:10px}
 
   /* ---------- the close ---------- */
   .hx-close{padding:84px 0 56px;text-align:left}

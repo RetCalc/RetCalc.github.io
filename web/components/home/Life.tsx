@@ -101,10 +101,6 @@ export function Life({ data }: { data: HomeData }) {
             <b className="num" data-bal="">{fmtMoney(EXAMPLE.saved)}</b>
             <span data-bal-k="">saved, in today&apos;s dollars</span>
           </div>
-          <p className="hx-note">
-            An example: {EXAMPLE.age} years old, ${EXAMPLE.saved.toLocaleString("en-US")} saved, ${EXAMPLE.monthly.toLocaleString("en-US")} added per month.{" "}
-            <span className="max-phone:hidden">From {RETIRE}, each line is a retirement that began in a different year since 1926, spending 4% per year.</span>
-          </p>
         </div>
 
         <ol className="hx-deck" data-deck="">
