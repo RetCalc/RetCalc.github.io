@@ -31,10 +31,17 @@ html:has(.hx){overflow-x:clip}
 
 /* ---------- 1. the life scene ---------- */
 .hx-life{position:relative;height:660vh}
-.hx-stage{position:sticky;top:var(--pin-top);height:calc(100vh - var(--pin-top));height:calc(100svh - var(--pin-top));overflow:clip;box-sizing:border-box;
+/* Sticky until the script takes over (data-pin: Life.tsx says why): then
+   the scene is at the top of its track, fixed to the screen, or left at
+   the track's end. */
+.hx-stage[data-pin]{position:absolute;top:0;left:0;right:0}
+/* Fixed, it keeps the page's full width and the same left edge it has in its track (where a scrollbar takes room, 100vw is wider than the screen's own box). */
+.hx-stage[data-pin="fixed"]{position:fixed;top:var(--pin-top);left:calc((100% - 100vw) / 2);right:auto;width:100vw}
+.hx-stage[data-pin="end"]{top:auto;bottom:0}
+.hx-stage{scroll-margin-top:var(--pin-top);position:sticky;top:var(--pin-top);height:calc(100vh - var(--pin-top));height:calc(100svh - var(--pin-top));overflow:clip;box-sizing:border-box;
   display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);column-gap:clamp(24px,4vw,72px);
   padding:clamp(18px,4vh,48px) var(--hx-side) 0;perspective:1500px;perspective-origin:72% 38%;
-  --h:0;--p:.03;--cy:.9;--k1:0;--k2:0;--rx:0;--ry:0}
+  --h:0;--p:1;--cy:.9;--k1:0;--k2:0;--rx:0;--ry:0}
 
 /* The light behind the deck: gold while saving, jade as work becomes optional, steel in retirement. */
 .hx-pool{position:absolute;right:-10%;top:-18%;width:78%;height:100%;pointer-events:none;
@@ -100,9 +107,9 @@ html:has(.hx){overflow-x:clip}
 .hx-retire{position:absolute;left:var(--x);top:4%;bottom:0;border-left:1px dashed var(--ds-rule-strong);opacity:.35;transition:opacity .5s}
 .hx-stage[data-retired] .hx-retire{opacity:1}
 .hx-retire span{position:absolute;right:10px;top:0;white-space:nowrap;font:600 13px var(--sans);font-style:normal;color:var(--ds-muted)}
-.hx-cursor{position:absolute;top:-8%;bottom:0;left:calc(var(--p) * 100%);width:1px;
+.hx-cursor{opacity:var(--h);position:absolute;top:-8%;bottom:0;left:calc(var(--p) * 100%);width:1px;
   background:linear-gradient(transparent,color-mix(in srgb,var(--ds-text) 38%,transparent) 35%)}
-.hx-now{position:absolute;left:calc(var(--p) * 100%);top:calc(var(--cy) * 100%);width:14px;height:14px;margin:-7px;border-radius:50%;
+.hx-now{opacity:var(--h);position:absolute;left:calc(var(--p) * 100%);top:calc(var(--cy) * 100%);width:14px;height:14px;margin:-7px;border-radius:50%;
   background:var(--ds-amber);box-shadow:0 0 0 5px color-mix(in srgb,var(--ds-amber) 24%,transparent),0 4px 10px -2px var(--hx-shade)}
 .hx-axis{position:absolute;left:0;right:0;top:100%;height:34px;border-top:1px solid var(--ds-rule)}
 .hx-axis span{position:absolute;left:var(--x);top:9px;transform:translateX(-50%);font:500 13px var(--sans);color:var(--ds-muted);font-variant-numeric:tabular-nums}

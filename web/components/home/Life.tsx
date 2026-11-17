@@ -52,13 +52,14 @@ const N = CHAPTERS.length;
 
 /** Where a pane sits for its distance from the front: 0 is the front, 1 the
     next one waiting behind it, -1 the one that has just flown past. */
-function paneStyle(d: number, still: boolean): { transform: string; opacity: string; filter: string; zIndex: string } {
+/** `plain`: no blur (phones, where blurring a pane each frame is what costs most). */
+function paneStyle(d: number, still: boolean, plain = false): { transform: string; opacity: string; filter: string; zIndex: string } {
   if (still) return { transform: "none", opacity: Math.abs(d) < 0.5 ? "1" : "0", filter: "none", zIndex: String(100 - Math.round(Math.abs(d) * 10)) };
   if (d >= 0) {
     return {
       transform: `translate3d(${(d * 5).toFixed(2)}%, ${(-d * 12).toFixed(2)}%, ${(-d * 170).toFixed(1)}px)`,
       opacity: clamp(1 - d * 0.5).toFixed(3),
-      filter: d > 0.04 ? `blur(${Math.min(d * 2.5, 6).toFixed(2)}px)` : "none",
+      filter: !plain && d > 0.04 ? `blur(${Math.min(d * 2.5, 6).toFixed(2)}px)` : "none",
       zIndex: String(100 - Math.round(d * 10)),
     };
   }
@@ -66,7 +67,7 @@ function paneStyle(d: number, still: boolean): { transform: string; opacity: str
   return {
     transform: `translate3d(${(-k * 9).toFixed(2)}%, ${(k * 34).toFixed(2)}%, ${(k * 330).toFixed(1)}px) rotateX(${(-k * 16).toFixed(2)}deg)`,
     opacity: clamp(1 - k * 2.4).toFixed(3),
-    filter: `blur(${Math.min(k * 12, 10).toFixed(2)}px)`,
+    filter: plain ? "none" : `blur(${Math.min(k * 12, 10).toFixed(2)}px)`,
     zIndex: "120",
   };
 }
@@ -244,11 +245,23 @@ function useLifeMotion(track: React.RefObject<HTMLElement | null>, geo: Geo) {
     const ageEl = el.querySelector<HTMLElement>("[data-age]"), balEl = el.querySelector<HTMLElement>("[data-bal]"), balK = el.querySelector<HTMLElement>("[data-bal-k]");
     let lastAge = -1, lastBal = "", lastK = -1, front = -1;
 
-    /** How far through the scene the page has scrolled, 0 to 1. */
+    const phone = matchMedia("(width < 768px)");
+    /* The scene is held in place by hand, not by position: sticky. iOS
+       re-places a sticky box every time the script changes something inside
+       it, a frame behind the finger, which shows as the whole scene shaking
+       while a scroll slows down. So it sits at the top of its track until
+       the track reaches the header, is fixed to the screen while the track
+       passes, and is left at the track's end after. A fixed box doesn't
+       depend on the scroll position, so nothing is there to re-place. */
+    let pinTop = 0, pin = "";
+    const measure = () => { pinTop = parseFloat(getComputedStyle(stage).scrollMarginTop) || 0; };
+    measure();
+    /** How far through the scene the page has scrolled, 0 to 1, pinning the scene as it goes. */
     const progress = () => {
-      const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect();
-      const run = r.height - s.height;
-      return run > 0 ? clamp((s.top - r.top) / run) : 0;
+      const r = el.getBoundingClientRect(), run = r.height - stage.offsetHeight, gone = pinTop - r.top;
+      const next = gone <= 0 ? "pre" : gone >= run ? "end" : "fixed";
+      if (next !== pin) { stage.setAttribute("data-pin", next); pin = next; }
+      return run > 0 ? clamp(gone / run) : 0;
     };
     const tick = () => {
       const t = progress();
@@ -260,7 +273,10 @@ function useLifeMotion(track: React.RefObject<HTMLElement | null>, geo: Geo) {
       const age = CHAPTERS[i].age + (CHAPTERS[i + 1].age - CHAPTERS[i].age) * f + (END - CHAPTERS[N - 1].age) * tail;
       const here = geo.at(age);
       stage.style.setProperty("--h", h.toFixed(3));
-      stage.style.setProperty("--p", (geo.x(age) / 1000).toFixed(4));
+      // While the headline shows, the whole life is drawn; it winds back to
+      // the start as the headline leaves, and from there follows the age.
+      const at = geo.x(age) / 1000;
+      stage.style.setProperty("--p", (at + (1 - at) * (1 - h)).toFixed(4));
       stage.style.setProperty("--cy", here.y.toFixed(4));
       // The light behind the deck: gold while saving, jade as work becomes
       // optional, steel in retirement.
@@ -277,7 +293,7 @@ function useLifeMotion(track: React.RefObject<HTMLElement | null>, geo: Geo) {
       const now = Math.round(pos);
       panes.forEach((p, n) => {
         const d = n - pos;
-        Object.assign(p.style, paneStyle(d, still));
+        Object.assign(p.style, paneStyle(d, still, phone.matches));
         p.style.pointerEvents = Math.abs(d) < 0.5 ? "" : "none";
         p.toggleAttribute("data-front", n === now);
         const on = p.getAttribute("data-draw") === "go";
@@ -290,14 +306,15 @@ function useLifeMotion(track: React.RefObject<HTMLElement | null>, geo: Geo) {
     let queued = false;
     const onScroll = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; tick(); }); } };
     addEventListener("scroll", onScroll, { passive: true });
-    addEventListener("resize", onScroll);
+    const onResize = () => { measure(); onScroll(); };
+    addEventListener("resize", onResize);
     tick();
 
     /** Scrolls to where pane n is at the front. */
     const goTo = (n: number) => {
-      const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect();
-      const t = T0 + (n / (N - 1)) * (T1 - T0) + 0.002, pin = parseFloat(getComputedStyle(stage).top) || 0;
-      scrollTo({ top: scrollY + r.top - pin + t * (r.height - s.height), behavior: still ? "auto" : "smooth" });
+      const r = el.getBoundingClientRect();
+      const t = T0 + (n / (N - 1)) * (T1 - T0) + 0.002;
+      scrollTo({ top: scrollY + r.top - pinTop + t * (r.height - stage.offsetHeight), behavior: still ? "auto" : "smooth" });
     };
     const onMark = (e: Event) => { const n = (e.currentTarget as HTMLElement).dataset.mark; if (n != null) goTo(Number(n)); };
     marks.forEach((m) => m.addEventListener("click", onMark));
@@ -325,7 +342,8 @@ function useLifeMotion(track: React.RefObject<HTMLElement | null>, geo: Geo) {
     if (!still) stage.addEventListener("pointermove", onMove);
 
     return () => {
-      removeEventListener("scroll", onScroll); removeEventListener("resize", onScroll);
+      removeEventListener("scroll", onScroll); removeEventListener("resize", onResize);
+      stage.removeAttribute("data-pin");
       marks.forEach((m) => m.removeEventListener("click", onMark));
       deck?.removeEventListener("focusin", onFocus);
       stage.removeEventListener("pointermove", onMove);
