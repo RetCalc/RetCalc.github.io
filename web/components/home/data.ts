@@ -9,10 +9,12 @@ import { RENTBUY_DEFAULTS, rentBuyInput } from "@/tools/rentbuy/model";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
 import { mortgage, projectBasic, rentBuyCalc } from "@/lib/engine/typed";
 import { historicalBacktest } from "@/lib/engine/typed-drawdown";
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { HIST_M_INFL, HIST_M_STOCK, HIST_START } from "@/lib/engine/data/history.js";
 
-/** The example household: 32, $60,000 saved, $1,500 per month, Balanced. */
-export const EXAMPLE = { age: 32, retire: 65, saved: 60000, monthly: 1500 };
+import { EXAMPLE } from "./example";
+export { EXAMPLE };
 
 export interface HomeData {
   /** The first year of market history, and each calendar year's stock return
@@ -33,6 +35,8 @@ export interface HomeData {
   rentbuy: { buy: number; rent: number };
   /** Each year's mortgage payments: [interest, principal]. */
   mortgage: [number, number][];
+  /** How many lessons Learn has. */
+  lessons: number;
 }
 
 export function homeData(): HomeData {
@@ -73,5 +77,6 @@ export function homeData(): HomeData {
     tax: { gross: t.gross, takeHome: t.takeHome, federal: t.federal, fica: t.fica, state: t.state, stateName: TAX_DEFAULTS.state },
     rentbuy: { buy: rb[rb.length - 1].buyerNW, rent: rb[rb.length - 1].renterNW },
     mortgage: m.years.map((y) => [y.interest, y.principal]),
+    lessons: readdirSync(join(process.cwd(), "content", "lessons")).filter((f) => f.endsWith(".html")).length,
   };
 }

@@ -38,6 +38,7 @@
 @import "../styles/17-report.css" layer(legacy);
 @import "../styles/18-tool-picker.css" layer(legacy);
 @import "../styles/20-dash-landing.css" layer(legacy);
+@import "../styles/23-home-life.css" layer(legacy);
 
 /* The phone redesign (under 768px), outside the layers so it wins over the
    utilities and the old styles alike. Every file is one media query and
@@ -53,6 +54,7 @@
 @import "../styles/phone/23-dash-account.css";
 @import "../styles/phone/30-home.css";
 @import "../styles/phone/31-picker.css";
+@import "../styles/phone/33-home.css";
 @import "../styles/phone/32-pages.css";
 @import "../styles/phone/40-learn.css";
 @import "../styles/phone/41-articles.css";
