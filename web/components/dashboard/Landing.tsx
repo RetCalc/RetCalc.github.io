@@ -66,9 +66,10 @@ function Tour({ playing, setPlaying }: { playing: boolean; setPlaying: (on: bool
 }
 
 /** On a phone, where the browser window and its tour are hidden: the same
-    page in an iPhone, with the tour's button under it. Pressed, the video
-    takes the phone's place (it is 16:9, so it plays across the screen, and
-    its controls offer full screen); when it ends, the phone comes back. The
+    page in an iPhone, with the tour's button under it. Pressed, the phone
+    cut of the tour (portrait, 1080x1920: marketing/video/promo-phone.html)
+    plays on the phone's screen, and its controls offer full screen; when it
+    ends, the picture comes back. The
     iPhone's titanium edge, side buttons and Dynamic Island are drawn here;
     the status bar and home indicator are in the screenshot. */
 function PhoneTour() {
@@ -84,7 +85,7 @@ function PhoneTour() {
               around it moves; its controls offer full screen. When it ends,
               the picture comes back. */}
           {playing ? (
-            <video className="dl-video dl-ph-video" src="/dashboard-landing/dashboard-tour.mp4" controls autoPlay playsInline
+            <video className="dl-video dl-ph-video" src="/dashboard-landing/dashboard-tour-phone.mp4" controls autoPlay playsInline
               aria-label="A 90-second tour of the Dashboard, with music and on-screen text" onEnded={() => setPlaying(false)} />
           ) : (
             <button type="button" className="dl-ph-play" aria-label="Watch the 90-second tour" onClick={() => setPlaying(true)}>
