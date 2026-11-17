@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { TOOL_GROUPS } from "@/lib/tools";
 import type { HomeData } from "./data";
 import { EXAMPLE } from "./example";
 import { BridgeChart, CloudChart, FireChart, GrowthChart, HealthChart, RothChart, ScoreRing, SocialChart } from "./charts";
@@ -50,6 +51,9 @@ const CHAPTERS: Chapter[] = [
 ];
 const N = CHAPTERS.length;
 
+/** Every tool, for the questions on the phone welcome. */
+const ASKS = TOOL_GROUPS.flatMap((g) => g.cards);
+
 /** Where a pane sits for its distance from the front: 0 is the front, 1 the
     next one waiting behind it, -1 the one that has just flown past. */
 /** `plain`: no blur (phones, where blurring a pane each frame is what costs most). */
@@ -78,6 +82,33 @@ export function Life({ data }: { data: HomeData }) {
   useLifeMotion(track, geo);
 
   return (
+    <>
+    {/* Phones: a welcome that fills the first screen. The scene below starts
+        at 32 once the page is scrolled to it. */}
+    <section className="hx-welcome phone:hidden" aria-labelledby="hmWelcome">
+      <div className="hx-welcome-glow" aria-hidden="true" />
+      <div className="hx-welcome-in">
+        <h1 className="hx-display" id="hmWelcome">The complete <em>retirement planning</em> toolkit.</h1>
+        <p className="hx-lede">
+          Saving, withdrawals, taxes and Social Security, tested against <b>every market since 1926</b>. Free, with no account needed.
+        </p>
+        <div className="hx-btns">
+          <Link href="/dashboard" className={buttonVariants({ size: "xl" })}>My Dashboard<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>
+          <Link href="/calculator" className={buttonVariants({ variant: "outline", size: "xl" })}>Open the Calculator</Link>
+        </div>
+      </div>
+      {/* The questions the tools answer, drifting past in three rows: a picture, not links. */}
+      <div className="hx-asks" aria-hidden="true">
+        {[0, 1, 2].map((r) => {
+          const row = ASKS.filter((_, n) => n % 3 === r);
+          return (
+            <ul key={r} className="hx-ask-row" style={{ "--n": row.length } as React.CSSProperties}>
+              {[false, true].map((copy) => row.map((c) => <li key={(copy ? "b" : "a") + c.sub}><span>{c.q}</span></li>))}
+            </ul>
+          );
+        })}
+      </div>
+    </section>
     <section className="hx-life" ref={track} aria-labelledby="hmTitle">
       <div className="hx-stage" data-stage="">
         <div className="hx-pool" aria-hidden="true" />
@@ -148,6 +179,7 @@ export function Life({ data }: { data: HomeData }) {
         <div className="hx-cue" aria-hidden="true"><span>Scroll to follow one plan from 32 to 95</span><i /></div>
       </div>
     </section>
+    </>
   );
 }
 
@@ -263,9 +295,12 @@ function useLifeMotion(track: React.RefObject<HTMLElement | null>, geo: Geo) {
       if (next !== pin) { stage.setAttribute("data-pin", next); pin = next; }
       return run > 0 ? clamp(gone / run) : 0;
     };
+    /** The share of the scroll the headline takes to leave. A phone has its
+        welcome above the scene, so there the age starts moving at once. */
+    const lead = () => (phone.matches ? 0 : T0);
     const tick = () => {
-      const t = progress();
-      const h = clamp(t / T0), raw = clamp((t - T0) / (T1 - T0)) * (N - 1), tail = clamp((t - T1) / (1 - T1));
+      const t = progress(), t0 = lead();
+      const h = t0 ? clamp(t / t0) : 1, raw = clamp((t - t0) / (T1 - t0)) * (N - 1), tail = clamp((t - T1) / (1 - T1));
       const i = Math.min(Math.floor(raw), N - 2), f = raw - i;
       // The age moves steadily; a pane holds the front for most of its
       // stretch, then hands over quickly, so two are never read at once.
@@ -313,7 +348,7 @@ function useLifeMotion(track: React.RefObject<HTMLElement | null>, geo: Geo) {
     /** Scrolls to where pane n is at the front. */
     const goTo = (n: number) => {
       const r = el.getBoundingClientRect();
-      const t = T0 + (n / (N - 1)) * (T1 - T0) + 0.002;
+      const t0 = lead(), t = t0 + (n / (N - 1)) * (T1 - t0) + 0.002;
       scrollTo({ top: scrollY + r.top - pinTop + t * (r.height - stage.offsetHeight), behavior: still ? "auto" : "smooth" });
     };
     const onMark = (e: Event) => { const n = (e.currentTarget as HTMLElement).dataset.mark; if (n != null) goTo(Number(n)); };
