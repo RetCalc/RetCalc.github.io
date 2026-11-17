@@ -1,5 +1,82 @@
-/* Phones only (under 768px): About, Privacy, the account page, unsubscribe, the Guide landing.
+/* Phones only (under 768px): About, Privacy, the account page, unsubscribe, the Guide landing, the sign-in dialog, the footer.
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* ---------- reading pages: About and Privacy ---------- */
+  #tab-about .about p,#tab-about .about ul{font-size:16px;line-height:1.6;max-width:none}
+  #tab-about .about ul{padding-left:20px}
+  #tab-about .about .px-4\.5,#tab-about .about-group [data-slot=collapsible-content] > div{padding-left:16px;padding-right:16px}
+  #tab-about .toolgroup-h{margin-left:16px}
+  #tab-about .about-main{gap:24px}
+  #tab-about [data-slot=collapsible-trigger]{min-height:52px;font-size:16px;padding-inline:16px}
+  /* tables and long figures scroll inside their own box */
+  #tab-about .about table,.privacy table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #tab-about .about pre,#tab-about .about code{overflow-wrap:anywhere}
+  .privacy{gap:14px;margin-top:2px}
+  .privacy h1{font-size:30px;line-height:1.1}
+  .privacy-lede{font-size:17px}
+  .privacy p,.privacy li{font-size:16px;line-height:1.6}
+  .privacy li{margin:6px 0}
+  .privacy code{font-size:14px;overflow-wrap:anywhere}
+  .privacy-fine{font-size:13px}
+  .privacy a{display:inline-block;padding-block:2px}
+
+  /* ---------- the account page and unsubscribe ---------- */
+  .acct-page{gap:14px;margin-top:2px}
+  .acct-page [data-slot=input]{height:48px;font-size:16px}
+  .acct-form label{font-size:15px}
+  .acct-page [data-slot=button]{min-height:48px}
+  .acct-page [data-slot=card-content] > [data-slot=button],.acct-page .acct-row > [data-slot=button]{width:100%;justify-content:center}
+  .acct-row{flex-direction:column;align-items:stretch}
+  .acct-row > :first-child:not(button){flex:none;width:100%}
+  .acct-items li{min-height:44px;align-items:center;font-size:15px}
+  .acct-fine{font-size:13px}
+  .acct-err{font-size:14px}
+
+  /* ---------- the sign-in dialog ---------- */
+  [data-slot=dialog-viewport]{align-items:flex-end;padding:calc(12px + env(safe-area-inset-top,0px)) 10px calc(10px + env(safe-area-inset-bottom,0px));overscroll-behavior:contain}
+  [data-slot=dialog-content]:has(.acct){width:100%;max-width:none;margin:auto 0 0;border-radius:24px}
+  .acct{display:grid;gap:14px}
+  .acct h2{font-size:22px;line-height:1.2}
+  .acct .acct-lede{font-size:15px;margin:-4px 0 0}
+  .acct [data-slot=input]{height:48px;font-size:16px}
+  .acct .acct-form #acctCode{font-size:24px}
+  .acct .acct-form label{font-size:15px}
+  .acct [data-slot=button]:not([data-variant=link]){min-height:48px}
+  .acct .acct-gsi{min-height:48px}
+  .acct-links{gap:0 12px}
+  .acct-links [data-slot=button]{min-height:44px;padding-inline:4px}
+  .acct .acct-row{flex-direction:row}
+  .acct .acct-row > [data-slot=button]{flex:1}
+
+  /* ---------- the Guide landing: the two choices lead, the pictures are short ---------- */
+  .gl{gap:14px}
+  .gl-title{font-size:28px}
+  .gl-stage{padding:14px 16px 16px}
+  .gl-stage-h{margin-bottom:10px}
+  .gl-ready-in{flex-direction:row;align-items:center;gap:16px}
+  .gl-ring{width:96px}
+  .gl-parts{gap:7px;width:auto;flex:1;min-width:0}
+  .gl-parts li{font-size:12.5px}
+  .gl-flow{max-height:150px}
+  .gl-body{padding:16px 16px 18px}
+  .gl-body > p{font-size:16px}
+  .gl-h{font-size:24px}
+  .gl-body .gl-go,.gl-body > .gl-go,.gl-resume [data-slot=button]{align-self:stretch;justify-content:center;width:100%;min-height:52px}
+  .gl-pace{gap:6px}
+  .gl-body .hint a{display:inline-block;padding-block:12px}
+
+  /* ---------- the footer: links first as a grid of 44px targets, small print after ---------- */
+  .sitefoot-in{display:flex;flex-direction:column;align-items:stretch;gap:14px;padding-top:20px}
+  .sitefoot-brand{order:1}
+  .sitefoot-nav{order:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-top:0}
+  .sitefoot-nav [data-slot=button]{min-height:44px;height:44px;width:100%;justify-content:center;border-radius:12px;background:var(--dsh-fill);
+    font-size:15px;font-weight:500;text-decoration:none;color:var(--ds-text)}
+  .sitefoot-nav [data-slot=button]:active{background:var(--dsh-fill-2)}
+  .sitefoot-txt{order:3}
+  .sitefoot-txt p{font-size:14px;line-height:1.55;max-width:none;margin-bottom:8px}
+  .sitefoot-txt p.src{font-size:12.5px;line-height:1.5}
+  /* inline links keep their line height; a taller touch area hangs off them */
+  .sitefoot-txt [data-slot=button][data-variant=link],.sitefoot-link{position:relative;min-height:0;padding:0}
+  .sitefoot-txt [data-slot=button][data-variant=link]::after,.sitefoot-link::after{content:"";position:absolute;inset:-12px -4px}
 }

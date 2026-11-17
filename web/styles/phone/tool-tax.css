@@ -7,4 +7,8 @@
   #txPreSplit::after{content:"";position:absolute;inset:-3px 0}
   /* The bucket note's tap, in the card's gutter. */
   #txBucketPanel > .ptap{margin:0 16px 6px}
+  /* Where each dollar came from: the whole table in its box (the total row
+     included), names on one or two lines; the columns scroll sideways. */
+  #txBucketPanel .scroll{max-height:none}
+  #txBucketTable td:first-child{min-width:150px}
 }

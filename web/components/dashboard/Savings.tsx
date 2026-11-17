@@ -13,7 +13,7 @@ import { Affixed, Field, NumberField, SelectField } from "@/components/fields/Fi
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { Badge } from "@/components/ui/badge";
 import { yearData } from "@/lib/engine/typed";
-import { LOCAL_TAX } from "@/tools/tax/local";
+import { LOCAL_TAX, type LocalTaxInfo } from "@/tools/tax/local";
 import { TAX_DEF, type TaxInputs } from "@/tools/tax/model";
 import { PC_ZERO, paycheckRun } from "@/tools/budget/paycheck-math";
 import { withDefaults } from "@/components/tools/ToolState";
@@ -33,6 +33,7 @@ import { couple, nameOf, outsideUS } from "./model";
 import type { ReactNode } from "react";
 import { useDashboard, type Profile } from "./store";
 import { Note, StackBar, StatusDot, Tip, TipLabel, type BarPart } from "./ui";
+import { InfoTap } from "@/components/phone/Words";
 
 const pct = (v: number) => String(Math.round(v * 1000) / 10);
 
@@ -201,10 +202,18 @@ function TaxChoices() {
       {/* What a deduction is lives in its tip; only a warning is said here. */}
       {t.dedType === "item" && parseNum(t.item) > 0 && parseNum(t.item) < std ? <p className="dsh-cap"><b>That&apos;s less than the {money(std)} standard deduction, which you&apos;d take instead.</b></p> : null}
       {local ? <>
-        <NumberField id="dshLocal" label={<>Local income tax <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="%" step={0.1} max={20} value={t.localRate ?? "0"} onValueChange={(v) => put({ localRate: v })} />
-        <p className="dsh-cap">{local.note} {localOn ? "" : "Leave it at 0 if there's none where you live. "}Your pay stub shows any local tax taken out{local.links.length ? ", or look up your rate: " : "."}
-          {local.links.map(([label, url], i) => <span key={url}>{i ? ", " : ""}<a href={url} target="_blank" rel="noopener noreferrer">{label}</a></span>)}{local.links.length ? "." : null}</p>
+        {/* On a phone the note under the field opens from its ⓘ. */}
+        <NumberField id="dshLocal" label={<>Local income tax <Badge variant="outline" className="ml-1.25">optional</Badge><InfoTap title="Local income tax"><LocalNote local={local} on={localOn} /></InfoTap></>} unit="%" step={0.1} max={20} value={t.localRate ?? "0"} onValueChange={(v) => put({ localRate: v })} />
+        <p className="dsh-cap max-phone:hidden"><LocalNote local={local} on={localOn} /></p>
       </> : null}
     </>
+  );
+}
+
+/** What a state's local income tax is, and where to look up a rate. */
+function LocalNote({ local, on }: { local: LocalTaxInfo; on: boolean }) {
+  return (
+    <>{local.note} {on ? "" : "Leave it at 0 if there's none where you live. "}Your pay stub shows any local tax taken out{local.links.length ? ", or look up your rate: " : "."}
+      {local.links.map(([label, url], i) => <span key={url}>{i ? ", " : ""}<a href={url} target="_blank" rel="noopener noreferrer">{label}</a></span>)}{local.links.length ? "." : null}</>
   );
 }

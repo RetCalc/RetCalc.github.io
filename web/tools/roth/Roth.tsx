@@ -385,7 +385,11 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
                 </div>
               </div>
               <p className="mt-3.5 mb-0 text-label text-muted-foreground">Pairs read converting first, then doing nothing.</p>
-              <div className="hint mt-1.5">Every figure is in today&apos;s dollars.{" "}
+              <div className="hint mt-1.5 max-phone:hidden">Every figure is in today&apos;s dollars.
+                Brackets, the standard deduction and the IRMAA thresholds are held fixed in
+                real terms, which is what indexing does to them in practice.</div>
+              {/* Phones: the method sentence behind a tap. */}
+              <div className="hint mt-1.5 phone:hidden">Every figure is in today&apos;s dollars.{" "}
                 <TapNote inline label="How brackets are held" title="Brackets and thresholds">Brackets, the standard deduction and the IRMAA thresholds are held fixed in
                 real terms, which is what indexing does to them in practice.</TapNote></div>
             </CardContent>

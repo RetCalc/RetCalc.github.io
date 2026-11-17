@@ -397,10 +397,13 @@ export function Tax() {
                       <option value="state">Your state taxable income</option>
                     </SelectField>
                   </div>
-                  <div className="hint -mt-1 mb-3.5" id="txLocalNote">
-                    {/* Phones: the place's note and that it's an estimate; where to find the rate a tap away. */}
-                    {localInfo.note} Rates and rules vary by place, so this is an estimate.<span className="max-phone:hidden"> {localTail}</span>
-                    <InfoTap title="Finding your local rate"><p>{localTail}</p></InfoTap>
+                  <div className="hint -mt-1 mb-3.5 max-phone:hidden" id="txLocalNote">
+                    {localInfo.note} Rates and rules vary by place, so this is an estimate. Your pay stub shows any local tax taken out{localInfo.links.length ? ", or look up your rate: " : ". Your city or county tax office has the rate."}
+                    {localInfo.links.map(([label, url], i) => <span key={url}>{i ? ", " : ""}<a href={url} target="_blank" rel="noopener noreferrer">{label}</a></span>)}{localInfo.links.length ? ", or your city or county tax office." : null}
+                  </div>
+                  {/* Phones: the place's note and that it's an estimate; where to find the rate a tap away. */}
+                  <div className="hint -mt-1 mb-3.5 phone:hidden">
+                    {localInfo.note} Rates and rules vary by place, so this is an estimate.<InfoTap title="Finding your local rate"><p>{localTail}</p></InfoTap>
                   </div>
                 </>
               ) : null}

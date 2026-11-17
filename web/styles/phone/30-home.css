@@ -2,4 +2,55 @@
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* ---------- the first screen: headline, three calls to action, the century ---------- */
+  .hm-hero{gap:14px;padding:6px 0 18px}
+  .hm-display{font-size:40px;line-height:1.02;letter-spacing:-.04em}
+  .hm-lede{font-size:17px;line-height:1.45;max-width:none}
+  .hm-btns{flex-direction:column;flex-wrap:nowrap;gap:10px;margin-top:18px}
+  .hm-btns > a{width:100%;min-height:52px;justify-content:center;border-radius:14px;font-size:17px}
+  .hm-btns > a + a{background:var(--ds-surface);box-shadow:inset 0 0 0 1px var(--ds-rule-strong)}
+  .hm-century{margin:6px 0 0}
+  .hm-cbars{height:190px}
+  .hm-cyears{height:20px;font-size:13px}
+  .hm-century figcaption{margin-top:12px;font-size:14px;line-height:1.45}
+
+  /* ---------- section heads ---------- */
+  .hm-h2{font-size:30px;line-height:1.05;letter-spacing:-.03em}
+  .hm-h3{font-size:22px;line-height:1.14}
+  .hm-body{font-size:16px;line-height:1.5}
+  .hm-head{gap:8px;margin:28px 0 18px}
+  .hm-head.hm-later{margin:44px 0 14px}
+
+  /* ---------- tiles ---------- */
+  .hm-tile{gap:10px;padding:18px;border-radius:20px}
+  a.hm-tile:hover{transform:none;box-shadow:none}
+  a.hm-tile:active{border-color:var(--ds-rule-strong)}
+  .hm-readout .v{font-size:44px}
+  .hm-readout .k{font-size:15px}
+  .hm-go{min-height:44px}
+  .hm-split,.hm-split.hm-dd{gap:12px}
+  .hm-guide{grid-template-columns:96px 1fr;gap:16px}
+
+  /* ---------- the age line: a slim rail, tiles close together ---------- */
+  .hm-tl{grid-template-columns:34px minmax(0,1fr);row-gap:14px}
+  .hm-spine,.hm-fill{left:16px}
+  .hm-node{padding-top:18px}
+  .hm-node span{font-size:12px;padding:6px 1px}
+
+  /* ---------- the everyday tools ---------- */
+  .hm-grid{gap:12px}
+  .hm-links a{min-height:48px;padding:0}
+  .hm-links a svg{width:18px;height:18px}
+  /* "Browse all tools" is a button: full width, 48px. */
+  .hm-tile > .hm-go{width:100%;min-height:48px;margin-top:10px;justify-content:center;border-radius:14px;background:var(--dsh-fill);font-size:16px}
+  .hm-tile > .hm-go:active{background:var(--dsh-fill-2)}
+
+  /* ---------- the Dashboard on a laptop and an iPhone ---------- */
+  .hm-devices{margin-top:30px}
+  .hm-devices-go{margin-top:44px}
+  .hm-devices-go > a{width:100%;min-height:52px;justify-content:center;border-radius:14px;font-size:17px}
+
+  /* ---------- the close ---------- */
+  .hm-close{gap:12px;padding:36px 0 8px}
+  .hm-close .hm-h2{max-width:none}
 }

@@ -177,6 +177,8 @@ export function Budget() {
             <div id="bgList" ref={listRef} data-emerg={emCol ? "" : undefined} data-emview={emCol ? emView : undefined}>
               {emCol ? <div className="bgcols" aria-hidden="true"><span>Normal</span><span>In an emergency</span></div> : null}
               {emCol ? <div className="bgview"><Segmented attr="data-emview" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={emView} onChange={setEmView} /></div> : null}
+              {/* Phones: what the sort words' titles say, once for every line. */}
+              {dash ? <p className="hint mt-0 mb-1 phone:hidden">Need, Want or Saving beside a line is what it counts as in needs, wants and saving.</p> : null}
               {groups.map((g) => (
                 <div className="bggroup" key={g.name}>
                   <div className="bggroup-h">
@@ -235,7 +237,7 @@ export function Budget() {
                          want, for needs, wants and saving on Spending. */}
                       {/* The rest say what they're counted as. */}
                       {!dash ? null : sortable(r, i) ? <span className="bgnw"><Segmented size="compact" attr="data-nw" options={NEED_WANT} value={sortOf(r, i) as Sort} onChange={(v) => setRow(i, { want: v === "want" })} /></span>
-                        : sortWord(r, i) ? <span className="bgsort" title={sortNote(sortWord(r, i)!)}>{sortWord(r, i)}<InfoTap title={r.desc}><p>{sortNote(sortWord(r, i)!)}.</p></InfoTap></span> : null}
+                        : sortWord(r, i) ? <span className="bgsort" title={sortNote(sortWord(r, i)!)}>{sortWord(r, i)}</span> : null}
                       <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} readOnly={fixed(r)} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount" + (fixed(r) ? (debtRow(r) ? ", set on Net worth" : ", set on Home") : "")} /></Affixed>
                       {emCol ? <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="emerg" data-i={i} value={r.emerg ?? r.amount} onValueChange={(v) => setRow(i, { emerg: v })} aria-label={r.desc + " in an emergency"} /></Affixed> : null}
                       <Segmented size="compact" attr="data-fv" options={dash ? ([[12, "Per month"], [1, "Per year"]] as const) : ([[12, "/mo"], [1, "/yr"]] as const)} value={r.freq} onChange={(f) => { if (!fixed(r)) setRow(i, { freq: f }); }} />

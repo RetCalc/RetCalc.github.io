@@ -20,7 +20,7 @@ export function PhoneBarTitle() {
   const [on, setOn] = useState(false);
 
   useEffect(() => {
-    if (!isPhone()) return;
+    if (!isPhone() || path === "/") return;
     let io: IntersectionObserver | null = null, raf = 0, tries = 0;
     const find = () => {
       raf = 0;
@@ -30,13 +30,16 @@ export function PhoneBarTitle() {
         if (++tries < 20) raf = requestAnimationFrame(find);
         return;
       }
-      setTitle((h.textContent ?? "").trim());
+      // A long headline (the homepage's) is not a name: the logo stays.
+      const name = (h.textContent ?? "").replace(/\s+/g, " ").trim();
+      if (name.length > 30) return;
+      setTitle(name);
       const bar = document.querySelector<HTMLElement>(".navbar.oneline")?.offsetHeight ?? 48;
       io = new IntersectionObserver(([e]) => setOn(!e.isIntersecting && e.boundingClientRect.top < bar + 8), { rootMargin: `-${bar}px 0px 0px 0px` });
       io.observe(h);
     };
     raf = requestAnimationFrame(find);
-    return () => { io?.disconnect(); if (raf) cancelAnimationFrame(raf); setOn(false); };
+    return () => { io?.disconnect(); if (raf) cancelAnimationFrame(raf); setOn(false); setTitle(""); };
   }, [path]);
 
   return <span className="pbar-title phone:hidden" aria-hidden="true" data-on={on && title ? "" : undefined}>{title}</span>;

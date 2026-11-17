@@ -117,7 +117,12 @@ export function AssumptionCheck({ pr, entries, R }: { pr: Profile; entries: Entr
 /** The rating in a few words, linking to the whole of it on the Plan
     summary: for the Dashboard's assumptions line. */
 export function AssumptionChip({ pr, entries, R }: { pr: Profile; entries: Entry[]; R: Results }) {
-  const r = useRating(pr, entries, R);
+  return <RatingChip r={useRating(pr, entries, R)} />;
+}
+
+/** The same chip from a rating already worked out (useRating), for a page
+    that shows it twice (a phone's shorter line and the desktop's). */
+export function RatingChip({ r }: { r: Rating | null | undefined }) {
   if (!r) return null;
   return (
     <> <Link className="dsh-ac-chip" href="/dashboard/summary#assumption-check">

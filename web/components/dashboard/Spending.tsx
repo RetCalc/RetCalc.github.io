@@ -24,6 +24,7 @@ import { useDashboard } from "./store";
 import { Note, Tile, TipLabel } from "./ui";
 import { housingLines } from "./housing";
 import { BudgetRules } from "./BudgetRules";
+import { Short } from "@/components/phone/Words";
 
 export function Spending() {
   const { data, setProfile } = useDashboard();
@@ -52,7 +53,8 @@ export function Spending() {
           <div className="dsh-stat"><div className="dsh-label">Spending per year</div><div className="dsh-fig dsh-md">{money(F.spend * 12)}</div></div>
           {coming != null ? <div className="dsh-stat"><div className="dsh-label">All income after taxes</div><div className="dsh-fig dsh-md">{money(coming)}<small data-u="/mo">per month</small></div></div> : null}
           {left != null ? <div className="dsh-stat"><div className="dsh-label">{left >= 0 ? <TipLabel text="Available to save" id="leftAfter" /> : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(left))}<small data-u="/mo">per month</small></div></div> : null}
-          <div className="dsh-stat"><div className="dsh-label">Emergency fund, {F.efMonths} months</div><div className="dsh-fig dsh-md">{money(F.efTarget)}</div></div>
+          <div className="dsh-stat"><div className="dsh-label"><Short phone="Emergency fund">Emergency fund, {F.efMonths} months</Short></div><div className="dsh-fig dsh-md">{money(F.efTarget)}</div>
+            <div className="dsh-cap phone:hidden">{F.efMonths} months of expenses</div></div>
           {kidCost > 0.5 ? (
             <div className="dsh-stat"><div className="dsh-label"><TipLabel text={kidsNow.length > 1 ? "Your children, in the plan now" : "Your child, in the plan now"} id="kidCostNow" /></div>
               <div className="dsh-fig dsh-md">{money(kidCost)}<small data-u="/mo">per month</small></div>

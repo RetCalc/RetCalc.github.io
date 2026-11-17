@@ -28,7 +28,7 @@ import { DASH, groupDigits, money } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 import { STATE_OPTIONS } from "@/lib/states";
 import { cn } from "@/lib/utils";
-import { InfoTap, Short } from "@/components/phone/Words";
+import { InfoTap } from "@/components/phone/Words";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { BracketsCard, StateRulesCard } from "@/tools/tax/TaxTables";
 import { NEWEST_YEAR, yearData } from "@/lib/engine/typed";
@@ -147,7 +147,9 @@ export function Paycheck({ s, set, setState }: {
                           {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                         </SelectField>
                       </div>
-                      <div className="hint -mt-1.5 mb-3.5"><Short phone="Planned by the month. Taxed together as a joint return.">{TWO_NOTE}</Short><InfoTap title="Two incomes">{TWO_NOTE}</InfoTap></div>
+                      <div className="hint -mt-1.5 mb-3.5 max-phone:hidden">{TWO_NOTE}</div>
+                      {/* Phones: the short form, the whole note a tap away. */}
+                      <div className="hint -mt-1.5 mb-3.5 phone:hidden">Planned by the month, taxed as a joint return.<InfoTap title="Two incomes">{TWO_NOTE}</InfoTap></div>
                     </>
                   ) : (
                     <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
@@ -565,6 +567,7 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
         </CardAction>
       </CardHeader>
       {/* The whole stub, never cut off at a height: it scrolls sideways only. */}
+      <div className="swipehint phone:hidden">Swipe the table sideways to see every column.</div>
       <div className="overflow-x-auto">
         <table id="pcStub">
           <thead><tr><th>Line</th>{heads.map((h) => <th key={h} className="whitespace-nowrap">{h}</th>)}</tr></thead>

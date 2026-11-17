@@ -161,6 +161,9 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
     toast("Loaded a year of withdrawals at 60 into Income Tax");
   };
 
+  const compareNote = R ? "Success rates " + (R.mc ? "come from " + BR_TRIALS + " random sequences of historical years" : "come from every start year since " + HIST_START) +
+    ". Tax, penalties, premiums and the balance at 59½ are the steady path at the long-run average return of " +
+    pctStr(R.ctx.real, 1) + " real" + (budget ? ", taking out your strategy's median withdrawal each year" : "") + ". “Holds” means reaching 59½ without running short or touching penalized money the plan didn't intend to." : "";
   const P = S ? S[path]! : null;
   const rows = P?.run.rows ?? [];
   const F = readingFigures(R);
@@ -282,10 +285,12 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               and <CircleXIcon className="relative -top-px inline size-3.5 align-middle text-destructive" role="img" aria-label="a cross" /> under 80%; between, no mark.
               Pay the 10% penalty isn&apos;t marked, since only running short counts for it.
             </p>
-            <div className="hint max-w-copy px-4.5 pt-0 pb-3.5" id="brCompareNote">
-              {R ? <TapNote label="How these are worked out" title="Ways to 59½">{"Success rates " + (R.mc ? "come from " + BR_TRIALS + " random sequences of historical years" : "come from every start year since " + HIST_START) +
-                ". Tax, penalties, premiums and the balance at 59½ are the steady path at the long-run average return of " +
-                pctStr(R.ctx.real, 1) + " real" + (budget ? ", taking out your strategy's median withdrawal each year" : "") + ". “Holds” means reaching 59½ without running short or touching penalized money the plan didn't intend to."}</TapNote> : ""}
+            <div className="hint max-w-copy px-4.5 pt-0 pb-3.5 max-phone:hidden" id="brCompareNote">
+              {R ? compareNote : ""}
+            </div>
+            {/* Phones: the method behind a tap. */}
+            <div className="hint px-4.5 pt-0 pb-3.5 phone:hidden">
+              {R ? <TapNote label="How these are worked out" title="Ways to 59½">{compareNote}</TapNote> : null}
             </div>
           </Card>
 
@@ -678,7 +683,14 @@ function Ladder({ rows, ctx, tableRef }: { rows: BrRow[]; ctx: BrCtx; tableRef: 
           </tbody>
         </table>
       </div>
-      <div className="hint pt-0 px-4.5 pb-3.5" id="brLadderNote">
+      <div className="hint pt-0 px-4.5 pb-3.5 max-phone:hidden" id="brLadderNote">
+        {conv.length ? "Converted before 59½: " + money(conv.reduce((a, r) => a + r.C, 0)) +
+          ". A conversion's five-year clock starts on January 1 of the year you make it, so a " +
+          "conversion made any time in " + yearData().year + " is penalty-free from January 1, " + (yearData().year + 5) + ". The tax column is " +
+          "the whole year's tax, conversion included." : ""}
+      </div>
+      {/* Phones: the total, with the five-year rule behind a tap. */}
+      <div className="hint pt-0 px-4.5 pb-3.5 phone:hidden">
         {conv.length ? <>{"Converted before 59½: " + money(conv.reduce((a, r) => a + r.C, 0)) + ". "}
           <TapNote inline label="When each rung opens" title="The conversion ladder">{"A conversion's five-year clock starts on January 1 of the year you make it, so a " +
           "conversion made any time in " + yearData().year + " is penalty-free from January 1, " + (yearData().year + 5) + ". The tax column is " +

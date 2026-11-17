@@ -25,6 +25,7 @@ import { fromMortgage, mortgageFor, ownCost, payoffDrop, sameCosts } from "./hou
 import { mortgage } from "./model";
 import { useDashboard, withHome } from "./store";
 import { Note, PlanFacts, Tile, TipLabel, To } from "./ui";
+import { TapNote } from "@/components/phone/Words";
 
 const monthYear = (y: number) => `${MONTHS[Math.floor((y % 1) * 12)]} ${Math.floor(y)}`;
 
@@ -48,7 +49,7 @@ export function Home() {
         </Tile>
         <div className="dsh-r4">
           <Tile id="rentbuy" icon={ScaleIcon} title="Renting or buying" right={<span className="dsh-cap">On your own rent</span>}>
-            <p className="dsh-cap dsh-mt6">Rent vs. Buy, starting from your rent: what buying a home would cost over the years against renting and investing the difference. Change the home and the market to try it out. What you try is kept here.</p>
+            <TapNote label="What this works out" title="Renting or buying"><p className="dsh-cap dsh-mt6">Rent vs. Buy, starting from your rent: what buying a home would cost over the years against renting and investing the difference. Change the home and the market to try it out. What you try is kept here.</p></TapNote>
             <div className="dsh-mt">
               <Hosted key={String(pr.rent)} household={null}
                 seed={(id) => (id === "rentbuy" ? ({ ...(seedFor(pr, entries)("rentbuy") as unknown as RentBuyInputs), ...withDefaults(RENTBUY_DEF, (pr.tools.rentbuy ?? {}) as Partial<RentBuyInputs>), ...(pr.rent ? { rent: groupDigits(pr.rent, true) } : {}) } as unknown as ToolInputs) : undefined)}
@@ -98,9 +99,9 @@ export function Home() {
       {pr.home === "own" && M.value > 0 && seeded ? (
         <div className="dsh-r4">
           <Tile id="owning" icon={HouseIcon} title="What owning costs" right={<span className="dsh-cap">Your budget&apos;s housing lines</span>}>
-            <p className="dsh-cap dsh-mt6">{pr.homeCosts
+            <TapNote label="How these reach your budget" title="What owning costs"><p className="dsh-cap dsh-mt6">{pr.homeCosts
               ? <>Property tax, insurance, PMI, HOA, upkeep and utilities as set here are your budget&apos;s housing lines on <To href="/dashboard/spending#budget">Spending</To>, with the mortgage payment. Change them here.</>
-              : <>Set what owning costs beyond the loan: property tax, insurance, PMI, HOA, upkeep and utilities. Once you change any, they become your budget&apos;s housing lines on <To href="/dashboard/spending#budget">Spending</To>.</>}</p>
+              : <>Set what owning costs beyond the loan: property tax, insurance, PMI, HOA, upkeep and utilities. Once you change any, they become your budget&apos;s housing lines on <To href="/dashboard/spending#budget">Spending</To>.</>}</p></TapNote>
             <div className="dsh-mt">
               <Hosted key={JSON.stringify([seeded.price, seeded.downAmt, seeded.rate, seeded.term])} household={null} locked={["loan"]}
                 slots={{ facts: <PlanFacts id="moFacts" rows={[

@@ -37,7 +37,7 @@ import { ChevronDownIcon, CircleAlertIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showPhoneView } from "@/components/phone/ViewSwitch";
 import { isPhone } from "@/components/phone/usePhone";
-import { Short, TapNote } from "@/components/phone/Words";
+import { TapNote } from "@/components/phone/Words";
 
 /* The goal picked, kept for the visit. */
 const goalMemory = { goal: "legacy" as Goal };
@@ -207,7 +207,9 @@ export function Optimizer() {
             <div className="text-label text-muted-foreground tabular-nums">{I.status === "m" ? money(I.pia1) + " + " + money(I.pia2) + ", before any spousal top-up" : "Before claiming earlier or later"}</div>
           </div>
         </div>
-        <p className="mt-5 mb-0 border-t border-border pt-4 text-note text-muted-foreground"><Short phone={<>Goal: <b className="font-semibold text-foreground">{OP_GOALS[goal][0]}</b>. The best plan for it shows here, with what makes the difference and a roadmap by age. The search runs entirely in your browser.</>}>Pick a goal above and press <b className="font-semibold text-foreground">Find my best plan</b>. The search runs entirely in your browser.</Short></p>
+        <p className="mt-5 mb-0 border-t border-border pt-4 text-note text-muted-foreground max-phone:hidden">Pick a goal above and press <b className="font-semibold text-foreground">Find my best plan</b>. The search runs entirely in your browser.</p>
+        {/* Phones, in the Results view: "above" is on the other view. */}
+        <p className="mt-5 mb-0 border-t border-border pt-4 text-note text-muted-foreground phone:hidden">Goal: <b className="font-semibold text-foreground">{OP_GOALS[goal][0]}</b>. The best plan for it shows here, with what makes the difference and a roadmap by age. The search runs entirely in your browser.</p>
         {/* Phones: the Results view offers the run, and the way back to the goal. */}
         <div className="mt-4 grid gap-2.5 phone:hidden">
           <Button size="lg" data-op="run" data-host="tool" disabled={!!H.run} onClick={run}>Find my best plan<i className="arw" aria-hidden="true"></i></Button>

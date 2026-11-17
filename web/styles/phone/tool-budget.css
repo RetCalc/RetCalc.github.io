@@ -12,13 +12,16 @@
   #bgList .bgrow .bgname:empty{min-height:44px;vertical-align:middle}
   #bgList .bgrow .desc > svg{opacity:.7}
   #bgList .bgrow .desc .pinfo{vertical-align:-3px}
-  /* The sort word on the Dashboard, with its ⓘ. */
-  #bgList .bgrow .bgsort{display:inline-flex;align-items:center;justify-content:flex-end}
   /* The Inputs view shows the emergency fund without the reading above it:
      no rule over its heading there. */
   body:has(.pv-switch):not([data-pv="out"]) #asideBudget [data-bgef]{border-top:0}
 
   /* ---------- Paycheck tab (tools/budget/Paycheck.tsx) ---------- */
+  /* Each goal: its name (and Traditional | Roth) on one row, the amount
+     and Max across the next, then the slider and its caption. */
+  #pcSliders > [data-line] > div:first-child > div:first-child > div:first-child{flex:1 1 100%;justify-content:space-between}
+  #pcSliders > [data-line] > div:last-child{flex:1 1 100%}
+  #pcSliders > [data-line] > div:last-child > [data-slot=input-group]{flex:1 1 auto;width:auto}
   /* Sliders: a 44px hit area round the same 6px track. */
   #pcSliders [data-slot=native-range]{height:44px}
   /* The quiet text buttons that stand on their own ("Show the lines",
@@ -29,4 +32,6 @@
   #pcStub [data-slot=button][data-variant=link]{min-height:44px}
   /* The itemized paycheck scrolls sideways in its own box. */
   #tab-paycheck .overflow-x-auto{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  /* Its line names on one or two lines, not three: the columns scroll. */
+  #pcStub td:first-child{min-width:150px}
 }

@@ -54,6 +54,11 @@
   /* ---------- the page ---------- */
   main{padding:10px var(--gr) calc(28px + var(--pbar-clear)) var(--gl);gap:14px}
   body:has(.dsh) main{padding:0}
+  /* The page never scrolls sideways: anything that would poke past the
+     screen's edge (a tip's 44px touch area at the end of a line) is clipped
+     there. clip, not hidden, so pinned bars still pin and nothing inside
+     becomes its own scroller; wide tables scroll in their own boxes. */
+  main,.dsh-page{overflow-x:clip}
   .sitefoot-in{padding-bottom:calc(24px + var(--pbar-clear))}
   body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
   .toast{bottom:calc(var(--pbar-clear) + 14px)}

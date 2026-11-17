@@ -29,6 +29,7 @@ import { parseNum } from "@/lib/format";
 import { money, pctDown } from "./format";
 import { holdings, mortgage, results } from "./model";
 import { Note } from "./ui";
+import { TapNote } from "@/components/phone/Words";
 
 /** The Dashboard's own tools beside the site's: the Advanced calculator,
     to try anything on with every input open (the Calculator tab keeps the
@@ -172,25 +173,32 @@ function Tool({ sub }: { sub: DashTool }) {
   const opening = useCallback((id: string) => kept.get(id) ?? seed(id), [seed]);
   const household = useMemo(() => householdOf(data.profile, data.entries), [data.profile, data.entries]);
   const View = VIEWS[sub], tab = PLAN_TAB[sub];
+  const collegeNote = (
+    <Note>Filled in from your plan. Change anything here (each child&apos;s cost, when they start and for how long, what&apos;s saved, the return, tuition inflation), then Apply to my plan to keep it. If your budget saves for college, its line follows.
+      {data.profile.college.help === "part" && !data.profile.college.plan ? <> Each year&apos;s cost here is your half of the school&apos;s {money(data.profile.college.cost)}.</> : null}
+      {mismatch ? <> <b>The children here don&apos;t match your plan&apos;s.</b> Add or remove children in <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Profile</Button>, then come back.</> : null}</Note>
+  );
   return (
     <Frame current="tools" title={nameOf(sub)} help={sub === "advanced" ? undefined : sub}
-      meta={tab ? undefined : "Doesn't change your plan"}
+      meta={tab ? undefined : "Doesn't change your plan"} back={{ href: back, name: backName === "the lesson" ? "Lesson" : backName }}
       actions={<>
         {/* Saved scenarios, the site's own lists: one saved here is there too.
             Reset goes back to your plan's figures. */}
         <ScenarioBar compareHref="/dashboard/tools/compare" resetTo={(id) => seed(id)} sharePath={sitePath(sub)} />
         {sub === "college" ? <Button disabled={!apply || applied} onClick={() => { if (apply) { setProfile(() => withCollegeSaving(apply)); setApplied(true); } }}>{applied || (college && sameCollege(data.profile, college)) ? <><CheckIcon aria-hidden="true" />{applied ? "Applied to my plan" : "Your plan matches"}</> : "Apply to my plan"}</Button> : null}
-        <Button variant="outline" nativeButton={false} render={<Link href={back} />}><ChevronLeftIcon aria-hidden="true" />Back to {backName}</Button>
+        {/* A phone has this as the navigation bar's back button. */}
+        <Button variant="outline" className="max-phone:hidden" nativeButton={false} render={<Link href={back} />}><ChevronLeftIcon aria-hidden="true" />Back to {backName}</Button>
       </>}>
       {sub === "college" ? (
         <div>
-          <Note>Filled in from your plan. Change anything here (each child&apos;s cost, when they start and for how long, what&apos;s saved, the return, tuition inflation), then Apply to my plan to keep it. If your budget saves for college, its line follows.
-            {data.profile.college.help === "part" && !data.profile.college.plan ? <> Each year&apos;s cost here is your half of the school&apos;s {money(data.profile.college.cost)}.</> : null}
-            {mismatch ? <> <b>The children here don&apos;t match your plan&apos;s.</b> Add or remove children in <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Profile</Button>, then come back.</> : null}</Note>
+          {/* Phones: the note on a tap, above both views; with a warning in it, the note itself. */}
+          {mismatch ? collegeNote : <TapNote label="Your plan changes only with Apply to my plan" title="Filled in from your plan" className="dsh-hnote">{collegeNote}</TapNote>}
         </div>
       ) : tab ? (
         <div>
+          <TapNote label="Changes here don't change your plan" title="Filled in from your plan" className="dsh-hnote">
           <Note>Filled in from your plan, to try things on. Changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id + (tab.hash ?? "")} />}>{tab.name}</Button>.</Note>
+          </TapNote>
         </div>
       ) : null}
       {/* Phones only: the tool's Inputs and Results as two views. */}
@@ -209,8 +217,8 @@ export function ToolPage({ sub }: { sub: DashTool }) {
 const CompareView = dynamic(() => import("@/tools/compare/Compare").then((m) => m.Compare), { ssr: false });
 function CompareTool() {
   return (
-    <Frame current="tools" title="Compare scenarios" meta="Doesn't change your plan"
-      actions={<Button variant="outline" nativeButton={false} render={<Link href="/dashboard/tools/advanced" />}><ChevronLeftIcon aria-hidden="true" />Back to the Advanced Calculator</Button>}>
+    <Frame current="tools" title="Compare scenarios" meta="Doesn't change your plan" back={{ href: "/dashboard/tools/advanced", name: "Advanced Calculator" }}
+      actions={<Button variant="outline" className="max-phone:hidden" nativeButton={false} render={<Link href="/dashboard/tools/advanced" />}><ChevronLeftIcon aria-hidden="true" />Back to the Advanced Calculator</Button>}>
       <div className="dsh-embed"><CompareView /></div>
     </Frame>
   );
