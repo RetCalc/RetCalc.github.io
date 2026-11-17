@@ -17,6 +17,11 @@ export interface Release {
 }
 
 export const RELEASES: Release[] = [
+  { version: "4.14.1", date: "2026-11-17", title: "Phone fixes", items: [
+    { text: "Budget lines on a phone keep their name on one row, with the amount under it. Need or Want is one button on the line: tap it to switch.", href: "/dashboard/spending" },
+    { text: "The Home Screen app no longer blurs the top of the page. Remove the RetCalc icon and add it again to get this." },
+    { text: "The Inputs and Results switch is solid, and tools no longer leave an empty band before the end of the page." },
+  ] },
   { version: "4.14.0", date: "2026-11-16", title: "RetCalc on your phone, like an app", items: [
     { text: "On a phone, a bar along the bottom takes you between the Calculator, Tools, Guide and Learn, with everything else under More.", href: "/tools" },
     { text: "Every tool shows its inputs and its results as two views, one tap apart, with your answer pinned while you type.", href: "/dashboard/tools/drawdown" },

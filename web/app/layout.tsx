@@ -79,9 +79,14 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
-  /* startupImage: the home-screen app's launch pictures, the page's ground
+  /* statusBarStyle "default": the home-screen app starts below the status
+     bar. With "black-translucent" the page ran under it, and from iOS 26
+     the system blurs whatever is there (the top bar's title). iOS reads
+     this when the app is added, so an icon added before keeps the old style
+     until it is removed and added again.
+     startupImage: the home-screen app's launch pictures, the page's ground
      with the icon, one per iPhone size and theme (scripts/pwa/splash.mjs). */
-  appleWebApp: { capable: true, title: "RetCalc", statusBarStyle: "black-translucent", startupImage: SPLASH },
+  appleWebApp: { capable: true, title: "RetCalc", statusBarStyle: "default", startupImage: SPLASH },
 };
 
 export const viewport: Viewport = {
