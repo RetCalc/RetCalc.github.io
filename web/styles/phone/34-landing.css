@@ -1,0 +1,30 @@
+/* Phones only (under 768px): the Dashboard's front page, the parts added
+   in 24-dash-landing-motion.css. The rest of its phone layout (the iPhone
+   and its tour, the steps, the closing sections) is in 23-dash-account.css.
+   Here the cards lie flat one after another with pictures to swipe, the
+   timeline swipes, and the pages are two rows to swipe.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  .dlx{--hx-pad:16px}
+  .dlx-pool{top:-4%;height:46%}
+  .dlx-stage{margin-top:36px;perspective:none}
+  .dlx-tilt{transform:none}
+
+  .dlx-head{margin-bottom:22px}
+  .dlx-stack{gap:16px}
+  .dlx-card-in{gap:20px;padding:22px 18px 18px;border-radius:24px;transform:none;filter:none}
+  .dlx-shot,.dlx-flip .dlx-shot{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;border-radius:14px;transform:none}
+  .dlx-shot::-webkit-scrollbar{display:none}
+  .dlx-shot img{width:600px;max-width:none}
+  .dlx-shot img[src*="savings-"]{width:480px}
+  .dlx .dlx-card .dl-swipe{margin:-8px 2px 0}
+
+  .dlx-pan > div{width:auto;transform:none}
+
+  .dlx-belts{gap:10px}
+  .dlx-chips li{flex:0 0 72vw}
+  .dlx-chip{padding:16px;border-radius:18px}
+  .dlx-more{grid-template-columns:minmax(0,1fr);gap:16px;margin-top:30px}
+  .dlx-more li{padding-top:12px}
+}
