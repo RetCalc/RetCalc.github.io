@@ -1,0 +1,106 @@
+/* Phones only (under 768px): the phone app shell: top bar, bottom tab bar, More sheet, safe areas.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* ---------- measures ----------
+     --ptab-h: the bottom tab bar's own height (the home indicator's inset
+     is added where it's used). --navh: the slim top bar. --pbar-clear: how
+     far a page's last line must stay above the bottom edge to clear the
+     tab bar. The page gutter is 16px, the iPhone's own margin. */
+  html:root{--ptab-h:56px;--navh:48px;--gut:16px;
+    --pbar-clear:calc(var(--ptab-h) + env(safe-area-inset-bottom,0px))}
+  /* The home-screen app's status bar sits over the page: the top bar pads
+     itself past it (--sb-clear, 00-base.css), so things pin under the bar. */
+  html:root{--pin-top:calc(var(--sb-clear) + var(--navh))}
+  html{scroll-padding-top:calc(var(--sb-clear) + var(--navh) + 12px);-webkit-tap-highlight-color:transparent}
+  /* A phone-only element that sets no display of its own shows as its tag would. */
+  .phone-only{display:revert}
+  .desk-only{display:none !important}
+
+  /* ---------- the top bar ----------
+     The header without its tabs (they're the bottom bar): the logo as the
+     way home, the page's name once its heading has scrolled away, and the
+     account button. Frosted over the page once it moves. */
+  .navbar.oneline{position:sticky;top:0;display:flex;align-items:center;gap:8px;
+    min-height:calc(var(--navh) + var(--sb-clear));
+    padding:var(--sb-clear) max(10px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));
+    border-bottom:0;background:var(--ds-ground);box-shadow:none}
+  .navbar.oneline.stuck{background:var(--dsh-glass);box-shadow:inset 0 -.5px 0 var(--ds-rule)}
+  .sbcover{display:none}
+  .navbar.oneline nav[role=tablist]{display:none}
+  .navbar.oneline .brand{flex:none;gap:8px;min-height:44px;min-width:44px}
+  .navbar.oneline .brandmark{width:30px;height:30px}
+  .navbar.oneline .wordmark{display:block}
+  .navbar.oneline .wordmark .brandname{font:700 17px/1 var(--dsh-display);letter-spacing:-.02em}
+  /* The page's name takes the wordmark's place once the page's own heading
+     is out of sight (components/phone/BarTitle.tsx). */
+  .pbar-title{flex:1 1 0;min-width:0;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:center;
+    font:600 16px/1.2 var(--dsh-display);letter-spacing:-.015em;color:var(--ds-text);
+    opacity:0;transform:translateY(4px);transition:opacity .16s ease,transform .16s ease;pointer-events:none}
+  .navbar.oneline:has(.pbar-title[data-on]) .wordmark{display:none}
+  .pbar-title[data-on]{opacity:1;transform:none}
+  .navbar.oneline .navrow-end{flex:none;margin-left:auto;gap:6px}
+  .navbar.oneline .navrow-end button{min-height:40px;min-width:40px}
+  /* Between 641px and 767px the header still shows the household button
+     and the theme button; on a phone both live under More. */
+  .navbar.oneline .hh-chip,.navbar.oneline .theme-slot{display:none}
+
+  /* ---------- the page ---------- */
+  main{padding:10px var(--gr) calc(28px + var(--pbar-clear)) var(--gl);gap:14px}
+  body:has(.dsh) main{padding:0}
+  .sitefoot-in{padding-bottom:calc(24px + var(--pbar-clear))}
+  body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
+  .toast{bottom:calc(var(--pbar-clear) + 14px)}
+  body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bottom,0px))}
+
+  /* ---------- the bottom tab bar (components/phone/TabBar.tsx) ---------- */
+  .ptab{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+    padding:0 max(4px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(4px,env(safe-area-inset-left,0px));
+    background:var(--dsh-glass);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+    box-shadow:inset 0 .5px 0 var(--ds-rule);
+    transition:transform .22s cubic-bezier(.2,.7,.3,1);
+    view-transition-name:ptab}
+  .ptab[data-away]:not(:focus-within){transform:translateY(calc(100% + 2px))}
+  .ptab-i{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;height:var(--ptab-h);padding:6px 0 5px;
+    border:0;background:none;color:var(--ds-muted);font:500 10.5px/1.1 var(--sans);letter-spacing:.01em;text-decoration:none;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none}
+  .ptab-i svg{width:24px;height:24px;stroke-width:1.7}
+  .ptab-i[aria-current]{color:var(--ds-amber);font-weight:600}
+  .ptab-i:active{color:var(--ds-text)}
+  .ptab-i:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-4px;border-radius:14px}
+  /* The Dashboard has its own bar; the Guide's coach and an open Help guide
+     hold the bottom of the screen; the keyboard needs the room; a printed
+     page has no bars. */
+  body:has(.dsh) .ptab,body.gd-on .ptab{display:none}
+  body:has(:is(input:not([type="checkbox"],[type="radio"],[type="range"],[type="button"]),textarea,[contenteditable="true"]):focus) .ptab{display:none}
+  body.gd-on main{padding-bottom:calc(var(--gdh,140px) + 44px)}
+
+  /* ---------- the More sheet ---------- */
+  .pmore{display:flex;flex-direction:column;margin:2px -6px 0}
+  .pmore-i{display:flex;align-items:center;gap:12px;min-height:56px;width:100%;padding:8px 6px;border:0;border-radius:14px;background:none;
+    color:var(--ds-text);font:inherit;text-align:left;text-decoration:none;cursor:pointer}
+  .pmore-i + .pmore-i{box-shadow:0 -.5px 0 var(--ds-rule)}
+  .pmore-i:active{background:var(--dsh-fill-2)}
+  .pmore-i:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
+  .pmore-ico{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--dsh-tint-wash);color:var(--ds-amber)}
+  .pmore-ico svg{width:20px;height:20px}
+  .pmore-t{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .pmore-t b{font:600 16px/1.25 var(--sans);letter-spacing:-.01em}
+  .pmore-t small{font-size:13px;line-height:1.35;color:var(--ds-muted)}
+  .pmore-i[aria-current] .pmore-t b{color:var(--ds-amber)}
+  .pmore-chev{flex:none;width:18px;height:18px;color:var(--ds-rule-strong)}
+  .pmore-theme{display:flex;align-items:center;gap:14px;margin-top:10px;padding-top:14px;box-shadow:0 -.5px 0 var(--ds-rule)}
+  .pmore-theme > span:first-child{flex:none;font:600 16px/1.25 var(--sans)}
+  .pmore-theme [data-slot=segmented]{flex:1 1 0;width:auto;min-width:0}
+  .pmore-theme [data-slot=segmented-item]{min-height:40px;gap:6px;min-width:0}
+  .pmore-theme [data-slot=segmented-item] svg{width:16px;height:16px}
+
+  /* ---------- menus, dialogs and sheets clear the bars ---------- */
+  /* A dialog is a full-height page on a phone, clear of the status bar and
+     the home indicator. */
+  .popup-overlay{padding:calc(12px + env(safe-area-inset-top,0px)) 10px calc(12px + env(safe-area-inset-bottom,0px))}
+
+  @media (prefers-reduced-motion:reduce){
+    .ptab,.pbar-title{transition:none}
+  }
+}

@@ -1,0 +1,36 @@
+/* Phones only (under 768px): the calculator pattern shared by every tool: answer bar, Inputs and Results views, compact tool header.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* ---------- Inputs and Results: two views (components/phone/ViewSwitch.tsx) ----------
+     On a page with the switch, a block marked data-pv="in" shows in the
+     Inputs view only and one marked data-pv="out" in the Results view
+     only. Before the switch has run (the pre-built page), the Inputs view
+     shows, which is what it starts on. display:none keeps both mounted. */
+  body:has(.pv-switch):not([data-pv="out"]) [data-pv="out"]{display:none !important}
+  body:has(.pv-switch)[data-pv="out"] [data-pv="in"]{display:none !important}
+  .pv-anchor{display:block;height:0}
+  /* The switch: a frosted pill floating over the page, above the tab bar,
+     and down at the home indicator when the tab bar slides away. */
+  .pv-switch{position:fixed;z-index:39;left:50%;bottom:calc(var(--pbar-clear) + 10px);transform:translateX(-50%);
+    width:min(260px,calc(100vw - 32px));padding:0;border-radius:999px;
+    background:var(--dsh-glass);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+    box-shadow:0 0 0 .5px var(--ds-rule),0 6px 20px -6px rgba(0,0,0,.28);
+    transition:bottom .22s cubic-bezier(.2,.7,.3,1)}
+  body:has(.ptab[data-away]) .pv-switch{bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+  /* The Dashboard's own tab bar is a little taller than the site's. */
+  body:has(.dsh) .pv-switch{bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+  body:has(.dsh-tabbar[data-away]) .pv-switch{bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+  .pv-switch [data-slot=segmented]{display:flex;width:100%;padding:4px;border:0;border-radius:999px;background:transparent}
+  .pv-switch [data-slot=segmented-item]{flex:1 1 0;min-height:40px;border-radius:999px;font:600 14.5px/1 var(--sans);letter-spacing:-.01em;color:var(--ds-text)}
+  .pv-switch [data-slot=segmented-item][data-pressed]{background:var(--ds-text);color:var(--ds-surface);box-shadow:none}
+  /* While typing, the keyboard has the bottom of the screen; the Guide's
+     coach holds it during a trip. */
+  body:has(:is(input:not([type="checkbox"],[type="radio"],[type="range"],[type="button"]),textarea,[contenteditable="true"]):focus) .pv-switch,
+  body.gd-on .pv-switch{display:none}
+  /* Room under the page's last line for the switch as well as the tab bar. */
+  body:has(.pv-switch) main{padding-bottom:calc(84px + var(--pbar-clear))}
+  body:has(.pv-switch):has(.dsh) main{padding-bottom:0}
+  body:has(.pv-switch) .dsh-page{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+  @media (prefers-reduced-motion:reduce){ .pv-switch{transition:none} }
+}

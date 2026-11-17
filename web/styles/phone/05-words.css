@@ -1,0 +1,41 @@
+/* Phones only (under 768px): the phone wording pieces: short labels, notes behind a tap, folded sections.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+  /* components/phone/Words.tsx. */
+  /* InfoTap: the ⓘ beside a label, a 20px glyph with a 44px touch area. */
+  .pinfo{position:relative;display:inline-grid;place-items:center;width:20px;height:20px;margin:0 0 0 6px;padding:0;border:0;border-radius:50%;
+    background:none;color:var(--ds-muted);vertical-align:-4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pinfo svg{width:18px;height:18px}
+  .pinfo::after{content:"";position:absolute;inset:-12px}
+  .pinfo:active{color:var(--ds-amber)}
+  .pinfo:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
+  /* TapNote: a quiet button that stands where its note stood. */
+  .ptap{display:inline-flex;align-items:center;gap:6px;min-height:44px;margin:0;padding:0 2px;border:0;background:none;
+    color:var(--ds-muted);font:500 13.5px/1.3 var(--sans);text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .ptap svg{flex:none;width:16px;height:16px}
+  .ptap span{text-decoration:underline;text-decoration-color:var(--ds-rule-strong);text-underline-offset:3px}
+  .ptap:active{color:var(--ds-text)}
+  .ptap:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px;border-radius:6px}
+  /* The text in a note's sheet: body size, the site's reading measure. */
+  .pnote{font-size:15.5px;line-height:1.6;color:var(--dsh-on-page)}
+  .pnote > :first-child{margin-top:0}
+  .pnote > :last-child{margin-bottom:0}
+  .pnote p,.pnote .hint,.pnote .note{margin:0 0 12px;font-size:15.5px;line-height:1.6;color:var(--dsh-on-page);max-width:none}
+  .pnote b,.pnote strong{color:var(--ds-text)}
+  /* PhoneFold: a block folded behind a row. */
+  .pfold-t{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;margin:0;padding:8px 2px;border:0;background:none;
+    color:var(--ds-text);font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pfold-l{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .pfold-l b{font:600 15.5px/1.3 var(--sans);letter-spacing:-.01em}
+  .pfold-l small{font-size:13px;line-height:1.35;color:var(--ds-muted)}
+  .pfold-n{flex:none;display:grid;place-items:center;min-width:24px;height:24px;padding:0 7px;border-radius:99px;background:var(--dsh-fill);
+    font:600 12.5px/1 var(--sans);color:var(--dsh-on-page)}
+  .pfold-t > svg{flex:none;width:18px;height:18px;color:var(--ds-rule-strong);transition:transform .2s ease}
+  .pfold[data-open] > .pfold-t > svg{transform:rotate(180deg)}
+  .pfold-t:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px;border-radius:10px}
+  .pfold > .pfold-b{display:none}
+  .pfold[data-open] > .pfold-b{display:block;animation:pfold-in .2s cubic-bezier(.2,.7,.3,1)}
+  @keyframes pfold-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){ .pfold-t > svg{transition:none} .pfold[data-open] > .pfold-b{animation:none} }
+}

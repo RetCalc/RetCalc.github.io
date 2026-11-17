@@ -459,9 +459,6 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
   .gd-coach{left:0;right:0;bottom:0;width:auto;max-width:none;max-height:55vh;border-radius:16px 16px 0 0;
     border-left:0;border-right:0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px)}
   .gd-coach-f{padding-bottom:10px}
-  html.pwa .gd-coach{bottom:calc(70px + env(safe-area-inset-bottom,0px));padding-bottom:0}
-  html.pwa body.gd-on main{padding-bottom:calc(var(--gdh,140px) + 104px + env(safe-area-inset-bottom,0px))}
-  html.pwa body.gd-on .toast{bottom:calc(var(--gdh,140px) + 98px + env(safe-area-inset-bottom,0px))}
 }
 @media print{ .gd-coach{display:none !important} }
 /* Tool help is the same panel, opened from the Help button in a tool's

@@ -23,6 +23,8 @@ import { TOOL_RAIL_SCRIPT } from "@/lib/tool-rail-script";
 
 import "./globals.css";
 import { PaneMotion } from "@/components/shell/PaneMotion";
+import { PhoneTabBar } from "@/components/phone/TabBar";
+import { InstallPrompt } from "@/components/phone/install";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { IBM_Plex_Sans, Inter } from "next/font/google";
@@ -112,6 +114,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </div>
             <PaneMotion />
             <Footer />
+            {/* Phones only (under 768px): the app's bottom tab bar, and the
+                once-only "Add to Home Screen" hint for iPhone Safari. */}
+            <PhoneTabBar />
+            <InstallPrompt />
             <Tooltips />
             <SelectMenus />
             <PageEffects />

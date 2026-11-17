@@ -14,12 +14,16 @@ import { ToolBar } from "./ToolBar";
 import { ToolHeader } from "./ToolHeader";
 import { HouseholdNudge } from "@/components/household/HouseholdNudge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PhoneViewSwitch } from "@/components/phone/ViewSwitch";
 
 /** The calculator's two modes, under one title with a switch between them. */
 const CALC_HEAD: Partial<Record<Slug, { title: string; desc: string; modes: boolean }>> = {
   calculator: { title: "Retirement calculator", modes: true, desc: "Answer these questions to see what you could have at retirement." },
   advanced: { title: "Retirement calculator", modes: true, desc: "Inflation, fees, taxes and account types, the changes you see coming, worked back from a target." },
 };
+
+/** Pages besides the tools that have inputs and results to switch between on a phone. */
+const PHONE_VIEWS = new Set<Slug>(["calculator", "advanced"]);
 
 export function PageShell({ slug, children }: { slug: Slug; children: React.ReactNode }) {
   const meta = PAGES[slug];
@@ -37,6 +41,9 @@ export function PageShell({ slug, children }: { slug: Slug; children: React.Reac
         controls={hasToolControls(slug) ? <ScenarioBar /> : null} /> : null}
       {!sub && hasToolControls(slug) ? <ToolBar {...(CALC_HEAD[slug] ?? {})} /> : null}
       {hasToolControls(slug) ? <HouseholdNudge /> : null}
+      {/* Phones only: a tool's Inputs and Results as two views (it marks
+          its blocks data-pv="in" / "out"; without marks nothing changes). */}
+      {PHONE_VIEWS.has(slug) || sub ? <PhoneViewSwitch /> : null}
       {children}
       {strategy ? <StrategyLinks current={slug} /> : null}
       {article ? <Article html={article} /> : null}

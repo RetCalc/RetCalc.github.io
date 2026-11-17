@@ -32,7 +32,9 @@ export function Tipped({ text, k }: { text: string; k: string }) {
   return <>{m[1]}<span className="tipglue">{m[2]}<TipDot k={k} /></span></>;
 }
 
-const phone = () => window.matchMedia?.("(max-width:640px)").matches ?? false;
+/* The phone redesign's cut-off (components/phone/usePhone.ts): under 768px a
+   tap opens the sheet; from there up, hover and click work as before. */
+const phone = () => window.matchMedia?.("(width < 768px)").matches ?? false;
 
 /* The sheet's title: the text before the dot in its label or heading,
    without the "optional" pill or other markers. */

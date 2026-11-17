@@ -150,7 +150,7 @@ export function Basic() {
   );
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3" id="tab-simple" role="tabpanel" aria-labelledby="tabbtn-calc">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the questions are on screen. */}
         <PinnedReading main={{ label: fvLabel, value: fv }} side={{ label: "Income, per month", value: perMonth }} />
@@ -189,7 +189,7 @@ export function Basic() {
         </aside>
       </div>
 
-      <Card size="flush" className="min-w-0 lg:col-span-2" id="homeReading">
+      <Card size="flush" className="min-w-0 lg:col-span-2" id="homeReading" data-pv="out">
         <HeroReading sized={!!R}
           hero={{ label: fvLabel, id: "qFV", value: fv, noteId: "qFVnote", note: !R ? "" : example
             ? "Someone aged " + fmtNum(p.age) + " with " + money(p.initial) + " saved: enter your own numbers to see yours"
@@ -226,7 +226,7 @@ export function Basic() {
         </div>
       </Card>
 
-      <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:col-span-3 lg:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:col-span-3 lg:grid-cols-2" data-pv="out">
         <Card hidden={!R}>
           <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
           <CardContent id="msBodyQ">{R ? <Milestones rows={R.years} alreadyReal /> : null}</CardContent>
@@ -247,7 +247,7 @@ export function Basic() {
         </Card>
       </div>
 
-      <Collapsible className="min-w-0 lg:col-span-3" render={<Card />}>
+      <Collapsible className="min-w-0 lg:col-span-3" render={<Card />} data-pv="out">
         <CardHeader>
           <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
           <CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction>

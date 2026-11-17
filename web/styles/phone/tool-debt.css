@@ -1,0 +1,5 @@
+/* Phones only (under 768px): the Debt Payoff Planner.
+   Everything in this file sits inside the one media query below, so
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+@media (width < 768px){
+}
