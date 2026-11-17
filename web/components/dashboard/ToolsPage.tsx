@@ -8,6 +8,7 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ScenarioBar } from "@/components/shell/ScenarioBar";
+import { PhoneViewSwitch } from "@/components/phone/ViewSwitch";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { CheckIcon, ChevronLeftIcon } from "lucide-react";
@@ -192,6 +193,8 @@ function Tool({ sub }: { sub: DashTool }) {
           <Note>Filled in from your plan, to try things on. Changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id + (tab.hash ?? "")} />}>{tab.name}</Button>.</Note>
         </div>
       ) : null}
+      {/* Phones only: the tool's Inputs and Results as two views. */}
+      <PhoneViewSwitch />
       <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={opening} household={household} scenarios
         keep={(id, d) => { kept.set(id, d); if (sub === "college" && id === "college") { setCollege(d as unknown as CollegeInputs); setApplied(false); } }}><View /></Hosted></div>
     </Frame>

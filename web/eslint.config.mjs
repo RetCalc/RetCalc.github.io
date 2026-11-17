@@ -48,6 +48,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // built from lib/engine by scripts/build-worker.mjs
     "public/engine-worker.js",
+    // built from scripts/sw/sw.template.js by scripts/build-sw.mjs; both run in
+    // a service worker, not the page
+    "public/sw.js",
+    "scripts/sw/**",
   ]),
 ]);
 

@@ -46,12 +46,17 @@
 @import "../styles/phone/00-shell.css";
 @import "../styles/phone/05-words.css";
 @import "../styles/phone/10-calc.css";
+@import "../styles/phone/11-charts.css";
 @import "../styles/phone/20-dashboard.css";
+@import "../styles/phone/21-dash-money.css";
+@import "../styles/phone/22-dash-plan.css";
+@import "../styles/phone/23-dash-account.css";
 @import "../styles/phone/30-home.css";
 @import "../styles/phone/31-picker.css";
 @import "../styles/phone/32-pages.css";
 @import "../styles/phone/40-learn.css";
 @import "../styles/phone/41-articles.css";
+@import "../styles/phone/42-strategy.css";
 @import "../styles/phone/50-guide.css";
 @import "../styles/phone/60-install.css";
 @import "../styles/phone/tool-advanced.css";

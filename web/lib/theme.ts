@@ -7,7 +7,9 @@ import { THEME_KEY } from "@/lib/theme-script";
 export type ThemeChoice = "light" | "dark" | "system";
 export type Theme = "light" | "dark";
 
-const THEME_COLOR: Record<Theme, string> = { dark: "#0e1116", light: "#faf9f6" };
+/* The page's ground in each theme (--ds-ground, styles/22-clear-glass.css),
+   as app/layout.tsx's themeColor and public/site.webmanifest give it. */
+const THEME_COLOR: Record<Theme, string> = { dark: "#000000", light: "#f5f5f7" };
 
 export function resolveTheme(choice: ThemeChoice): Theme {
   if (choice !== "system") return choice;
@@ -50,8 +52,18 @@ export function useThemeChoice(): ThemeChoice {
    follow these meta tags rather than the page's CSS. */
 export function applyTheme(theme: Theme): void {
   document.documentElement.setAttribute("data-theme", theme);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_COLOR[theme]);
+  syncThemeColor(theme);
   document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", theme);
+}
+
+/** The browser's bars take the showing theme's ground. The page ships one
+    theme-color per system appearance; once the theme is known (it may have
+    been chosen by hand, against the system's), each says that theme's. */
+export function syncThemeColor(theme: Theme): void {
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+    m.setAttribute("content", THEME_COLOR[theme]);
+    m.removeAttribute("media");
+  });
 }
 
 function subscribe(onChange: () => void) {
