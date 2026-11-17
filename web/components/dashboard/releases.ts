@@ -17,6 +17,13 @@ export interface Release {
 }
 
 export const RELEASES: Release[] = [
+  { version: "4.14.0", date: "2026-11-16", title: "RetCalc on your phone, like an app", items: [
+    { text: "On a phone, a bar along the bottom takes you between the Calculator, Tools, Guide and Learn, with everything else under More.", href: "/tools" },
+    { text: "Every tool shows its inputs and its results as two views, one tap apart, with your answer pinned while you type.", href: "/dashboard/tools/drawdown" },
+    { text: "The Dashboard's Calculator and Retirement tabs work the same way, and Year by year opens as a list of years.", href: "/dashboard/years" },
+    { text: "Add RetCalc to your Home Screen to open it full screen: in Safari, tap Share, then Add to Home Screen. The calculators then work without a connection." },
+    { text: "Nothing changes on a tablet or a computer." },
+  ] },
   { version: "4.13.1", date: "2026-11-16", title: "College saving follows your plan, down as well as up", items: [
     { text: "When your plan now needs less for college than your budget sets aside, Spending offers to lower the College savings line, or take it out if you're no longer helping.", href: "/dashboard/spending" },
     { text: "Apply to my plan in College Savings updates your budget's College savings line too." },
