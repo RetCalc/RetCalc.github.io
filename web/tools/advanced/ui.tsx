@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ChevronDownIcon, CircleAlertIcon } from "lucide-react";
 import { Affixed, Field, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput } from "@/components/fields/NumberInput";
@@ -15,6 +15,28 @@ import { InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { money, pctStr } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+/** Phones only: a "more options" row inside an inputs column, folding the
+    rows marked with `folded(open)` under it. PhoneFold can't be used here:
+    the column draws each of its direct children as a grouped row
+    (styles/22-clear-glass.css, PageEffects' markGroups), and a wrapper
+    would take those rows out of it on a desktop. So the row is a sibling
+    (display:none from 768px up), and the rows it folds are hidden on a
+    phone with a class while it's closed. It looks like PhoneFold's row
+    (styles/phone/05-words.css) and turns its chevron in
+    styles/phone/tool-advanced.css. */
+export function FoldRow({ open, setOpen, label, sub, controls }: {
+  open: boolean; setOpen: (v: boolean) => void; label: React.ReactNode; sub?: React.ReactNode; controls?: string;
+}) {
+  return (
+    <button type="button" className="pfold-t advfold phone:hidden" aria-expanded={open} aria-controls={controls} onClick={() => setOpen(!open)}>
+      <span className="pfold-l"><b>{label}</b>{sub ? <small>{sub}</small> : null}</span>
+      <ChevronDownIcon aria-hidden="true" />
+    </button>
+  );
+}
+/** The class for a row folded under a FoldRow: hidden on a phone while it's closed. */
+export const folded = (open: boolean) => (open ? undefined : "max-phone:hidden");
 
 /** A heading over one group of the inputs, on a rule after the first. */
 export function GroupHead({ first, children }: { first?: boolean; children: React.ReactNode }) {
@@ -46,6 +68,11 @@ export function GoalFields({ ids, s, set, split, calcRate, pay, wdTip, nonNegTar
   pay: ReturnType<typeof payCheck>; wdTip?: boolean; nonNegTarget?: boolean;
 }) {
   const { noPay, payWarn, badWd, badTax } = pay;
+  // Phones: the withdrawal and tax rates fold under a row that says them,
+  // opened while one of them is what keeps the goal from being paid.
+  const [rates, setRates] = useState(false);
+  const open = rates || badWd || badTax;
+  const taxWord = split ? (calcRate != null ? pctStr(calcRate, 1) + " tax, worked out" : "tax worked out from your accounts") : (s.taxRate.trim() === "" ? "no" : s.taxRate) + "% tax";
   return (
     <>
       <GroupHead>Your goal</GroupHead>
@@ -58,7 +85,9 @@ export function GoalFields({ ids, s, set, split, calcRate, pay, wdTip, nonNegTar
           <Affixed prefix="$"><MoneyInput id={ids.target} nonNeg={nonNegTarget} value={s.target} onValueChange={set("target")} /></Affixed>
         </Field>
       </div>
-      <div className="two bottomalign max-sm:grid-cols-2">
+      <FoldRow open={open} setOpen={setRates} controls={ids.withdrawal + "Row"} label="Withdrawal and tax rates"
+        sub={(s.withdrawal.trim() === "" ? "No" : s.withdrawal + "%") + " withdrawal, " + taxWord} />
+      <div className={cn("two bottomalign max-sm:grid-cols-2", folded(open))} id={ids.withdrawal + "Row"}>
         <NumberField id={ids.withdrawal} label={wdTip ? <Tipped text="Withdrawal rate" k="withdrawal" /> : "Withdrawal rate"} unit="%" value={s.withdrawal} onValueChange={set("withdrawal")}
           aria-invalid={badWd || undefined} aria-describedby={badWd ? ids.warn + "Text" : undefined} />
         <NumberField id={ids.taxRate} wrapId={ids.taxRateWrap} hidden={split} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")}

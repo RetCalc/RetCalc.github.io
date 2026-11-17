@@ -2,4 +2,9 @@
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* The Split button fills the field's height: a 44px target. */
+  #txPreSplit{position:relative;align-self:stretch;height:auto;min-height:40px;margin-block:2px;padding-inline:14px;font-size:14px}
+  #txPreSplit::after{content:"";position:absolute;inset:-3px 0}
+  /* The bucket note's tap, in the card's gutter. */
+  #txBucketPanel > .ptap{margin:0 16px 6px}
 }

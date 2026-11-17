@@ -15,6 +15,8 @@
    in view. */
 
 import { useRef } from "react";
+import { FoldToggle, useFolds } from "@/components/phone/Fold";
+import { InfoTap, Short } from "@/components/phone/Words";
 import { ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, InfoIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { BandChart } from "@/components/charts/BandChart";
 import { EndLabels } from "@/components/charts/ChartFrame";
@@ -35,8 +37,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { SERIES, hatched } from "@/lib/hues";
 import { cn } from "@/lib/utils";
 
-function GroupHead({ first, children }: { first?: boolean; children: React.ReactNode }) {
-  return <h3 className={cn("m-0 mb-3 text-sm font-semibold", first ? "mt-0" : "mt-1 border-t border-border pt-4")}>{children}</h3>;
+function GroupHead({ first, fold, children }: { first?: boolean; fold?: string; children: React.ReactNode }) {
+  return <h3 data-fold={fold} className={cn("m-0 mb-3 text-sm font-semibold", first ? "mt-0" : "mt-1 border-t border-border pt-4")}>{children}</h3>;
 }
 
 /** A field's problem, under it: Loss, with an icon (DESIGN.md, Inputs). */
@@ -99,6 +101,7 @@ export function Mortgage() {
   const scope = useToolScope(), locked = new Set(scope?.locked ?? []);
   useShareKit(DEF.id, mortgageShare(s));
   const table = useRef<HTMLTableElement>(null);
+  const folds = useFolds(["more"]);
   const setDown = (k: "price" | "downPct" | "downAmt") => (v: string) =>
     setState((cur) => {
       const next = { ...cur, [k]: v };
@@ -172,7 +175,7 @@ export function Mortgage() {
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. The inputs don't pin on
             desktop: eleven fields in four groups are taller than a laptop's
@@ -183,7 +186,7 @@ export function Mortgage() {
           {/* Screen readers' outline: the input groups below are h3s under this. */}
           <h2 className="sr-only">Your inputs</h2>
           <Card>
-            <CardContent>
+            <CardContent data-closed={folds.closed}>
               {locked.has("loan") ? scope?.slots?.facts : <>
               <GroupHead first>The home</GroupHead>
               <Field id="moPrice" label="Home price">
@@ -214,22 +217,23 @@ export function Mortgage() {
               </div>
 
               </>}
-              <GroupHead>Monthly costs</GroupHead>
-              <div className="two bottomalign max-sm:grid-cols-2">
+              <FoldToggle label="More options" sub="Property tax, insurance, PMI, HOA, upkeep, utilities" open={folds.isOpen("more")} onToggle={() => folds.toggle("more")} />
+              <GroupHead fold="more">Monthly costs</GroupHead>
+              <div data-fold="more" className="two bottomalign max-sm:grid-cols-2">
                 <NumberField id="moTax" label={<Tipped text="Property tax" k="proptax" />} unit="%/yr" step={0.1} value={s.tax} onValueChange={set("tax")} />
                 <MoneyField id="moIns" label={<Tipped text="Insurance" k="homeinsurance" />} unit="/yr" value={s.ins} onValueChange={set("ins")} />
               </div>
-              <div className="two bottomalign max-sm:grid-cols-2">
+              <div data-fold="more" className="two bottomalign max-sm:grid-cols-2">
                 <NumberField id="moPmi" label={<Tipped text="PMI" k="pmi" />} unit="%/yr" step={0.1} value={s.pmi} onValueChange={set("pmi")} />
                 <MoneyField id="moHoa" label="HOA" unit="/mo" value={s.hoa} onValueChange={set("hoa")} />
               </div>
-              <div className="mb-4 flex items-start gap-2 text-note text-muted-foreground">
+              <div data-fold="more" className="mb-4 flex items-start gap-2 text-note text-muted-foreground">
                 <InfoIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 <span id="moPmiNote" className="text-pretty">{pmiNote}</span>
               </div>
 
-              <GroupHead>Cost of owning</GroupHead>
-              <div className="two bottomalign max-sm:grid-cols-2">
+              <GroupHead fold="more">Cost of owning</GroupHead>
+              <div data-fold="more" className="two bottomalign max-sm:grid-cols-2">
                 <NumberField id="moMaint" label={<Tipped text="Maintenance" k="maintenance" />} unit="%/yr" step={0.1} value={s.maint} onValueChange={set("maint")} />
                 <MoneyField id="moUtil" label={<Tipped text="Utilities" k="utilities" />} unit="/mo" value={s.util} onValueChange={set("util")} />
               </div>
@@ -239,7 +243,7 @@ export function Mortgage() {
       </div>
 
       <div className="stack min-w-0 lg:col-span-2" id="tab-mortgage">
-        <Card size="flush" className="min-w-0" id="moReading">
+        <Card size="flush" className="min-w-0" id="moReading" data-pv="out">
           <div className={cn(bad && "opacity-60")}>
             <HeroReading tone={bad ? "text" : "answer"}
               hero={{ label: "Monthly payment", id: "moTotal", value: money(R.total), note: "Everything included" }}
@@ -278,16 +282,16 @@ export function Mortgage() {
             {/* The switch takes the first of the two columns below; beside it,
                 what turning it on adds, so the row isn't half empty. */}
             <div className="grid grid-cols-1 items-end gap-x-8 sm:grid-cols-2">
-              <SelectField id="moExtrasOn" label={<Tipped text="Extra payments, recasting, or refinancing" k="moextras" />} value={s.extrasOn} onChange={set("extrasOn")}>
+              <SelectField id="moExtrasOn" label={<><Short phone="Extras"><Tipped text="Extra payments, recasting, or refinancing" k="moextras" /></Short><InfoTap title="Extra payments, recasting, or refinancing"><p>Paying extra each month or once, recasting after a lump sum, and refinancing, each with its before and after.</p></InfoTap></>} value={s.extrasOn} onChange={set("extrasOn")}>
                 <option value="0">No, just the basics</option>
                 <option value="1">Yes, show these options</option>
               </SelectField>
-              <p className="m-0 mb-3.5 text-note text-muted-foreground max-sm:-mt-1.5">Paying extra each month or once, recasting after a lump sum, and refinancing, each with its before and after.</p>
+              <p className="m-0 mb-3.5 text-note text-muted-foreground max-sm:-mt-1.5 max-phone:hidden">Paying extra each month or once, recasting after a lump sum, and refinancing, each with its before and after.</p>
             </div>
             {/* Each column: its inputs, then its answer, before against after.
                 From 640px the two answers line up on one row. */}
             <div id="moExtrasWrap" hidden={!extrasOn} className={extrasOn ? "grid grid-cols-1 gap-x-8 sm:grid-cols-2" : undefined}>
-              <div className="min-w-0 border-t border-border pt-4 sm:order-1">
+              <div className="min-w-0 border-t border-border pt-4 sm:order-1" data-pv="in">
                 <GroupHead first>Paying extra</GroupHead>
                 <MoneyField id="moExtraMo" label="Extra toward principal" unit="/mo" value={s.extraMo} onValueChange={set("extraMo")} />
                 <div className="two bottomalign max-sm:grid-cols-2">
@@ -299,7 +303,7 @@ export function Mortgage() {
                   <option value="1">Recast: lower the payment instead</option>
                 </SelectField>
               </div>
-              <div className="min-w-0 border-t border-border pt-4 max-sm:order-3 sm:order-2">
+              <div className="min-w-0 border-t border-border pt-4 max-sm:order-3 sm:order-2" data-pv="in">
                 {/* The comparison runs from today, on the loan as entered, so an
                     existing loan has to be described as it stands now. */}
                 <GroupHead first><Tipped text="Refinancing" k="refiexisting" /></GroupHead>
@@ -309,7 +313,7 @@ export function Mortgage() {
                 </div>
                 <MoneyField id="moRefiCost" label={<Tipped text="Closing costs" k="reficost" />} value={s.refiCost} onValueChange={set("refiCost")} />
               </div>
-              <div id="moExtraPanel" hidden={panelOff} className={panelOff ? undefined : "contents"}>
+              <div id="moExtraPanel" hidden={panelOff} className={panelOff ? undefined : "contents"} data-pv="out">
                 <div className="mb-4 min-w-0 rounded-(--r-panel) bg-muted/50 p-4 max-sm:order-2 sm:order-3 sm:col-start-1" hidden={!base}>
                   <h4 className="m-0 mb-3 text-label font-normal text-muted-foreground">With the extra payments</h4>
                   <div id="moExtraStats">{extra}</div>
@@ -344,7 +348,7 @@ export function Mortgage() {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0" hidden={!hasYears}>
+        <Card className="min-w-0" hidden={!hasYears} data-pv="out">
           <CardHeader>
             <CardTitle>Loan balance and what you&apos;ve paid</CardTitle>
           </CardHeader>
@@ -373,7 +377,7 @@ export function Mortgage() {
           <Legend id="legendMo" items={[[SERIES.plan, "Balance remaining"], [SERIES.teal, "Principal paid"], [SERIES.rose, "Interest paid"]]} />
         </Card>
 
-        <div className="min-w-0" hidden={!hasYears}>
+        <div className="min-w-0" hidden={!hasYears} data-pv="out">
           <Collapsible render={<Card />}>
             <CardHeader>
               <CardTitle><CollapsibleTrigger>Amortization by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger><TipDot k="amort" /></CardTitle>

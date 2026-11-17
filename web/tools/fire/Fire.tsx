@@ -16,6 +16,7 @@
    On a phone a compact reading leads and stays pinned. */
 
 import { useRef, useState } from "react";
+import { TapNote } from "@/components/phone/Words";
 import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { ChevronDownIcon, CircleXIcon, InfoIcon } from "lucide-react";
 import { BandChart, type ChartGeometry } from "@/components/charts/BandChart";
@@ -209,7 +210,7 @@ export function Fire() {
   </>);
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
         <PinnedReading tone={heroTone} main={{ label: modeLabel + " age", value: ageText }}
@@ -274,7 +275,7 @@ export function Fire() {
       </div>
 
       <div className="stack min-w-0 lg:col-span-2" id="tab-fire">
-        <Card size="flush" className="min-w-0" id="fiReading">
+        <Card size="flush" className="min-w-0" id="fiReading" data-pv="out">
           {/* Which question the reading answers: your rate of return alone,
               or that and every market since 1926. */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-5.5 py-3 max-sm:px-4">
@@ -335,7 +336,7 @@ export function Fire() {
           </div>
         </Card>
 
-        <Card className="min-w-0" hidden={!S}>
+        <Card className="min-w-0" hidden={!S} data-pv="out">
           <CardHeader>
             <CardTitle>Portfolio growth</CardTitle>
             <CardDescription id="fiChartNote">{chart.note}</CardDescription>
@@ -350,14 +351,16 @@ export function Fire() {
             </CardAction>
           </CardHeader>
           <div className="hint m-0 max-w-copy px-4.5 pb-1" id="fiHistBar" hidden={!hist}>
-            <span id="fiHistNote">{chart.H ? <HistBarNote H={chart.H} /> : null}</span>
+            {chart.H?.count
+              ? <TapNote label="How these runs work" title="Market history runs"><span id="fiHistNote"><HistBarNote H={chart.H} /></span></TapNote>
+              : <span id="fiHistNote">{chart.H ? <HistBarNote H={chart.H} /> : null}</span>}
           </div>
           {fiChart()}
           {fiLegend}
           {fiFull.overlay(fiChart, fiLegend)}
         </Card>
 
-        <div className="min-w-0" hidden={!S}>
+        <div className="min-w-0" hidden={!S} data-pv="out">
           <Collapsible render={<Card />}>
             <CardHeader>
               <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>

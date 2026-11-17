@@ -37,6 +37,7 @@ import { ChevronRightIcon, CircleAlertIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InputGroupButton } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
+import { InfoTap, TapNote } from "@/components/phone/Words";
 
 const TAX_COLORS = { fed: SERIES.rose, state: SERIES.lavender, fica: SERIES.sky, net: SERIES.teal, local: SERIES.plan };
 const BKT_COLORS: string[] = [SERIES.rose, SERIES.teal, SERIES.sky, SERIES.lavender, SERIES.gray, hatched(SERIES.gray)]; // trad, roth, brok, ss, pension, other
@@ -66,8 +67,21 @@ export function Tax() {
     clearTimeout(deactivate.current);
     setActive(i);
   };
+  // After a touch the browser sends a mouse leave of its own: a part picked
+  // by a finger stays picked until another tap.
+  const touched = useRef(false);
   const leave = () => {
+    if (touched.current) return;
     deactivate.current = setTimeout(() => setActive(null), 60);
+  };
+  const pointer = (e: React.PointerEvent) => { touched.current = e.pointerType !== "mouse"; };
+  /* A tap (or click) on a slice or a bar selects that part and shows its
+     figures in the donut's center; another part's tap moves to it, and a tap
+     on the donut's middle clears it. Hover does the same with a mouse. */
+  const pick = (e: React.MouseEvent) => {
+    const t = (e.target as Element).closest("circle[data-idx], .bar[data-idx]");
+    if (t) activate(+(t.getAttribute("data-idx") ?? 0));
+    else if ((e.target as Element).closest("svg")) { clearTimeout(deactivate.current); setActive(null); }
   };
   const tableRef = useRef<HTMLTableElement>(null), bucketRef = useRef<HTMLTableElement>(null);
 
@@ -90,6 +104,8 @@ export function Tax() {
   const localInfo = LOCAL_TAX[s.state], localOn = !!localInfo && parseNum(s.localRate ?? "0") > 0, hasLocal = R.local > 0.005;
   // The tax year. The picker only shows once there's more than one; a new
   // year's state figures can lag (the year before's, until the states publish).
+  const localTail = localInfo ? <>Your pay stub shows any local tax taken out{localInfo.links.length ? ", or look up your rate: " : ". Your city or county tax office has the rate."}
+    {localInfo.links.map(([label, url], i) => <span key={url}>{i ? ", " : ""}<a href={url} target="_blank" rel="noopener noreferrer">{label}</a></span>)}{localInfo.links.length ? ", or your city or county tax office." : null}</> : null;
   const years = taxYears(), year = inp.year, stateYear = yearData(year).states.year;
   const stateLag = stateYear !== year;
 
@@ -260,7 +276,7 @@ export function Tax() {
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
       {preOpen && !ret ? <PreTaxDialog s={s} setState={setState} close={() => setPreOpen(false)} /> : null}
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
         <PinnedReading tone={tone} main={{ label: head.netLabel, value: head.net }} side={{ label: "Per month", value: head.month }} />
@@ -354,6 +370,8 @@ export function Tax() {
                     <Affixed prefix="$" action={ret ? undefined : <InputGroupButton id="txPreSplit" title="Break it down by kind: 401(k), IRA, HSA, health premiums" onClick={() => setPreOpen(true)}>Split</InputGroupButton>}>
                       <MoneyInput id="txPre" nonNeg value={s.pre} onValueChange={set("pre")}
                         aria-invalid={preOver || undefined} aria-describedby={preOver ? "txPreWarn" : undefined} /></Affixed>
+                    {/* Phones: the Split button's title, said under the field. */}
+                    {ret ? null : <div className="hint phone:hidden">Split breaks it down by kind: 401(k), IRA, HSA, health premiums.</div>}
                   </Field>
                 )}
                 <SelectField id="txDedType" label={<Tipped text="Deduction" k="deduction" />} value={s.dedType} onChange={set("dedType")}>
@@ -380,8 +398,9 @@ export function Tax() {
                     </SelectField>
                   </div>
                   <div className="hint -mt-1 mb-3.5" id="txLocalNote">
-                    {localInfo.note} Rates and rules vary by place, so this is an estimate. Your pay stub shows any local tax taken out{localInfo.links.length ? ", or look up your rate: " : ". Your city or county tax office has the rate."}
-                    {localInfo.links.map(([label, url], i) => <span key={url}>{i ? ", " : ""}<a href={url} target="_blank" rel="noopener noreferrer">{label}</a></span>)}{localInfo.links.length ? ", or your city or county tax office." : null}
+                    {/* Phones: the place's note and that it's an estimate; where to find the rate a tap away. */}
+                    {localInfo.note} Rates and rules vary by place, so this is an estimate.<span className="max-phone:hidden"> {localTail}</span>
+                    <InfoTap title="Finding your local rate"><p>{localTail}</p></InfoTap>
                   </div>
                 </>
               ) : null}
@@ -404,7 +423,7 @@ export function Tax() {
         </aside>
       </div>
 
-      <div className="stack min-w-0 lg:col-span-2" id="tab-tax">
+      <div className="stack min-w-0 lg:col-span-2" id="tab-tax" data-pv="out">
         <Card size="flush" className="min-w-0">
           {/* Which pay the reading shows, in a quiet toolbar above it. */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-5.5 py-3 max-sm:px-4">
@@ -444,11 +463,11 @@ export function Tax() {
                     if (c) activate(+(c.getAttribute("data-idx") ?? 0));
                     else leave();
                   }}
-                  onMouseLeave={leave}>
+                  onMouseLeave={leave} onClick={pick} onPointerDown={pointer}>
                   <Donut parts={parts} center={pctStr(R.effTotal, 1)} centerLabel="All taxes" active={active} ids={{ label: "txPieLbl", value: "txPieVal" }} hatch="txh" />
                 </svg>
               </div>
-              <div id="txBars" className="w-full min-w-0 flex-1" onMouseLeave={leave}
+              <div id="txBars" className="w-full min-w-0 flex-1" onMouseLeave={leave} onClick={pick} onPointerDown={pointer}
                 onMouseOver={(e) => {
                   const b = (e.target as Element).closest(".bar[data-idx]");
                   if (b) activate(+(b.getAttribute("data-idx") ?? 0));
@@ -525,7 +544,8 @@ export function Tax() {
               </tbody>
             </table>
           </div>
-          <div className="mcnote" id="txBucketNote" dangerouslySetInnerHTML={{ __html: bucketNote }} />
+          {bucketNote ? <TapNote label="How each source was taxed"><div className="mcnote" id="txBucketNote" dangerouslySetInnerHTML={{ __html: bucketNote }} /></TapNote>
+            : <div className="mcnote" id="txBucketNote" />}
         </Card>
 
         <Card>

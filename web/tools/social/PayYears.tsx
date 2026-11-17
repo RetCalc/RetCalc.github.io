@@ -16,6 +16,7 @@ import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-react";
 import { Affixed, Field } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { Segmented } from "@/components/common/Readout";
+import { isPhone } from "@/components/phone/usePhone";
 import { TipDot } from "@/components/shell/Tooltips";
 import { fmtAxisMoney } from "@/components/charts/scale";
 import { groupDigits, money, parseNum } from "@/lib/format";
@@ -73,6 +74,12 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
     if (focus) requestAnimationFrame(() => { valRef.current?.focus(); valRef.current?.select(); });
   };
   const i = L.findIndex((y) => y.age === age);
+  const touchPick = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (e.pointerType !== "touch" || !isPhone()) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const k = Math.max(0, Math.min(L.length - 1, Math.floor(((e.clientX - r.left) * (W / r.width) - pl) / bw)));
+    if (L[k].age !== age) pick(L[k].age);
+  };
   const setPay = (text: string) => {
     setDraft({ age, who, text });
     if (s.now) setP("pay")(text);
@@ -110,7 +117,9 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
           tabIndex={0}
           // A click picks a year without focusing the chart (no ring around
           // it while the button is held); the keyboard still reaches it by Tab.
-          onMouseDown={(e) => e.preventDefault()} aria-label="Pay by year. Left and right arrows pick a year. Enter edits it." id="ssPayChart"
+          onMouseDown={(e) => e.preventDefault()}
+          // A phone's finger is wider than a bar: touching or dragging along the chart picks the year under it.
+          onPointerDown={touchPick} onPointerMove={(e) => { if (e.buttons) touchPick(e); }} aria-label="Pay by year. Left and right arrows pick a year. Enter edits it." id="ssPayChart"
           onKeyDown={(e) => {
             if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); pick(L[Math.max(0, Math.min(L.length - 1, i + (e.key === "ArrowRight" ? 1 : -1)))].age); }
             if (e.key === "Enter") { e.preventDefault(); pick(age, true); }
@@ -169,7 +178,7 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
           <Affixed prefix="$" suffix="/yr" className="w-37.5">
             <MoneyInput ref={valRef} id="ssPayVal" nonNeg aria-label={s.past ? `Pay earned at age ${s.age}, in ${s.year}` : `Pay at age ${s.age}, in today's dollars`} value={shown} onValueChange={setPay} onBlur={() => setDraft(null)} />
           </Affixed>
-          <span className="text-note text-muted-foreground" id="ssPayCtx">{ctx}</span>
+          <span className="text-note text-muted-foreground" id="ssPayCtx">{ctx}{!s.counted ? <span className="phone:hidden">{" Not counted: it isn't one of your best 35 years."}</span> : null}</span>
           {s.edited ? <Button variant="quiet" size="inline" onClick={() => setEdits((e) => { const n = { ...e }; delete n[String(age)]; return n; })}>Undo</Button> : null}
         </div>
         <span className="ml-auto text-note text-muted-foreground max-sm:ml-0" id="ssPaySum">

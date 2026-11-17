@@ -1,5 +1,16 @@
 /* Phones only (under 768px): the Early Retirement Bridge.
    Everything in this file sits inside the one media query below, so
-   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs).
+   Its "More options" row is styled in tool-roth.css, with the Roth's. */
 @media (width < 768px){
+  /* The hand-offs: full width, a finger's height. */
+  #tab-bridge .br-send{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+  #tab-bridge .br-send [data-slot="button"]{min-height:44px;flex:1 1 0;margin:0}
+  #tab-bridge .br-send [data-slot="button"]:first-child{flex-basis:100%}
+  /* Folded cards' titles open them: a finger's height. */
+  #tab-bridge [data-slot="collapsible-trigger"]{min-height:44px}
+  /* Each plan row in Ways to 59½ is a button: at least 44px tall. */
+  #brCompare tbody tr.ddrow > td{height:44px}
+  /* The wide tables scroll sideways in their own boxes. */
+  #tab-bridge .scroll{max-width:100%;overscroll-behavior-x:contain}
 }

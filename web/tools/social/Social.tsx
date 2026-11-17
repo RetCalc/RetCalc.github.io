@@ -14,6 +14,8 @@
 import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { useRef, useState } from "react";
 import { CheckIcon, PlusIcon, ChartColumnIcon, MinusIcon } from "lucide-react";
+import { FoldToggle, useFolds } from "@/components/phone/Fold";
+import { TapNote } from "@/components/phone/Words";
 import { MultiChart } from "@/components/charts/MultiChart";
 import { Legend } from "@/components/charts/Legend";
 import { useNarrow } from "@/components/charts/useNarrow";
@@ -110,12 +112,12 @@ export function Social() {
       <Facts S={S} />
       {S.pairs ? <Pairs S={S} narrow={narrow} use={claimBoth} /> : null}
 
-      <div className="grid min-w-0 grid-cols-1 gap-3.5 lg:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-3.5 lg:grid-cols-2" data-pv="out">
         <Lifespan S={S} setThrough={setP("you", "through")} />
         <Race S={S} />
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 items-stretch gap-3.5 lg:grid-cols-5">
+      <div className="grid min-w-0 grid-cols-1 items-stretch gap-3.5 lg:grid-cols-5" data-pv="out">
         <Card className="min-w-0 lg:col-span-3">
           <CardHeader>
             <CardTitle>Every age, side by side</CardTitle>
@@ -182,8 +184,9 @@ function Sentence({ s, S, setP, setOther, setSrc, payOpen, setPayOpen, anyPay, t
   payOpen: boolean; setPayOpen: (v: boolean) => void; anyPay: boolean; toggleSpouse: () => void; children: React.ReactNode;
 }) {
   const y = s.you, sp = s.spouse, married = S.married, { earnLimit } = ssRules();
+  const nEdits = Object.values(y.edits).filter((v) => v !== "").length + (married ? Object.values(sp.edits).filter((v) => v !== "").length : 0);
   return (
-    <Card className="min-w-0" id="ssSentence">
+    <Card className="min-w-0" id="ssSentence" data-pv="in">
       <CardContent className="px-5.5 max-sm:px-4">
         <div className="text-xl leading-loose text-muted-foreground max-sm:text-lg" id="ssSayYou">
           I was born in <Num value={y.birth} onChange={setP("you", "birth")} label="Year you were born" max={2100} />
@@ -214,9 +217,9 @@ function Sentence({ s, S, setP, setOther, setSrc, payOpen, setPayOpen, anyPay, t
             ) : null}
           </div>
         ) : null}
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3" id="ssSentenceActions">
           <Button variant="outline" size="sm" id="ssSpouseBtn" onClick={toggleSpouse}>{married ? <MinusIcon /> : <PlusIcon />}{married ? "Remove my spouse" : "Add my spouse"}</Button>
-          {anyPay ? <Button variant="outline" size="sm" id="ssPayBtn" aria-pressed={payOpen} aria-controls={payOpen ? "ssPay" : undefined} onClick={() => setPayOpen(!payOpen)}><ChartColumnIcon />Edit pay year by year</Button> : null}
+          {anyPay ? <Button variant="outline" size="sm" id="ssPayBtn" aria-pressed={payOpen} aria-controls={payOpen ? "ssPay" : undefined} onClick={() => setPayOpen(!payOpen)}><ChartColumnIcon />Edit pay year by year{nEdits > 0 ? <span className="phone:hidden">{" (" + nEdits + " typed)"}</span> : null}</Button> : null}
           <Button variant="link" size="inline" onClick={() => setSrc("you", y.src === "pay" ? "statement" : "pay")}>
             {y.src === "pay" ? "I have my Social Security statement" : "Estimate from my pay instead"}</Button>
           {married ? <Button variant="link" size="inline" onClick={() => setSrc("spouse", sp.src === "pay" ? "statement" : "pay")}>
@@ -234,12 +237,13 @@ function Stage({ S, narrow, claim }: { S: SocialFigures; narrow: boolean; claim:
   const max = Math.max(...S.rows.map((r) => r.monthly)) || 1;
   const r62 = S.rows[0], r70 = S.rows[S.rows.length - 1], ch = S.chosen;
   const stairs = useRef<HTMLDivElement>(null);
+  const folds = useFolds(["more"]);
   const go = (a: number) => { claim(a); requestAnimationFrame(() => stairs.current?.querySelector<HTMLElement>(`[data-age="${a}"]`)?.focus()); };
   const early = Math.round((S.you.fra - c) * 12);
   const when = early > 0 ? `${early} months early` : early < 0 ? `${-early} months late` : "at full age";
   const { cap, bend1, bend2 } = ssRules();
   return (
-    <Card size="flush" className="min-w-0" id="ssReading">
+    <Card size="flush" className="min-w-0" id="ssReading" data-pv="out" data-closed={folds.closed}>
       <div className="grid grid-cols-1 lg:grid-cols-3">
         <div className="min-w-0 border-border px-4.5 pt-4 pb-3 max-lg:order-2 max-lg:border-t lg:col-span-2 lg:border-r">
           <div className="mb-1.5 flex items-center justify-between gap-3">
@@ -313,7 +317,8 @@ function Stage({ S, narrow, claim }: { S: SocialFigures; narrow: boolean; claim:
         </div>
       </div>
 
-      <div className="flex flex-wrap items-stretch gap-2 border-t border-border px-4.5 pt-3 pb-3.5 max-sm:grid max-sm:grid-cols-2" id="ssFormula">
+      <FoldToggle label="How it's figured" sub="Average pay, full benefit, claiming age, your check" open={folds.isOpen("more")} onToggle={() => folds.toggle("more")} />
+      <div data-fold="more" className="flex flex-wrap items-stretch gap-2 border-t border-border px-4.5 pt-3 pb-3.5 max-sm:grid max-sm:grid-cols-2" id="ssFormula">
         <span className="mr-1.5 self-center text-note font-semibold max-sm:col-span-2">How it&apos;s figured</span>
         {S.you.career ? (
           <>
@@ -360,7 +365,7 @@ function Facts({ S }: { S: SocialFigures }) {
       : ["Years of checks", String(S.you.through - S.you.claim), S.you.claim + " to " + S.you.through, "How many years of checks the totals count, from your claiming age to the age you expect to live to."],
   ];
   return (
-    <Card size="flush" className="min-w-0 overflow-hidden" id="ssFacts">
+    <Card size="flush" className="min-w-0 overflow-hidden" id="ssFacts" data-pv="out">
       <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
         {items.map(([l, v, n, t]) => (
           <div key={l} className="min-w-0 bg-card px-4.5 py-3.25" data-pair>
@@ -379,11 +384,11 @@ function Pairs({ S, narrow, use }: { S: SocialFigures; narrow: boolean; use: (a:
   const P = S.pairs!, span = Math.max(1, P.best.total - P.min), more = P.best.total - P.chosen;
   const bigYou = S.H.spouse ? S.H.you.laterMonthly >= S.H.spouse.laterMonthly : true;
   return (
-    <Card size="flush" className="min-w-0" id="ssPairs">
+    <Card size="flush" className="min-w-0" id="ssPairs" data-pv="out">
       <div className="grid grid-cols-1 lg:grid-cols-3">
         <div className="min-w-0 border-border px-4.5 pt-3.5 pb-4 max-lg:border-b lg:col-span-2 lg:border-r">
           <h2 className="m-0 mb-2.5 flex items-center gap-1.5 text-aside font-semibold">Best ages for the two of you<TipDot k="" text="Every pair of claiming ages, with what the two of you collect in all through the ages you expect to live to, in today's dollars, before tax. Each square shows how far that pair falls short of the best one. Click a square to use those ages." /></h2>
-          {narrow ? <p className="m-0 mb-2 text-label text-muted-foreground">Thousands of dollars short of the best pair.</p> : null}
+          {narrow ? <p className="m-0 mb-2 text-label text-muted-foreground">Thousands of dollars short of the best pair.<span className="phone:hidden"> Down the side: you. Across the top: your spouse.</span></p> : null}
           <div className="grid grid-cols-10 gap-0.75 text-xs max-sm:gap-0.5" role="grid" aria-label="Household total for each pair of claiming ages">
             <div className="self-end pb-1 text-fine leading-tight text-muted-foreground max-sm:invisible max-sm:h-0 max-sm:overflow-hidden">You claim ↓<br />Spouse →</div>
             {CLAIM_AGES.map((b) => <div key={b} className="grid place-items-center text-label text-muted-foreground">{b}</div>)}
@@ -391,6 +396,10 @@ function Pairs({ S, narrow, use }: { S: SocialFigures; narrow: boolean; use: (a:
               <Row key={a} a={a} i={i} P={P} span={span} narrow={narrow} S={S} use={use} />
             ))}
           </div>
+          {/* A square's own total is its hover title; on a phone the chosen pair says it here. */}
+          <p className="m-0 mt-2.5 text-note text-muted-foreground phone:hidden" id="ssPairChosen">
+            You at {S.you.claim}, spouse at {S.spouse!.claim}: <b className="font-semibold text-foreground">{money(P.chosen)}</b> in all{P.best.total - P.chosen >= 1 ? `, ${money(P.best.total - P.chosen)} less than the best` : ", the most"}.
+          </p>
         </div>
         <div className="flex flex-col justify-center gap-3 px-5 py-4.5">
           <div data-pair>
@@ -399,11 +408,11 @@ function Pairs({ S, narrow, use }: { S: SocialFigures; narrow: boolean; use: (a:
             <div className="text-label text-muted-foreground">{more >= 1 ? `${money(P.best.total)} in all: ${money(more)} more than ${S.you.claim} and ${S.spouse!.claim}` : `${money(P.best.total)} in all. These are your ages.`}</div>
           </div>
           {more >= 1 ? <div><Button variant="outline" size="sm" onClick={() => use(P.best.you, P.best.spouse)}>Use these ages</Button></div> : null}
-          <div className="border-t border-border pt-3 text-note text-muted-foreground">
+          <TapNote label="Why these ages" title="Best ages for the two of you"><div className="border-t border-border pt-3 text-note text-muted-foreground">
             {P.best.you !== P.best.spouse
               ? `${bigYou ? "Your" : "Your spouse's"} check is the bigger one. Whoever lives longer keeps it, so waiting on it pays off for as long as either of you lives.`
               : "Both of you do best claiming at the same age with these lifespans. Try other ages you expect to live to."}
-          </div>
+          </div></TapNote>
         </div>
       </div>
     </Card>

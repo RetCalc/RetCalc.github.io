@@ -2,4 +2,26 @@
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* ---------- legends (components/charts/Legend.tsx) ----------
+     A legend entry that shows or hides a layer is a 44px target, with an
+     eye after its label (open while the layer shows) in place of the
+     hover-only title. */
+  .legend [data-slot=toggle][data-variant=legend]{position:relative;display:inline-flex;align-items:center;gap:0;min-height:44px;margin:-12px 0;padding:0 2px}
+  .legend-eye{flex:none;width:15px;height:15px;margin-left:6px;color:var(--ds-muted)}
+  .legend [data-slot=toggle][data-pressed] .legend-eye{color:var(--ds-amber)}
+
+  /* ---------- full screen (components/charts/FullScreen.tsx) ----------
+     On a phone the button is a 44px square; the full-screen view clears
+     the notch and the home indicator and closes with Done. */
+  .chart-fullbtn{display:inline-flex}
+  .chart-fullbtn [data-slot=button]{width:44px;height:44px}
+  .pchart-full{gap:6px;padding:calc(10px + env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));background:var(--ds-ground)}
+  .pchart-full .chart-full-head{min-height:44px;padding-left:6px}
+  .pchart-full .chart-full-head h2{font:600 17px/1.25 var(--dsh-display);letter-spacing:-.015em}
+  .pchart-full .chart-full-head [data-slot=button]{flex:none;height:44px;padding:0 18px;font-size:16px;font-weight:600}
+  .pchart-full .pchart-turn{padding-left:6px}
+  .pchart-full .chart-full-host{display:flex;flex-direction:column;justify-content:center}
+  .pchart-full .chartwrap{padding:8px 8px 2px}
+  .pchart-full .chart-full-under{padding-bottom:4px}
+  .pchart-full .legend{padding:0 6px 4px}
 }

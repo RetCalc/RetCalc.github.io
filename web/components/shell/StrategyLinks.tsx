@@ -12,7 +12,7 @@ const LINK = buttonVariants({ variant: "link", size: "inline" });
 /** Under the page's description, in its header. */
 export function StrategyLedeLinks({ hasArticle }: { hasArticle: boolean }) {
   return (
-    <p className="mt-1.5 mb-0 flex flex-wrap gap-x-4 gap-y-1 text-note">
+    <p className="mt-1.5 mb-0 flex flex-wrap gap-x-4 gap-y-1 text-note" id="ddLedeLinks">
       <Link href="/drawdown" className={LINK} id="ddFullLink">Run the full simulator</Link>
       {hasArticle ? <a href="#seoArticles" className={LINK}>How it works</a> : null}
     </p>

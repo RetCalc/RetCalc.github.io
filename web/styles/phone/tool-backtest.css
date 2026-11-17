@@ -2,4 +2,12 @@
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* The folded "More options" fields (rebalancing). */
+  #asideBT [data-closed~="more"] .btfold{display:none}
+  /* The tool's own buttons and the sortable year headers: 44px to touch. */
+  #btUseRate,#btMixBtn{min-height:44px}
+  #btTable th{height:44px}
+  /* The tables scroll inside their own boxes, never the page. */
+  #btTable{min-width:760px}
+  #btRollTable{min-width:420px}
 }

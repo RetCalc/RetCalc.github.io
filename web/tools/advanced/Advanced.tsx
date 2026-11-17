@@ -35,7 +35,8 @@ import { changesCompute, changesOn, liveChanges } from "./changes";
 import { scenarioName } from "@/components/dashboard/scenarios";
 import { ChangesAhead, ReachCard, ageOf } from "./ChangesAhead";
 import { PlanScreen } from "./PlanScreen";
-import { GoalFields, GroupHead, YearTable, payCheck } from "./ui";
+import { FoldRow, GoalFields, GroupHead, YearTable, folded, payCheck } from "./ui";
+import { PhoneFold } from "@/components/phone/Words";
 import { HistMixButton, histMixOf } from "./HistMix";
 import { stagesChart } from "./stagesChart";
 import { useBusy } from "@/lib/busy";
@@ -70,6 +71,8 @@ function SiteAdvanced() {
   const [mode, setMode] = useState<ChartMode>("band");
   const [band, setBand] = useState("2");
   const [dialog, setDialog] = useState<"conv" | "growth" | null>(null);
+  // Phones: inflation, fees and the glide path fold under one row.
+  const [more, setMore] = useState(false);
   // Arriving from an old Stages link (/stages sends here): say where it went.
   const [fromStages, setFromStages] = useState(false);
   useEffect(() => {
@@ -215,6 +218,8 @@ function SiteAdvanced() {
           onClick={() => blended && setDialog("growth")} />
       </Affixed>
       <Button variant="link" size="inline-xs" className="mt-1.75" id="acGrowthBtn" hidden={!acOn} onClick={() => setDialog("growth")}>{blended ? "Edit rates by account" : "Set by account"}</Button>
+      {/* Phones: the field's hover text, in words. */}
+      {blended ? <span className="hint mt-1 phone:hidden">Blended from your rates by account.</span> : null}
     </div>
   );
   const acMoney = (id: "tradBal" | "tradC" | "rothBal" | "rothC" | "brokBal" | "brokC" | "hsaBal" | "hsaC", label: string, contrib?: boolean) => (
@@ -270,7 +275,7 @@ function SiteAdvanced() {
           </AlertDescription>
         </Alert>
       ) : null}
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
         <PinnedReading main={{ label: "After-tax income, per year", value: money(R.afterTax) }} side={{ label: "At retirement, today's dollars", value: money(R.fvReal) }} />
@@ -297,6 +302,8 @@ function SiteAdvanced() {
                       <span className="actsub" id="acTotSub">{B?.match ? "+ " + money(B.match) + per + " match" : ""}</span></div>
                   </div>
                   <div className="two max-sm:grid-cols-2 border-t border-border pt-3.5" id="acSchedule">{acOn ? <>{periodField}{growthField}</> : null}</div>
+                  {/* Phones: the match and the tax facts fold under one row. */}
+                  <PhoneFold label="Employer match and taxes" sub={"Salary, match rate, filing status, state"}>
                   <AcHead note="paid into traditional" rule>Employer match</AcHead>
                   <MoneyField id="acSalary" label="Your salary" unit="/yr" value={s.salary} onValueChange={set("salary")} />
                   <div className="two max-sm:grid-cols-2 bottomalign">
@@ -313,6 +320,7 @@ function SiteAdvanced() {
                       {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
                     </SelectField>
                   </div>
+                  </PhoneFold>
                 </div>
               </div>
               <MoneyField id="initial" wrapId="initialField" hidden={acOn} label="Starting value" value={s.initial} onValueChange={set("initial")} />
@@ -333,7 +341,9 @@ function SiteAdvanced() {
               <Field id="nominal" label={<Tipped text="Rate of return" k="nominalreturn" />}>
                 <Affixed suffix="%"><SignFlip value={s.nominal} onFlip={set("nominal")} /><NumberInput id="nominal" value={s.nominal} onValueChange={set("nominal")} /></Affixed>
               </Field>
-              <div className="glidewrap -mt-1" id="glideWrap">
+              <FoldRow open={more} setOpen={setMore} controls="glideWrap" label="Inflation, fees and glide path"
+                sub={"Inflation " + (s.inflation.trim() === "" ? "0" : s.inflation) + "%, fees " + (s.fees.trim() === "" ? "0" : s.fees) + "%, glide path " + (s.glideOn ? "on" : "off")} />
+              <div className={cn("glidewrap -mt-1", folded(more))} id="glideWrap">
                 <CheckToggle id="glideToggle" on={s.glideOn} onToggle={toggleGlide} tip={<TipDot k="glide" />}>Glide path</CheckToggle>
                 <div className="glidefields" id="glideFields" hidden={!s.glideOn}>
                   <div className="two max-sm:grid-cols-2">
@@ -343,11 +353,11 @@ function SiteAdvanced() {
                   <div className="hint m-0" id="glideNote">{s.glideOn ? glideNote(parseNum(s.nominal) / 100, parseNum(s.glideEnd) / 100, parseNum(s.years), parseNum(s.glideYears) || 1) : ""}</div>
                 </div>
               </div>
-              <div className="two max-sm:grid-cols-2">
+              <div className={cn("two max-sm:grid-cols-2", folded(more))}>
                 <NumberField id="inflation" label={<Tipped text="Inflation" k="inflation" />} unit="%" value={s.inflation} onValueChange={set("inflation")} />
                 <NumberField id="fees" label={<>Fees <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
               </div>
-              <div className="derived mt-0 mb-1">
+              <div className={cn("derived mt-0 mb-1", folded(more))}>
                 <div><span>Return net of fees</span><span className="num" id="dNetRate">{pctStr(p.nominal, 2) + (p.fees > 0 ? "  (" + pctStr(p.gross, 2) + " − " + pctStr(p.fees, 2) + ")" : "")}</span></div>
                 <div><span><Tipped text="Real rate of return" k="realreturn" /></span><span className="num" id="dRealRate">{pctStr(V.R.realReturn)}</span></div>
                 <details className="calcdetails">
@@ -367,7 +377,7 @@ function SiteAdvanced() {
         </aside>
       </div>
 
-      <div className="stack min-w-0 lg:col-span-2" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-single">
+      <div className="stack min-w-0 lg:col-span-2" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-single" data-pv="out">
         <ProjectionReading p="r" R={R} lastPeriod={CH ? CH.V.R.lastPeriod : p.period} fvNote={CH ? "Across " + CH.C.shown.length + (CH.C.shown.length === 1 ? " stage, " : " stages, ") + fmtNum(p.years) + " years" : "After " + p.years + " years at " + pctStr(p.nominal, 2)}
           realNote={"Inflation of " + pctStr(p.inflation, 2) + " over " + R.inflYears + " years"}>
           {target > 0 ? (

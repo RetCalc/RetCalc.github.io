@@ -35,6 +35,9 @@
   .pfold[data-open] > .pfold-t > svg{transform:rotate(180deg)}
   .pfold-t:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px;border-radius:10px}
   .pfold > .pfold-b{display:none}
+  /* Fold.tsx: blocks marked data-fold, closed by name on their container. */
+  [data-closed~="more"] [data-fold="more"],[data-closed~="a"] [data-fold="a"],[data-closed~="b"] [data-fold="b"],
+  [data-closed~="c"] [data-fold="c"],[data-closed~="d"] [data-fold="d"],[data-closed~="e"] [data-fold="e"]{display:none !important}
   .pfold[data-open] > .pfold-b{display:block;animation:pfold-in .2s cubic-bezier(.2,.7,.3,1)}
   @keyframes pfold-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
   @media (prefers-reduced-motion:reduce){ .pfold-t > svg{transition:none} .pfold[data-open] > .pfold-b{animation:none} }

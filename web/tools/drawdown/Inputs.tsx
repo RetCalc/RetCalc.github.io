@@ -34,9 +34,13 @@ import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segm
 import { Checkbox } from "@/components/ui/checkbox";
 import { CircleAlertIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PhoneFold } from "@/components/phone/Words";
 
 
 /* Social Security can't start before 62; 67 is the usual full-retirement age. */
+const PATH_WORDS: Record<string, string> = { flat: "steady", ease: "easing", smile: "the spending smile", stages: "in stages" };
+const rebalWords = (r: string) => (r === "every" ? "Rebalance every few years" : r === "band" ? "Rebalance when it drifts" : r === "never" ? "Never rebalance" : "Rebalance every year");
+
 const SS_MIN_AGE = 62, SS_DEFAULT_AGE = 67;
 const clampSSAge = (c: DrawdownState): DrawdownState => {
   const raw = String(c.ssDelay).trim();
@@ -190,6 +194,14 @@ export function Inputs({ v, fromNote, periods, open }: {
   const used = inputs === "simple" ? advInUse(d) : [];
   const clampFrom = () => setState(fromClamp);
 
+  /* ---- on a phone, what each folded group holds, with what's set ---- */
+  const limitsSub = [S.limits === false ? "" : o.spendFloor > 0 || o.spendCeil > 0 ? "Minimum " + (o.spendFloor > 0 ? money(o.spendFloor) : "none") + ", maximum " + (o.spendCeil > 0 ? money(o.spendCeil) : "none") : "Minimum and maximum spending",
+    takesPath ? "spending path: " + PATH_WORDS[kind] : ""].filter(Boolean).join("; ").replace(/^./, (c) => c.toUpperCase());
+  const nItems = (k: "incomeItems" | "expenseItems") => nb<DdItem>(k).filter((x) => x.on !== false).length;
+  const incomeSub = (locked.has("ss") ? "Social Security" : "Social Security " + (o.ssAnnualTotal > 0 ? money(o.ssAnnualTotal) + " per year" : "not included")) +
+    ", other income" + (nItems("incomeItems") ? " (" + nItems("incomeItems") + ")" : "") + ", future expenses" + (nItems("expenseItems") ? " (" + nItems("expenseItems") + ")" : "");
+  const goalsSub = "Legacy goal " + (o.legacyGoal > 0 ? money(o.legacyGoal) : "none") + ", comfort line " + (Array.isArray(v.comfort) ? "changes over time" : money(v.comfort) + " per year");
+  const historySub = (str("starts") === "month" ? "Every month" : "Each January") + " from " + str("fromYear") + (mode === "mc" ? ", Monte Carlo settings" : "");
   const startUnit = age != null;
   const noPortfolio = !(o.initial > 0);
 
@@ -247,6 +259,7 @@ export function Inputs({ v, fromNote, periods, open }: {
             <input type="hidden" id="ddCash" value={str("cash")} /><input type="hidden" id="ddStockEnd" value={str("stockEnd")} />
           </Field>
           <div className="ddadv">
+            <PhoneFold label="Rebalancing and fees" sub={rebalWords(o.rebal) + ", fees " + (num("fee") > 0 ? str("fee") + "% per year" : "none")}>
             <SelectField id="ddRebal" label={<Tipped text="Rebalancing" k="ddrebal" />} value={str("rebal")} onChange={set("rebal")}>
               <option value="year">Every year</option>
               <option value="every">Every few years</option>
@@ -257,6 +270,7 @@ export function Inputs({ v, fromNote, periods, open }: {
             <NumberField id="ddRebalBand" wrapId="ddRebalBandWrap" hidden={o.rebal !== "band"} label="When any holding is off by more than" unit="points" max={50} value={str("rebalBand")} onValueChange={set("rebalBand")} />
             <div className="hint -mt-1.5 mx-0 mb-3" id="ddRebalNote">{rebalNote(o)}</div>
             <NumberField id="ddFee" label={<>Fees <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={str("fee")} onValueChange={set("fee")} />
+            </PhoneFold>
           </div>
           {/* Guaranteed income is set in the Asset mix pop-up; these hold it. */}
           <div id="ddGuarStore" hidden>
@@ -404,6 +418,7 @@ export function Inputs({ v, fromNote, periods, open }: {
           <Html className="hint -mt-1.5 mb-3" id="ddVpwNote" hidden={!shown("ddVpwNote")} html={vpwNote} />
           <Html className="hint -mt-1.5 mb-3" id="ddStratNote" hidden={!note} html={note} />
           <div className="ddadv">
+            <PhoneFold className="ddfold" label="Spending limits and path" sub={limitsSub} >
             <div className="two" id="ddSpendFloorWrap" hidden={S.limits === false}>
               <MoneyField id="ddSpendFloor" label={<Tipped text="Minimum spending" k="spendfloor" />} value={str("spendFloor")} onValueChange={set("spendFloor")} />
               <MoneyField id="ddSpendCeil" label={<Tipped text="Maximum spending" k="spendceil" />} value={str("spendCeil")} onValueChange={set("spendCeil")} />
@@ -465,7 +480,9 @@ export function Inputs({ v, fromNote, periods, open }: {
                 return [...l, { start: Math.max(2, start), level: last ? Math.max(0, (last.st.level ?? 100) - 10) : 90 }];
               })}>+ Add spending stage</Button>
             </div>
-            <GroupHead>Income in retirement</GroupHead>
+            </PhoneFold>
+            <PhoneFold className="ddfold" label="Income in retirement" sub={incomeSub}>
+            <GroupHead foldHead>Income in retirement</GroupHead>
             {locked.has("ss") ? scope?.slots?.ssFacts : <>
             <SelectField id="ddSSMode" label="Social Security" value={fromSocial ? "social" : ssMode}
               onChange={(m) => m === "social" ? copySocial() : setState((c) => ({ ...c, ssMode: m, ssFrom: "", ssDelay2: "" }))}>
@@ -516,13 +533,17 @@ export function Inputs({ v, fromNote, periods, open }: {
               {items("expenseItems", "ddExpenseList")}
               <Button variant="outline" size="sm" id="ddAddExpense" onClick={() => open({ kind: "item", list: "expenseItems", index: null })}>+ Add future expense</Button>
             </div>
-            <GroupHead>Goals</GroupHead>
+            </PhoneFold>
+            <PhoneFold className="ddfold" label="Goals" sub={goalsSub}>
+            <GroupHead foldHead>Goals</GroupHead>
             <MoneyField id="ddLegacyGoal" label={<>Legacy goal <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="legacy" /></span></>} value={str("legacyGoal")} onValueChange={set("legacyGoal")} />
             <Field id="ddComfort" label={<>Comfort line <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="ddcomfort" /></span></>}>
               <Affixed prefix="$" suffix="/yr"><MoneyInput id="ddComfort" nonNeg value={str("comfort")} onValueChange={set("comfort")} /></Affixed>
               <div className="hint" id="ddComfortNote">{v.comfortNote}</div>
             </Field>
-            <GroupHead>Market history</GroupHead>
+            </PhoneFold>
+            <PhoneFold className="ddfold" label="Market history" sub={historySub}>
+            <GroupHead foldHead>Market history</GroupHead>
             <div className="two">
               <SelectField id="ddStarts" label={<Tipped text="Test a retirement" k="ddstarts" />} value={str("starts")} onChange={set("starts")}>
                 <option value="year">Each January</option>
@@ -554,11 +575,12 @@ export function Inputs({ v, fromNote, periods, open }: {
               <div className="hint" id="ddMcNote">{o.mcOwn ? "Long-run returns, compounded, before inflation. History's since 1927: US stocks " + MH.stock.toFixed(1) +
                 "%, small value " + MH.sv.toFixed(1) + "%, bonds " + MH.bond.toFixed(1) + "%, cash " + MH.cash.toFixed(1) + "%, inflation " + MH.infl.toFixed(1) + "%." : ""}</div>
             </div>
+            </PhoneFold>
           </div>
           <div className="hint ddsimple" id="ddSimpleNote">
             {inputs !== "simple" ? null : used.length
               ? <><b>Also in use:</b> {used.join(", ")}. <Button variant="link" size="inline" data-ddadv onClick={() => setInputs("adv")}>Show them</Button></>
-              : <>Simple shows the essentials. <Button variant="link" size="inline" data-ddadv onClick={() => setInputs("adv")}>Advanced</Button> adds rebalancing, fees, Social Security, other income, spending limits, goals and how history is tested.</>}
+              : <><span className="max-phone:hidden">Simple shows the essentials. </span><Button variant="link" size="inline" data-ddadv onClick={() => setInputs("adv")}>Advanced</Button> adds rebalancing, fees, Social Security, other income, spending limits, goals and how history is tested.</>}
           </div>
           <div className="derived">
             <div><span>Social Security</span><span className="num" id="ddSSShow">{o.ssAnnualTotal > 0 ? money(o.ssAnnualTotal) + "/yr" : "Not included"}</span></div>
@@ -573,8 +595,9 @@ export function Inputs({ v, fromNote, periods, open }: {
 }
 
 /** A heading over one group of the inputs, on a rule after the first (as on Advanced). */
-function GroupHead({ first, children }: { first?: boolean; children: React.ReactNode }) {
-  return <h3 className={cn("m-0 mb-3 text-sm font-semibold", !first && "mt-4 border-t border-border pt-4")}>{children}</h3>;
+function GroupHead({ first, foldHead, children }: { first?: boolean; foldHead?: boolean; children: React.ReactNode }) {
+  /* foldHead: a group that folds on a phone, where its fold's row names it. */
+  return <h3 className={cn("m-0 mb-3 text-sm font-semibold", !first && "mt-4 border-t border-border pt-4", foldHead && "max-phone:hidden")}>{children}</h3>;
 }
 
 function ClaimAge({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {

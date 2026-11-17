@@ -13,8 +13,11 @@
    and each pair carries data-pair / data-k so the results are announced
    to screen readers (PageEffects). */
 
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
+import { ChevronRightIcon } from "lucide-react";
 import { BigValue } from "./BigValue";
+import { showPhoneView } from "@/components/phone/ViewSwitch";
+import { usePhone } from "@/components/phone/usePhone";
 import { useNarrow } from "@/components/charts/useNarrow";
 import { cn } from "@/lib/utils";
 import { DASH } from "@/lib/format";
@@ -70,7 +73,7 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
   // and an empty note doesn't hold space under the dash.
   const placeholder = !sized && hero.value === DASH;
   return (
-    <div className={cn("px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5", !under && "wide:flex wide:items-start wide:gap-8", className)} data-readout>
+    <div className={cn("hero-r px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5", !under && "wide:flex wide:items-start wide:gap-8", className)} data-readout>
       <div className={cn("min-w-0", !under && "wide:shrink-0")} data-pair>
         <div className={cn("text-label text-muted-foreground", !placeholder && "mb-2.5")} id={hero.labelId} data-k>{hero.label}</div>
         {/* A placeholder dash takes the secondary figures' size and spacing,
@@ -81,11 +84,13 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
         {children}
       </div>
       {figures.length ? (
-        <div className={cn("mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4", under ? "sm:justify-between sm:gap-x-8"
+        <div className={cn("hero-figs mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4", under ? "sm:justify-between sm:gap-x-8"
           : "wide:mt-0 wide:min-w-0 wide:flex-1 wide:justify-evenly wide:gap-x-8 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8", !under && (placeholder ? "wide:items-start" : "wide:items-center"),
           row && !under && "wide:flex-nowrap")}>
           {figures.map((f) => (
-            <div key={f.id} id={f.wrapId} className={row && !under ? "wide:min-w-0 wide:flex-1" : undefined} data-pair>
+            // A long figure takes the whole row on a phone (data-long), where
+            // the others sit two to a row.
+            <div key={f.id} id={f.wrapId} className={row && !under ? "wide:min-w-0 wide:flex-1" : undefined} data-pair data-long={f.value.length > 10 ? "" : undefined}>
               <span className="block text-label text-muted-foreground" id={f.labelId} data-k>{f.label}</span>
               {/* A figure past $10 trillion (only from extreme inputs) steps
                   down a size on phones, so it can't push the page sideways. */}
@@ -105,7 +110,19 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
     screen. It repeats figures shown below, so screen readers skip it. Put
     it first inside the inputs column's wrapper, so it unpins where the
     inputs end. The page's scroll padding grows by its height (00-base.css),
-    so a field scrolled into view isn't left under it. */
+    so a field scrolled into view isn't left under it.
+
+    On a phone (under 768px) with the Inputs | Results switch on the page,
+    it is the answer bar: a tap shows the Results view, and it is a button
+    named for what it shows, since it's then the way to the results. It
+    becomes one after the first render, so the pre-built page and every
+    wider screen get the plain, hidden copy exactly as before. */
+function watchViews(onChange: () => void) {
+  const mo = new MutationObserver(onChange);
+  mo.observe(document.body, { attributes: true, attributeFilter: ["data-pv"] });
+  return () => mo.disconnect();
+}
+
 /* The two values share the last baseline; a dash on the right takes the main
    value's size, so an empty reading shows one dash style. */
 export function PinnedReading({ main, side, tone = "answer" }: {
@@ -113,8 +130,13 @@ export function PinnedReading({ main, side, tone = "answer" }: {
   side?: { label: ReactNode; value: string };
   tone?: HeroTone;
 }) {
-  return (
-    <div className="sticky top-(--pin-top) z-20 mb-3.5 flex items-baseline-last justify-between gap-4 rounded-(--r-panel) border border-border bg-card px-4 py-3 lg:hidden" aria-hidden="true" data-pinned-reading>
+  // Only where there are two views to go between: the switch is drawn
+  // and has marked the page (body[data-pv]).
+  const marked = useSyncExternalStore(watchViews, () => document.body.hasAttribute("data-pv"), () => false);
+  const phone = usePhone(), views = marked && phone;
+  const cls = "sticky top-(--pin-top) z-20 mb-3.5 flex items-baseline-last justify-between gap-4 rounded-(--r-panel) border border-border bg-card px-4 py-3 lg:hidden";
+  const body = (
+    <>
       <div className="min-w-0">
         <span className="block text-label text-muted-foreground">{main.label}</span>
         <b className={cn("block text-2xl leading-tight font-medium whitespace-nowrap tabular-nums", TONE[tone])}>{main.value}</b>
@@ -125,8 +147,16 @@ export function PinnedReading({ main, side, tone = "answer" }: {
           <span className={cn("block leading-tight font-medium whitespace-nowrap tabular-nums", side.value === DASH ? "text-2xl" : "text-body")}>{side.value}</span>
         </div>
       ) : null}
-    </div>
+    </>
   );
+  if (views) return (
+    <button type="button" className={cn(cls, "pin-go")} data-pinned-reading onClick={() => showPhoneView("out")}>
+      <span className="srlive">Show results: </span>
+      {body}
+      <ChevronRightIcon className="pin-go-chev" aria-hidden="true" />
+    </button>
+  );
+  return <div className={cls} aria-hidden="true" data-pinned-reading>{body}</div>;
 }
 
 /** What a total is made of, as shares of one thin bar, with a matching

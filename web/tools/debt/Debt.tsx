@@ -177,7 +177,7 @@ export function Debt() {
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3" id="tab-debt">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the debts are on screen. */}
         <PinnedReading tone={tone} main={{ label: "Debt-free", value: head.free }} side={{ label: "Total interest", value: head.interest }} />
@@ -271,7 +271,7 @@ export function Debt() {
       </div>
 
       <div className="stack min-w-0 lg:col-span-2">
-        <Card size="flush" className="min-w-0" id="dtReading">
+        <Card size="flush" className="min-w-0" id="dtReading" data-pv="out">
           <HeroReading tone={tone} sized={!!plan}
             hero={{ label: "Debt-free", id: "dtFree", value: head.free, noteId: "dtFreeNote", note: head.freeNote }}
             figures={[
@@ -304,7 +304,7 @@ export function Debt() {
 
         {/* With nothing owed the reading says so, and what follows folds
             away (kept in the page, empty, for the help tour and e2e). */}
-        <Card className="min-w-0" hidden={!plan}>
+        <Card className="min-w-0" hidden={!plan} data-pv="out">
           <CardHeader>
             <CardTitle>Avalanche vs. snowball</CardTitle>
             <CardAction><CsvButton table={compareRef} label="Avalanche vs. snowball" /></CardAction>
@@ -320,12 +320,12 @@ export function Debt() {
           </div>
         </Card>
 
-        <Card className="min-w-0" hidden={!plan}>
+        <Card className="min-w-0" hidden={!plan} data-pv="out">
           <CardHeader><CardTitle>What you owe, month by month</CardTitle></CardHeader>
           {body ?? <><BandChart id="DT" pts={[]} maxX={0} ariaLabel="Balance over time" tip={() => null} /><Legend id="legendDT" items={[]} /></>}
         </Card>
 
-        <Card className="min-w-0" hidden={!plan}>
+        <Card className="min-w-0" hidden={!plan} data-pv="out">
           <CardHeader><CardTitle>Payoff order</CardTitle><CardAction><CsvButton table={orderRef} label="Payoff order" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll" tabIndex={0} role="region" aria-label="Payoff order">
@@ -336,7 +336,7 @@ export function Debt() {
           </div>
         </Card>
 
-        <div className="min-w-0" hidden={!plan}>
+        <div className="min-w-0" hidden={!plan} data-pv="out">
           <Collapsible render={<Card />}>
             <CardHeader>
               <CardTitle><CollapsibleTrigger>The schedule<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>

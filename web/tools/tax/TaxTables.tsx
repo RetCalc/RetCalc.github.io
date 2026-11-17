@@ -39,9 +39,10 @@ export function BracketsCard({ bands, id, fold }: { bands: Band[]; id: string; f
     </>
   );
   const csv = <CardAction><CsvButton table={ref} label={BRACKETS} /></CardAction>;
-  if (!fold) return <Card><CardHeader><CardTitle>{BRACKETS}</CardTitle>{csv}</CardHeader>{table}</Card>;
+  // Results, on a phone's Results view (Income Tax and the Paycheck tab).
+  if (!fold) return <Card data-pv="out"><CardHeader><CardTitle>{BRACKETS}</CardTitle>{csv}</CardHeader>{table}</Card>;
   return (
-    <Collapsible className="min-w-0" render={<Card />}>
+    <Collapsible className="min-w-0" render={<Card data-pv="out" />}>
       <CardHeader>
         <CardTitle><CollapsibleTrigger>{BRACKETS}<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
         {csv}
@@ -59,7 +60,7 @@ const RULES = "State rules, and what went into the figure above";
 export function StateRulesCard({ state, status, year, figuresFrom, id }: { state: string; status: string; year: number; figuresFrom?: number; id: string }) {
   const ref = useRef<HTMLTableElement>(null);
   return (
-    <Collapsible className="min-w-0" render={<Card />}>
+    <Collapsible className="min-w-0" render={<Card data-pv="out" />}>
       <CardHeader>
         <CardTitle><CollapsibleTrigger>{RULES}<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
         <CardDescription id={id + "Name"}>{(STATE_OPTIONS.find((o) => o.code === state)?.name ?? "") + (figuresFrom != null && figuresFrom !== year ? ", by " + figuresFrom + "'s state rules" : "")}</CardDescription>

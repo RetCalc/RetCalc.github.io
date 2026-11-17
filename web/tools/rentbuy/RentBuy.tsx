@@ -16,6 +16,7 @@
 
 import { useFullScreen } from "@/components/charts/FullScreen";
 import { useRef } from "react";
+import { FoldToggle, useFolds } from "@/components/phone/Fold";
 import { ChevronDownIcon, CircleAlertIcon, InfoIcon } from "lucide-react";
 import { BandChart, type ChartGeometry } from "@/components/charts/BandChart";
 import { Legend } from "@/components/charts/Legend";
@@ -38,8 +39,8 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SERIES } from "@/lib/hues";
 
-function GroupHead({ children }: { children: React.ReactNode }) {
-  return <h3 className="m-0 mt-1 mb-3 border-t border-border pt-4 text-sm font-semibold">{children}</h3>;
+function GroupHead({ fold, children }: { fold?: string; children: React.ReactNode }) {
+  return <h3 data-fold={fold} className="m-0 mt-1 mb-3 border-t border-border pt-4 text-sm font-semibold">{children}</h3>;
 }
 
 /** The break-even year on the buyer's line: a tick through it and its name
@@ -58,6 +59,7 @@ export function RentBuy() {
   const { state: s, set, setState } = useToolState(DEF);
   const toast = useToast();
   const tableRef = useRef<HTMLTableElement>(null);
+  const folds = useFolds(["buy", "asm"]);
 
   const inp = rentBuyInput(s);
   const R = inp.price > 0 ? rentBuyCalc(inp) : null;
@@ -86,7 +88,7 @@ export function RentBuy() {
   const rbFull = useFullScreen("Net worth over time");
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. The inputs don't pin on
             desktop: sixteen fields are taller than a laptop's screen, and a
@@ -97,7 +99,7 @@ export function RentBuy() {
           {/* Screen readers' outline: the input groups below are h3s under this. */}
           <h2 className="sr-only">Your inputs</h2>
           <Card>
-            <CardContent>
+            <CardContent data-closed={folds.closed}>
               {num("rbHorizon", "Time horizon", "horizon", "yrs", 1, 40)}
 
               <GroupHead>Buying</GroupHead>
@@ -136,11 +138,12 @@ export function RentBuy() {
                 <SelectField id="rbTerm" label="Length" value={s.term} onChange={set("term")}><option value="30">30 years</option><option value="20">20 years</option><option value="15">15 years</option></SelectField>
                 {num("rbPropTax", "Property tax", "propTax", "%/yr", 0.1)}
               </div>
-              <div className="two max-sm:grid-cols-2">
+              <FoldToggle label="More buying costs" sub="Insurance, maintenance, closing and selling costs" open={folds.isOpen("buy")} onToggle={() => folds.toggle("buy")} />
+              <div data-fold="buy" className="two max-sm:grid-cols-2">
                 <MoneyField id="rbIns" label="Insurance" unit="/yr" value={s.ins} onValueChange={set("ins")} />
                 {num("rbMaint", "Maintenance", "maint", "%/yr", 0.1)}
               </div>
-              <div className="two max-sm:grid-cols-2">
+              <div data-fold="buy" className="two max-sm:grid-cols-2">
                 {num("rbClose", <Tipped text="Closing costs" k="closingcost" />, "close", "%", 0.1)}
                 {num("rbSell", <Tipped text="Selling costs" k="sellingcost" />, "sell", "%", 0.1)}
               </div>
@@ -151,12 +154,13 @@ export function RentBuy() {
                 {num("rbRentInc", "Annual increase", "rentInc", "%", 0.5)}
               </div>
 
-              <GroupHead>Assumptions</GroupHead>
-              <div className="two bottomalign max-sm:grid-cols-2">
+              <FoldToggle label="Assumptions" sub="Home appreciation, investment return, tax on gains, filing status" open={folds.isOpen("asm")} onToggle={() => folds.toggle("asm")} />
+              <GroupHead fold="asm">Assumptions</GroupHead>
+              <div data-fold="asm" className="two bottomalign max-sm:grid-cols-2">
                 {num("rbAppr", <Tipped text="Home appreciation" k="appreciation" />, "appr", "%/yr", 0.5)}
                 {num("rbInvest", "Investment return", "invest", "%/yr", 0.5)}
               </div>
-              <div className="two bottomalign max-sm:grid-cols-2">
+              <div data-fold="asm" className="two bottomalign max-sm:grid-cols-2">
                 {num("rbGainTax", <Tipped text="Tax on gains" k="rbgaintax" />, "gainTax", "%", 1, 50)}
                 <SelectField id="rbStatus" label={<Tipped text="Filing status" k="rbstatus" />} value={s.status} onChange={set("status")}><option value="s">Single</option><option value="m">Married, joint</option></SelectField>
               </div>
@@ -166,7 +170,7 @@ export function RentBuy() {
       </div>
 
       <div className="stack min-w-0 lg:col-span-2" id="tab-rentbuy">
-        <Card size="flush" className="min-w-0" id="rbReading">
+        <Card size="flush" className="min-w-0" id="rbReading" data-pv="out">
           <HeroReading tone={ready ? "answer" : "text"} sized={ready} hero={hero} figures={figures}>
             <div className="mt-4" hidden={!R}>
               <span className="block text-label text-muted-foreground">Break-even</span>
@@ -195,7 +199,7 @@ export function RentBuy() {
           </div>
         </Card>
 
-        <Card className="min-w-0" hidden={!R}>
+        <Card className="min-w-0" hidden={!R} data-pv="out">
           <CardHeader>
             <CardTitle>Net worth over time</CardTitle>
             {R ? <CardAction>{rbFull.button}</CardAction> : null}
@@ -227,7 +231,7 @@ export function RentBuy() {
           ), <Legend id="legendRBF" items={[[SERIES.sky, "Buyer net worth"], [SERIES.teal, "Renter net worth"]]} />) : null}
         </Card>
 
-        <div className="min-w-0" hidden={!R}>
+        <div className="min-w-0" hidden={!R} data-pv="out">
           <Collapsible render={<Card />}>
             <CardHeader>
               <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>

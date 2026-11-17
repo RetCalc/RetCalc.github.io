@@ -2,4 +2,8 @@
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* What the balance is made of: one list, not two columns stacked with a
+     gap between them. */
+  #homeReading .grid2{gap:0}
+  #homeReading .grid2 > div:first-child .kv:last-child{border-bottom:1px solid var(--line-soft)}
 }

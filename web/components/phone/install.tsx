@@ -84,7 +84,7 @@ export function InstallPrompt() {
   return (
     <>
       {card ? (
-        <aside className="pinstall phone:hidden" aria-label="Add RetCalc to your Home Screen">
+        <div className="pinstall phone:hidden" role="region" aria-label="Add RetCalc to your Home Screen">
           <span className="pinstall-mark"><Brandmark /></span>
           <div className="pinstall-t">
             <b>Add RetCalc to your Home Screen</b>
@@ -92,7 +92,7 @@ export function InstallPrompt() {
           </div>
           <Button size="sm" onClick={() => { setCard(false); setHelp(true); }}>Show me how</Button>
           <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={() => setCard(false)}><XIcon aria-hidden="true" /></Button>
-        </aside>
+        </div>
       ) : null}
       <Sheet open={help} onOpenChange={setHelp}>
         <SheetContent aria-describedby={undefined}>

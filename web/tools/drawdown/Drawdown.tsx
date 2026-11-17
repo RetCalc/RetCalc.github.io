@@ -43,6 +43,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
 import { CircleAlertIcon, CircleCheckIcon, CircleXIcon, XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { InfoTap, TapNote } from "@/components/phone/Words";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
 /** What the panels share: the inputs as typed and as the engine reads them,
@@ -202,13 +203,13 @@ export function Drawdown({ landing }: { landing?: string }) {
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
         <PinnedReading tone={F.tone} main={{ label: "Success rate", value: F.success }} side={{ label: "Median ending balance", value: F.median }} />
         <Inputs v={v} fromNote={fromNote} periods={periods} open={setDialog} />
       </div>
-      <div className="stack min-w-0 lg:col-span-2" id="tab-drawdown" data-tab={tab}>
+      <div className="stack min-w-0 lg:col-span-2" id="tab-drawdown" data-tab={tab} data-pv="out">
         <Readout v={v} F={F} pinned={pinned}
           setMode={setMode}
           pin={() => {
@@ -225,7 +226,8 @@ export function Drawdown({ landing }: { landing?: string }) {
         <Card id="ddIntro" hidden={introSeen === "1" || !!landing}>
           <CardContent className="flex items-start gap-3.5">
             <div className="min-w-0 flex-auto">
-              <div className="mb-1.5 font-semibold text-foreground">What this tool answers</div>
+              <div className="mb-1.5 font-semibold text-foreground max-phone:hidden">What this tool answers</div>
+              <TapNote label="What this tool answers" className="ddintro-tap">
               <div className="hint m-0 max-w-copy">
                 A projection answers &quot;how much will I have?&quot; This tool asks what
                 comes next: once you start spending it, <b>will it last?</b> Set a
@@ -234,6 +236,7 @@ export function Drawdown({ landing }: { landing?: string }) {
                 Click any row in the table below to see what that year looked
                 like, year by year.
               </div>
+              </TapNote>
             </div>
             <Button variant="ghost" size="icon-sm" id="ddIntroClose" aria-label="Dismiss" onClick={() => setIntroSeen("1")}><XIcon aria-hidden="true" /></Button>
           </CardContent>
@@ -377,6 +380,7 @@ function Readout({ v, F, pinned, setMode, pin, unpin }: {
         </SegmentedGroup>
         <Badge variant="outline" id="ddBadge">{F.badge}</Badge>
         <Button variant="outline" size="sm" className="ml-auto max-sm:ml-0 max-sm:w-full" id="ddPin" title="Keep these results to compare against your next changes" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</Button>
+        <InfoTap title="Pin as baseline">Keep these results to compare against your next changes.</InfoTap>
       </div>
       <HeroReading tone={F.tone}
         hero={{

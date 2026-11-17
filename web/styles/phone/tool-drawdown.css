@@ -1,5 +1,67 @@
-/* Phones only (under 768px): the Drawdown Simulator.
+/* Phones only (under 768px): the Drawdown Simulator (/drawdown, the eight
+   strategy pages, the Dashboard's copy). Its inputs column and its results
+   are the two views (data-pv in tools/drawdown/Drawdown.tsx); Advanced's
+   groups fold behind rows that say what they hold (PhoneFold in Inputs.tsx).
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* ---------- Inputs ---------- */
+  /* The strategy's two guides: full-width rows a thumb can hit. */
+  #asideDD :is(#ddStratGuide, #ddStudyBtn){display:flex;width:100%;min-height:44px;margin:0;justify-content:flex-start;gap:8px;
+    padding:0 2px;font-size:14.5px;text-decoration:none}
+  #asideDD #ddStratGuide{margin-top:6px}
+  #asideDD #ddStudyBtn{border-top:1px solid var(--ds-rule);border-radius:0}
+  #asideDD :is(#ddStratGuide, #ddStudyBtn) svg{width:16px;height:16px;flex:none}
+
+  /* The tool's own small buttons (Copy from the Calculator, + Add ...,
+     Remove, Reset, an item's delete) at a full touch size. */
+  #asideDD [data-slot="button"]:is([data-size="sm"], [data-size="default"]){min-height:44px}
+  #asideDD [data-slot="button"][data-size="icon-sm"]{min-width:44px;min-height:44px}
+  #asideDD .itemrow{min-height:44px}
+  #asideDD .itemtxt{min-height:44px}
+
+  /* Advanced's groups, folded: one row each, divided by hairlines, inside
+     the white group they sit in. */
+  #asideDD .ddfold{border-top:1px solid var(--ds-rule)}
+  #asideDD .ddadv > .pfold:first-child > .pfold-t{padding-top:0}
+  #asideDD .pfold[data-open] > .pfold-b{padding-bottom:8px}
+
+  /* The figures under the inputs, as a two-by-two grid of label over
+     figure: the first year's withdrawal and its month read side by side. */
+  #asideDD .derived{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+  #asideDD .derived > div{display:flex;flex-direction:column;justify-content:space-between;gap:2px;padding:0}
+  #asideDD .derived > div > span:first-child{font-size:12.5px;line-height:1.3;color:var(--ds-muted)}
+  #asideDD .derived .num{font-size:15.5px;font-weight:600;color:var(--ds-text);text-align:left}
+
+  /* ---------- Its dialogs: the asset mix, the strategy guide, the classic
+     studies, an income source or future expense ---------- */
+  /* The shell keeps them clear of the status bar and the home indicator;
+     inside, an even 18px edge the sticky rows below line up with. */
+  [data-slot="dialog-content"]:has(:is(.sg-item, .ddstudy, #ddMixLead, #itName)){padding:18px}
+  /* The long ones keep their title and close button in reach while they
+     scroll, and the mix keeps Cancel and Use this mix in reach. */
+  [data-slot="dialog-content"]:has(.sg-item, .ddstudy) > .sg-top{position:sticky;top:calc(-12px - env(safe-area-inset-top,0px));z-index:2;
+    margin:-18px -18px 8px;padding:16px 18px 6px;background:var(--ds-surface);border-radius:22px 22px 0 0;box-shadow:0 1px 0 var(--ds-rule)}
+  [data-slot="dialog-content"]:has(.sg-item, .ddstudy) > .sg-top h3{margin:0;align-self:center}
+  [data-slot="dialog-content"]:has(.sg-item, .ddstudy) [data-modal-x]{min-width:44px;min-height:44px;margin:-6px -12px 0 0;font-size:22px}
+  [data-slot="dialog-content"]:has(#ddMixLead) > .formactions{position:sticky;bottom:calc(-12px - env(safe-area-inset-bottom,0px));z-index:2;
+    margin:12px -18px -18px;padding:12px 18px calc(16px + env(safe-area-inset-bottom,0px));background:var(--ds-surface);box-shadow:0 -1px 0 var(--ds-rule);border-radius:0 0 22px 22px}
+  /* Use this strategy, Load this setup: full touch size. */
+  :is(.sg-item, .ddstudy) [data-slot="button"]{min-height:44px}
+
+  /* ---------- Results ---------- */
+  /* Pin as baseline takes the row, its ⓘ beside it. */
+  #ddPin{width:auto;flex:1 1 0;min-height:44px}
+  #ddBaseClear, #ddStartMore{min-height:44px}
+  /* What this tool answers: one row that opens it, and its close button. */
+  #ddIntro{padding-block:4px}
+  #ddIntro [data-slot="card-content"]{align-items:center}
+  .ddintro-tap{font-size:14.5px;color:var(--ds-text)}
+  #ddIntroClose{min-width:44px;min-height:44px;margin:-6px -10px -6px 0}
+  /* A chart's reading note behind a tap, under the legend. */
+  .ddtapnote{margin:0 14px 10px}
+  /* Each start in the table is a button: a full row's height to tap. */
+  #ddStartTable tbody td{height:44px}
+  /* The column tips sit after a heading's words without breaking it. */
+  #ddStartTable th .pinfo{margin-left:4px}
 }

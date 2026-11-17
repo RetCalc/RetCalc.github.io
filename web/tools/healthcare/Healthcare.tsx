@@ -14,6 +14,8 @@
    figure needed. On a phone a compact reading leads and stays pinned. */
 
 import { useRouter } from "next/navigation";
+import { FoldToggle, useFolds } from "@/components/phone/Fold";
+import { InfoTap, TapNote } from "@/components/phone/Words";
 import { CheckIcon, ChevronDownIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon } from "lucide-react";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
@@ -59,8 +61,8 @@ function Fold({ title, aside, children }: { title: string; aside: string; childr
   );
 }
 
-function GroupHead({ children }: { children: React.ReactNode }) {
-  return <h3 className="m-0 mt-1 mb-3 border-t border-border pt-4 text-sm font-semibold">{children}</h3>;
+function GroupHead({ fold, children }: { fold?: string; children: React.ReactNode }) {
+  return <h3 data-fold={fold} className="m-0 mt-1 mb-3 border-t border-border pt-4 text-sm font-semibold">{children}</h3>;
 }
 
 /** A line in the reading that isn't a figure: a prompt or a plain fact. */
@@ -80,6 +82,7 @@ export function Healthcare() {
   // Figures the page this runs in sets itself (the Dashboard's, from its
   // plan): said in its own words in place of their fields.
   const scope = useToolScope(), locked = new Set(scope?.locked ?? []);
+  const folds = useFolds(["more"]);
 
   useHouseholdFill("healthcare", s, setState, (h, c) => {
     const married = h.status === "m";
@@ -147,8 +150,11 @@ export function Healthcare() {
     const pctFPLStr = (pctFPL * 100).toFixed(0) + "%";
     const incNote = acaMagi > magi + 0.5 ? " (your MAGI plus " + money(acaMagi - magi) + " of untaxed Social Security, which the ACA counts)" : "";
     const mpctStr = (cov.mpct * 100).toFixed(0) + "%";
+    const coupleWhy = "The credit is worked out for the household as a whole: the benchmark for both plans, less one contribution based on your combined income. " + (std.eligible ? "That's why a subsidized couple pays about what one person at the same income would, not double." : "Above the 400% cliff there is no credit, so you pay both full premiums.");
     const showEnhanced = (!std.eligible && enh.eligible) || (std.eligible && Math.abs(enh.net - std.net) > 5);
     const tierRow = "hc-tier-row";
+    const credWhy = "The ACA sets what you're expected to contribute toward health coverage at " + (std.pct * 100).toFixed(2) + "% of your income. The government covers whatever the Silver plan costs above that amount, in the form of a monthly premium tax credit applied at enrollment.";
+    const enhWhy = "The enhanced credits that removed this cutoff (capping your share at 8.5% of income) expired after 2025.";
     aca = (
       <>
         {cov.kind === "medicaid" ? (
@@ -168,9 +174,9 @@ export function Healthcare() {
           </>
         ) : (
           <>
-            <p className={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household. This ratio drives your subsidy. {std.eligible
-              ? "The ACA sets what you're expected to contribute toward health coverage at " + (std.pct * 100).toFixed(2) + "% of your income. The government covers whatever the Silver plan costs above that amount, in the form of a monthly premium tax credit applied at enrollment."
-              : "That income is above the 400% FPL cutoff, so there is no credit and you would pay the Silver plan's full list price. The enhanced credits that removed this cutoff (capping your share at 8.5% of income) expired after 2025."}</p>
+            <p className={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household. <span className="max-phone:hidden">This ratio drives your subsidy. </span>{std.eligible
+              ? <><span className="max-phone:hidden">{credWhy}</span><InfoTap title="How your subsidy works">This ratio drives your subsidy. {credWhy}</InfoTap></>
+              : <>That income is above the 400% FPL cutoff, so there is no credit and you would pay the Silver plan&apos;s full list price.<span className="max-phone:hidden"> {enhWhy}</span><InfoTap title="The enhanced credits">This ratio drives your subsidy. {enhWhy}</InfoTap></>}</p>
             <h3 className={cn(head, "mt-4 mb-1 pt-3.5")}>{HC_YEAR.year} ACA rules</h3>
             <KV k={<>Benchmark Silver plan {usingStateEst ? <Sub>({state} est., {coveredDesc}), the reference used to price your credit</Sub> : <Sub>your entered premium</Sub>}</>} v={"$" + r(grossMonthly) + "/mo"} />
             {!std.eligible ? (
@@ -196,17 +202,17 @@ export function Healthcare() {
               <div className={tierRow}><span><b>Gold:</b> higher monthly cost, lower deductible and copays. Better if you expect to use a lot of care</span><span>~${r(gold)}/mo</span></div>
             </Fold>
             {spouseOn ? (
-              <div className="hc-insight max-w-copy">For a couple, <b>both spouses need their own plan</b>, and the figures above cover both of you. The credit is worked out for the household as a whole: the benchmark for both plans, less one contribution based on your combined income. {std.eligible ? "That's why a subsidized couple pays about what one person at the same income would, not double." : "Above the 400% cliff there is no credit, so you pay both full premiums."}</div>
+              <div className="hc-insight max-w-copy">For a couple, <b>both spouses need their own plan</b>, and the figures above cover both of you.<span className="max-phone:hidden"> {coupleWhy}</span><InfoTap title="How the credit works for a couple">{coupleWhy}</InfoTap></div>
             ) : null}
           </>
         )}
-        <div className={note}>
+        <TapNote label="How this is estimated" title="How the ACA estimate is worked out"><div className={note}>
           {usingStateEst
             ? "Benchmark Silver premium is a state-level estimate for " + state + " scaled by age, for " + coveredDesc + ". " +
               (kids ? "Children are priced as under-15 enrollees. At lower incomes many qualify for CHIP or Medicaid instead. " : "")
             : "Using your entered benchmark premium. "}
           Enter your actual quote from <a href="https://healthcare.gov" target="_blank">healthcare.gov</a> in the ACA benchmark premium field for a closer estimate. Credits for {HC_YEAR.year} use the IRS&apos;s {HC_YEAR.year} contribution percentages and the {HC_YEAR.year - 1} poverty guidelines. Medicaid uses the {HC_YEAR.year} guidelines. The enhanced credits of 2021–2025, which removed the 400% FPL cliff and capped contributions at 8.5% of income, expired at the end of 2025. The House passed an extension in January 2026, but it has not become law.
-        </div>
+        </div></TapNote>
       </>
     );
   }
@@ -217,7 +223,7 @@ export function Healthcare() {
   } else {
     medicare = (
       <>
-        <p className={lead}><b>Part B</b> covers doctor visits, outpatient care, and preventive services. <b>Part D</b> covers prescription drugs. Many people add a <b>Medigap supplement</b> such as Plan G, which covers deductibles and copays that Parts A and B leave unpaid and caps your out-of-pocket costs. Higher incomes trigger IRMAA surcharges that raise the Part B and Part D premiums.</p>
+        <TapNote label="What Parts B and D and Medigap cover" title="What Medicare covers"><p className={lead}><b>Part B</b> covers doctor visits, outpatient care, and preventive services. <b>Part D</b> covers prescription drugs. Many people add a <b>Medigap supplement</b> such as Plan G, which covers deductibles and copays that Parts A and B leave unpaid and caps your out-of-pocket costs. Higher incomes trigger IRMAA surcharges that raise the Part B and Part D premiums.</p></TapNote>
         <div className="mb-3.5">
           <Badge variant={hasIrmaa ? "destructive" : "positive"}>
             {hasIrmaa ? <TriangleAlertIcon aria-hidden="true" /> : <CircleCheckIcon aria-hidden="true" />}
@@ -232,7 +238,7 @@ export function Healthcare() {
         {prev ? (
           <div className="hc-insight max-w-copy">Your income is <b>{money(magi65 - prev[joint ? 1 : 0], 0)} above</b> the {TIER_NAMES[tier]} threshold (${prev[joint ? 1 : 0].toLocaleString()}). Reducing MAGI below that threshold saves <b>${r(save)}/mo per person</b> (${r(save * people * 12).toLocaleString()}/yr{joint ? " for the couple" : ""}) in Medicare premiums. Roth conversions and capital gains realizations both count toward IRMAA.</div>
         ) : null}
-        <div className={note}>Medicare costs use CMS&apos;s {HC_YEAR.year} figures: a ${HC_YEAR.medicare.irmaa.partB.toFixed(2)} standard Part B premium and {HC_YEAR.year} IRMAA tiers. Medicare applies the surcharge based on your income from <b>two years prior</b>, so income in retirement year 1 may not affect Part B until year 3. The Part D estimate is a national average plus IRMAA, and your actual plan premium varies. Medigap Plan G estimates are rough national ranges at age 65, and state, insurer, and enrollment age make a significant difference. Medicare Advantage (Part C) plans often have lower monthly premiums but different cost-sharing and network rules.</div>
+        <TapNote label="How this is estimated" title="How the Medicare estimate is worked out"><div className={note}>Medicare costs use CMS&apos;s {HC_YEAR.year} figures: a ${HC_YEAR.medicare.irmaa.partB.toFixed(2)} standard Part B premium and {HC_YEAR.year} IRMAA tiers. Medicare applies the surcharge based on your income from <b>two years prior</b>, so income in retirement year 1 may not affect Part B until year 3. The Part D estimate is a national average plus IRMAA, and your actual plan premium varies. Medigap Plan G estimates are rough national ranges at age 65, and state, insurer, and enrollment age make a significant difference. Medicare Advantage (Part C) plans often have lower monthly premiums but different cost-sharing and network rules.</div></TapNote>
       </>
     );
   }
@@ -241,7 +247,7 @@ export function Healthcare() {
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
         <PinnedReading tone={heroReady ? "answer" : "text"} main={{ label: hero.label, value: hero.value }} side={{ label: side.label, value: side.value }} />
@@ -250,7 +256,7 @@ export function Healthcare() {
           {/* Screen readers' outline: the input groups below are h3s under this. */}
           <h2 className="sr-only">Your inputs</h2>
           <Card>
-            <CardContent>
+            <CardContent data-closed={folds.closed}>
               {scope?.slots?.facts}
               {locked.has("household") ? null : <>
               <div className={two}>
@@ -308,8 +314,9 @@ export function Healthcare() {
               <MoneyField id="hcSS" label={<>Social Security received <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="hcss" /></span></>} unit="/yr" value={s.ss} onValueChange={set("ss")} />
               </>}
 
-              <GroupHead>Your own quote</GroupHead>
-              <Field id="hcManualPremium" label={<Tipped text="ACA benchmark premium" k="hcbenchmark" />}>
+              <FoldToggle label="More options" sub="Your own ACA premium quote" open={folds.isOpen("more")} onToggle={() => folds.toggle("more")} />
+              <GroupHead fold="more">Your own quote</GroupHead>
+              <Field id="hcManualPremium" className="hcfold" label={<Tipped text="ACA benchmark premium" k="hcbenchmark" />}>
                 <Affixed prefix="$"><MoneyInput id="hcManualPremium" nonNeg placeholder="state est. if blank" value={s.premium} onValueChange={set("premium")} /></Affixed>
               </Field>
             </CardContent>
@@ -317,7 +324,7 @@ export function Healthcare() {
         </aside>
       </div>
 
-      <div className="stack min-w-0 lg:col-span-2" id="tab-healthcare">
+      <div className="stack min-w-0 lg:col-span-2" id="tab-healthcare" data-pv="out">
         <Card size="flush" className="min-w-0" id="hcReading">
           <HeroReading tone={heroReady ? "answer" : "text"} sized={heroReady} hero={hero} figures={figures} />
           {/* Retiring at 65 or later, the bridge is this one fact. */}

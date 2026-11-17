@@ -2,4 +2,64 @@
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* ---------- Inputs: the fold rows (tools/advanced/ui.tsx, FoldRow) ----------
+     PhoneFold's row, standing as one row of the column's white group. */
+  .advfold > svg{transition:transform .2s ease}
+  .advfold[aria-expanded="true"] > svg{transform:rotate(180deg)}
+  @media (prefers-reduced-motion:reduce){ .advfold > svg{transition:none} }
+  /* Inside the account split, the fold for the match and the tax facts
+     sits on a rule like the account headings around it. */
+  #acFields > .pfold{margin-top:4px;border-top:1px solid var(--ds-rule)}
+  #acFields > .pfold > .pfold-t{padding-inline:0}
+  #acFields > .pfold[data-open] > .pfold-b > :first-child{margin-top:0;border-top:0;padding-top:4px}
+
+  /* With the split on, the row that held the single total's contribution
+     and how often holds only hidden fields: no empty white row for it. */
+  #asideSingle [data-slot="card-content"] > .two:not(:has(> :not([hidden]))){display:none}
+
+  /* ---------- Results: the answer, then the chart ----------
+     The chart moves up under the answer, then "Reach your target", the
+     accounts' table, and the rest in their order. */
+  #tab-single > *{order:4}
+  #tab-single > :first-child{order:0}
+  #tab-single > [data-pchart]{order:1}
+  #tab-single > #reachCard{order:2}
+  #tab-single > #acPanel{order:3}
+  /* The totals' fold row inside the answer's card. */
+  #tab-single > :first-child .pfold-t{padding-inline:0}
+  #tab-single > :first-child .pfold[data-open] > .pfold-b{padding:4px 0 8px}
+
+  /* ---------- By account type: the table scrolls sideways in its box ---------- */
+  :is(#acResults,#saResults) :is(th,td):first-child{white-space:nowrap}
+  :is(#acResults,#saResults) th{white-space:nowrap}
+  /* The stages behind the plan (a pop-up): each stage's span on one line. */
+  :is(#stagesBehindA,#stagesBehind) td:nth-child(2){white-space:nowrap}
+
+  /* ---------- Touch: 44px targets on the tool's own controls ---------- */
+  /* Changes ahead's list: each row is a switch the height of a tap. */
+  #asideSingle .dsh-sc-line [data-checkrow]{min-height:44px}
+  #asideSingle .dsh-sc-btns [data-slot="button"]{min-height:44px}
+  /* The dialogs this page opens (they sit on the page's top layer). */
+  body:has(#tab-single) #convOut .convrow [data-slot="button"]{min-height:44px;width:72px}
+  body:has(#tab-single) .formactions [data-slot="button"]{min-height:44px}
+  body:has(#tab-single) .dsh-sc-list .dsh-sc-top > [data-slot="button"]{position:relative}
+  body:has(#tab-single) .dsh-sc-list .dsh-sc-top > [data-slot="button"]::after{content:"";position:absolute;inset:-8px}
+  body:has(#tab-single) .dsh-sc-confirm [data-slot="button"]{min-height:44px}
+  body:has(#tab-single) .dsh-sc-lane{height:44px}
+  /* The answers' buttons, the chart's own buttons, the hand-off. */
+  :is(#btnCoast,#btnRetire,#btnRetireUndo,#toDrawdown,#histMixBtn,#histMixBtnS,#btnReroll,#btnRerollS,#btnStagesBehind,#convOpen,#acGrowthBtn){min-height:44px}
+  #tab-single [data-slot="collapsible-trigger"]{min-height:44px}
+  /* Advanced's chart: the mode's own row wraps under the switch. */
+  #tab-single .mcbar-fixed{min-height:0}
+  /* Its full screen on a phone (components/tools/Projection.tsx). */
+  .pchart-proj [data-pchart]{border-radius:16px}
+  .pchart-modes{flex:1 1 100%}
+  .pchart-proj .chart-full-host{display:block;padding-bottom:4px}
+
+  /* ---------- Stage cards' names (components/tools/StageHead.tsx) ----------
+     A name is renamed by tapping it: underlined, since there's no hover
+     to show it, and Remove gets a 44px touch area. */
+  .stagenum{border-bottom:1px dashed var(--ds-rule-strong);border-radius:0}
+  .stagehead > [data-variant="quiet"]{position:relative}
+  .stagehead > [data-variant="quiet"]::after{content:"";position:absolute;inset:-8px}
 }

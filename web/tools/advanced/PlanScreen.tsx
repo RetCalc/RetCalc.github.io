@@ -31,6 +31,7 @@ import { PinnedReading } from "@/components/common/Reading";
 import { Modal, ModalTop } from "@/components/shell/Modal";
 import { SERIES } from "@/lib/hues";
 import { cn } from "@/lib/utils";
+import { InfoTap } from "@/components/phone/Words";
 import { STAGES_DEF, stagesCompute, readStage, stageSplit, type StagesInputs } from "@/tools/stages/model";
 import { projectionShare } from "./share";
 import { GoalFields, GroupHead, YearTable, payCheck } from "./ui";
@@ -83,11 +84,12 @@ export function PlanScreen() {
 
   // The read-only view of the stages the plan and its changes build.
   const [behind, setBehind] = useState(false);
+  const stagesWhy = <>Your plan and the changes ahead, year by year, as the {n === 1 ? "stage" : n + " stages"} the calculator runs. Change one of them to change these.</>;
   const names = s.stages.map((st, i) => st.name || "Stage " + (i + 1));
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
         <PinnedReading main={{ label: "After-tax income, per year", value: money(R.afterTax) }} side={{ label: "At retirement, today's dollars", value: money(R.fvReal) }} />
@@ -100,8 +102,8 @@ export function PlanScreen() {
               {/* The page's facts and changes ahead; the stages they build are read, not edited. */}
               {locked.has("savings") ? <><GroupHead first>Your savings</GroupHead>{scope?.slots?.facts}</> : null}
               {scope?.slots?.scenarios}
-              <GroupHead>The stages behind this</GroupHead>
-              <p className="hint mt-0 mb-2.5">Your plan and the changes ahead, year by year, as the {n === 1 ? "stage" : n + " stages"} the calculator runs. Change one of them to change these.</p>
+              <GroupHead>The stages behind this<InfoTap title="The stages behind this">{stagesWhy}</InfoTap></GroupHead>
+              <p className="hint mt-0 mb-2.5 max-phone:hidden">{stagesWhy}</p>
               <Button variant="outline" className="w-full" id="btnStagesBehind" disabled={!n} onClick={() => setBehind(true)}>{n === 1 ? "See the stage" : "See the " + n + " stages"}</Button>
               {behind && n ? (
                 <Modal size="table" onClose={() => setBehind(false)}>
@@ -129,7 +131,7 @@ export function PlanScreen() {
         </aside>
       </div>
 
-      <div className="stack min-w-0 lg:col-span-2" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-series">
+      <div className="stack min-w-0 lg:col-span-2" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-series" data-pv="out">
         {/* With no stages the figures are only the starting value's; they
             stay, dimmed, and everything under them gives way to one prompt. */}
         <div className={cn("min-w-0", !n && "opacity-60")}>

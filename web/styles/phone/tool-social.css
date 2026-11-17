@@ -2,4 +2,17 @@
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* The sentence's own buttons: 44px to touch. */
+  #ssSentenceActions [data-slot="button"]{min-height:44px}
+  /* Pay year by year: every control 44px. */
+  #ssPay [data-slot="button"]{min-height:44px}
+  #ssPay [data-slot="button"][data-size="icon-sm"],#ssPay [data-slot="button"][data-size="icon-xs"]{min-width:44px}
+  /* The pairs grid: a square is 44px tall, since 10 columns can't be wider. */
+  #ssPairs [role="grid"] button{height:44px}
+  /* The tables: rows are tapped to pick an age. */
+  #ssAges tbody tr{height:44px}
+  #ssAges{min-width:480px}
+  #ssYears{min-width:300px}
+  /* The lifespan slider. */
+  #ssLifespan input[type="range"]{min-height:44px}
 }

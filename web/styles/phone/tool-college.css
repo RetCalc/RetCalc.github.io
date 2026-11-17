@@ -1,5 +1,13 @@
-/* Phones only (under 768px): College Savings.
+/* Phones only (under 768px): the College Savings Planner.
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* Add a child, and remove a child: full-height touch targets. */
+  #clAddKid{min-height:44px;padding-inline:16px;font-size:15px}
+  #clKids .stagehead button{position:relative}
+  #clKids .stagehead button::after{content:"";position:absolute;inset:-6px}
+  /* Tables scroll inside their own box. */
+  #clTable{min-width:520px}
+  /* Folded groups (tools/FoldToggle.tsx). */
+  #asideCollege [data-closed~="more"] [data-fold="more"]{display:none}
 }

@@ -2,4 +2,30 @@
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* ---- "More options" in an inputs column (MoreRow in tools/roth/Roth.tsx,
+     tools/bridge/Bridge.tsx and tools/optimizer/Optimizer.tsx) ----
+     The rarely changed inputs carry .pm (or .pm-a / .pm-b where a column
+     has two folds); they stay out of the column until its row is opened. */
+  :is(#asideRC,#asideBR):not(.pm-open) .pm,
+  #asideOP:not(.pm-open-a) .pm-a,
+  #asideOP:not(.pm-open-b) .pm-b{display:none !important}
+  /* The row itself: a group of its own, like a settings row. */
+  :is(#asideRC,#asideBR,#asideOP) > [data-slot="card"] > [data-slot="card-content"] > p.pmore{
+    margin:22px 0 0;padding:0 12px 0 16px;border-radius:14px;background:var(--ds-surface)}
+  /* Open, what it holds follows in its own groups, a little apart. */
+  :is(#asideRC,#asideBR,#asideOP) > [data-slot="card"] > [data-slot="card-content"] > p.pmore[data-open] + :not(h3){margin-top:10px}
+  .pmore .pfold-t{min-height:56px;padding:9px 0}
+  .pmore .pfold-l small{font-size:13px}
+
+  /* Inside the Dashboard, 22-clear-glass.css caps an inputs column at the
+     screen's height (for the sticky column on wide screens); on a phone the
+     column runs with the page, so the cap only let it spill over the footer. */
+  .dsh :is(#asideRC,#asideBR,#asideOP){max-height:none}
+
+  /* ---- Roth ---- */
+  /* The account copy button: a full finger's height. */
+  #rcCopyDD{min-height:44px}
+  #tab-roth [data-slot="collapsible-trigger"]{min-height:44px}
+  /* The year table scrolls sideways in its own box. */
+  #tab-roth .scroll{max-width:100%;overscroll-behavior-x:contain}
 }

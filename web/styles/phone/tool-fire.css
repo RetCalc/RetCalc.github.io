@@ -1,5 +1,9 @@
-/* Phones only (under 768px): the FIRE Calculator.
+/* Phones only (under 768px): the FIRE calculator.
    Everything in this file sits inside the one media query below, so
    nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
 @media (width < 768px){
+  /* The note under the chart stays a quiet line with its tap button. */
+  #fiHistBar{padding-bottom:0}
+  /* The table scrolls inside its own box, never the page. */
+  #fiTable{min-width:560px}
 }

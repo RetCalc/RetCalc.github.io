@@ -33,8 +33,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinnedReading } from "@/components/common/Reading";
-import { CircleAlertIcon } from "lucide-react";
+import { ChevronDownIcon, CircleAlertIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { showPhoneView } from "@/components/phone/ViewSwitch";
+import { isPhone } from "@/components/phone/usePhone";
+import { Short, TapNote } from "@/components/phone/Words";
 
 /* The goal picked, kept for the visit. */
 const goalMemory = { goal: "legacy" as Goal };
@@ -78,6 +81,9 @@ export function Optimizer() {
   const [goal, setGoalState] = useState<Goal>(goalMemory.goal);
   const setGoal = (g: Goal) => { goalMemory.goal = g; setGoalState(g); };
   const out = useRef<HTMLDivElement>(null);
+  // Phones: the inputs a first visit leaves alone, in two folds (MoreRow).
+  const [more, setMore] = useState({ a: false, b: false });
+  const toggle = (k: "a" | "b") => () => setMore((m) => ({ ...m, [k]: !m[k] }));
 
   useHouseholdFill("optimizer", s, setState, (h, c) => {
     const married = h.status === "m", m = (v: number) => dollarsField(v), next: OptimizerInputs = { ...c, status: married ? "m" : "s" };
@@ -126,7 +132,18 @@ export function Optimizer() {
   const run = () => {
     if (!spend) { toast("Enter your spending in retirement first", "warn"); return; }
     startOptimizer("tool", P, goal);
+    // A phone shows the search, then the answer, in its Results view.
+    if (isPhone()) { showPhoneView("out"); return; }
     try { out.current?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* old browsers */ }
+  };
+  // Phones, from the Results view: back to the inputs, at a field.
+  const toInputs = (id?: string) => () => {
+    showPhoneView("in");
+    if (id) requestAnimationFrame(() => requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      el?.scrollIntoView({ block: "center" });
+      el?.focus({ preventScroll: true });
+    }));
   };
   const setMode = (to: "ret" | "now") => {
     if (to === s.mode) return;
@@ -171,6 +188,7 @@ export function Optimizer() {
     <Card><CardContent>
       <p className="m-0 flex items-start gap-2 text-body"><CircleAlertIcon className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span>Enter what you&apos;ll spend each year in retirement to find your plan.</span></p>
+      <div className="mt-4 phone:hidden"><Button variant="outline" className="w-full" onClick={toInputs("opSpend")}>Enter your spending</Button></div>
     </CardContent></Card>
   );
   else body = (
@@ -189,7 +207,12 @@ export function Optimizer() {
             <div className="text-label text-muted-foreground tabular-nums">{I.status === "m" ? money(I.pia1) + " + " + money(I.pia2) + ", before any spousal top-up" : "Before claiming earlier or later"}</div>
           </div>
         </div>
-        <p className="mt-5 mb-0 border-t border-border pt-4 text-note text-muted-foreground">Pick a goal above and press <b className="font-semibold text-foreground">Find my best plan</b>. The search runs entirely in your browser.</p>
+        <p className="mt-5 mb-0 border-t border-border pt-4 text-note text-muted-foreground"><Short phone={<>Goal: <b className="font-semibold text-foreground">{OP_GOALS[goal][0]}</b>. The best plan for it shows here, with what makes the difference and a roadmap by age. The search runs entirely in your browser.</>}>Pick a goal above and press <b className="font-semibold text-foreground">Find my best plan</b>. The search runs entirely in your browser.</Short></p>
+        {/* Phones: the Results view offers the run, and the way back to the goal. */}
+        <div className="mt-4 grid gap-2.5 phone:hidden">
+          <Button size="lg" data-op="run" data-host="tool" disabled={!!H.run} onClick={run}>Find my best plan<i className="arw" aria-hidden="true"></i></Button>
+          <Button variant="outline" onClick={toInputs("opGoals")}>Change the goal or the inputs</Button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -199,13 +222,13 @@ export function Optimizer() {
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
-      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch" data-pv="in">
         {/* Phones and narrow screens: once there's an answer, it leads the
             inputs and stays under the tab rail while they're on screen. */}
         {pin ? <PinnedReading tone={stale ? "text" : "answer"} main={{ label: stale ? pin.short + ", out of date" : pin.short, value: pin.value }}
           side={{ label: "The usual way", value: pin.was }} /> : null}
 
-        <aside id="asideOP" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+        <aside id="asideOP" className={cn("max-lg:static max-lg:max-h-none max-lg:overflow-visible", more.a && "pm-open-a", more.b && "pm-open-b")}>
           {/* Screen readers' outline: the input groups below are h3s under this. */}
           <h2 className="sr-only">Your inputs</h2>
           <Card>
@@ -290,30 +313,32 @@ export function Optimizer() {
                 <MoneyField id="opSS2" label={"Spouse's benefit at " + fra2} unit="/mo" value={s.ss2} onValueChange={set("ss2")} />
                 <MoneyField id="opInc2" label="Or their salary" unit="/yr" value={s.inc2} onValueChange={set("inc2")} />
               </div>
-              <SelectField id="opClaim" className="field-stacked" label={<Tipped text="You'd claim it at" k="opclaim" />} value={s.claim} onChange={set("claim")}>
+              <MoreRow open={more.a} onToggle={toggle("a")} sub="When you'd claim Social Security, a pension" />
+              <SelectField id="opClaim" className="field-stacked pm-a" label={<Tipped text="You'd claim it at" k="opclaim" />} value={s.claim} onChange={set("claim")}>
                 <option value="">{fraChoice(F, v.married)}</option>
                 {CLAIMS.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
               </SelectField>
-              <div className="two bottomalign max-sm:grid-cols-2">
+              <div className="two bottomalign max-sm:grid-cols-2 pm-a">
                 <MoneyField id="opPension" label={<>Pension <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="/yr" value={s.pension} onValueChange={set("pension")} />
                 <NumberField id="opPenAge" label="Starting at" unit="yrs old" max={90} placeholder="retiring" value={s.penAge} onValueChange={set("penAge")} />
               </div>
-              <SelectField id="opPenCola" label="Pension raises" value={s.penCola} onChange={set("penCola")}>
+              <SelectField id="opPenCola" className="pm-a" label="Pension raises" value={s.penCola} onChange={set("penCola")}>
                 <option value="0">Fixed amount</option>
                 <option value="1">Rises with inflation</option>
               </SelectField>
 
-              <GroupHead>Health, heirs and safety</GroupHead>
-              <SelectField id="opAca" wrapId="opAcaWrap" className="field-stacked" label={<Tipped text="Health insurance" k="opaca" />} value={s.aca} onChange={set("aca")}>
+              <GroupHead className="max-phone:hidden">Health, heirs and safety</GroupHead>
+              <MoreRow open={more.b} onToggle={toggle("b")} label="Health, heirs and safety" sub="Health insurance, heirs' tax rate, how many markets it must last in" />
+              <SelectField id="opAca" wrapId="opAcaWrap" className="field-stacked pm-b" label={<Tipped text="Health insurance" k="opaca" />} value={s.aca} onChange={set("aca")}>
                 <option value="1">{v.retire < 65 ? "Priced: ACA before 65, Medicare after" : "Priced: Medicare premiums from 65"}</option>
                 <option value="0">Already in my spending</option>
               </SelectField>
-              <SelectField id="opRule55" wrapId="opRule55Wrap" hidden={!(v.retire >= 55 && v.retire < 60)} label={<Tipped text="Leaving a job with a 401(k)" k="oprule55" />} value={s.rule55} onChange={set("rule55")}>
+              <SelectField id="opRule55" wrapId="opRule55Wrap" className="pm-b" hidden={!(v.retire >= 55 && v.retire < 60)} label={<Tipped text="Leaving a job with a 401(k)" k="oprule55" />} value={s.rule55} onChange={set("rule55")}>
                 <option value="0">No, or it&apos;s rolled over</option>
                 <option value="1">Yes, at 55 or later: rule of 55</option>
               </SelectField>
               {/* One column on phones: "90% of markets" needs the full row. */}
-              <div className="two bottomalign max-sm:grid-cols-1">
+              <div className="two bottomalign max-sm:grid-cols-1 pm-b">
                 <NumberField id="opHeir" label={<Tipped text="Heirs' tax rate" k="opheir" />} unit="%" max={50} value={s.heir} onValueChange={set("heir")} />
                 <SelectField id="opTarget" label={<Tipped text="Must last in" k="optarget" />} value={s.target} onChange={set("target")}>
                   <option value="0.9">90% of markets</option>
@@ -324,12 +349,19 @@ export function Optimizer() {
             </CardContent>
           </Card>
         </aside>
+        {/* Phones: the run again where the inputs end, so a change doesn't
+            mean scrolling back up to the goal. */}
+        <div className="mt-5 phone:hidden">
+          <Button size="lg" className="w-full max-phone:min-h-11" data-op="run" data-host="tool" disabled={!!H.run || !spend} onClick={run}>
+            {fresh ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></Button>
+          {!spend ? <p className="mt-2 mb-0 text-note text-destructive">Enter your spending in retirement first, under In retirement.</p> : null}
+        </div>
       </div>
 
       {/* Below 1024px this column dissolves into the page's, so the goal and
           the button lead (before the inputs) and the answer follows them. */}
       <div className="flex min-w-0 flex-col gap-5 max-lg:contents lg:col-span-2" id="tab-optimizer">
-        <Card className="min-w-0 max-lg:-order-1">
+        <Card className="min-w-0 max-lg:-order-1" data-pv="in">
           <CardHeader>
             <CardTitle>What should the best plan do?</CardTitle>
           </CardHeader>
@@ -346,11 +378,11 @@ export function Optimizer() {
                 <span>Enter your spending in retirement first, under In retirement.</span>
               </p>
             ) : null}
-            <p className="mt-4 mb-0 max-w-copy border-t border-border pt-4 text-note text-muted-foreground">The search tries every age from {fmtNum(Math.max(62, Math.min(70, v.retire)))} {v.retire > 62 ? "(your retirement age) " : ""}to 70 for each of you to claim Social Security, drawing down brokerage first or traditional first, and every level of Roth conversion for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with {NEWEST_YEAR} federal and state tax worked out year by year, and the best one wins.</p>
+            <TapNote label="What the search tries"><p className="mt-4 mb-0 max-w-copy border-t border-border pt-4 text-note text-muted-foreground">The search tries every age from {fmtNum(Math.max(62, Math.min(70, v.retire)))} {v.retire > 62 ? "(your retirement age) " : ""}to 70 for each of you to claim Social Security, drawing down brokerage first or traditional first, and every level of Roth conversion for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with {NEWEST_YEAR} federal and state tax worked out year by year, and the best one wins.</p></TapNote>
           </CardContent>
         </Card>
         <OptimizerStatus host="tool" />
-        <div id="opOut" className="op-out min-w-0" ref={out}>{body}</div>
+        <div id="opOut" className="op-out min-w-0" ref={out} data-pv="out">{body}</div>
       </div>
     </div>
   );
@@ -358,6 +390,22 @@ export function Optimizer() {
 
 /** A heading over one group of the inputs, on a rule after the first (as on
     Advanced). */
-function GroupHead({ first, children }: { first?: boolean; children: React.ReactNode }) {
-  return <h3 className={cn("m-0 mb-3 text-sm font-semibold", !first && "mt-1 border-t border-border pt-4")}>{children}</h3>;
+function GroupHead({ first, className, children }: { first?: boolean; className?: string; children: React.ReactNode }) {
+  return <h3 className={cn("m-0 mb-3 text-sm font-semibold", !first && "mt-1 border-t border-border pt-4", className)}>{children}</h3>;
+}
+
+/** Phones only: a row that folds the inputs a first visit leaves alone
+    (each marked `pm-a` or `pm-b`; the aside gets `pm-open-a` / `pm-open-b`
+    while one's open, and styles/phone/tool-roth.css hides them otherwise).
+    A plain row rather than PhoneFold: wrapping the fields would break the
+    inputs column's `card-content > .field` styles on wide screens. */
+function MoreRow({ open, onToggle, label = "More options", sub }: { open: boolean; onToggle: () => void; label?: string; sub: string }) {
+  return (
+    <p className="pfold pmore phone:hidden" data-open={open ? "" : undefined}>
+      <button type="button" className="pfold-t" aria-expanded={open} onClick={onToggle}>
+        <span className="pfold-l"><b>{label}</b><small>{sub}</small></span>
+        <ChevronDownIcon aria-hidden="true" />
+      </button>
+    </p>
+  );
 }

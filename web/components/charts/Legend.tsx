@@ -1,5 +1,6 @@
 /* Chart legends and the horizontal share bars. From swatch() in
    src/js/app/04-charts.js and bar() in 11-income-tax.js. */
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { money } from "@/lib/format";
 import { Toggle } from "@/components/ui/toggle";
 import { BAND_INNER, SERIES, baseColor, hatchClass } from "@/lib/hues";
@@ -15,11 +16,15 @@ export function Legend({ id, items, children }: { id?: string; items: [color: st
   );
 }
 
-/** A legend entry that shows or hides a layer of the chart. */
+/** A legend entry that shows or hides a layer of the chart. On a phone,
+    where its title never shows, an eye after the label says it's a switch
+    and which way it's set. */
 export function LegendToggle({ color, label, on, onToggle }: { color: string; label: string; on: boolean; onToggle: () => void }) {
+  const Eye = on ? EyeIcon : EyeOffIcon;
   return (
     <Toggle variant="legend" pressed={on} title="Show or hide on the chart" onClick={onToggle}>
       <i className={"bg-(--swatch)" + hatchClass(color)} style={{ "--swatch": baseColor(color) } as React.CSSProperties}></i>{label}
+      <Eye className="legend-eye phone:hidden" aria-hidden="true" />
     </Toggle>
   );
 }

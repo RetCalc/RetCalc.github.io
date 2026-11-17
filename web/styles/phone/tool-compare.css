@@ -1,5 +1,25 @@
 /* Phones only (under 768px): Compare.
    Everything in this file sits inside the one media query below, so
-   nothing here can reach a tablet or desktop (scripts/phone/check.mjs). */
+   nothing here can reach a tablet or desktop (scripts/phone/check.mjs).
+   Compare has no inputs of its own (it reads saved scenarios), so it has
+   no Inputs | Results views: the page reads top to bottom. */
 @media (width < 768px){
+  /* Back to the calculator it was opened from: a 44px target. */
+  [data-cmp-head] > [data-slot=button]{min-height:44px;padding-inline:10px}
+  [data-cmp-head] h2{font-size:26px;line-height:1.12;letter-spacing:-.025em}
+  /* Each slot's pickers: the scenario's name gets the room, the
+     calculator it came from just enough. */
+  [data-slot=native-select-wrapper]:has(> [data-cmpmode]){width:112px}
+
+  /* The tables keep their columns at a readable width and scroll sideways
+     inside their card (with the swipe hint), the row names pinned on the
+     left. They grow to their length rather than scrolling in two
+     directions inside the page. */
+  :is(#tab-compare,#tab-dd-compare) .scroll{max-height:none;overscroll-behavior-x:contain}
+  :is(#cmpOutTable,#cmpInTable,#ddCmpOutTable){width:max-content;min-width:100%}
+  :is(#cmpOutTable,#cmpInTable,#ddCmpOutTable) :is(th,td){white-space:nowrap}
+  :is(#cmpOutTable,#cmpInTable,#ddCmpOutTable) thead th:not(:first-child){width:108px;min-width:108px;white-space:normal;vertical-align:bottom}
+  :is(#cmpOutTable,#cmpInTable,#ddCmpOutTable) :is(th,td):first-child{position:sticky;left:0;z-index:2;width:124px;min-width:124px;max-width:124px;
+    white-space:normal;background:var(--card);box-shadow:inset -1px 0 0 var(--line-soft)}
+  #ddCmpOutTable td{white-space:normal;min-width:120px}
 }

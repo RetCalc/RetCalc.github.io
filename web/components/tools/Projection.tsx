@@ -27,6 +27,8 @@ import { PERIOD_ADV } from "@/lib/periods";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { PhoneFold } from "@/components/phone/Words";
+import { isPhone } from "@/components/phone/usePhone";
 
 export type ChartMode = "band" | "hist" | "mc";
 
@@ -92,9 +94,12 @@ export function ProjectionReading({ p, R, lastPeriod, fvNote, realNote, id, chil
           { label: "Inflation adjusted", id: p + "FVreal", value: money(R.fvReal), noteId: p + "FVrealnote", note: realNote },
         ]} />
       {children ? <div className="border-t border-border px-4.5 py-3 max-sm:px-3.5">{children}</div> : null}
-      <div className="border-t border-border px-4.5 pt-3.5 pb-4 max-sm:px-3.5">
-        {bar ? <CompositionBar parts={[{ share: R.invested / R.fv, tone: "in" }, { share: R.growth / R.fv, tone: "gain" }]} /> : null}
-        <ProjectionTotals p={p} R={R} lastPeriod={lastPeriod} keys={bar} />
+      <div className="border-t border-border px-4.5 pt-3.5 pb-4 max-sm:px-3.5 max-phone:py-1">
+        {/* Phones: the totals fold under a row, so the chart comes sooner. */}
+        <PhoneFold label="What went in, what comes out" sub="Invested, growth, contributions, withdrawals">
+          {bar ? <CompositionBar parts={[{ share: R.invested / R.fv, tone: "in" }, { share: R.growth / R.fv, tone: "gain" }]} /> : null}
+          <ProjectionTotals p={p} R={R} lastPeriod={lastPeriod} keys={bar} />
+        </PhoneFold>
       </div>
     </Card>
   );
@@ -201,7 +206,13 @@ export function ProjectionChart(props: PanelProps) {
   // Full screen (the fixed layout): the same card over the page, the
   // drawing drawn at the size of the space it gets, as wide as the window
   // and as tall as the rest of the card leaves room for. Escape closes it.
-  const [full, setFull] = useState(false);
+  // Opened on a phone (under 768px), it has a layout of its own: a title
+  // row with Done, clear of the notch and the home indicator, the card
+  // scrolling under it, and it stays open when the phone is turned
+  // sideways (past 768px, where the drawing gets the room to grow), as
+  // components/charts/FullScreen.tsx does (styles/phone/11-charts.css).
+  const [full, setFullAs] = useState<false | "desk" | "phone">(false);
+  const setFull = (on: boolean) => setFullAs(on ? (isPhone() ? "phone" : "desk") : false);
   const [fullPx, setFullPx] = useState<{ w: number; h: number } | undefined>();
   const fullRef = useRef<HTMLDivElement>(null);
   const fitFull = () => {
@@ -210,7 +221,7 @@ export function ProjectionChart(props: PanelProps) {
     const wrap = svg.parentElement as HTMLElement, cs = getComputedStyle(wrap), bs = getComputedStyle(box);
     const w = Math.floor(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
     const rest = card.offsetHeight - svg.getBoundingClientRect().height;
-    const h = Math.floor(Math.max(320, box.clientHeight - parseFloat(bs.paddingTop) - parseFloat(bs.paddingBottom) - rest));
+    const h = Math.floor(Math.max(box.closest(".pchart-full") ? 200 : 320, box.clientHeight - parseFloat(bs.paddingTop) - parseFloat(bs.paddingBottom) - rest));
     setFullPx((p) => (p && Math.abs(p.w - w) < 2 && Math.abs(p.h - h) < 2 ? p : { w, h }));
   };
   // Again after every render: switching modes changes what sits around the drawing.
@@ -240,21 +251,27 @@ export function ProjectionChart(props: PanelProps) {
       toast("New set of runs");
     }}>Re-roll</Button>
   );
-  const body = (aspect: number | undefined, inFull: boolean, px?: { w: number; h: number }) => (
-    <Card>
+  const modeSwitch = (inFull: boolean) => (
+    <Segmented id={segId + (inFull ? "F" : "")} size="chart" attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />
+  );
+  // `bare`: in a phone's full screen, whose own row has the title and
+  // Done; the mode's note stays on the page, leaving the drawing room.
+  const body = (aspect: number | undefined, inFull: boolean, px?: { w: number; h: number }, bare = false) => (
+    <Card data-pchart="">
       {/* On a phone the controls drop under the title: the switch full
           width in three equal segments, the mode's field after it. */}
-      <CardHeader className="max-sm:grid-cols-1"><CardTitle>Balance over time, inflation adjusted</CardTitle>
+      {bare ? null : <CardHeader className="max-sm:grid-cols-1"><CardTitle>Balance over time, inflation adjusted</CardTitle>
         <CardAction className="max-sm:col-start-1 max-sm:row-span-1 max-sm:row-start-2 max-sm:w-full max-sm:justify-self-stretch">
-          <Segmented id={segId + (inFull ? "F" : "")} size="chart" attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />{"\n          "}
+          {modeSwitch(inFull)}{"\n          "}
           {fixed ? null : <span className="modeopt" id={"optBand" + sfx} hidden={mode !== "band"}>{bandField}</span>}
-        </CardAction></CardHeader>
+        </CardAction></CardHeader>}
       {fixed ? (
         <div className="mcbar mcbar-fixed" id={"modeBar" + sfx + (inFull ? "F" : "")}>
-          {mode === "band" ? <><Field id={"band" + sfx} label="Return band">{bandField}</Field><div className="hint m-0">{props.bandHint ?? "Every stage's return this much higher, and this much lower."}</div></>
-            : mode === "hist" ? <>{mixField}{glideField}<div className="hint m-0" id={"histNote" + sfx}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div></>
-              : <>{props.mcFields}{rerollBtn}<div className="hint m-0">{props.mcHint}</div></>}
-          <span className="chart-fullbtn"><Button variant="outline" size="icon" onClick={() => setFull(!inFull)} aria-label={inFull ? "Close full screen" : "Full screen"} title={inFull ? "Close full screen" : "Full screen"}>{inFull ? <MinimizeIcon aria-hidden="true" /> : <MaximizeIcon aria-hidden="true" />}</Button></span>
+          {bare ? <span className="pchart-modes">{modeSwitch(inFull)}</span> : null}
+          {mode === "band" ? <><Field id={"band" + sfx} label="Return band">{bandField}</Field>{bare ? null : <div className="hint m-0">{props.bandHint ?? "Every stage's return this much higher, and this much lower."}</div>}</>
+            : mode === "hist" ? <>{mixField}{glideField}{bare ? null : <div className="hint m-0" id={"histNote" + sfx}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div>}</>
+              : <>{props.mcFields}{rerollBtn}{bare ? null : <div className="hint m-0">{props.mcHint}</div>}</>}
+          {bare ? null : <span className="chart-fullbtn"><Button variant="outline" size="icon" onClick={() => setFull(!inFull)} aria-label={inFull ? "Close full screen" : "Full screen"} title={inFull ? "Close full screen" : "Full screen"}>{inFull ? <MinimizeIcon aria-hidden="true" /> : <MaximizeIcon aria-hidden="true" />}</Button></span>}
         </div>
       ) : <>
         <div className="mcbar" id={"histBar" + sfx} hidden={mode !== "hist"}>
@@ -284,7 +301,16 @@ export function ProjectionChart(props: PanelProps) {
     <>
       {body(props.aspect, false)}
       {/* On the page's top layer, so the site's own header can't sit over it. */}
-      {full ? createPortal(<div className="chart-full" ref={fullRef} role="dialog" aria-label="Balance over time, full screen">{body(props.aspect, true, fullPx)}</div>, document.body) : null}
+      {full === "desk" ? createPortal(<div className="chart-full" ref={fullRef} role="dialog" aria-label="Balance over time, full screen">{body(props.aspect, true, fullPx)}</div>, document.body) : null}
+      {full === "phone" ? createPortal(
+        <div className="chart-full-any pchart-full pchart-proj fixed inset-0 z-95 bg-background p-3" role="dialog" aria-label="Balance over time, full screen">
+          <div className="chart-full-head">
+            <h2 className="m-0 text-base font-semibold">Balance over time, inflation adjusted</h2>
+            <Button variant="outline" aria-label="Done, close full screen" onClick={() => setFull(false)}>Done</Button>
+          </div>
+          <p className="pchart-turn m-0 landscape:hidden text-label text-muted-foreground">Turn your phone sideways for a wider chart.</p>
+          <div className="chart-full-host overflow-auto" ref={fullRef}>{body(props.aspect, true, fullPx, true)}</div>
+        </div>, document.body) : null}
     </>
   );
 }
