@@ -182,18 +182,23 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--ds-focus);outline
 ::view-transition-group(.page-in),::view-transition-group(.page-out){animation:none}
 ::view-transition-old(.tab-swap){animation:vt-fade-out .08s cubic-bezier(.4,0,1,1) both}
 ::view-transition-new(.tab-swap){animation:vt-fade-in .14s cubic-bezier(.2,.7,.3,1) .08s both}
-/* The phone's bottom tab bars (the home-screen app's, styles/11-charts.css,
-   and the Dashboard's, styles/19-dashboard.css) are named so a page change
+/* The phone's bottom tab bars (the site's, styles/phone/00-shell.css, and
+   the Dashboard's, styles/19-dashboard.css) are named so a page change
    captures each on its own, above the page: without that the incoming page
    was drawn over the site's bar, and the Dashboard's faded out and back
    with the page it sits in, so both blinked on every tab. Same on both
-   pages, so the new one just shows, unanimated, the whole time. */
-::view-transition-group(tabbar),::view-transition-group(dsh-tabbar),
-::view-transition-new(tabbar),::view-transition-new(dsh-tabbar){animation:none}
+   pages, so the new one just shows, unanimated, the whole time. The names
+   here must match the bars' view-transition-name (ptab, dsh-tabbar). */
+::view-transition-group(ptab),::view-transition-group(dsh-tabbar),
+::view-transition-new(ptab),::view-transition-new(dsh-tabbar){animation:none}
 /* The incoming page is new on the new side only, so it's layered last, over
    everything, the bar included: hold the bar above it. */
-::view-transition-group(tabbar),::view-transition-group(dsh-tabbar){z-index:1}
-::view-transition-old(tabbar),::view-transition-old(dsh-tabbar){display:none}
+::view-transition-group(ptab),::view-transition-group(dsh-tabbar){z-index:1}
+::view-transition-old(ptab),::view-transition-old(dsh-tabbar){display:none}
+/* The picture of the site's bar is taken without the blur behind its glass;
+   put the blur back for the length of the change, so the page doesn't show
+   through sharp for a moment. */
+::view-transition-group(ptab){-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8)}
 @keyframes vt-fade-out{to{opacity:0}}
 @keyframes vt-fade-in{from{opacity:0}}
 /* The press: the card gives 1px under the finger, like every button. */
