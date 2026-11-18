@@ -49,6 +49,7 @@ each an `id` and a heading that names what the section holds.
 <article class="lesson" data-slug="sequence-risk" data-reviewed="2026-10-26"
   data-title="Sequence-of-returns risk"
   data-idea="Same average return, different order, different outcome"
+  data-description="Why the order of market returns matters as much as the average, and why the first years of retirement carry the most sequence risk."
   data-tool="backtest" data-try="Run your plan through every past market, with your plan already filled in.">
 
 <p class="lede">...</p>
@@ -93,6 +94,10 @@ The article's attributes:
   characters.
 - `data-idea`: one line, under 70 characters, shown under the title in the
   track's list.
+- `data-description`: the search-result description, 120 to 160 characters.
+  Say what the lesson covers in the words people search with, and name
+  only what the lesson actually goes into. Without it the page falls back
+  to the lede's first sentences.
 - `data-tool`: the RetCalc page the Try it button opens (a slug from the
   list below), and `data-try`: one sentence on what it does there, ending
   ", with your plan already filled in." when the tool takes the plan.

@@ -44,6 +44,8 @@ export interface LessonSummary {
 
 export interface Lesson extends LessonSummary {
   tryText: string; reviewed: string | null; lede: string;
+  /** The search-result description: data-description, at most 160 characters. */
+  description: string;
   segments: Segment[];
   toc: { id: string; text: string }[];
   terms: { term: string; def: string }[];
@@ -67,6 +69,18 @@ export function plain(html: string): string {
     .replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, (m, e: string) =>
       e[0] === "#" ? String.fromCodePoint(e[1] === "x" || e[1] === "X" ? parseInt(e.slice(2), 16) : +e.slice(1)) : ENTITIES[e] ?? m)
     .replace(/\s+/g, " ").trim();
+}
+/* A lesson without a data-description falls back to the lede's whole
+   sentences, as many as fit in 160 characters (search engines cut longer). */
+function metaDescription(given: string | null, lede: string): string {
+  if (given) return plain(given);
+  let out = "";
+  for (const s of plain(lede).split(/(?<=[.!?])\s+/)) {
+    const next = out ? `${out} ${s}` : s;
+    if (next.length > 160) break;
+    out = next;
+  }
+  return out || `${plain(lede).slice(0, 157).replace(/\s+\S*$/, "")}…`;
 }
 const attr = (tag: string, name: string): string | null => {
   const m = tag.match(new RegExp(`${name}="([^"]*)"`)) ?? tag.match(new RegExp(`${name}='([^']*)'`));
@@ -125,6 +139,7 @@ function parse(slug: string, html: string): Lesson {
     track: place?.track.id ?? "",
     number: place?.number ?? "",
     lede: ledeM ? ledeM[1].trim() : "",
+    description: metaDescription(attr(open, "data-description"), ledeM ? ledeM[1] : ""),
     segments: yours ? segments : segments.filter((s) => s.kind !== "yours"),
     toc,
     terms: items(foot, "terms").map((x) => { const [a, def] = x.split("\u0000"); return { term: attr(a, "data-term") ?? "", def: plain(def) }; }),

@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: PageProps<"/learn/[slug]">): 
   const { slug } = await params;
   const l = lesson(slug);
   if (!l) return {};
-  const title = `${l.title} | Learn | RetCalc`, desc = plain(l.lede).slice(0, 300), url = `${SITE}/learn/${slug}`;
+  const title = `${l.title} | Learn | RetCalc`, desc = l.description, url = `${SITE}/learn/${slug}`;
   return {
     title: { absolute: title }, description: desc, alternates: { canonical: url },
     openGraph: { type: "article", siteName: "RetCalc", title, description: desc, url, images: [{ url: `${SITE}/og.png`, width: 1200, height: 630 }] },

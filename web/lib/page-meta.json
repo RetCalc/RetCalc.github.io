@@ -14,12 +14,12 @@
 "advanced": {
 "h1": "Advanced Retirement Calculator",
 "title": "Advanced Retirement Calculator: Taxes, Fees & History",
-"desc": "Project retirement savings with fees, account types, employer match and 2026 taxes, add the changes you see coming, then test it against every market since 1926."
+"desc": "Project your retirement savings with fees, account types, employer match and 2026 taxes, then test the plan against every market since 1926."
 },
 "guide": {
 "h1": "Retirement Planning Guides",
 "title": "Retirement Planning Guides: Readiness Check and Paycheck Plan | RetCalc",
-"desc": "Two free walkthroughs: a retirement readiness check with a score out of 100, quick or in full, and Paycheck to Retirement, from your take-home pay to a savings plan."
+"desc": "Two free walkthroughs: a retirement readiness check with a score out of 100, and Paycheck to Retirement, from your take-home pay to a savings plan."
 },
 "guide/readiness": {
 "h1": "Retirement Readiness Guide",
@@ -29,7 +29,7 @@
 "guide/paycheck": {
 "h1": "Paycheck to Retirement",
 "title": "Paycheck to Retirement: Take-Home Pay, Budget and Savings Plan | RetCalc",
-"desc": "Work out your take-home pay after taxes, build your budget, decide where each paycheck goes (401(k), HSA, IRA, brokerage), and see where it gets you by retirement, kids included."
+"desc": "Work out your take-home pay, build a budget, decide where each paycheck goes (401(k), HSA, IRA, brokerage) and see where it gets you by retirement."
 },
 "financial-dashboard": {
 "h1": "Financial Dashboard",
@@ -133,7 +133,7 @@
 "backtest": {
 "h1": "Portfolio Backtest Calculator",
 "title": "Portfolio Backtest: Stocks, Bonds & Cash Since 1926",
-"desc": "See what any mix of stocks, small-cap value, bonds and cash returned since 1926: real return, volatility, worst year and rolling 1, 5, 10, 20 and 30-year returns."
+"desc": "See what any mix of stocks, small-cap value, bonds and cash returned since 1926: real return, volatility, worst year and rolling 1- to 30-year returns."
 },
 "incometax": {
 "h1": "Income Tax Calculator",
@@ -157,7 +157,7 @@
 "budget": {
 "h1": "Budget Calculator",
 "title": "Budget Calculator: Income, Spending & Savings | RetCalc",
-"desc": "Build a monthly budget line by line and size your emergency fund, then see how each paycheck covers it after taxes and where the rest should go. Export it as a spreadsheet."
+"desc": "Build a monthly budget line by line, size your emergency fund, and see how each paycheck covers it after taxes and where the rest should go."
 },
 "debt": {
 "h1": "Debt Payoff Calculator",
@@ -167,7 +167,7 @@
 "social-security": {
 "h1": "Social Security Calculator",
 "title": "Social Security Calculator: Your Benefit at 62, 67 or 70 | RetCalc",
-"desc": "Estimate your Social Security benefit from your pay or your statement, see your check at every age from 62 to 70, break-even ages, and spousal and survivor benefits."
+"desc": "Estimate your Social Security benefit from your pay or statement: your check at every age from 62 to 70, break-even ages, and spousal and survivor benefits."
 }
 }
 }
