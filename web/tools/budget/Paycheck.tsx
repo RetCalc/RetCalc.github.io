@@ -20,7 +20,7 @@ import { TipDot } from "@/components/shell/Tooltips";
 import { NativeRange } from "@/components/ui/native-range";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
-import { useToolNav, useToolScope, useToolStore } from "@/components/tools/ToolState";
+import { useToolNav, useToolScope, useToolStore, useWho, useWholeTool } from "@/components/tools/ToolState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,7 +60,7 @@ export function Paycheck({ s, set, setState }: {
   set: <K extends keyof BudgetInputs>(k: K) => (v: BudgetInputs[K]) => void;
   setState: SetState;
 }) {
-  const store = useToolStore(), go = useToolNav(), scope = useToolScope();
+  const store = useToolStore(), go = useToolNav(), scope = useToolScope(), who = useWho();
   // The Dashboard keeps pay, filing status, state and the match itself, and
   // says them here in place of the fields.
   const facts = scope?.slots?.payFacts;
@@ -135,15 +135,15 @@ export function Paycheck({ s, set, setState }: {
                   {two ? (
                     <>
                       <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                        <MoneyField id="pcGross" label="Your gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />
-                        <MoneyField id="pcGross2" label="Spouse's gross pay, per year" value={s.pcGross2} onValueChange={set("pcGross2")} />
+                        <MoneyField id="pcGross" label={who.oneOwn + " gross pay, per year"} value={s.pcGross} onValueChange={set("pcGross")} />
+                        <MoneyField id="pcGross2" label={who.twoOwn + " gross pay, per year"} value={s.pcGross2} onValueChange={set("pcGross2")} />
                       </div>
                       {/* Each person's own schedule: it sets their check in the itemized paycheck. */}
                       <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                        <SelectField id="pcFreq" label="You're paid" value={s.pcFreq} onChange={set("pcFreq")}>
+                        <SelectField id="pcFreq" label={who.name1 ? who.name1 + " is paid" : "You're paid"} value={s.pcFreq} onChange={set("pcFreq")}>
                           {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                         </SelectField>
-                        <SelectField id="pcFreq2" label="Your spouse is paid" value={s.pcFreq2} onChange={set("pcFreq2")}>
+                        <SelectField id="pcFreq2" label={(who.name2 || "Your spouse") + " is paid"} value={s.pcFreq2} onChange={set("pcFreq2")}>
                           {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                         </SelectField>
                       </div>
@@ -171,7 +171,7 @@ export function Paycheck({ s, set, setState }: {
                   an expense. */}
               {/* With two incomes, one field per job: premiums come off the
                   Social Security and Medicare of the person they come through. */}
-              <Field id="pcHealth" label={(two ? "Premiums through your job" : "Health, dental and vision premiums") + ", per check"}>
+              <Field id="pcHealth" label={(two ? "Premiums through " + who.oneOwnIn + " job" : "Health, dental and vision premiums") + ", per check"}>
                 <Affixed prefix="$"><MoneyInput id="pcHealth" nonNeg value={healthDerived ? amountText((pi.health[0] * pi.p) / pi.pays[0]) : s.pcHealth} onValueChange={set("pcHealth")} /></Affixed>
                 {two ? null : healthRow > 0 ? (
                   <div className="hint">{healthDerived ? <>From the Budget&apos;s Health insurance row, {money(healthRow)} per month. 0 if it isn&apos;t through work.</>
@@ -179,7 +179,7 @@ export function Paycheck({ s, set, setState }: {
                 ) : null}
               </Field>
               {two ? (
-                <Field id="pcHealth2" label="Premiums through your spouse's job, per check">
+                <Field id="pcHealth2" label={"Premiums through " + who.twoOwnIn + " job, per check"}>
                   <Affixed prefix="$"><MoneyInput id="pcHealth2" nonNeg value={s.pcHealth2} onValueChange={set("pcHealth2")} /></Affixed>
                   {healthRow > 0 ? (
                     <div className="hint">{healthDerived ? <>Health, dental and vision. Yours starts from the Budget&apos;s Health insurance row, {money(healthRow)} per month. Both 0 if not through work.</>
@@ -190,12 +190,12 @@ export function Paycheck({ s, set, setState }: {
               {facts ? null : (
                 <>
                   <div className="grid grid-cols-2 items-end gap-x-2.5">
-                    <NumberField id="pcMatchRate" label={two ? "Your 401(k) match" : "Employer 401(k) match"} unit="%" step={5} max={200} value={s.pcMatchRate} onValueChange={set("pcMatchRate")} />
+                    <NumberField id="pcMatchRate" label={two ? who.oneOwn + " 401(k) match" : "Employer 401(k) match"} unit="%" step={5} max={200} value={s.pcMatchRate} onValueChange={set("pcMatchRate")} />
                     <NumberField id="pcMatchUpTo" label="On the first" unit="% of pay" step={1} max={100} value={s.pcMatchUpTo} onValueChange={set("pcMatchUpTo")} />
                   </div>
                   {two ? (
                     <div className="grid grid-cols-2 items-end gap-x-2.5">
-                      <NumberField id="pcMatchRate2" label="Spouse's 401(k) match" unit="%" step={5} max={200} value={s.pcMatchRate2} onValueChange={set("pcMatchRate2")} />
+                      <NumberField id="pcMatchRate2" label={who.twoOwn + " 401(k) match"} unit="%" step={5} max={200} value={s.pcMatchRate2} onValueChange={set("pcMatchRate2")} />
                       <NumberField id="pcMatchUpTo2" label="On the first" unit="% of pay" step={1} max={100} value={s.pcMatchUpTo2} onValueChange={set("pcMatchUpTo2")} />
                     </div>
                   ) : null}
@@ -328,9 +328,9 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
   const left = Math.abs(r.left) < 0.01 ? 0 : r.left, short = !empty && r.left <= -0.01;
   const taxCut = base.taxes - r.taxes;
   // In a walkthrough its next step does the copying, in order.
-  const scope = useToolScope();
+  const scope = useToolScope(), whole = useWholeTool();
   // The Dashboard says the figures over the sliders in whole dollars.
-  const dash = scope?.name === "dashboard";
+  const dash = scope?.name === "dashboard", who = useWho();
   const store = useToolStore(), go = useToolNav(), toast = useToast(), showPopup = usePopup(), { profile } = useHousehold();
   /* Copy to Advanced: the saving, account by account, split by account
      type (asking first if that would replace saving already there), then
@@ -370,7 +370,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
       <CardHeader>
         <CardTitle>Where the rest goes</CardTitle>
         <CardAction>
-          {scope ? null : <div className="phone:contents max-phone:flex max-phone:items-center"><Button variant="outline" size="sm" id="pcCopyOut" disabled={empty} title="Copy what goes into each account into Advanced" onClick={copyOut}>Copy to Advanced</Button>
+          {!whole ? null : <div className="phone:contents max-phone:flex max-phone:items-center"><Button variant="outline" size="sm" id="pcCopyOut" disabled={empty} title="Copy what goes into each account into Advanced" onClick={copyOut}>Copy to Advanced</Button>
             <InfoTap title="Copy to Advanced"><p>Copy what goes into each account into the Advanced Calculator, split by account type.</p></InfoTap></div>}
         </CardAction>
       </CardHeader>
@@ -406,7 +406,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
             const max = Math.max(0.01, k === "brok" ? toCents(v + room) : k === "ef" ? toCents(Math.max(cap, v + room)) : toCents(cap));
             const over = pcHasLimit(k) && v > cap + 0.005;
             const half = v > 0 && ((two && (k === "match" || k === "k401max" || (k === "hsa" && pi.hsa !== "self"))) || (k === "rothIra" && iraBoth(pi))) ? sp[k as "match"] : null;
-            const rothKey = pcRothKey(k), catchUp = pcCatchText(pi, k, pi.amounts);
+            const rothKey = pcRothKey(k), catchUp = pcCatchText(pi, k, pi.amounts, who);
             const limit = k === "match" ? (two ? "Both full matches " : "Limit ") + cents(toCents(cap))
               : k === "k401max" ? "Limit " + cents(toCents(cap)) + (two ? " for both, with the matches" : "")
               : k === "hsa" && two ? (pi.hsa === "family" ? "Family limit " : pi.hsa === "self2" ? "Two self-only limits " : "Self-only limit ") + cents(toCents(cap))
@@ -439,7 +439,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
                       {catchUp.included ? " · " + catchUp.included : null}
                       {catchUp.ifText ? " · up to " + cents(toCents(catchUp.ifCap)) + " " + catchUp.ifText : null}
                       {over ? <span className="text-destructive"> · over the limit</span> : null}
-                      {half ? " · you " + cents(half[0]) + ", spouse " + cents(half[1]) : null}
+                      {half ? " · " + who.oneIn + " " + cents(half[0]) + ", " + (who.name2 || "spouse") + " " + cents(half[1]) : null}
                       {v > 0 && pcPreTax(pi, k) && (k !== "rothIra" || r.iraDed >= 0.005) ? <>{two ? " · costs your deposits " : " · costs your deposit "}<b className="font-medium text-foreground tabular-nums">{cents(v * pcCostPer(pi, k))}</b></> : null}
                       {/* The IRA: how much of a traditional one is deductible; past the Roth's income range, the backdoor. */}
                       {k === "rothIra" && !pi.roth.rothIra && v > 0 && r.iraDed < v - 0.005 ? <>
@@ -490,14 +490,14 @@ function Stat({ label, value, id, tone, note }: { label: React.ReactNode; value:
 function Itemized({ s, pi, r, empty, short, openTax }: {
   s: BudgetInputs; pi: ReturnType<typeof paycheckInput>; r: PcRun; empty: boolean; short: boolean; openTax: () => void;
 }) {
-  const scope = useToolScope();
+  const who = useWho(), whole = useWholeTool();
   const [showBudget, setShowBudget] = useState(false);
   // Per check, per month (unless paid monthly, when the two are the same) and
   // per year. With two incomes: each of your checks, on its own schedule, up
   // to what it deposits, then the household per month and per year; what's
   // shared (the budget, the saving from your deposits) fills only those two.
   const p = pi.p, two = pi.two, monthly = p !== 12;
-  const heads = two ? ["Your check", "Spouse's check", "Per month", "Per year"] : monthly ? ["Per check", "Per month", "Per year"] : ["Per check", "Per year"];
+  const heads = two ? [who.oneOwn + " check", who.twoOwn + " check", "Per month", "Per year"] : monthly ? ["Per check", "Per month", "Per year"] : ["Per check", "Per year"];
   type Row = { kind: "sec" | "item" | "sub" | "total" | "hi"; label: string; v?: number; tag?: string; tip?: string; toggle?: boolean; per?: number[] };
   /** A row's cells: null where a check column has nothing (a shared line). */
   const vals = (x: Row): (number | null)[] => {
@@ -559,8 +559,8 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
         <CardTitle>Itemized paycheck</CardTitle>
         <CardAction>
           <div className="flex flex-wrap justify-end gap-2">
-            {/* A walkthrough has the tax tables below and stays put. */}
-            {scope ? null : <span className="phone:contents max-phone:flex max-phone:items-center"><Button variant="outline" size="sm" id="pcToTax" title="Open Income Tax with this pay, state and these pre-tax deductions" onClick={openTax}>Open in Income Tax</Button>
+            {/* A walkthrough or a Dashboard tab has the tax tables below and stays put. */}
+            {!whole ? null : <span className="phone:contents max-phone:flex max-phone:items-center"><Button variant="outline" size="sm" id="pcToTax" title="Open Income Tax with this pay, state and these pre-tax deductions" onClick={openTax}>Open in Income Tax</Button>
               <InfoTap title="Open in Income Tax"><p>Open the Income Tax Calculator with this pay, state and these pre-tax deductions.</p></InfoTap></span>}
             <CsvButton id="pcCsv" label="itemized paycheck" title="Download the itemized paycheck as a CSV" rows={csv} filename="retcalc-paycheck.csv" />
           </div>

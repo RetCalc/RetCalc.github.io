@@ -10,6 +10,7 @@
    field; "Go back to one figure" keeps the total and drops the breakdown. */
 
 import { useState } from "react";
+import { useWho } from "@/components/tools/ToolState";
 import { CircleAlertIcon } from "lucide-react";
 import { Modal } from "@/components/shell/Modal";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ export function PreTaxDialog({ s, setState, close }: {
   setState: (fn: (c: TaxInputs) => TaxInputs) => void;
   close: () => void;
 }) {
-  const joint = s.status === "m";
+  const joint = s.status === "m", w = useWho();
   // Each line's unit (per check, month or year, as last used) and the pay
   // schedule the per-check lines go by.
   const [units, setUnits] = useState(() => unitsFrom(s.preUnits));
@@ -81,7 +82,7 @@ export function PreTaxDialog({ s, setState, close }: {
      part of an IRA the income test doesn't let off. */
   const notes = (kind: string): Note[] => {
     const out: Note[] = [];
-    const who = (i: number) => (joint ? (i ? "Spouse: " : "You: ") : "");
+    const who = (i: number) => (joint ? (i ? w.two : w.one) + ": " : "");
     people.slice(0, joint ? 2 : 1).forEach((p, i) => {
       if (kind === "k401" && p.k401 > L.k401.base) {
         const top = L.k401.base + L.k401.catch60;
@@ -95,7 +96,7 @@ export function PreTaxDialog({ s, setState, close }: {
         if (p.ira > top) out.push({ over: true, text: who(i) + "over the " + money(top) + " limit, even from 50." });
         else if (p.ira > L.ira.base) out.push({ text: who(i) + "over " + money(L.ira.base) + ", fine only from 50 (" + money(L.ira.catch50) + " more)." });
         if (p.iraDed < Math.min(p.ira, top)) {
-          const why = p.covered ? "with a plan at work" : "with your spouse's plan at work";
+          const why = p.covered ? "with a plan at work" : "with " + (i ? (w.name1 ? w.oneOwnIn : "your spouse's") : w.twoOwnIn) + " plan at work";
           out.push({ text: who(i) + (p.iraDed > 0 ? "only " + money(p.iraDed) + " of this is deductible" : "none of this is deductible") +
             " at your income " + why + ". The rest still goes in, after tax." });
         }
@@ -141,7 +142,7 @@ export function PreTaxDialog({ s, setState, close }: {
       ) : null}
       {joint ? (
         <div className="flex gap-3 pb-1 text-label text-muted-foreground" aria-hidden="true">
-          <span className="flex-1 max-sm:hidden" /><span className="w-28 flex-none max-sm:flex-1">You</span><span className="w-28 flex-none max-sm:flex-1">Spouse</span><span className="w-24 flex-none" />
+          <span className="flex-1 max-sm:hidden" /><span className="w-28 flex-none max-sm:flex-1">{w.one}</span><span className="w-28 flex-none max-sm:flex-1">{w.two}</span><span className="w-24 flex-none" />
         </div>
       ) : null}
       {PRE_ROWS.map((r) => {

@@ -17,7 +17,7 @@ import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
 import { ProjectionChart, ProjectionReading, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
-import { useToolNav, useToolScope, useToolState, useToolStore } from "@/components/tools/ToolState";
+import { useToolNav, useToolScope, useToolState, useToolStore, useWholeTool } from "@/components/tools/ToolState";
 import { Milestones } from "@/components/common/Milestones";
 import { growthBlend, matchPer, spreadTotal, withHsaRate, type GrowthRates } from "@/lib/accounts";
 import { historicalRuns, monteCarlo, project, PER_YEAR } from "@/lib/engine/typed";
@@ -64,8 +64,9 @@ function SiteAdvanced() {
   const { state: s, set, setState } = useToolState(ADVANCED_DEF);
   const { profile } = useHousehold();
   const store = useToolStore(), go = useToolNav();
-  // In a walkthrough, its own steps lead on: no Drawdown or Stages hand-offs here.
-  const scope = useToolScope();
+  // In a walkthrough, its own steps lead on: no Drawdown or Stages hand-offs
+  // here. Whole (its own page, the Dashboard's Tools), they're there.
+  const scope = useToolScope(), whole = useWholeTool();
   const toast = useToast();
   const seed = useMcSeed();
   const [mode, setMode] = useState<ChartMode>("band");
@@ -258,7 +259,7 @@ function SiteAdvanced() {
   const pay = payCheck(income, target, p.withdrawal, p.taxRate, acOn);
 
   const toDrawdown = () => {
-    sendToDrawdown({ initial: Math.round(R.fvReal) });
+    sendToDrawdown({ initial: Math.round(R.fvReal) }, store);
     go("/drawdown");
     toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
   };
@@ -405,7 +406,7 @@ function SiteAdvanced() {
           tipHead={(b) => <b>{age != null ? "Age " + fmtNum(age + b.year) : "Year " + fmtNum(b.year)}</b>} target={need} targetLabel={TARGET_LABEL}
           xOffset={age ?? 0} layout="fixed" aspect={0.5} gutter={64} bandHint={CH ? "Every year's return this much higher, and this much lower." : "Your return this much higher, and this much lower."} />
 
-        <div className={cn("grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5", !scope && "wide:grid-cols-2")}>
+        <div className={cn("grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5", whole && "wide:grid-cols-2")}>
           <Card>
             <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
             <CardContent id="msBody">{CH
@@ -413,7 +414,7 @@ function SiteAdvanced() {
               : <Milestones rows={V.R.years} infl={p.inflation} feeCost={V.feeCost} horizon={p.years} />}</CardContent>
           </Card>
 
-          <Card hidden={!!scope}>
+          <Card hidden={!whole}>
             <CardHeader><CardTitle>Take it further</CardTitle></CardHeader>
             <CardContent>
               <p className="hint mt-0">See how long this balance lasts once you start

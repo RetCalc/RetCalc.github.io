@@ -16,7 +16,6 @@
 import { useFullScreen } from "@/components/charts/FullScreen";
 import { useMemo, useRef, useState } from "react";
 import { ChevronRightIcon, CircleAlertIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Legend } from "@/components/charts/Legend";
 import { MultiChart } from "@/components/charts/MultiChart";
 import { Field, NumberField, SelectField } from "@/components/fields/Field";
@@ -25,7 +24,7 @@ import { TapNote } from "@/components/phone/Words";
 import { Modal } from "@/components/shell/Modal";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
-import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
+import { useToolNav, useToolState, useToolStore } from "@/components/tools/ToolState";
 import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Signed } from "@/components/common/Signed";
@@ -76,7 +75,7 @@ function rebalNote(B: BtResult) {
 type SortCol = "year" | "stock" | "sv" | "bond" | "cash" | "ret" | "infl" | "real" | "end" | "endReal";
 
 export function Backtest() {
-  const router = useRouter();
+  const store = useToolStore(), go = useToolNav();
   const toast = useToast();
   const { state: s, set, setState } = useToolState(BT_DEF);
   const B = useMemo(() => runBacktest(s), [s]);
@@ -100,9 +99,9 @@ export function Backtest() {
 
   const useInAdvanced = () => {
     const f = (v: number) => String(+(v * 100).toFixed(2));
-    setToolInputs("advanced", { ...toolInputs("advanced", ADVANCED_DEFAULTS), nominal: f(B.cagr), vol: f(B.vol), inflation: f(B.inflCagr) });
+    store.write("advanced", { ...store.read("advanced", ADVANCED_DEFAULTS), nominal: f(B.cagr), vol: f(B.vol), inflation: f(B.inflCagr) });
     setNavDir("back");
-    router.push("/advanced");
+    go("/advanced");
     toast("Return, volatility and inflation updated");
   };
 

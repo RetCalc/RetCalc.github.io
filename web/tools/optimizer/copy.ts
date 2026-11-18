@@ -2,7 +2,7 @@
    out from its inputs as last left (with its changes ahead, when any are
    on), so the numbers are the ones on its screen. From opSources(), opSourceSaving() and opCopy() in
    src/js/app/31b-plan-optimizer.js. */
-import { toolInputs } from "@/components/tools/ToolState";
+import { TAB_STORE, type ToolStore } from "@/components/tools/ToolState";
 import { matchPer, type AccountResult, type Accounts } from "@/lib/accounts";
 import { PPY, RISKS } from "@/lib/engine/typed";
 import { fmtNum, groupDigits, money, pctStr } from "@/lib/format";
@@ -20,9 +20,10 @@ export interface Source {
   notes: string[];
 }
 
-export function opSources(profile: Household | null): Source[] {
+/** `store`: where Advanced's inputs are, the scope's when there is one. */
+export function opSources(profile: Household | null, store: ToolStore = TAB_STORE): Source[] {
   const out: Source[] = [];
-  const adv = toolInputs("advanced", ADVANCED_DEFAULTS);
+  const adv = store.read("advanced", ADVANCED_DEFAULTS);
   if (adv.acOn) {
     const { p, a, B: B0 } = advancedPlan(adv, profile);
     // With changes ahead on, the balances at retirement are the ones they make.

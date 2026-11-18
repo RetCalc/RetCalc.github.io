@@ -12,7 +12,7 @@ import { useHousehold, useHouseholdFill } from "@/components/household/Household
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
-import { useToolState } from "@/components/tools/ToolState";
+import { useToolState, useToolStore, useWho } from "@/components/tools/ToolState";
 import { Segmented } from "@/components/common/Readout";
 import { plAtRetire } from "@/lib/engine/typed-plan";
 import { dollarsField, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
@@ -76,6 +76,8 @@ export function Optimizer() {
   const showPopup = usePopup();
   const { profile } = useHousehold();
   const { state: s, set, setState } = useToolState(OP_DEF);
+  const store = useToolStore();
+  const w = useWho();
   const H = useOptimizer("tool");
   useShareKit(OP_DEF.id, { card: () => optimizerCard(H.res) });
   const [goal, setGoalState] = useState<Goal>(goalMemory.goal);
@@ -152,7 +154,7 @@ export function Optimizer() {
       : "Enter what you have today and what you save each month, or copy them from Advanced");
   };
   const copy = async () => {
-    const src = opSources(profile);
+    const src = opSources(profile, store);
     if (!src.length) { toast("Turn on Split by account type in Advanced first, then copy it here", "warn"); return; }
     let i = 0;
     if (src.length > 1) {
@@ -253,17 +255,17 @@ export function Optimizer() {
                 </SelectField>
               </div>
               <div className="two bottomalign max-sm:grid-cols-2" hidden={!v.now}>
-                <NumberField id="opAge" label="Your age" unit="yrs old" max={90} value={s.age} onValueChange={setAge("age", "birth")} />
-                <NumberField id="opSpAge" hidden={!v.married} label="Spouse's age" unit="yrs old" max={95} value={s.spAge} onValueChange={setAge("spAge", "spBirth")} />
+                <NumberField id="opAge" label={w.oneOwn + " age"} unit="yrs old" max={90} value={s.age} onValueChange={setAge("age", "birth")} />
+                <NumberField id="opSpAge" hidden={!v.married} label={w.twoOwn + " age"} unit="yrs old" max={95} value={s.spAge} onValueChange={setAge("spAge", "spBirth")} />
               </div>
               <div className={"two bottomalign max-sm:grid-cols-2" + (v.married ? "" : " one")}>
                 <NumberField id="opBirth" label={<Tipped text="Year you were born" k="ssbirth" />} max={NEWEST_YEAR} placeholder={parseNum(s.age) > 0 ? String(NEWEST_YEAR - Math.round(parseNum(s.age))) : ""} value={s.birth} onValueChange={set("birth")} />
-                <NumberField id="opSpBirth" hidden={!v.married} label="Spouse's birth year" max={NEWEST_YEAR} placeholder={parseNum(s.spAge) > 0 ? String(NEWEST_YEAR - Math.round(parseNum(s.spAge))) : ""} value={s.spBirth} onValueChange={set("spBirth")} />
+                <NumberField id="opSpBirth" hidden={!v.married} label={w.twoOwn + " birth year"} max={NEWEST_YEAR} placeholder={parseNum(s.spAge) > 0 ? String(NEWEST_YEAR - Math.round(parseNum(s.spAge))) : ""} value={s.spBirth} onValueChange={set("spBirth")} />
               </div>
               <div className={"two bottomalign max-sm:grid-cols-2" + (v.now || !v.married ? " one" : "")} id="opRetRow">
                 <NumberField id="opRetire" label={<span id="opRetireLbl"><Tipped text={v.now ? "Retire at" : "Your age at retirement"} k="opretire" /></span>}
                   unit="yrs old" max={90} value={s.retire} onValueChange={set("retire")} />
-                <NumberField id="opSpRet" hidden={v.now || !v.married} label="Spouse's age then" unit="yrs old" max={95} value={s.spRet} onValueChange={set("spRet")} />
+                <NumberField id="opSpRet" hidden={v.now || !v.married} label={w.twoOwn + " age then"} unit="yrs old" max={95} value={s.spRet} onValueChange={set("spRet")} />
               </div>
 
               <div className="mt-1 mb-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border pt-4">
@@ -308,11 +310,11 @@ export function Optimizer() {
                 <span id="opSpendWarn" role="alert">{spend ? "" : "Enter what you'll spend each year. The search needs it."}</span>
               </div>
               <div className="two bottomalign max-sm:grid-cols-2">
-                <MoneyField id="opSS1" label={<Tipped text={"Your benefit at " + fra1} k="opss" />} unit="/mo" value={s.ss1} onValueChange={set("ss1")} />
+                <MoneyField id="opSS1" label={<Tipped text={w.oneOwn + " benefit at " + fra1} k="opss" />} unit="/mo" value={s.ss1} onValueChange={set("ss1")} />
                 <MoneyField id="opInc1" label={<Tipped text="Or your salary" k="opinc" />} unit="/yr" value={s.inc1} onValueChange={set("inc1")} />
               </div>
               <div className="two bottomalign max-sm:grid-cols-2" hidden={!v.married}>
-                <MoneyField id="opSS2" label={"Spouse's benefit at " + fra2} unit="/mo" value={s.ss2} onValueChange={set("ss2")} />
+                <MoneyField id="opSS2" label={w.twoOwn + " benefit at " + fra2} unit="/mo" value={s.ss2} onValueChange={set("ss2")} />
                 <MoneyField id="opInc2" label="Or their salary" unit="/yr" value={s.inc2} onValueChange={set("inc2")} />
               </div>
               <MoreRow open={more.a} onToggle={toggle("a")} sub="When you'd claim Social Security, a pension" />

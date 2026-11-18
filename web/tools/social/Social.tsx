@@ -23,7 +23,7 @@ import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { TipDot } from "@/components/shell/Tooltips";
 import { useShareKit } from "@/components/shell/share";
-import { useToolState } from "@/components/tools/ToolState";
+import { useToolState, useWho } from "@/components/tools/ToolState";
 import { BigValue } from "@/components/common/BigValue";
 import { CsvButton } from "@/components/common/CsvButton";
 import { KV } from "@/components/common/Readout";
@@ -183,7 +183,7 @@ function Sentence({ s, S, setP, setOther, setSrc, payOpen, setPayOpen, anyPay, t
   setSrc: (who: Who, src: "pay" | "statement") => void;
   payOpen: boolean; setPayOpen: (v: boolean) => void; anyPay: boolean; toggleSpouse: () => void; children: React.ReactNode;
 }) {
-  const y = s.you, sp = s.spouse, married = S.married, { earnLimit } = ssRules();
+  const y = s.you, sp = s.spouse, married = S.married, { earnLimit } = ssRules(), w = useWho();
   const nEdits = Object.values(y.edits).filter((v) => v !== "").length + (married ? Object.values(sp.edits).filter((v) => v !== "").length : 0);
   return (
     <Card className="min-w-0" id="ssSentence" data-pv="in">
@@ -205,15 +205,15 @@ function Sentence({ s, S, setP, setOther, setSrc, payOpen, setPayOpen, anyPay, t
         </div>
         {married ? (
           <div className="mt-2.5 border-t border-border pt-2.5 text-xl leading-loose text-muted-foreground max-sm:text-lg" id="ssSaySpouse">
-            My spouse was born in <Num value={sp.birth} onChange={setP("spouse", "birth")} label="Spouse's birth year" max={2100} />
+            {w.name2 || "My spouse"} was born in <Num value={sp.birth} onChange={setP("spouse", "birth")} label={w.twoOwn + " birth year"} max={2100} />
             {sp.src === "pay" ? (
-              <> and earns <Cash value={sp.pay} onChange={setP("spouse", "pay")} label="Spouse's pay per year" /> per year. They started working at <Num value={sp.start} onChange={setP("spouse", "start")} label="Age your spouse started working" max={80} /> and will stop at <Num value={sp.stop} onChange={setP("spouse", "stop")} label="Age your spouse stops working" max={90} />.</>
+              <> and earns <Cash value={sp.pay} onChange={setP("spouse", "pay")} label={w.twoOwn + " pay per year"} /> per year. They started working at <Num value={sp.start} onChange={setP("spouse", "start")} label={"Age " + w.twoIn + " started working"} max={80} /> and will stop at <Num value={sp.stop} onChange={setP("spouse", "stop")} label={"Age " + w.twoIn + " stops working"} max={90} />.</>
             ) : (
-              <>, and their statement shows <Cash value={sp.pia} onChange={setP("spouse", "pia")} label="Spouse's full benefit, per month" /> per month at full retirement age.</>
+              <>, and their statement shows <Cash value={sp.pia} onChange={setP("spouse", "pia")} label={w.twoOwn + " full benefit, per month"} /> per month at full retirement age.</>
             )}
-            {" "}They&apos;ll claim at <Pick id="ssClaim2" value={sp.claim} onChange={setP("spouse", "claim")} label="Spouse claims at" /> and expect to live to about <Num value={sp.through} onChange={setP("spouse", "through")} label="Spouse expects to live to" max={110} />.
+            {" "}They&apos;ll claim at <Pick id="ssClaim2" value={sp.claim} onChange={setP("spouse", "claim")} label={(w.name2 || "Spouse") + " claims at"} /> and expect to live to about <Num value={sp.through} onChange={setP("spouse", "through")} label={(w.name2 || "Spouse") + " expects to live to"} max={110} />.
             {S.spouse && S.spouse.claim < S.spouse.fra ? (
-              <> Until {Math.round(S.spouse.fra)}, they&apos;ll still earn <Cash value={sp.earn} onChange={setP("spouse", "earn")} label="Spouse's pay while collecting early" /> per year from work.</>
+              <> Until {Math.round(S.spouse.fra)}, they&apos;ll still earn <Cash value={sp.earn} onChange={setP("spouse", "earn")} label={w.twoOwn + " pay while collecting early"} /> per year from work.</>
             ) : null}
           </div>
         ) : null}
@@ -223,7 +223,7 @@ function Sentence({ s, S, setP, setOther, setSrc, payOpen, setPayOpen, anyPay, t
           <Button variant="link" size="inline" onClick={() => setSrc("you", y.src === "pay" ? "statement" : "pay")}>
             {y.src === "pay" ? "I have my Social Security statement" : "Estimate from my pay instead"}</Button>
           {married ? <Button variant="link" size="inline" onClick={() => setSrc("spouse", sp.src === "pay" ? "statement" : "pay")}>
-            {sp.src === "pay" ? "My spouse has a statement" : "Estimate my spouse's from pay"}</Button> : null}
+            {sp.src === "pay" ? (w.name2 || "My spouse") + " has a statement" : "Estimate " + (w.name2 ? w.twoOwn : "my spouse's") + " from pay"}</Button> : null}
         </div>
         {children}
       </CardContent>
@@ -233,6 +233,7 @@ function Sentence({ s, S, setP, setOther, setSrc, payOpen, setPayOpen, anyPay, t
 
 /* ---------- the staircase, the reading and how the check is figured ---------- */
 function Stage({ S, narrow, claim }: { S: SocialFigures; narrow: boolean; claim: (a: number) => void }) {
+  const w = useWho();
   const married = S.married, c = S.you.claim, fra = Math.round(S.you.fra);
   const max = Math.max(...S.rows.map((r) => r.monthly)) || 1;
   const r62 = S.rows[0], r70 = S.rows[S.rows.length - 1], ch = S.chosen;
@@ -250,8 +251,8 @@ function Stage({ S, narrow, claim }: { S: SocialFigures; narrow: boolean; claim:
             <h2 className="m-0 flex items-center gap-1.5 text-aside font-semibold">Pick the age you claim<TipDot k="" text="Claim at 62 and your check is cut for life. Wait past full retirement age and it grows 8% for each year, up to 70. Every amount is in today's dollars and rises with inflation once it starts." /></h2>
             {married ? (
               <div className="flex gap-3.5 text-label text-muted-foreground max-sm:hidden">
-                <span><i className="mr-1.25 inline-block size-2.25 rounded-xs bg-primary" />You</span>
-                <span><i className="mr-1.25 inline-block size-2.25 rounded-xs bg-series-sky/30" />Spouse</span>
+                <span><i className="mr-1.25 inline-block size-2.25 rounded-xs bg-primary" />{w.one}</span>
+                <span><i className="mr-1.25 inline-block size-2.25 rounded-xs bg-series-sky/30" />{w.two}</span>
               </div>
             ) : null}
           </div>
@@ -288,10 +289,10 @@ function Stage({ S, narrow, claim }: { S: SocialFigures; narrow: boolean; claim:
 
         <div className="flex min-w-0 flex-col justify-center gap-3.5 px-5 py-4.5 max-lg:order-1" data-readout>
           <div data-pair>
-            <div className="text-label text-muted-foreground" data-k>{married ? `Per month for both of you, you claiming at ${c}` : `Per month, claiming at ${c}`}</div>
+            <div className="text-label text-muted-foreground" data-k>{married ? `Per month for ${w.named ? w.oneIn + " and " + w.twoIn : "both of you"}, ${w.oneIn} claiming at ${c}` : `Per month, claiming at ${c}`}</div>
             <BigValue className="mt-1 leading-none font-medium tracking-tight whitespace-nowrap text-primary tabular-nums" id="ssMonthly" text={S.you.pia > 0 ? money(S.monthly) : DASH} scale={narrow ? 1.5 : 2} />
             <div className="mt-1.5 text-label text-muted-foreground">
-              {married ? `${money(S.monthlyYou)} yours, ${money(S.monthlySpouse)} your spouse's at ${S.spouse!.claim}. Today's dollars.` : "In today's dollars. Rises with inflation every year."}
+              {married ? `${money(S.monthlyYou)} ${w.name1 ? w.oneOwn : "yours"}, ${money(S.monthlySpouse)} ${w.twoOwnIn} at ${S.spouse!.claim}. Today's dollars.` : "In today's dollars. Rises with inflation every year."}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3.5 border-t border-border pt-3.5">
@@ -305,7 +306,7 @@ function Stage({ S, narrow, claim }: { S: SocialFigures; narrow: boolean; claim:
               <span className="flex items-center gap-1.25 text-note text-muted-foreground">Survivor benefit<TipDot k="" text="When one spouse passes away, the other keeps the larger of your two checks, including any credits for waiting, and the smaller one stops. Waiting to claim the bigger check raises it for as long as either of you lives." /></span>
               <span className="text-right text-xl font-semibold tabular-nums">{money(S.survivor)}/mo</span>
               <span className="mt-0.5 basis-full text-label text-muted-foreground">
-                After the first of you passes away, the other keeps {S.H.you.laterMonthly >= S.H.spouse.laterMonthly ? "your" : "your spouse's"} check, in place of {money(S.monthly)} for both.
+                After the first of you passes away, the other keeps {S.H.you.laterMonthly >= S.H.spouse.laterMonthly ? w.oneOwnIn : w.twoOwnIn} check, in place of {money(S.monthly)} for both.
               </span>
             </div>
           ) : null}
@@ -336,7 +337,7 @@ function Stage({ S, narrow, claim }: { S: SocialFigures; narrow: boolean; claim:
         {S.H.top1 > 0 ? <><Op>+</Op><Link label="Spousal top-up" tip="Half your spouse's full benefit, less your own, cut if you claim early. It starts once both of you have claimed.">{money(S.H.top1)}</Link></> : null}
         <Op>=</Op>
         <div className="flex min-w-0 flex-col justify-center rounded-lg border border-border bg-muted px-2.75 py-1.5">
-          <span className="text-label text-muted-foreground">Your check</span>
+          <span className="text-label text-muted-foreground">{w.oneOwn} check</span>
           <span className="text-body font-semibold whitespace-nowrap tabular-nums">{money(S.monthlyYou)} <span className="text-label font-normal text-muted-foreground">per month</span></span>
         </div>
       </div>
@@ -382,15 +383,16 @@ function Facts({ S }: { S: SocialFigures }) {
 /* ---------- a couple: every pair of claiming ages ---------- */
 function Pairs({ S, narrow, use }: { S: SocialFigures; narrow: boolean; use: (a: number, b: number) => void }) {
   const P = S.pairs!, span = Math.max(1, P.best.total - P.min), more = P.best.total - P.chosen;
+  const w = useWho();
   const bigYou = S.H.spouse ? S.H.you.laterMonthly >= S.H.spouse.laterMonthly : true;
   return (
     <Card size="flush" className="min-w-0" id="ssPairs" data-pv="out">
       <div className="grid grid-cols-1 lg:grid-cols-3">
         <div className="min-w-0 border-border px-4.5 pt-3.5 pb-4 max-lg:border-b lg:col-span-2 lg:border-r">
           <h2 className="m-0 mb-2.5 flex items-center gap-1.5 text-aside font-semibold">Best ages for the two of you<TipDot k="" text="Every pair of claiming ages, with what the two of you collect in all through the ages you expect to live to, in today's dollars, before tax. Each square shows how far that pair falls short of the best one. Click a square to use those ages." /></h2>
-          {narrow ? <p className="m-0 mb-2 text-label text-muted-foreground">Thousands of dollars short of the best pair.<span className="phone:hidden"> Down the side: you. Across the top: your spouse.</span></p> : null}
+          {narrow ? <p className="m-0 mb-2 text-label text-muted-foreground">Thousands of dollars short of the best pair.<span className="phone:hidden"> Down the side: {w.oneIn}. Across the top: {w.twoIn}.</span></p> : null}
           <div className="grid grid-cols-10 gap-0.75 text-xs max-sm:gap-0.5" role="grid" aria-label="Household total for each pair of claiming ages">
-            <div className="self-end pb-1 text-fine leading-tight text-muted-foreground max-sm:invisible max-sm:h-0 max-sm:overflow-hidden">You claim ↓<br />Spouse →</div>
+            <div className="self-end pb-1 text-fine leading-tight text-muted-foreground max-sm:invisible max-sm:h-0 max-sm:overflow-hidden">{w.one} claim{w.name1 ? "s" : ""} ↓<br />{w.two} →</div>
             {CLAIM_AGES.map((b) => <div key={b} className="grid place-items-center text-label text-muted-foreground">{b}</div>)}
             {CLAIM_AGES.map((a, i) => (
               <Row key={a} a={a} i={i} P={P} span={span} narrow={narrow} S={S} use={use} />
@@ -398,19 +400,19 @@ function Pairs({ S, narrow, use }: { S: SocialFigures; narrow: boolean; use: (a:
           </div>
           {/* A square's own total is its hover title; on a phone the chosen pair says it here. */}
           <p className="m-0 mt-2.5 text-note text-muted-foreground phone:hidden" id="ssPairChosen">
-            You at {S.you.claim}, spouse at {S.spouse!.claim}: <b className="font-semibold text-foreground">{money(P.chosen)}</b> in all{P.best.total - P.chosen >= 1 ? `, ${money(P.best.total - P.chosen)} less than the best` : ", the most"}.
+            {w.one} at {S.you.claim}, {(w.name2 || "spouse")} at {S.spouse!.claim}: <b className="font-semibold text-foreground">{money(P.chosen)}</b> in all{P.best.total - P.chosen >= 1 ? `, ${money(P.best.total - P.chosen)} less than the best` : ", the most"}.
           </p>
         </div>
         <div className="flex flex-col justify-center gap-3 px-5 py-4.5">
           <div data-pair>
             <div className="text-label text-muted-foreground" data-k>Collects the most</div>
-            <div className="mt-0.75 text-3xl leading-tight font-medium tracking-tight max-sm:text-2xl" id="ssPairBest">You at {P.best.you}, spouse at {P.best.spouse}</div>
+            <div className="mt-0.75 text-3xl leading-tight font-medium tracking-tight max-sm:text-2xl" id="ssPairBest">{w.one} at {P.best.you}, {(w.name2 || "spouse")} at {P.best.spouse}</div>
             <div className="text-label text-muted-foreground">{more >= 1 ? `${money(P.best.total)} in all: ${money(more)} more than ${S.you.claim} and ${S.spouse!.claim}` : `${money(P.best.total)} in all. These are your ages.`}</div>
           </div>
           {more >= 1 ? <div><Button variant="outline" size="sm" onClick={() => use(P.best.you, P.best.spouse)}>Use these ages</Button></div> : null}
           <TapNote label="Why these ages" title="Best ages for the two of you"><div className="border-t border-border pt-3 text-note text-muted-foreground">
             {P.best.you !== P.best.spouse
-              ? `${bigYou ? "Your" : "Your spouse's"} check is the bigger one. Whoever lives longer keeps it, so waiting on it pays off for as long as either of you lives.`
+              ? `${bigYou ? w.oneOwn : w.name2 ? w.twoOwn : "Your spouse's"} check is the bigger one. Whoever lives longer keeps it, so waiting on it pays off for as long as either of you lives.`
               : "Both of you do best claiming at the same age with these lifespans. Try other ages you expect to live to."}
           </div></TapNote>
         </div>

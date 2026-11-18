@@ -7,7 +7,7 @@
    18-debt.js. */
 
 import { useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useToolNav, useToolStore } from "@/components/tools/ToolState";
 import { useToast } from "@/components/shell/Toast";
 import { CsvButton } from "@/components/common/CsvButton";
 import type { AccountResult } from "@/lib/accounts";
@@ -24,15 +24,15 @@ const ROWS = [
 ] as const;
 
 export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; B: AccountResult; years: number }) {
-  const router = useRouter();
+  const store = useToolStore(), go = useToolNav();
   const toast = useToast();
   const table = useRef<HTMLTableElement>(null);
   const a = B.a;
   const st = yearData().states.tax[a.state];
   const toTax = (e: React.MouseEvent) => {
     e.preventDefault();
-    sendYearToTax({ status: a.status, state: a.state, trad: B.w.trad, roth: B.w.roth, brok: B.w.brok, gainShare: B.gainPct, seniors: B.seniors, ages: B.ages });
-    router.push("/incometax");
+    sendYearToTax({ status: a.status, state: a.state, trad: B.w.trad, roth: B.w.roth, brok: B.w.brok, gainShare: B.gainPct, seniors: B.seniors, ages: B.ages }, store);
+    go("/incometax");
     toast("Loaded your first-year withdrawals into Income Tax");
   };
   return (

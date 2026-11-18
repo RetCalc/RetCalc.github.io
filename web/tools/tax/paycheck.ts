@@ -9,6 +9,7 @@
    of pay, so it isn't here. No React. */
 import { parseNum } from "@/lib/format";
 import { PRE_ROWS, itemized, type TaxInputs } from "./model";
+import { NO_NAMES, type Who } from "@/lib/who";
 
 /** How often you're paid, as the field offers it: paychecks a year. */
 export const PAY_FREQS: [string, string][] = [["52", "Every week"], ["26", "Every two weeks"], ["24", "Twice a month"], ["12", "Every month"]];
@@ -19,7 +20,7 @@ export interface Stub { cols: string[]; rows: StubRow[]; ppy: number }
 
 /** The paycheck the year comes to. `R` is the engine's result for `s`. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the engine's result, as Tax.tsx reads it
-export function paycheckStub(s: TaxInputs, R: any): Stub {
+export function paycheckStub(s: TaxInputs, R: any, w: Who = NO_NAMES): Stub {
   const ppy = Math.max(1, Math.round(parseNum(s.prePay) || 26));
   const joint = s.status === "m";
   const g1 = parseNum(s.gross), g2 = joint ? parseNum(s.gross2) : 0, two = joint && g2 > 0;
@@ -61,7 +62,7 @@ export function paycheckStub(s: TaxInputs, R: any): Stub {
 
   // The columns: by check (each earner's, with two), and by month (together).
   const monthly = ppy === 12;
-  const cols = two ? (monthly ? ["You", "Spouse", "Together"] : ["You, per check", "Spouse, per check", "Together, per month"]) : (monthly ? ["Per month"] : ["Per check", "Per month"]);
+  const cols = two ? (monthly ? [w.one, w.two, "Together"] : [w.one + ", per check", w.two + ", per check", "Together, per month"]) : (monthly ? ["Per month"] : ["Per check", "Per month"]);
   const rows: StubRow[] = lines.map((l) => {
     const v = two ? (monthly ? [l.yr[0] / 12, l.yr[1] / 12, (l.yr[0] + l.yr[1]) / 12] : [l.yr[0] / ppy, l.yr[1] / ppy, (l.yr[0] + l.yr[1]) / 12])
       : (monthly ? [l.yr[0] / 12] : [l.yr[0] / ppy, l.yr[0] / 12]);

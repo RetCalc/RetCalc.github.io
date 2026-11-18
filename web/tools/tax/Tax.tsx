@@ -13,7 +13,7 @@ import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { Tipped } from "@/components/shell/Tooltips";
-import { useToolScope, useToolState } from "@/components/tools/ToolState";
+import { useToolState, useWho, useWholeTool } from "@/components/tools/ToolState";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
@@ -56,9 +56,10 @@ function Key({ c }: { c: string }) {
 }
 
 export function Tax() {
-  // In a walkthrough this is your paycheck's taxes: never retirement income.
-  const scope = useToolScope();
-  const { state: s, set, setState } = useToolState(TAX_DEF, scope ? (c) => (c.mode === "retire" ? { ...c, mode: "normal" as const } : c) : undefined);
+  // In a walkthrough or a Dashboard tab this is your paycheck's taxes: never
+  // retirement income. Whole (its own page, the Dashboard's Tools), both modes.
+  const whole = useWholeTool(), who = useWho();
+  const { state: s, set, setState } = useToolState(TAX_DEF, whole ? undefined : (c) => (c.mode === "retire" ? { ...c, mode: "normal" as const } : c));
   useShareKit(TAX_DEF.id, taxShare(s));
   const [active, setActive] = useState<number | null>(null);
   const [preOpen, setPreOpen] = useState(false);
@@ -134,7 +135,7 @@ export function Tax() {
   const share = (v: number) => (R.gross ? v / R.gross : 0);
   // How often you're paid: the headline's third figure and the itemized paycheck.
   const ppy = Math.max(1, Math.round(parseNum(s.prePay) || 26));
-  const stub = paycheckStub(s, R);
+  const stub = paycheckStub(s, R, who);
   // The pre-tax deductions by kind, when they come that way.
   type PrePerson = Record<string, number>;
   const prePeople = (R.preTax?.people ?? []) as PrePerson[];
@@ -186,8 +187,8 @@ export function Tax() {
         {stateRow}
         {inp.status === "m" ? (
           <>
-            <TxRow k="Your Social Security" v={R.ss1} eff={share(R.ss1)} c={TAX_COLORS.fica} />
-            <TxRow k="Spouse's Social Security" v={R.ss2} eff={share(R.ss2)} c={TAX_COLORS.fica} />
+            <TxRow k={who.oneOwn + " Social Security"} v={R.ss1} eff={share(R.ss1)} c={TAX_COLORS.fica} />
+            <TxRow k={who.twoOwn + " Social Security"} v={R.ss2} eff={share(R.ss2)} c={TAX_COLORS.fica} />
           </>
         ) : <TxRow k="Social Security" v={R.ss} eff={share(R.ss)} c={TAX_COLORS.fica} />}
         <TxRow k={"Medicare" + (R.addl > 0 ? " (incl. surtax)" : "")} v={R.med + R.addl} eff={share(R.med + R.addl)} c={TAX_COLORS.fica} />
@@ -286,7 +287,7 @@ export function Tax() {
           <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
-              <div className="mb-4" hidden={!!scope}>
+              <div className="mb-4" hidden={!whole}>
                 <Segmented id="segTxMode" size="fill" attr="data-txmode" options={[["normal", "Normal income"], ["retire", "Retirement income"]] as const} value={s.mode} onChange={set("mode")} />
               </div>
 
@@ -311,14 +312,14 @@ export function Tax() {
                 </SelectField>
                 {/* Retirement mode: the ages decide the federal age 65 rules and
                     each state's own (Iowa 55, Georgia 62, New York 59½ and so on). */}
-                <NumberField id="txAge" wrapId="txAgeWrap" hidden={!ret} label={<Tipped text="Your age" k="txage" />} unit="yrs old" max={120} value={s.age} onValueChange={set("age")} />
-                <NumberField id="txSpouseAge" wrapId="txSpouseAgeWrap" hidden={!ret || !joint} label="Spouse's age" unit="yrs old" max={120} value={s.spouseAge} onValueChange={set("spouseAge")} />
+                <NumberField id="txAge" wrapId="txAgeWrap" hidden={!ret} label={<Tipped text={who.oneOwn + " age"} k="txage" />} unit="yrs old" max={120} value={s.age} onValueChange={set("age")} />
+                <NumberField id="txSpouseAge" wrapId="txSpouseAgeWrap" hidden={!ret || !joint} label={who.twoOwn + " age"} unit="yrs old" max={120} value={s.spouseAge} onValueChange={set("spouseAge")} />
               </div>
 
               <GroupHead>Income</GroupHead>
               <div id="txGrossWrap" className={split ? "two bottomalign max-sm:grid-cols-2" : undefined} hidden={ret}>
-                <MoneyField id="txGross" labelId="txGrossLabel" label={split ? "Your gross income" : "Gross income"} value={s.gross} onValueChange={set("gross")} />
-                <MoneyField id="txGross2" wrapId="txGross2Wrap" hidden={!split} label="Spouse's gross income" value={s.gross2} onValueChange={set("gross2")} />
+                <MoneyField id="txGross" labelId="txGrossLabel" label={split ? who.oneOwn + " gross income" : "Gross income"} value={s.gross} onValueChange={set("gross")} />
+                <MoneyField id="txGross2" wrapId="txGross2Wrap" hidden={!split} label={who.twoOwn + " gross income"} value={s.gross2} onValueChange={set("gross2")} />
               </div>
               <div className="derived txtotal" id="txGrossTotalWrap" hidden={!split}>
                 <div><span>Household gross income</span><span className="num" id="txGrossTotalShow">{split ? money(R.gross) : ""}</span></div>

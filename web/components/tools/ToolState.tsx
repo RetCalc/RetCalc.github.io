@@ -17,6 +17,7 @@ import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, 
 import { useRouter } from "next/navigation";
 import { readSession, readStored, writeSession, writeStored } from "@/lib/storage";
 import { useToast } from "@/components/shell/Toast";
+import { whoWords, type Who } from "@/lib/who";
 
 export type ToolInputs = Record<string, string | string[] | unknown>;
 
@@ -234,6 +235,10 @@ export interface ToolScope {
   /** The scope's tools take saved scenarios (the Dashboard's Tools): the
       page's scenario bar acts on the open tool, with the site's own lists. */
   scenarios?: boolean;
+  /** The household's two people by name, as its profile gives them ("" for
+      one not named): the tool's words say them in place of "you" and
+      "your spouse". Left out, nobody is named. */
+  names?: [string, string];
   /** A tool moving to a page: true when the scope took it. */
   go: (path: string) => boolean;
   /** The household this scope's tools take in, in place of the saved one:
@@ -288,6 +293,20 @@ export const ToolScopeProvider = ScopeContext;
 /** The scope this tool runs in, or null on its own page. */
 export function useToolScope(): ToolScope | null {
   return use(ScopeContext);
+}
+/** Whether the tool is whole, as on its own page: there, or in the
+    Dashboard's Tools (saved scenarios, nothing kept in the plan), where
+    every mode and option it has is open. A tab built on it, or a
+    walkthrough's step, shows only the part it uses. */
+export function useWholeTool(): boolean {
+  const scope = use(ScopeContext);
+  return !scope || !!scope.scenarios;
+}
+/** The words for the household's two people: their names where the scope
+    knows them (the Dashboard's), else "you" and "your spouse". */
+export function useWho(): Who {
+  const names = use(ScopeContext)?.names;
+  return useMemo(() => whoWords(names), [names]);
 }
 
 /** Another tool's inputs, read and changed in the scope this one runs in. */

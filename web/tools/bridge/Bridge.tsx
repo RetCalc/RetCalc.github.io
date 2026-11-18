@@ -8,7 +8,6 @@
 
 import { useFullScreen, type Px } from "@/components/charts/FullScreen";
 import { useDeferredValue, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { BandChart } from "@/components/charts/BandChart";
 import { HistLegend, Legend } from "@/components/charts/Legend";
 import { MultiChart, type Series } from "@/components/charts/MultiChart";
@@ -19,7 +18,7 @@ import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/componen
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
-import { useToolScope, useToolState } from "@/components/tools/ToolState";
+import { useToolNav, useToolScope, useToolState, useToolStore, useWholeTool } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
@@ -85,7 +84,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
   // The scope's withdrawal strategy, when it has one: each year takes out
   // what the strategy does there, and history is the only test that pairs.
   const budget = scope?.bridgeBudget ?? null;
-  const router = useRouter();
+  const store = useToolStore(), go = useToolNav(), whole = useWholeTool();
   const toast = useToast();
   const [modePicked, setMode] = useState<"hist" | "mc">("hist");
   const mode = budget ? "hist" : modePicked;
@@ -149,15 +148,15 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
     sendToDrawdown({
       initial: Math.round(H.e.total), retireAge: "60", stock: Math.round(H.ctx.stock), stockEnd: "", strategy: "fixed",
       rate: Math.max(0.1, Math.round(H.y.gross / H.e.total * 10000) / 100), spendFloor: 0, spendCeil: 0,
-    });
-    router.push("/drawdown");
+    }, store);
+    go("/drawdown");
     toast("Drawdown set to " + money(H.e.total) + " at 60, withdrawing " + money(H.y.gross) + " per year");
   };
   const toTax = () => {
     const H = handoff();
     if (!H) return;
-    sendYearToTax({ status: H.ctx.status, state: H.ctx.state, trad: H.y.trad, roth: H.y.roth, brok: H.y.brok, gainShare: H.y.gainPct, ages: H.ctx.status === "m" ? [60, 60] : [60] });
-    router.push("/incometax");
+    sendYearToTax({ status: H.ctx.status, state: H.ctx.state, trad: H.y.trad, roth: H.y.roth, brok: H.y.brok, gainShare: H.y.gainPct, ages: H.ctx.status === "m" ? [60, 60] : [60] }, store);
+    go("/incometax");
     toast("Loaded a year of withdrawals at 60 into Income Tax");
   };
 
@@ -317,7 +316,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               <CardHeader><CardTitle id="brAtTitle">What you&apos;ll have at 59½</CardTitle><CardDescription>{budget ? "Today's dollars, in five markets from history, by what your strategy withdraws." : "Today's dollars, in three markets from history."}</CardDescription></CardHeader>
               <CardContent>
                 <div id="brAtOut">{R && S ? <AtTable ctx={R.ctx} S={S} path={path} /> : null}</div>
-                {scope ? null : (
+                {!whole ? null : (
                   <div className="br-send">
                     <Button variant="outline" id="brToDD" onClick={toDrawdown}>Send to Drawdown Simulator</Button>{" "}
                     <Button variant="outline" id="brToTax" onClick={toTax}>Send to Income Tax</Button>{" "}

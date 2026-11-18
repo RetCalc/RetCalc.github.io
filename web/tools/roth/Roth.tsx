@@ -13,7 +13,7 @@ import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/componen
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
-import { toolInputs, useToolState } from "@/components/tools/ToolState";
+import { useToolState, useToolStore, useWho } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { BigValue } from "@/components/common/BigValue";
 import { KV, Segmented } from "@/components/common/Readout";
@@ -55,6 +55,8 @@ interface Fig { label: ReactNode; id: string; value: string; note: ReactNode; no
 export function Roth({ variant }: { variant?: "rmd" } = {}) {
   const rmdPage = variant === "rmd";
   const { state: s, set, setState } = useToolState(ROTH_DEF);
+  const store = useToolStore();
+  const w = useWho();
   useShareKit(ROTH_DEF.id, rothShare(s));
   const toast = useToast();
   const [view, setView] = useState<"bal" | "tax">("bal");
@@ -171,7 +173,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
           <Card>
             <CardContent>
               <div className={two}>
-                <NumberField id="rcAge" label="Your age" unit="yrs old" max={95} value={s.age} onValueChange={set("age")} />
+                <NumberField id="rcAge" label={w.oneOwn + " age"} unit="yrs old" max={95} value={s.age} onValueChange={set("age")} />
                 <NumberField id="rcEndAge" label="Plan through" unit="yrs old" max={100} value={s.endAge} onValueChange={set("endAge")}
                   aria-invalid={badRange || undefined} aria-describedby={badRange ? "rcEndWarnText" : undefined} />
               </div>
@@ -183,7 +185,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
                 <option value="m">Married filing jointly</option>
                 <option value="s">Single</option>
               </SelectField>
-              <NumberField id="rcSpouseAge" wrapId="rcSpouseWrap" hidden={!married} label="Spouse's age" unit="yrs old" max={105} value={s.spouseAge} onValueChange={set("spouseAge")} />
+              <NumberField id="rcSpouseAge" wrapId="rcSpouseWrap" hidden={!married} label={w.twoOwn + " age"} unit="yrs old" max={105} value={s.spouseAge} onValueChange={set("spouseAge")} />
               <SelectField id="rcState" label="State" value={s.state} onChange={set("state")}>
                 {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
               </SelectField>
@@ -192,7 +194,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
                 <h3 className="m-0 mr-auto text-sm font-semibold">What you have</h3>
                 <Button variant="outline" size="sm" id="rcCopyDD"
                   onClick={() => {
-                    const v = parseNum(toolInputs("drawdown", DRAWDOWN_DEFAULTS).initial as string);
+                    const v = parseNum(store.read("drawdown", DRAWDOWN_DEFAULTS).initial as string);
                     if (!(v > 0)) {
                       toast("Set a portfolio value in the Drawdown Simulator first");
                       return;
@@ -222,11 +224,11 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
               <GroupHead>Income and spending</GroupHead>
               <MoneyField id="rcSpend" label={<Tipped text="Annual spending" k="rcspend" />} value={s.spend} onValueChange={set("spend")} />
               <div className={two}>
-                <MoneyField id="rcSS" label="Your Social Security" unit="/yr" value={s.ss} onValueChange={set("ss")} />
+                <MoneyField id="rcSS" label={w.oneOwn + " Social Security"} unit="/yr" value={s.ss} onValueChange={set("ss")} />
                 <NumberField id="rcSSAge" label="Claim at" unit="yrs old" max={70} value={s.ssAge} onValueChange={set("ssAge")} />
               </div>
               <div className={two} id="rcSpouseSSWrap" hidden={!married}>
-                <MoneyField id="rcSpSS" label="Spouse's benefit" unit="/yr" value={s.spSS} onValueChange={set("spSS")} />
+                <MoneyField id="rcSpSS" label={w.twoOwn + " benefit"} unit="/yr" value={s.spSS} onValueChange={set("spSS")} />
                 <NumberField id="rcSpSSAge" label="Claim at" unit="yrs old" max={70} value={s.spSSAge} onValueChange={set("spSSAge")} />
               </div>
               <MoreRow open={more} onToggle={() => setMore((o) => !o)} sub={(married ? "Other income, survivor, " : "Other income, ") + "IRMAA, heirs' rate, discount rate"} />

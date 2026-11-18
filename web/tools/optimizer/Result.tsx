@@ -23,12 +23,14 @@ import { HeroReading } from "@/components/common/Reading";
 import { ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, CircleCheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PhoneFold, TapNote } from "@/components/phone/Words";
+import { useWho } from "@/components/tools/ToolState";
+import type { Who } from "@/lib/who";
 
 export const OP_COLORS = { ss: SERIES.sky, pension: SERIES.gray, trad: SERIES.rose, brok: SERIES.lavender, roth: SERIES.teal };
 type Src = keyof typeof OP_COLORS;
 const SRC_NAMES: Record<Src, string> = { ss: "Social Security", pension: "Pension", trad: "Traditional", brok: "Brokerage", roth: "Roth" };
 
-const who = (res: Result): PlanWho => ({ married: res.married, gap: res.age2 == null ? 0 : res.age2 - res.age1, rmdAge: res.rmdAge });
+const who = (res: Result, w?: Who): PlanWho => ({ married: res.married, gap: res.age2 == null ? 0 : res.age2 - res.age1, rmdAge: res.rmdAge, w });
 const avg = (rows: PlRow[], f: (r: PlRow) => number) => (rows.length ? rows.reduce((s, r) => s + f(r), 0) / rows.length : 0);
 const heir = (res: Result) => (res.P.heirRate == null ? PL_HEIR : res.P.heirRate);
 
@@ -125,7 +127,7 @@ function phases(rows: PlRow[]) {
   return out;
 }
 function Roadmap({ res }: { res: Result }) {
-  const C = who(res), T = res.best.T, rows = res.best.detail.rows, ph = phases(rows);
+  const w = useWho(), C = who(res, w), T = res.best.T, rows = res.best.detail.rows, ph = phases(rows);
   const last = rows[rows.length - 1], claimAge2 = C.married ? T.c2 : null, gap = C.gap!;
   return (
     <ol className="op-road">
@@ -136,19 +138,19 @@ function Roadmap({ res }: { res: Result }) {
         const tax = avg(R, (r) => r.tax + r.pen), hl = avg(R, (r) => r.health), ir = avg(R, (r) => r.irmaa);
         const early = r0.age < 59, aca = r0.fplPct != null, rmd = r0.rmd > 50, spouseOnly = aca && r0.age >= 65;
         const tag = conv > 50 ? (aca ? "Convert, and keep the subsidy" : "Roth conversion years")
-          : early ? "Before 59½" : aca ? (spouseOnly ? "Until your spouse's Medicare" : "Before Medicare") : rmd ? "Required distributions" : ss > 0 ? "Social Security years" : "Living on savings";
+          : early ? "Before 59½" : aca ? (spouseOnly ? "Until " + w.twoOwnIn + " Medicare" : "Before Medicare") : rmd ? "Required distributions" : ss > 0 ? "Social Security years" : "Living on savings";
         // What happens as this stretch begins.
         const ev: string[] = [], prev = rows[rows.indexOf(r0) - 1], rise = r0.ss - (prev ? prev.ss : 0);
         if (i === 0) ev.push("You retire at " + a0);
         if (rise > 1) {
           const mine = a0 === T.c1, theirs = C.married && a0 + gap === claimAge2;
-          ev.push((mine && theirs ? "Social Security starts for both of you" : mine ? "Your Social Security starts" : theirs ? "Your spouse's Social Security starts" : "The spousal benefit starts") +
+          ev.push((mine && theirs ? "Social Security starts for both of you" : mine ? w.oneOwn + " Social Security starts" : theirs ? (w.name2 ? w.twoOwn : "Your spouse's") + " Social Security starts" : "The spousal benefit starts") +
             ": +" + money(rise / 12) + "/mo");
         }
         const me65 = a0 === 65 && i > 0, sp65 = C.married && res.age2 != null && i > 0 && a0 + gap === 65;
         if (me65 && sp65) ev.push("Medicare starts for both of you");
-        else if (me65) ev.push(C.married ? "Your Medicare starts" : "Medicare starts");
-        else if (sp65) ev.push("Your spouse's Medicare starts");
+        else if (me65) ev.push(C.married ? w.oneOwn + " Medicare starts" : "Medicare starts");
+        else if (sp65) ev.push((w.name2 ? w.twoOwn : "Your spouse's") + " Medicare starts");
         if (a0 === 59 && i > 0) ev.push("59½: traditional money opens up penalty-free");
         if (rmd && (i === 0 || !(ph[i - 1].rows[0].rmd > 50))) ev.push("Required distributions begin");
         if (i > 0 && ph[i - 1].rows.some((r) => r.conv > 50) && !(conv > 50)) ev.push("Conversions stop");
@@ -170,7 +172,7 @@ function Roadmap({ res }: { res: Result }) {
         );
       })}
       <li className="op-ph end"><div className="op-ph-age">{last.age + 1}</div><div className="op-ph-body"><div className="op-ph-tag">The plan&apos;s end
-        {C.married && res.age2 != null ? ", when your spouse is " + (last.age + 1 + gap) : ""}</div>
+        {C.married && res.age2 != null ? ", when " + w.twoIs + " " + (last.age + 1 + gap) : ""}</div>
         <dl><dt>Left</dt><dd>{money(last.endTrad) + " traditional, " + money(last.endRoth) + " Roth, " + money(last.endBrok) + " brokerage, on the average path"}</dd></dl></div></li>
     </ol>
   );
@@ -178,7 +180,7 @@ function Roadmap({ res }: { res: Result }) {
 
 /* ---- what makes the difference ---- */
 function Moves({ res, tool }: { res: Result; tool?: boolean }) {
-  const C = who(res), T0 = res.base.T, goal = res.goal;
+  const C = who(res, useWho()), T0 = res.base.T, goal = res.goal;
   const val = (s: PlStats) => (goal === "spend" ? s.maxSpend || 0 : goal === "last" ? s.survived : s.medLegacy);
   const fmt = (d: number) => (goal === "spend" ? opSigned(d) + " per year"
     : goal === "last" ? (d >= 0 ? "+" : "−") + Math.abs(d) + " more " + (Math.abs(d) === 1 ? "market" : "markets") + " lasted" : opSigned(d, opCompact) + " left");
@@ -389,13 +391,13 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
   const rb = res.best.detail.rows, r0 = res.base.detail.rows, used = (Object.keys(SRC_NAMES) as Src[]).filter((k) => rb.some((r) => r[k] > 1));
   const h = heir(res), net = (r: PlRow) => r.endRoth + r.endBrok + r.endTrad * (1 - h);
   const spent = (r: PlRow) => r.tax + r.pen + r.irmaa + r.health;
-  const C = who(res);
+  const C = who(res, useWho());
   const state = yearData().states.tax[res.P.state];
   // Legends sit under their charts (DESIGN.md, Charts).
   const legend = (items: ReactNode) => <div className={cn("gd-ch-legend", tool && "mt-2 mb-0")}>{items}</div>;
   const brag = <>Tried <b>every one of {groupDigits(res.of, true)} plans</b> in all <b>{res.windows} historical retirements</b> since {res.first}: {groupDigits(res.runs, true)} retirements simulated.</>;
   const sameNote = <><b>The way you&apos;d run it is already the best plan we found</b> for this goal. Nothing we tried did better, which usually means Social Security
-    {res.married ? " at " + opClaims(res.base.T, { married: true }) : ""} and drawing brokerage, then traditional, then Roth already suits your numbers.</>;
+    {res.married ? " at " + opClaims(res.base.T, { married: true, w: C.w }) : ""} and drawing brokerage, then traditional, then Roth already suits your numbers.</>;
   const roadmap = wrap("Your roadmap", "on the average path, in today's dollars", <Roadmap res={res} />, "op-roadsec");
   const moves = wrap("What makes the difference", { legacy: "median left after tax", last: "markets lasted", spend: "safe spending" }[res.goal], <Moves res={res} tool={tool} />);
   const flow = wrap("Where each year's money comes from", "your roadmap, average path", <>

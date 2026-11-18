@@ -19,7 +19,7 @@ import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
-import { toolInputs, useToolNav, useToolScope, useToolState } from "@/components/tools/ToolState";
+import { useToolNav, useToolScope, useToolState, useToolStore } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
@@ -57,7 +57,7 @@ export function Budget() {
   const listRef = useRef<HTMLDivElement>(null);
   // In a walkthrough, the Budget and its Paycheck tab are separate steps:
   // no tabs, and the paycheck is the walkthrough's next step.
-  const scope = useToolScope(), go = useToolNav();
+  const scope = useToolScope(), go = useToolNav(), store = useToolStore();
   // Lines the page this runs in sets itself ("row:" and the line's own name:
   // the Dashboard's housing, from its Home): shown, not changed here.
   const lockedRows = new Set(scope?.locked ?? []);
@@ -253,12 +253,12 @@ export function Budget() {
               <Button variant="outline" size="sm" id="bgAdd"
                 onClick={() => addLine("Custom")}><PlusIcon data-icon="inline-start" aria-hidden="true" />Add custom item</Button>
             </div>
-            {scope ? null : <>
+            {!whole ? null : <>
             <div className="hint mt-3.5">Pull a number in from another tool:</div>
             <div className="mt-1.5 flex flex-wrap gap-2">
               <Button variant="outline" size="sm" id="bgCopyCollege"
                 onClick={() => {
-                  const inp = collegeInput(toolInputs("college", COLLEGE_DEFAULTS));
+                  const inp = collegeInput(store.read("college", COLLEGE_DEFAULTS));
                   if (!inp.kids.some((k) => k.annualCost > 0)) {
                     toast("Set up the College Savings tool first");
                     return;

@@ -14,7 +14,7 @@ import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { StageHead } from "@/components/tools/StageHead";
-import { toolInputs, useToolScope } from "@/components/tools/ToolState";
+import { toolInputs, useToolScope, useWholeTool, useWho } from "@/components/tools/ToolState";
 import { forDrawdown, type SocialInputs } from "@/tools/social/model";
 import { Html } from "@/components/common/Html";
 import { DD_STRAT, ddMCHistory, ssDrawdownStreams, ssEstimate } from "@/lib/engine/typed-drawdown";
@@ -56,7 +56,7 @@ export function Inputs({ v, fromNote, periods, open }: {
   const toast = useToast();
   // Figures the page this runs in sets itself (the Dashboard's, from its
   // plan): said in its own words in place of their fields.
-  const scope = useToolScope(), locked = new Set(scope?.locked ?? []);
+  const scope = useToolScope(), locked = new Set(scope?.locked ?? []), whole = useWholeTool(), nm = useWho();
   const strat = o.strategy, U = DD_UI[strat] || DD_UI.fixed, S = DD_STRAT[strat];
   const shown = (id: string) => U.blocks.includes(id);
   const str = (k: string) => s[k] as string;
@@ -116,9 +116,9 @@ export function Inputs({ v, fromNote, periods, open }: {
     if (ssCouple) {
       const st = ssDrawdownStreams(d.ssIncome as number, d.ssClaim as number, d.ssIncome2 as number, d.ssClaim2 as number, true, null, 0, ssFraFromBirth(d.ssBirth), ssFraFromBirth(d.ssBirth2));
       const m1 = (st.own1 + st.top1) / 12, m2 = (st.own2 + st.top2) / 12;
-      ssEstNote = "About " + money(m1) + "/mo for you and " + money(m2) + "/mo for your spouse, " + money(m1 + m2) + "/mo combined, in today's dollars" +
+      ssEstNote = "About " + money(m1) + "/mo for " + nm.oneIn + " and " + money(m2) + "/mo for " + nm.twoIn + ", " + money(m1 + m2) + "/mo combined, in today's dollars" +
         (st.top1 + st.top2 > 0 ? ", including a spousal benefit of " + money((st.top1 + st.top2) / 12) + "/mo once you've both claimed" : "") + "." +
-        (f1 !== 67 || f2 !== 67 ? " Full retirement age is " + fraLabel(f1) + " for you and " + fraLabel(f2) + " for your spouse." : "");
+        (f1 !== 67 || f2 !== 67 ? " Full retirement age is " + fraLabel(f1) + " for " + nm.oneIn + " and " + fraLabel(f2) + " for " + nm.twoIn + "." : "");
     } else {
       const e = ssEstimate(d.ssIncome as number, 40, Math.min(70, Math.max(62, d.ssClaim as number)), ssFraFromBirth(d.ssBirth));
       ssEstNote = "About " + money(e.monthly) + " per month in today's dollars, claiming at " + Math.round(d.ssClaim as number) +
@@ -229,10 +229,11 @@ export function Inputs({ v, fromNote, periods, open }: {
       <Card>
         {/* No title of its own: the column opens on its first group, the
             Simple / Advanced switch beside that group's heading (not in the
-            Dashboard, which opens on the plan's figures and shows them all). */}
+            Dashboard's Retirement tab, which opens on the plan's figures and
+            shows them all; its Tools have the switch). */}
         <CardContent>
           {scope?.slots?.facts}
-          {scope?.name === "dashboard" ? <GroupHead first>Your portfolio at retirement</GroupHead> : (
+          {scope?.name === "dashboard" && !whole ? <GroupHead first>Your portfolio at retirement</GroupHead> : (
             <div className="flex items-center justify-between gap-3">
               <GroupHead first>Your portfolio at retirement</GroupHead>
               <SegmentedGroup id="segDDIn" aria-label="How many inputs">
@@ -497,22 +498,22 @@ export function Inputs({ v, fromNote, periods, open }: {
             </SelectField>
             <div id="ddSSEst" hidden={ssMode !== "est"}>
               <div className="two">
-                <MoneyField id="ddSSIncome" labelId="ddSSIncomeLabel" label={ssCouple ? "Your income" : "Current income"} value={str("ssIncome")} onValueChange={set("ssIncome")} />
+                <MoneyField id="ddSSIncome" labelId="ddSSIncomeLabel" label={ssCouple ? nm.oneOwn + " income" : "Current income"} value={str("ssIncome")} onValueChange={set("ssIncome")} />
                 <ClaimAge id="ddSSClaim" value={str("ssClaim")} onChange={set("ssClaim")} />
               </div>
               <div className="two" id="ddSSEst2Wrap" hidden={!(ssMode === "est" && ssCouple)}>
-                <MoneyField id="ddSSIncome2" label="Spouse's income" value={str("ssIncome2")} onValueChange={set("ssIncome2")} />
+                <MoneyField id="ddSSIncome2" label={nm.twoOwn + " income"} value={str("ssIncome2")} onValueChange={set("ssIncome2")} />
                 <ClaimAge id="ddSSClaim2" value={str("ssClaim2")} onChange={set("ssClaim2")} />
               </div>
               <div className="hint" id="ddSSEstNote">{ssEstNote}</div>
             </div>
             <div id="ddSSManual" hidden={ssMode !== "manual"}>
-              <MoneyField id="ddSSAmount" label={<span id="ddSSAmountLabel"><Tipped text={ssCouple ? "Your annual benefit, today's dollars" : "Annual benefit, today's dollars"} k="ssbenefit" /></span>} value={str("ssAmount")} onValueChange={set("ssAmount")} />
-              <MoneyField id="ddSSAmount2" wrapId="ddSSAmount2Wrap" hidden={!(ssMode === "manual" && ssCouple)} label={<Tipped text="Spouse's annual benefit, today's dollars" k="ssbenefit" />} value={str("ssAmount2")} onValueChange={set("ssAmount2")} />
+              <MoneyField id="ddSSAmount" label={<span id="ddSSAmountLabel"><Tipped text={ssCouple ? nm.oneOwn + " annual benefit, today's dollars" : "Annual benefit, today's dollars"} k="ssbenefit" /></span>} value={str("ssAmount")} onValueChange={set("ssAmount")} />
+              <MoneyField id="ddSSAmount2" wrapId="ddSSAmount2Wrap" hidden={!(ssMode === "manual" && ssCouple)} label={<Tipped text={nm.twoOwn + " annual benefit, today's dollars"} k="ssbenefit" />} value={str("ssAmount2")} onValueChange={set("ssAmount2")} />
               {fromSocial ? (
                 <div className="hint" id="ddSSFromNote">
-                  {copied ? <>From the Social Security Calculator: you claiming at {copied.claim}{copied.couple ? <>, your spouse at {copied.claim2}</> : null}.
-                    {age == null ? <> Fill in <b>Age at retirement</b> to start the checks at {copied.claim}.</> : copied.couple && copied.annual2 > 0 && copied.claim2At !== copied.claim ? <> Your spouse&apos;s check starts when you&apos;re {copied.claim2At}.</> : null} </> : <>From the Social Security Calculator. </>}
+                  {copied ? <>From the Social Security Calculator: {nm.oneIn} claiming at {copied.claim}{copied.couple ? <>, {nm.twoIn} at {copied.claim2}</> : null}.
+                    {age == null ? <> Fill in <b>Age at retirement</b> to start the checks at {copied.claim}.</> : copied.couple && copied.annual2 > 0 && copied.claim2At !== copied.claim ? <> {nm.name2 ? nm.twoOwn : "Your spouse's"} check starts when {nm.name1 ? nm.name1 + " is" : "you're"} {copied.claim2At}.</> : null} </> : <>From the Social Security Calculator. </>}
                   <Button variant="link" size="inline" id="ddSSCopyAgain" onClick={copySocial}>Copy again</Button>
                 </div>
               ) : null}

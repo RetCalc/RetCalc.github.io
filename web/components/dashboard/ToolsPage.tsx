@@ -6,6 +6,9 @@
    changed in a tool stays in that tool. */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Segmented, SegmentedItem } from "@/components/ui/segmented";
+import { CALC_MODE_NAMES, CALC_PATHS } from "@/lib/site";
 import dynamic from "next/dynamic";
 import { ScenarioBar } from "@/components/shell/ScenarioBar";
 import { PhoneViewSwitch } from "@/components/phone/ViewSwitch";
@@ -31,20 +34,41 @@ import { holdings, mortgage, results } from "./model";
 import { Note } from "./ui";
 import { TapNote } from "@/components/phone/Words";
 
-/** The Dashboard's own tools beside the site's: the Advanced calculator,
-    to try anything on with every input open (the Calculator tab keeps the
-    plan's facts fixed), and Compare, for its saved scenarios. */
-export type DashTool = ToolSub | "advanced";
-const NAMES: Record<"advanced", string> = { advanced: "Advanced Calculator" };
-const nameOf = (sub: DashTool) => (sub === "advanced" ? NAMES.advanced : TOOLS[sub].name);
+/** The Dashboard's own tools beside the site's: the calculator, Basic
+    and Advanced as on the site, to try anything on with every input open
+    (the Calculator tab keeps the plan's facts fixed), and Compare, for its
+    saved scenarios. */
+type CalcSub = "basic" | "advanced";
+export type DashTool = ToolSub | CalcSub;
+const NAMES: Record<CalcSub, string> = { basic: "Basic Calculator", advanced: "Advanced Calculator" };
+const isCalc = (sub: DashTool): sub is CalcSub => sub === "basic" || sub === "advanced";
+const nameOf = (sub: DashTool) => (isCalc(sub) ? NAMES[sub] : TOOLS[sub].name);
 const Advanced = dynamic(() => import("@/tools/advanced/Advanced").then((m) => m.Advanced), { ssr: false });
-const VIEWS: Record<DashTool, React.ComponentType> = { ...TOOL_VIEWS, advanced: Advanced };
+const Basic = dynamic(() => import("@/tools/basic/Basic").then((m) => m.Basic), { ssr: false });
+const VIEWS: Record<DashTool, React.ComponentType> = { ...TOOL_VIEWS, advanced: Advanced, basic: Basic };
 /** The site's own page for a tool, which a share link opens. */
-const sitePath = (sub: DashTool) => "/" + (sub === "advanced" ? "advanced" : TOOLS[sub].path);
+const sitePath = (sub: DashTool) => (sub === "basic" ? CALC_PATHS.simple : sub === "advanced" ? CALC_PATHS.single : "/" + TOOLS[sub].path);
+
+/** Basic and Advanced, as the site's calculator switches them: the other
+    one's page, keeping where Back goes. */
+function CalcSwitch({ sub, back }: { sub: CalcSub; back: string }) {
+  const router = useRouter();
+  const href = (m: CalcSub) => `/dashboard/tools/${m}${back !== "/dashboard/tools" ? "?from=" + encodeURIComponent(back) : ""}`;
+  return (
+    <Segmented size="tab" role="group" aria-label="Calculator mode" className="mb-4">
+      {(["basic", "advanced"] as const).map((m) => (
+        <SegmentedItem key={m} pressed={sub === m} aria-current={sub === m ? "page" : undefined}
+          onMouseEnter={() => router.prefetch(href(m))} onPressedChange={() => { if (sub !== m) router.push(href(m)); }}>
+          {m === "basic" ? CALC_MODE_NAMES.simple : CALC_MODE_NAMES.single}
+        </SegmentedItem>
+      ))}
+    </Segmented>
+  );
+}
 
 /** The tab that holds a tool's figures for the plan itself. */
 const PLAN_TAB: Partial<Record<DashTool, { id: string; name: string; hash?: string }>> = {
-  advanced: { id: "calculator", name: "Calculator" },
+  advanced: { id: "calculator", name: "Calculator" }, basic: { id: "calculator", name: "Calculator" },
   budget: { id: "spending", name: "Spending" }, drawdown: { id: "retirement", name: "Retirement" },
   tax: { id: "savings", name: "Taxes & Savings" }, social: { id: "income", name: "Income" },
   college: { id: "profile", name: "Profile", hash: "#college" },
@@ -98,7 +122,7 @@ function calcLead(data: PickerData, yours: string | undefined): ToolsLead {
         <div className="tp-lead-body">
           <div>
             <h3 className="tp-lead-q">{CALC_Q}</h3>
-            <p className="toolcard-desc">The Advanced Calculator, filled in from your plan with every input open: balances, saving, returns, taxes and the changes ahead. Try anything. Your plan stays as it is.</p>
+            <p className="toolcard-desc">The Advanced Calculator, filled in from your plan with every input open: balances, saving, returns, taxes and the changes ahead. Try anything, or switch to Basic for the six-question version. Your plan stays as it is.</p>
             {yours ? <div className="tp-yours">{yours}</div> : null}
           </div>
           <div className="tp-chart"><GrowthChart values={data.growth} /></div>
@@ -179,7 +203,7 @@ function Tool({ sub }: { sub: DashTool }) {
       {mismatch ? <> <b>The children here don&apos;t match your plan&apos;s.</b> Add or remove children in <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Profile</Button>, then come back.</> : null}</Note>
   );
   return (
-    <Frame current="tools" title={nameOf(sub)} help={sub === "advanced" ? undefined : sub}
+    <Frame current="tools" title={nameOf(sub)} help={isCalc(sub) ? undefined : sub}
       meta={tab ? undefined : "Doesn't change your plan"} back={{ href: back, name: backName === "the lesson" ? "Lesson" : backName }}
       actions={<>
         {/* Saved scenarios, the site's own lists: one saved here is there too.
@@ -201,6 +225,7 @@ function Tool({ sub }: { sub: DashTool }) {
           </TapNote>
         </div>
       ) : null}
+      {isCalc(sub) ? <CalcSwitch sub={sub} back={back} /> : null}
       {/* Phones only: the tool's Inputs and Results as two views. */}
       <PhoneViewSwitch />
       <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={opening} household={household} scenarios

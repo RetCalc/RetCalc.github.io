@@ -22,6 +22,8 @@ import { fmtAxisMoney } from "@/components/charts/scale";
 import { groupDigits, money, parseNum } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useWho } from "@/components/tools/ToolState";
+import type { Who as WhoWords } from "@/lib/who";
 import { ssRules, type Person, type PersonInputs, type Who } from "./model";
 
 const TIP_PAY = "Every year of your career. Click a bar to change that year. For past years, type what you actually earned that year, as your Social Security statement at ssa.gov/myaccount lists it. Social Security raises past pay by how much average wages have grown since, and the bars show it that way. For future years, type pay in today's dollars. A change carries forward, so later years rise from it, as for a promotion or a cut.";
@@ -40,14 +42,18 @@ function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] 
   return [ref, w];
 }
 
-export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: {
+export function PayYears({ who, setWho, both, inputs, person, setP, setEdits, names }: {
   who: Who; setWho: (w: Who) => void;
+  /** The words for the two people, when the page knows their names
+      (outside a tool scope); in one, the scope's. */
+  names?: WhoWords;
   /** Both people's benefits are estimated from pay, so the switch shows. */
   both: boolean;
   inputs: PersonInputs; person: Person;
   setP: (k: keyof PersonInputs) => (v: string) => void;
   setEdits: (f: (e: Record<string, string>) => Record<string, string>) => void;
 }) {
+  const scoped = useWho(), w = names ?? scoped;
   const L = person.career ?? [];
   const [sel, setSel] = useState<number | null>(null);
   const valRef = useRef<HTMLInputElement>(null);
@@ -98,9 +104,9 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
     <div className="mt-3 rounded-xl border border-border bg-background" id="ssPay">
       <div className="flex flex-wrap items-end gap-x-3.5 gap-y-2.5 px-3.5 pt-3">
         <h2 className="m-0 mr-auto mb-2 flex items-center gap-1.5 text-aside font-semibold max-sm:basis-full max-sm:mb-0">
-          {who === "you" ? "Your pay, year by year" : "Your spouse's pay, year by year"}<TipDot k="" text={TIP_PAY} />
+          {who === "you" ? w.oneOwn + " pay, year by year" : (w.name2 ? w.twoOwn : "Your spouse's") + " pay, year by year"}<TipDot k="" text={TIP_PAY} />
         </h2>
-        {both ? <div className="mb-0.5"><Segmented attr="data-who" options={[["you", "You"], ["spouse", "Spouse"]] as const} value={who} onChange={(w) => { setWho(w); setSel(null); setDraft(null); }} /></div> : null}
+        {both ? <div className="mb-0.5"><Segmented attr="data-who" options={[["you", w.one], ["spouse", w.two]] as const} value={who} onChange={(w) => { setWho(w); setSel(null); setDraft(null); }} /></div> : null}
         <Field id="ssStart" className="m-0 w-37.5 max-sm:flex-1" label={<span className="tipglue">First job at age<TipDot k="" text="The age of your first paid job, even part-time or summer work. Years before today are estimated from today's pay, so type what you actually earned in your early years (your statement at ssa.gov/myaccount lists every year). Any year of pay can count toward your best 35." /></span>}>
           <NumberInput id="ssStart" nonNeg step={1} max={70} value={inputs.start} onValueChange={(v) => { setP("start")(v); setSel(null); setDraft(null); }} />
         </Field>

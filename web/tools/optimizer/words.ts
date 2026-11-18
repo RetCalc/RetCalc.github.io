@@ -2,9 +2,10 @@
    tactics. From src/js/app/31b-plan-optimizer.js. */
 import type { PlPlan, PlTactics } from "@/lib/engine/types";
 import { money } from "@/lib/format";
+import { NO_NAMES, type Who } from "@/lib/who";
 
 /** What a plan needs to word itself: married, the spouses' age gap, the RMD age. */
-export interface PlanWho { married: boolean; gap?: number; rmdAge?: number }
+export interface PlanWho { married: boolean; gap?: number; rmdAge?: number; /** The two people's words (their names, in the Dashboard). */ w?: Who }
 
 export function opCompact(v: number): string {
   const x = Math.abs(v);
@@ -37,11 +38,12 @@ export function opConvUntil(T: PlTactics, C: PlanWho): number | null {
 export function opClaims(T: PlTactics, C: PlanWho, short = false): string {
   if (!C.married) return String(T.c1);
   if (T.c1 === T.c2) return short ? T.c1 + " & " + T.c2 : T.c1 + " for both of you";
-  return short ? T.c1 + " & " + T.c2 : T.c1 + " for you, " + T.c2 + " for your spouse";
+  const w = C.w ?? NO_NAMES;
+  return short ? T.c1 + " & " + T.c2 : T.c1 + " for " + w.oneIn + ", " + T.c2 + " for " + w.twoIn;
 }
-export function opTacticsShort(T: PlTactics, P: PlPlan): string {
+export function opTacticsShort(T: PlTactics, P: PlPlan, w: Who = NO_NAMES): string {
   const married = P.status === "m";
-  let s = married ? "you claim at " + T.c1 + ", your spouse at " + T.c2 : "claim at " + T.c1;
+  let s = married ? (w.name1 ? w.name1 + " claims" : "you claim") + " at " + T.c1 + ", " + w.twoIn + " at " + T.c2 : "claim at " + T.c1;
   if (T.f > 0) {
     s += " · traditional first, to " + (T.f === 1 ? "the standard deduction" : "the " + opFillShort(T.f) + " bracket");
     if (T.u) s += " · convert the rest " + (T.u === 1 ? "until Social Security" : "until RMDs");

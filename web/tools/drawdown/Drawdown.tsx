@@ -12,7 +12,7 @@ import { useHousehold, useHouseholdFill } from "@/components/household/Household
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
-import { toolInputs, useToolScope, useToolState } from "@/components/tools/ToolState";
+import { useToolScope, useToolState, useToolStore, useWholeTool } from "@/components/tools/ToolState";
 import { HeroReading, PinnedReading, type HeroTone, type ReadingFigure } from "@/components/common/Reading";
 import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
@@ -70,6 +70,7 @@ export const PICKER_IDS = ["fixed", "kitces", "pct", "clyatt", "oneovern", "rmd"
 export function Drawdown({ landing }: { landing?: string }) {
   const { state: s, set, setState } = useToolState(DRAWDOWN_DEF, landing ? (c) => ddLanding(c, landing) : undefined);
   const { profile } = useHousehold();
+  const store = useToolStore();
   const toast = useToast();
   const showPopup = usePopup();
   const seed = useMcSeed();
@@ -79,10 +80,14 @@ export function Drawdown({ landing }: { landing?: string }) {
     addTransitionType("view-switch");
     setTab(k);
   });
-  const [storedInputs, setStoredInputs] = useStoredText("retcalc-dd-inputs", "simple");
-  // The Dashboard's Retirement tab always shows every input.
-  const dash = useToolScope()?.name === "dashboard";
-  const inputs = dash || storedInputs === "adv" ? "adv" : "simple";
+  // Simple or Advanced inputs: the site's choice, remembered. The Dashboard's
+  // Retirement tab always shows every input; its Tools have the switch, on
+  // a choice of their own that starts on every input (the plan fills them).
+  const scope = useToolScope(), dash = scope?.name === "dashboard", whole = useWholeTool();
+  const [siteInputs, setSiteInputs] = useStoredText("retcalc-dd-inputs", "simple");
+  const [dashInputs, setDashInputs] = useStoredText("retcalc-dash-dd-inputs", "adv");
+  const storedInputs = dash ? dashInputs : siteInputs, setStoredInputs = dash ? setDashInputs : setSiteInputs;
+  const inputs = (dash && !whole) || storedInputs === "adv" ? "adv" : "simple";
   const [introSeen, setIntroSeen] = useStoredText("retcalc-dd-intro-seen", "0", "1");
   const [tracesOn, setTracesOn] = useState(true);
   const [pinned, setPinned] = useState<{ state: Record<string, unknown>; label: string } | null>(null);
@@ -157,7 +162,7 @@ export function Drawdown({ landing }: { landing?: string }) {
     copyFromPlan: async () => {
       // the calculators' results, from their inputs as last left (Advanced
       // with its changes ahead, when any are on)
-      const b = basicInput(toolInputs("basic", BASIC_INPUTS)), adv = toolInputs("advanced", ADVANCED_DEFAULTS);
+      const b = basicInput(store.read("basic", BASIC_INPUTS)), adv = store.read("advanced", ADVANCED_DEFAULTS);
       const sources = [
         { label: "Basic", value: b.years > 0 ? projectBasic(b).fv : 0 },
         { label: "Advanced", value: changesOn(adv) ? changesCompute(adv, profile).V.R.fvReal : project(advancedPlan(adv, profile).p).fvReal },

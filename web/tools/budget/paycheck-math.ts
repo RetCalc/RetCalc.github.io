@@ -28,6 +28,7 @@ import { computeTax, yearData } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
 import { HEALTH_SLOT, annualize, isPlannedRow, slotRow, type BudgetInputs, type BudgetRow } from "./model";
 import { localFor } from "@/tools/tax/local";
+import { NO_NAMES, type Who } from "@/lib/who";
 
 /** The lines, in their default order. */
 export const PC_STEPS = ["match", "hsa", "ef", "rothIra", "k401max", "brok"] as const;
@@ -235,16 +236,16 @@ export function pcCatchUp(pi: PcInput, s: PcStep): { people: number[]; eligible:
     the higher one (`included`), and, when someone's age isn't known, what it
     could be (`ifCap`, per period, with `ifText` saying on what condition).
     Each is null when it doesn't apply. */
-export function pcCatchText(pi: PcInput, s: PcStep, a: PcAmounts): { included: string | null; ifCap: number; ifText: string | null } {
+export function pcCatchText(pi: PcInput, s: PcStep, a: PcAmounts, w: Who = NO_NAMES): { included: string | null; ifCap: number; ifText: string | null } {
   const c = pcCatchUp(pi, s), two = c.people.length > 1;
   let included: string | null = null;
   if (c.eligible.length && pcCap(pi, s, a) > pcCap({ ...pi, ages: undefined }, s, a) + 0.005) {
     const kind = s === "hsa" ? "the age 55 catch-up" : c.high && c.low ? "the catch-ups for age 50 and for 60 to 63" : c.high ? "the catch-up for age 60 to 63" : "the age 50 catch-up";
-    included = "includes " + kind + (!two ? "" : c.eligible.length === 2 ? " for both of you" : c.eligible[0] === 0 ? " for you" : " for your spouse");
+    included = "includes " + kind + (!two ? "" : c.eligible.length === 2 ? (w.named ? " for " + w.oneIn + " and " + w.twoIn : " for both of you") : c.eligible[0] === 0 ? " for " + w.oneIn : " for " + w.twoIn);
   }
   const ifCap = pcCap(pcIfEligible(pi), s, a);
   const maybe = c.unknown.length > 0 && ifCap > pcCap(pi, s, a) + 0.005;
-  const who = !two || (c.unknown.length === 1 && c.unknown[0] === 0) ? "you are" : c.unknown.length === 2 ? "either of you is" : "your spouse is";
+  const who = !two || (c.unknown.length === 1 && c.unknown[0] === 0) ? w.oneIs : c.unknown.length === 2 ? (w.named ? w.oneIn + " or " + w.twoIn + " is" : "either of you is") : w.twoIs;
   return { included, ifCap, ifText: maybe ? "if " + who + " " + c.from + " or older" : null };
 }
 

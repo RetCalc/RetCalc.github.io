@@ -14,6 +14,7 @@ import { Affixed, MoneyField, NumberField, SelectField } from "@/components/fiel
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { social, type SocialInputs, type Who } from "@/tools/social/model";
 import { PayYears } from "@/tools/social/PayYears";
+import { whoWords } from "@/lib/who";
 import type { BudgetInputs } from "@/tools/budget/model";
 import { Frame } from "./Frame";
 import { PayFields, StateField, num, txt, type PKey } from "./fields";
@@ -51,7 +52,7 @@ function PayHistory({ pr, set, close }: { pr: Profile; set: (f: (p: Profile) => 
     <div className="dsh-payhist">
       <h2 id="dshPayTitle" className="dsh-dlg-h">Your pay, year by year</h2>
       <p className="dsh-cap">Social Security averages your best 35 years of pay. Type what you earned in past years (your statement at ssa.gov lists them), and what you expect ahead in today&apos;s dollars.</p>
-      <PayYears who={who} setWho={setWho} both={both} inputs={s[who]} person={who === "you" ? S.you : S.spouse!} setP={setP} setEdits={setEdits} />
+      <PayYears names={whoWords([pr.p1.name, couple(pr) ? pr.p2.name : ""])} who={who} setWho={setWho} both={both} inputs={s[who]} person={who === "you" ? S.you : S.spouse!} setP={setP} setEdits={setEdits} />
       <div className="dsh-stats">
         <div className="dsh-stat"><div className="dsh-label"><TipLabel text={`${nameOf(pr, 0)}: benefit at full retirement age`} k="fra" /></div><div className="dsh-fig dsh-md">{money(B.you)}<small data-u="/mo">per month</small></div></div>
         {B.spouse != null ? <div className="dsh-stat"><div className="dsh-label">{nameOf(pr, 1)}</div><div className="dsh-fig dsh-md">{money(B.spouse)}<small data-u="/mo">per month</small></div></div> : null}

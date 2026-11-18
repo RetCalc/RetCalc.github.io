@@ -24,7 +24,7 @@ import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/componen
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
-import { toolInputs, useToolState } from "@/components/tools/ToolState";
+import { useToolState, useToolStore } from "@/components/tools/ToolState";
 import { KV } from "@/components/common/Readout";
 import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
@@ -57,6 +57,7 @@ function BreakEvenMark({ g, year, value }: { g: ChartGeometry; year: number; val
 
 export function RentBuy() {
   const { state: s, set, setState } = useToolState(DEF);
+  const store = useToolStore();
   const toast = useToast();
   const tableRef = useRef<HTMLTableElement>(null);
   const folds = useFolds(["buy", "asm"]);
@@ -114,7 +115,7 @@ export function RentBuy() {
                 ) : null}
                 <Button variant="outline" size="sm" className="mt-1.5" id="rbCopyMort"
                   onClick={() => {
-                    const mo = toolInputs("mortgage", MORTGAGE_DEFAULTS);
+                    const mo = store.read("mortgage", MORTGAGE_DEFAULTS);
                     const price = parseNum(mo.price);
                     if (!(price > 0)) {
                       toast("Set up the Mortgage Calculator first");

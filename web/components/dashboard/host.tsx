@@ -16,14 +16,16 @@ import { useRouter } from "next/navigation";
 import { ToolScopeProvider, type ToolInputs, type ToolScope } from "@/components/tools/ToolState";
 import type { SavedHousehold } from "@/lib/household";
 import { TOOLS, type ToolSub } from "@/lib/tools";
+import { CALC_PATHS } from "@/lib/site";
 import { MORTGAGE_DEFAULTS } from "@/tools/mortgage/model";
 import { RENTBUY_DEFAULTS } from "@/tools/rentbuy/model";
 import { groupDigits } from "@/lib/format";
+import type { TaxInputs } from "@/tools/tax/model";
 import { budgetFor, drawdownFor, flow, socialFor, taxFor, taxState } from "./flows";
 import { advancedFor, stagesFor } from "./calc";
 import { collegeInputsOf } from "./college";
 import { ageOf, contribMonth, couple, drawdownPlan, grossYear, holdings, results, spendMonth } from "./model";
-import type { Entry, Profile } from "./store";
+import { useDashboard, type Entry, type Profile } from "./store";
 
 const pick = <T,>(load: () => Promise<T>) => dynamic(load as () => Promise<React.ComponentType>, { ssr: false });
 /** Every tool, loaded only when it's opened. */
@@ -49,6 +51,11 @@ export function toolFromPath(path: string): ToolSub | null {
   const p = path.split(/[?#]/)[0].replace(/^\//, "");
   return (Object.keys(TOOLS) as ToolSub[]).find((k) => TOOLS[k].path === p) ?? null;
 }
+/** The calculator's pages on the site as the Dashboard's Tools have them. */
+function calcFromPath(path: string): "basic" | "advanced" | null {
+  const p = path.split(/[?#]/)[0];
+  return p === CALC_PATHS.simple ? "basic" : p === CALC_PATHS.single ? "advanced" : null;
+}
 /** A tool opened from a dashboard page, which its Back returns to. */
 export const toolHref = (sub: ToolSub, from?: string) => `/dashboard/tools/${sub}${from ? "?from=" + encodeURIComponent(from) : ""}`;
 
@@ -70,13 +77,35 @@ export function householdOf(pr: Profile, entries: Entry[]): SavedHousehold {
   };
 }
 
+/** Income Tax's Retirement income mode, from the plan: a year once
+    retired with Social Security started (the later of retiring and the first
+    claim), today's dollars. Spending beyond Social Security is withdrawn
+    from each account in the share it holds at retirement; the brokerage's
+    gain portion is from its cost basis today, when known. The ages stay
+    today's: both modes read them. Fields the plan can't fill keep what the
+    tool has. */
+function retireTaxFor(pr: Profile, entries: Entry[]): Partial<TaxInputs> {
+  const R = results(pr, entries), S = R.S, age1 = ageOf(pr.p1), retire = pr.p1.retire;
+  if (!S || R.abroad || age1 == null || retire == null) return {};
+  const age = Math.max(retire, R.claim1 ?? retire), age2now = couple(pr) ? ageOf(pr.p2) : null;
+  const age2 = age2now == null ? null : age2now + (age - age1);
+  const ss = (R.ss1 ?? 0) * 12 + (age2 != null && R.claim2 != null && age2 >= R.claim2 ? (R.ss2 ?? 0) * 12 : 0);
+  const P = S.P as { trad: number; roth: number; brok: number }, held = P.trad + P.roth + P.brok;
+  const need = Math.max(0, (R.spend ?? 0) * 12 - ss), part = (v: number) => groupDigits(held > 0 ? Math.round((need * v) / held) : 0, true);
+  const H = holdings(entries, pr), gain = H.brokBasis != null && H.brok > 0 ? Math.max(0, Math.min(100, Math.round((1 - H.brokBasis / H.brok) * 100))) : null;
+  return {
+    ss: groupDigits(Math.round(ss), true), trad: part(P.trad), roth: part(P.roth), brok: part(P.brok),
+    ...(gain != null ? { gainPct: String(gain) } : {}),
+  };
+}
+
 /** Each tool's first inputs beyond the household: what the profile knows. */
 export function seedFor(pr: Profile, entries: Entry[]): (id: string) => ToolInputs | undefined {
   return (id) => {
     const H = holdings(entries, pr);
     switch (id) {
       case "budget": return budgetFor(pr);
-      case "tax": return taxFor(pr);
+      case "tax": return { ...taxFor(pr), ...retireTaxFor(pr, entries) };
       case "social": return socialFor(pr);
       case "drawdown": {
         const R = results(pr, entries), S = R.S;
@@ -116,8 +145,11 @@ export function Hosted({ seed, keep, household, slots, locked, bridgeBudget, see
   children: ReactNode;
 }) {
   const router = useRouter();
-  const latest = useRef({ seed, keep, slots, locked, household, bridgeBudget });
-  useEffect(() => { latest.current = { seed, keep, slots, locked, household, bridgeBudget }; });
+  // The people's names, for the tools' words ("Sam's check").
+  const { data } = useDashboard(), pr = data.profile;
+  const names = useMemo((): [string, string] => [pr.p1.name.trim(), couple(pr) ? pr.p2.name.trim() : ""], [pr]);
+  const latest = useRef({ seed, keep, slots, locked, household, bridgeBudget, names });
+  useEffect(() => { latest.current = { seed, keep, slots, locked, household, bridgeBudget, names }; });
   // One scope for the host's life, made again only when the seed key
   // changes (the tools then read their inputs again): the tools read it as
   // they open. What the page says in them, and what it locks, follow the
@@ -133,10 +165,16 @@ export function Hosted({ seed, keep, household, slots, locked, bridgeBudget, see
       get slots() { return latest.current.slots; },
       get locked() { return latest.current.locked; },
       get bridgeBudget() { return latest.current.bridgeBudget; },
+      get names() { return latest.current.names; },
       seedKey, scenarios,
       read: (id) => mem.get(id) ?? seedNow(id),
       write: (id, data) => { mem.set(id, data); latest.current.keep?.(id, data); },
-      go: (path) => { const t = toolFromPath(path); if (t) router.push(toolHref(t)); return true; },
+      go: (path) => {
+        const t = toolFromPath(path), calc = scenarios ? calcFromPath(path) : null;
+        if (t) router.push(toolHref(t));
+        else if (calc) router.push(`/dashboard/tools/${calc}${window.location.search}`);
+        return true;
+      },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `seed` is read when the key changes, not on every render
   }, [seedKey, router]);

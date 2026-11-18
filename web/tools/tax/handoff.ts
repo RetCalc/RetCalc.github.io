@@ -3,7 +3,7 @@
    Security or a pension can be added. The Early Retirement Bridge and the
    By account type tables send this. From brToTax() in src/js/app/36-bridge.js
    and the .txlink handler in 18-debt.js. */
-import { setToolInputs, toolInputs } from "@/components/tools/ToolState";
+import { TAB_STORE, type ToolStore } from "@/components/tools/ToolState";
 import { dollarsField } from "@/lib/format";
 import { TAX_DEFAULTS, agesFromSeniors } from "./model";
 
@@ -15,10 +15,10 @@ export function sendYearToTax(y: {
       many are 65 or older. */
   ages?: number[];
   seniors?: number;
-}): void {
+}, store: ToolStore = TAB_STORE): void {
   const [a1, a2] = y.ages?.length ? [y.ages[0], y.ages[1] ?? y.ages[0]] : agesFromSeniors(y.seniors ?? 0, y.status === "m");
-  setToolInputs("tax", {
-    ...toolInputs("tax", TAX_DEFAULTS), mode: "retire", status: y.status, state: y.state,
+  store.write("tax", {
+    ...store.read("tax", TAX_DEFAULTS), mode: "retire", status: y.status, state: y.state,
     trad: dollarsField(y.trad), roth: dollarsField(y.roth), brok: dollarsField(y.brok),
     // Two decimals: a tenth of a percent of a large brokerage withdrawal is
     // enough to move the tax by a few dollars off the sender's figure.

@@ -13,7 +13,6 @@
    income the reading shows dashes and the income field says it's the one
    figure needed. On a phone a compact reading leads and stays pinned. */
 
-import { useRouter } from "next/navigation";
 import { FoldToggle, useFolds } from "@/components/phone/Fold";
 import { InfoTap, TapNote } from "@/components/phone/Words";
 import { CheckIcon, ChevronDownIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon } from "lucide-react";
@@ -22,7 +21,7 @@ import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/componen
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
-import { setToolInputs, toolInputs, useToolScope, useToolState } from "@/components/tools/ToolState";
+import { useToolNav, useToolScope, useToolState, useToolStore, useWho } from "@/components/tools/ToolState";
 import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
 import { KV } from "@/components/common/Readout";
 import { DASH, dollarsField, money, parseNum } from "@/lib/format";
@@ -77,7 +76,8 @@ function Band({ id, children }: { id?: string; children: React.ReactNode }) {
 
 export function Healthcare() {
   const { state: s, set, setState } = useToolState(HEALTHCARE_DEF);
-  const router = useRouter();
+  const w = useWho();
+  const store = useToolStore(), go = useToolNav();
   const toast = useToast();
   // Figures the page this runs in sets itself (the Dashboard's, from its
   // plan): said in its own words in place of their fields.
@@ -274,7 +274,7 @@ export function Healthcare() {
                   {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={String(n)}>{n} {n === 1 ? "person" : "people"}</option>)}
                 </SelectField>
               </div>
-              <NumberField id="hcSpouseAge" wrapId="hcSpouseAgeWrap" hidden={!joint} label={<Tipped text="Spouse's age then" k="hcspouseage" />} unit="yrs old" max={90} value={s.spouseAge} onValueChange={set("spouseAge")} />
+              <NumberField id="hcSpouseAge" wrapId="hcSpouseAgeWrap" hidden={!joint} label={<Tipped text={w.twoOwn + " age then"} k="hcspouseage" />} unit="yrs old" max={90} value={s.spouseAge} onValueChange={set("spouseAge")} />
               </>}
 
               {locked.has("income") ? null : <>
@@ -290,7 +290,7 @@ export function Healthcare() {
                 <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
                   <Button variant="outline" size="sm" id="hcCopyTax"
                     onClick={() => {
-                      const tax = toolInputs("tax", TAX_DEFAULTS);
+                      const tax = store.read("tax", TAX_DEFAULTS);
                       if (tax.mode !== "retire") {
                         toast("Switch the Income Tax tool to Retirement income mode first");
                         return;
@@ -306,8 +306,8 @@ export function Healthcare() {
                     }}>Copy from Income Tax</Button>{" "}
                   <Button variant="quiet" size="inline" id="hcGoTax"
                     onClick={() => {
-                      setToolInputs("tax", { ...toolInputs("tax", TAX_DEFAULTS), mode: "retire" });
-                      router.push("/incometax");
+                      store.write("tax", { ...store.read("tax", TAX_DEFAULTS), mode: "retire" });
+                      go("/incometax");
                     }}>Open Income Tax</Button>
                 </div>
               </Field>
