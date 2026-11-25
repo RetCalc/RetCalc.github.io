@@ -10,6 +10,11 @@
     animation:pinstall-in .28s cubic-bezier(.2,.7,.3,1)}
   @keyframes pinstall-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
   body:has(.dsh) .pinstall{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+  /* A tool's Inputs | Results switch (styles/phone/10-calc.css) floats in the
+     same place: stand the card above it (52px high plus its gap), or it
+     covers the switch and takes its taps. */
+  body:has(.pv-switch) .pinstall{bottom:calc(var(--pbar-clear) + 72px)}
+  body:has(.dsh):has(.pv-switch) .pinstall{bottom:calc(128px + env(safe-area-inset-bottom,0px))}
   body.gd-on .pinstall{display:none}
   .pinstall-mark{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:var(--ds-ground)}
   .pinstall-mark .brandmark{width:28px;height:28px}
