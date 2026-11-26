@@ -10,6 +10,10 @@
   body:has(.pv-switch):not([data-pv="out"]) [data-pv="out"]{display:none !important}
   body:has(.pv-switch)[data-pv="out"] [data-pv="in"]{display:none !important}
   .pv-anchor{display:block;height:0}
+  /* The switch sits inside <main>, which is its own layer (z-index:1), so its
+     z-index only counts there; the footer, a later sibling at the same level,
+     painted over it at the bottom of the page. Put the footer a layer under. */
+  body:has(.pv-switch) .sitefoot{z-index:0}
   /* The switch: a solid pill floating over the page (solid, so the words
      passing under it never show through), above the tab bar,
      and down at the home indicator when the tab bar slides away. */
